@@ -3,13 +3,13 @@
     <!-- Hero Section -->
     <div class="w-full px-8 py-24 bg-gradient-to-b from-paper to-gray-50">
       <div class="max-w-4xl mx-auto text-center">
-        <p class="text-sm tracking-widest uppercase font-sans text-ink-lighter mb-6 animate-fade-in-up">
+        <p class="text-sm tracking-widest uppercase font-sans text-ink-lighter mb-6">
           Browse at your pace
         </p>
-        <h1 class="text-6xl font-light tracking-tight mb-8 leading-tight animate-fade-in-up delay-100">
+        <h1 class="text-6xl font-light tracking-tight mb-8 leading-tight">
           Recent Essays
         </h1>
-        <p class="text-xl font-light text-ink-light leading-relaxed max-w-2xl mx-auto animate-fade-in-up delay-200">
+        <p class="text-xl font-light text-ink-light leading-relaxed max-w-2xl mx-auto">
           Titles that read like thoughts, not headlines. No urgency, no pressure—just ideas waiting to be explored.
         </p>
       </div>
@@ -63,8 +63,6 @@
             :writing="writing"
             :themes="getThemesForWriting(writing)"
             :show-image="index < 3"
-            class="animate-fade-in-up"
-            :style="{ animationDelay: `${(index + 3) * 100}ms` }"
           />
         </div>
       </div>
@@ -115,7 +113,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { api } from '../api/client'
 import { useAuth } from '../stores/auth'
@@ -205,79 +203,14 @@ const loadThemes = async () => {
 }
 
 
-// Save scroll position - throttled
-let scrollTimeout: ReturnType<typeof setTimeout> | null = null
-let scrollHandler: (() => void) | null = null
-
-const saveScrollPosition = () => {
-  if (scrollTimeout) {
-    clearTimeout(scrollTimeout)
-  }
-  scrollTimeout = setTimeout(() => {
-    if (router.currentRoute.value.name === 'Home') {
-      sessionStorage.setItem('homeScrollPosition', window.scrollY.toString())
-    }
-  }, 300) // Increased debounce time
-}
-
-watch(() => router.currentRoute.value.fullPath, () => {
-  if (router.currentRoute.value.name === 'Home') {
-    saveScrollPosition()
-  }
-})
-
-// Restore scroll position if returning from reading
-onMounted(() => {
-  loadWritings()
-  loadThemes()
-  
-  // Restore scroll position from sessionStorage
-  const savedPosition = sessionStorage.getItem('homeScrollPosition')
-  if (savedPosition) {
-    setTimeout(() => {
-      window.scrollTo({
-        top: parseInt(savedPosition),
-        behavior: 'instant',
-      })
-    }, 100)
-  }
-  
-  // Set up scroll handler
-  scrollHandler = throttle(() => {
-    saveScrollPosition()
-  }, 200)
-  
-  window.addEventListener('scroll', scrollHandler, { passive: true })
-})
-
-onUnmounted(() => {
-  if (scrollHandler) {
-    window.removeEventListener('scroll', scrollHandler)
-  }
-  if (scrollTimeout) {
-    clearTimeout(scrollTimeout)
-  }
+onMounted(async () => {
+  // Load content - it will be visible immediately
+  await Promise.all([loadWritings(), loadThemes()])
 })
 </script>
 
 <style scoped>
 .browse-page {
   min-height: 100vh;
-}
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-fade-in-up {
-  animation: fadeInUp 0.8s ease-out forwards;
-  opacity: 0;
 }
 </style>

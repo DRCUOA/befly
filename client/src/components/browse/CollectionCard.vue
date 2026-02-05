@@ -1,7 +1,7 @@
 <template>
   <router-link
     :to="route"
-    class="collection-card group bg-paper border border-line hover:border-ink-lighter transition-all duration-500 p-12 cursor-pointer block"
+    class="collection-card group bg-paper border border-line hover:border-ink-lighter p-12 cursor-pointer block"
   >
     <div class="flex items-start justify-between mb-6">
       <div>
@@ -11,7 +11,7 @@
         </p>
       </div>
       <svg
-        class="w-5 h-5 text-ink-lighter opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+        class="w-5 h-5 text-ink-lighter opacity-0 group-hover:opacity-100"
         fill="none"
         stroke="currentColor"
         viewBox="0 0 24 24"
@@ -53,10 +53,6 @@ defineProps<Props>()
 </script>
 
 <style scoped>
-.collection-card {
-  transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
 .collection-card:hover {
   transform: translateY(-2px);
 }

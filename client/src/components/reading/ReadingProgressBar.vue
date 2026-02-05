@@ -44,7 +44,6 @@ const displayProgress = computed(() => {
 const progressStyle = computed(() => {
   const baseStyle: Record<string, string> = {
     width: `${displayProgress.value}%`,
-    transition: props.fadeOut ? 'width 0.1s ease-out, opacity 1.2s ease' : 'width 0.1s ease-out',
   }
 
   if (props.fadeOut) {
@@ -76,7 +75,6 @@ watch(() => props.fadeOut, (shouldFade) => {
   height: 2px;
   background: #1A1A1A;
   z-index: 100;
-  transition: width 0.1s ease-out, opacity 1.2s ease;
 }
 
 .reading-progress-bar.hidden-progress {

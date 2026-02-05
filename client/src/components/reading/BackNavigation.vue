@@ -1,15 +1,12 @@
 <template>
-  <div
-    class="back-navigation"
-    :class="{ 'fade-out': fadeOut }"
-  >
+  <div class="back-navigation">
     <router-link
       :to="backRoute"
-      class="back-button group inline-flex items-center gap-3 text-sm font-sans text-ink-lighter hover:text-ink transition-all duration-500"
+      class="back-button group inline-flex items-center gap-3 text-sm font-sans text-ink-lighter hover:text-ink"
       :aria-label="`Back to ${backLabel}`"
     >
       <svg
-        class="w-4 h-4 transition-transform duration-500 group-hover:-translate-x-1"
+        class="w-4 h-4"
         fill="none"
         stroke="currentColor"
         viewBox="0 0 24 24"
@@ -34,12 +31,10 @@ import { useRoute, useRouter } from 'vue-router'
 interface Props {
   backRoute?: string
   backLabel?: string
-  fadeOut?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
   backLabel: 'Back to essays',
-  fadeOut: false,
 })
 
 const route = useRoute()
@@ -54,16 +49,4 @@ const backRoute = computed(() => {
 </script>
 
 <style scoped>
-.back-navigation {
-  transition: opacity 2s cubic-bezier(0.4, 0, 0.2, 1), transform 2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.back-navigation.fade-out {
-  opacity: 0;
-  pointer-events: none;
-}
-
-.back-button {
-  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-}
 </style>

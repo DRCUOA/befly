@@ -1,6 +1,6 @@
 <template>
   <article
-    class="essay-card border-b border-line py-16 group cursor-pointer transition-all duration-600"
+    class="essay-card border-b border-line py-16 group cursor-pointer"
     :class="{ 'read-marker': isRecentlyRead }"
   >
     <router-link
@@ -24,7 +24,7 @@
             <span class="text-xs font-sans text-ink-lighter">{{ formattedDate }}</span>
           </div>
         </div>
-        <h2 class="text-4xl font-light tracking-tight mb-6 leading-tight group-hover:text-ink-light transition-colors duration-500">
+        <h2 class="text-4xl font-light tracking-tight mb-6 leading-tight group-hover:text-ink-light">
           {{ writing.title }}
         </h2>
         <p class="text-lg font-light text-ink-light leading-relaxed mb-6">
@@ -40,7 +40,7 @@
         v-if="showImage"
         class="w-64 h-64 flex-shrink-0 bg-gray-200 overflow-hidden rounded-sm"
       >
-        <div class="w-full h-full bg-gradient-to-br from-line to-ink-lighter opacity-30 group-hover:opacity-40 transition-opacity duration-500"></div>
+        <div class="w-full h-full bg-gradient-to-br from-line to-ink-lighter opacity-30 group-hover:opacity-40"></div>
       </div>
     </router-link>
     <div
@@ -50,7 +50,7 @@
     >
       <router-link
         :to="`/write/${writing.id}`"
-        class="p-2 text-ink-lighter hover:text-ink transition-colors"
+        class="p-2 text-ink-lighter hover:text-ink"
         title="Edit"
       >
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -60,7 +60,7 @@
       <button
         @click="handleDelete"
         :disabled="deleting"
-        class="p-2 text-ink-lighter hover:text-red-600 transition-colors disabled:opacity-50"
+        class="p-2 text-ink-lighter hover:text-red-600 disabled:opacity-50"
         title="Delete"
       >
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -151,11 +151,6 @@ const handleDelete = async () => {
 </script>
 
 <style scoped>
-.essay-card {
-  transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-  transform: translateY(0);
-}
-
 .essay-card:hover {
   transform: translateY(-4px);
 }
@@ -176,7 +171,6 @@ const handleDelete = async () => {
   border-radius: 50%;
   background: #B8B8B8;
   opacity: 0;
-  transition: opacity 0.6s cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 
 .essay-card.read-marker:hover::before {

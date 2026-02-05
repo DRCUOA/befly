@@ -3,35 +3,35 @@
     <!-- Hero Section - Arrival -->
     <div id="arrival-container" class="w-full h-screen flex items-center justify-center relative overflow-hidden">
       <div id="central-content" class="text-center px-8 max-w-2xl">
-        <div id="author-mark" class="fade-in mb-12">
+        <div id="author-mark" class="mb-12">
           <h1 class="text-6xl font-light tracking-tight leading-none">
-            Befly
+            {{ appConfig.appName }}
           </h1>
         </div>
         
-        <div id="context-line" class="fade-in delay-1 mb-16">
+        <div id="context-line" class="mb-16">
           <p class="text-xl font-light text-ink-light tracking-wide">
             A place for slow reading and thoughtful writing
           </p>
         </div>
         
-        <div id="entry-action" class="fade-in delay-2 mb-24">
+        <div id="entry-action" class="mb-24">
           <router-link
             to="/home"
             class="group relative inline-block"
           >
-            <span class="text-lg tracking-widest uppercase font-sans font-light text-ink-lighter transition-colors duration-500 group-hover:text-ink">
+            <span class="text-lg tracking-widest uppercase font-sans font-light text-ink-lighter group-hover:text-ink">
               Enter
             </span>
-            <span class="absolute bottom-0 left-0 w-0 h-px bg-ink transition-all duration-500 group-hover:w-full"></span>
+            <span class="absolute bottom-0 left-0 w-full h-px bg-ink"></span>
           </router-link>
         </div>
         
-        <div id="scroll-indicator" class="fade-in delay-3">
+        <div id="scroll-indicator">
           <div class="flex flex-col items-center text-ink-lighter">
             <span class="text-xs tracking-widest uppercase font-sans mb-3">or scroll</span>
             <svg
-              class="w-4 h-4 animate-bounce"
+              class="w-4 h-4"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -42,7 +42,7 @@
         </div>
       </div>
       
-      <div id="corner-mark" class="absolute top-8 left-8 fade-in delay-4">
+      <div id="corner-mark" class="absolute top-8 left-8">
         <span class="text-xs tracking-widest uppercase font-sans text-ink-lighter">2025</span>
       </div>
     </div>
@@ -122,7 +122,7 @@
             v-for="theme in featuredThemes"
             :key="theme.id"
             :to="`/themes?filter=${theme.id}`"
-            class="group bg-paper border border-line hover:border-ink-lighter transition-all duration-500 p-12 cursor-pointer block"
+            class="group bg-paper border border-line hover:border-ink-lighter p-12 cursor-pointer block"
           >
             <div class="flex items-start justify-between mb-6">
               <div>
@@ -132,7 +132,7 @@
                 </p>
               </div>
               <svg
-                class="w-6 h-6 text-ink-lighter opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                class="w-6 h-6 text-ink-lighter group-hover:opacity-100"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -264,16 +264,16 @@
             to="/home"
             class="group relative"
           >
-            <span class="text-lg tracking-widest uppercase font-sans font-light text-ink transition-colors duration-500 group-hover:text-ink-light">
+            <span class="text-lg tracking-widest uppercase font-sans font-light text-ink group-hover:text-ink-light">
               Begin Reading
             </span>
-            <span class="absolute bottom-0 left-0 w-full h-px bg-ink transition-all duration-500"></span>
+            <span class="absolute bottom-0 left-0 w-full h-px bg-ink"></span>
           </router-link>
           
           <div class="flex gap-8 text-sm tracking-wide font-sans text-ink-lighter">
-            <router-link to="/signup" class="hover:text-ink transition-colors duration-500">Sign Up</router-link>
-            <router-link to="/signin" class="hover:text-ink transition-colors duration-500">Sign In</router-link>
-            <router-link to="/home" class="hover:text-ink transition-colors duration-500">Browse</router-link>
+            <router-link to="/signup" class="hover:text-ink">Sign Up</router-link>
+            <router-link to="/signin" class="hover:text-ink">Sign In</router-link>
+            <router-link to="/home" class="hover:text-ink">Browse</router-link>
           </div>
         </div>
       </div>
@@ -284,6 +284,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { api } from '../api/client'
+import { appConfig } from '../config/app'
 import type { Theme } from '../domain/Theme'
 import type { WritingBlock } from '../domain/WritingBlock'
 import type { ApiResponse } from '@shared/ApiResponses'
@@ -326,32 +327,5 @@ onMounted(() => {
 <style scoped>
 .landing-page {
   min-height: 100vh;
-}
-
-.fade-in {
-  animation: fadeIn 1.8s ease-in forwards;
-  opacity: 0;
-}
-
-.delay-1 {
-  animation-delay: 0.3s;
-}
-
-.delay-2 {
-  animation-delay: 0.6s;
-}
-
-.delay-3 {
-  animation-delay: 0.9s;
-}
-
-.delay-4 {
-  animation-delay: 1.2s;
-}
-
-@keyframes fadeIn {
-  to {
-    opacity: 1;
-  }
 }
 </style>

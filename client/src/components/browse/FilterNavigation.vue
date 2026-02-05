@@ -9,7 +9,7 @@
             v-for="filter in filters"
             :key="filter.value"
             @click="$emit('filter-change', filter.value)"
-            class="pb-1 transition-all duration-500"
+            class="pb-1"
             :class="
               currentFilter === filter.value
                 ? 'text-ink border-b-2 border-ink'
@@ -25,7 +25,7 @@
           </span>
           <button
             v-if="showSettings"
-            class="text-ink-lighter hover:text-ink transition-colors duration-500"
+            class="text-ink-lighter hover:text-ink"
             aria-label="Filter settings"
           >
             <svg
