@@ -121,7 +121,7 @@
 <header id="header" class="w-full bg-paper sticky top-0 z-50 transition-all duration-500" style="border-bottom: 1px solid transparent;">
     <div class="max-w-7xl mx-auto px-8 py-6 flex items-center justify-between">
         <div class="flex items-center gap-12">
-            <a href="#" class="text-2xl font-light tracking-tight hover:text-ink-light transition-colors duration-500 opacity-0 slide-in-from-top">
+            <a href="1-Stage 1 — Arrival (Orientation.html" class="text-2xl font-light tracking-tight hover:text-ink-light transition-colors duration-500 opacity-0 slide-in-from-top">
                 Elena Morrison
             </a>
         </div>
@@ -133,7 +133,7 @@
 
 <div id="back-navigation" class="w-full px-8 pt-12 pb-6 bg-paper">
     <div class="max-w-4xl mx-auto">
-        <a href="#" class="back-button inline-flex items-center gap-3 text-sm font-sans text-ink-lighter hover:text-ink transition-all duration-500 opacity-0 fade-in">
+        <a href="2-Stage 2 — Invitation (Curiosit.html" class="back-button inline-flex items-center gap-3 text-sm font-sans text-ink-lighter hover:text-ink transition-all duration-500 opacity-0 fade-in">
             <i class="fa-solid fa-arrow-left text-xs"></i>
             <span class="tracking-wide">Back to essays</span>
         </a>
@@ -469,7 +469,7 @@
         </div>
         
         <div class="text-center">
-            <a href="#" class="back-button inline-flex items-center gap-3 text-sm font-sans text-ink-lighter hover:text-ink transition-all duration-500">
+            <a href="2-Stage 2 — Invitation (Curiosit.html" class="back-button inline-flex items-center gap-3 text-sm font-sans text-ink-lighter hover:text-ink transition-all duration-500">
                 <i class="fa-solid fa-arrow-left text-xs"></i>
                 <span class="tracking-wide">Back to all essays</span>
             </a>
@@ -598,6 +598,51 @@ window.addEventListener('load', function() {
     const progressBar = document.getElementById('readingProgress');
     const essayContent = document.getElementById('essay-content-main');
     
+    let scrollTimeout;
+    let continueButtonShown = false;
+    const relatedEssays = document.getElementById('related-essays');
+    
+    // Detect when user reaches end and offer to continue
+    function checkScrollCompletion() {
+        const windowHeight = window.innerHeight;
+        const documentHeight = document.documentElement.scrollHeight;
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        const scrollPercent = (scrollTop + windowHeight) / documentHeight;
+        
+        // If user has scrolled near the end, offer to continue
+        if (scrollPercent > 0.95 && !continueButtonShown) {
+            continueButtonShown = true;
+            
+            // Remove any existing button first
+            const existingButton = document.getElementById('continue-reading-btn');
+            if (existingButton) {
+                existingButton.remove();
+            }
+            
+            const continueLink = document.createElement('div');
+            continueLink.id = 'continue-reading-btn';
+            continueLink.className = 'fixed bottom-8 right-8 z-50';
+            continueLink.style.opacity = '0';
+            continueLink.style.transition = 'opacity 1s ease-in';
+            continueLink.innerHTML = `
+                <a href="4-Stage 4 — Descent (Interface D.html" class="group bg-ink text-paper px-6 py-3 rounded-sm shadow-lg hover:bg-ink-light transition-all duration-500 flex items-center gap-3">
+                    <span class="text-sm tracking-wide font-sans">Continue Reading</span>
+                    <i class="fa-solid fa-arrow-right text-xs"></i>
+                </a>
+            `;
+            document.body.appendChild(continueLink);
+            setTimeout(() => continueLink.style.opacity = '1', 100);
+            
+            // Remove after 15 seconds
+            setTimeout(() => {
+                if (continueLink.parentNode) {
+                    continueLink.style.opacity = '0';
+                    setTimeout(() => continueLink.remove(), 1000);
+                }
+            }, 15000);
+        }
+    }
+    
     window.addEventListener('scroll', function() {
         const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
         const docHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
@@ -610,6 +655,10 @@ window.addEventListener('load', function() {
         } else {
             header.style.borderBottom = '1px solid transparent';
         }
+        
+        // Check for scroll completion with debounce
+        clearTimeout(scrollTimeout);
+        scrollTimeout = setTimeout(checkScrollCompletion, 300);
     });
     
     const paragraphs = document.querySelectorAll('.essay-paragraph');
@@ -627,6 +676,9 @@ window.addEventListener('load', function() {
     }, observerOptions);
     
     paragraphs.forEach(p => observer.observe(p));
+    
+    // Check on load if already at bottom
+    setTimeout(checkScrollCompletion, 2000);
 });
 </script>
 

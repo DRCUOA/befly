@@ -109,7 +109,7 @@
 <header id="header" class="w-full bg-paper fixed top-0 z-50 interface-element" style="transition: opacity 4s cubic-bezier(0.25, 0.1, 0.25, 1);">
     <div class="max-w-7xl mx-auto px-8 py-6 flex items-center justify-between">
         <div class="flex items-center gap-12">
-            <a href="#" class="text-2xl font-light tracking-tight hover:text-ink-light transition-colors duration-500">
+            <a href="1-Stage 1 — Arrival (Orientation.html" class="text-2xl font-light tracking-tight hover:text-ink-light transition-colors duration-500">
                 Elena Morrison
             </a>
         </div>
@@ -121,7 +121,7 @@
 
 <div id="back-navigation" class="w-full px-8 pt-32 pb-6 bg-paper back-button-container interface-element" style="transition: opacity 4s cubic-bezier(0.25, 0.1, 0.25, 1);">
     <div class="max-w-5xl mx-auto">
-        <a href="#" class="inline-flex items-center gap-3 text-sm font-sans text-ink-lighter hover:text-ink transition-all duration-500">
+        <a href="2-Stage 2 — Invitation (Curiosit.html" class="inline-flex items-center gap-3 text-sm font-sans text-ink-lighter hover:text-ink transition-all duration-500">
             <i class="fa-solid fa-arrow-left text-xs"></i>
             <span class="tracking-wide">Back to essays</span>
         </a>
@@ -417,6 +417,29 @@ window.addEventListener('load', function() {
         if (body.classList.contains('deep-flow')) {
         }
     });
+    
+    // Detect when user reaches end and transition to completion
+    function checkScrollCompletion() {
+        const windowHeight = window.innerHeight;
+        const documentHeight = document.documentElement.scrollHeight;
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        const scrollPercent = (scrollTop + windowHeight) / documentHeight;
+        
+        if (scrollPercent > 0.98) {
+            // Smooth transition to completion stage
+            setTimeout(() => {
+                window.location.href = '6-Stage 6 — Completion (Gentle R.html';
+            }, 2000);
+        }
+    }
+    
+    let scrollTimeout;
+    window.addEventListener('scroll', function() {
+        clearTimeout(scrollTimeout);
+        scrollTimeout = setTimeout(checkScrollCompletion, 500);
+    });
+    
+    setTimeout(checkScrollCompletion, 3000);
 });
 </script>
 

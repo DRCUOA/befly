@@ -75,7 +75,7 @@
 <header id="header" class="w-full border-b border-line bg-paper sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-8 py-6 flex items-center justify-between">
         <div class="flex items-center gap-12">
-            <a href="#" class="text-2xl font-light tracking-tight hover:text-ink-light transition-colors duration-500">
+            <a href="1-Stage 1 — Arrival (Orientation.html" class="text-2xl font-light tracking-tight hover:text-ink-light transition-colors duration-500">
                 Elena Morrison
             </a>
             <nav class="hidden md:flex gap-8 text-sm tracking-wide font-sans">
@@ -127,7 +127,7 @@
         <div class="space-y-0">
             
             <article class="essay-card border-b border-line py-16 group cursor-pointer fade-in-up delay-300">
-                <div class="flex gap-16 items-start">
+                <a href="3-Stage 3 — Selection (Commitmen.html" class="flex gap-16 items-start block">
                     <div class="flex-1">
                         <div class="mb-4">
                             <span class="text-xs tracking-widest uppercase font-sans text-ink-lighter">Attention</span>
@@ -149,7 +149,7 @@
                     <div class="w-64 h-64 flex-shrink-0 bg-gray-200 overflow-hidden">
                         <img class="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity duration-500" src="https://storage.googleapis.com/uxpilot-auth.appspot.com/4e0e1fa42e-cc3dcb7a6c21ddce1598.png" alt="minimalist empty room with single window, natural light, contemplative space, architectural photography" />
                     </div>
-                </div>
+                </a>
             </article>
 
             <article class="essay-card border-b border-line py-16 group cursor-pointer fade-in-up delay-400">
@@ -353,7 +353,7 @@
         </div>
 
         <div class="grid grid-cols-3 gap-8">
-            <div class="bg-paper border border-line p-10 group cursor-pointer hover:border-ink-lighter transition-all duration-500">
+            <a href="3-Stage 3 — Selection (Commitmen.html" class="bg-paper border border-line p-10 group cursor-pointer hover:border-ink-lighter transition-all duration-500 block">
                 <div class="mb-6">
                     <h3 class="text-2xl font-light mb-3 tracking-tight">Attention</h3>
                     <p class="text-xs tracking-widest uppercase font-sans text-ink-lighter">12 essays</p>
@@ -365,9 +365,9 @@
                     <span class="text-sm font-sans text-ink-lighter group-hover:text-ink transition-colors duration-500">Explore collection</span>
                     <i class="fa-solid fa-arrow-right text-ink-lighter opacity-0 group-hover:opacity-100 transition-opacity duration-500"></i>
                 </div>
-            </div>
+            </a>
 
-            <div class="bg-paper border border-line p-10 group cursor-pointer hover:border-ink-lighter transition-all duration-500">
+            <a href="3-Stage 3 — Selection (Commitmen.html" class="bg-paper border border-line p-10 group cursor-pointer hover:border-ink-lighter transition-all duration-500 block">
                 <div class="mb-6">
                     <h3 class="text-2xl font-light mb-3 tracking-tight">Craft</h3>
                     <p class="text-xs tracking-widest uppercase font-sans text-ink-lighter">8 essays</p>
@@ -379,9 +379,9 @@
                     <span class="text-sm font-sans text-ink-lighter group-hover:text-ink transition-colors duration-500">Explore collection</span>
                     <i class="fa-solid fa-arrow-right text-ink-lighter opacity-0 group-hover:opacity-100 transition-opacity duration-500"></i>
                 </div>
-            </div>
+            </a>
 
-            <div class="bg-paper border border-line p-10 group cursor-pointer hover:border-ink-lighter transition-all duration-500">
+            <a href="3-Stage 3 — Selection (Commitmen.html" class="bg-paper border border-line p-10 group cursor-pointer hover:border-ink-lighter transition-all duration-500 block">
                 <div class="mb-6">
                     <h3 class="text-2xl font-light mb-3 tracking-tight">Rebellion</h3>
                     <p class="text-xs tracking-widest uppercase font-sans text-ink-lighter">15 essays</p>
@@ -393,7 +393,7 @@
                     <span class="text-sm font-sans text-ink-lighter group-hover:text-ink transition-colors duration-500">Explore collection</span>
                     <i class="fa-solid fa-arrow-right text-ink-lighter opacity-0 group-hover:opacity-100 transition-opacity duration-500"></i>
                 </div>
-            </div>
+            </a>
         </div>
     </div>
 </div>
@@ -578,6 +578,30 @@
         </div>
     </div>
 </footer>
+
+<script>
+// Smooth page transitions
+document.addEventListener('DOMContentLoaded', function() {
+    const links = document.querySelectorAll('a[href$=".html"]');
+    
+    links.forEach(link => {
+        link.addEventListener('click', function(e) {
+            const href = this.getAttribute('href');
+            if (href && href.endsWith('.html')) {
+                document.body.style.opacity = '0';
+                document.body.style.transition = 'opacity 0.3s ease-out';
+            }
+        });
+    });
+    
+    // Fade in on page load
+    document.body.style.opacity = '0';
+    setTimeout(() => {
+        document.body.style.transition = 'opacity 0.5s ease-in';
+        document.body.style.opacity = '1';
+    }, 50);
+});
+</script>
 
 </body>
 </html>
