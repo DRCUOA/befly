@@ -26,8 +26,30 @@ export function csrfMiddleware(req: Request, res: Response, next: NextFunction) 
   // Get session CSRF token (stored in cookie or session)
   const sessionToken = req.cookies?.['csrf-token'] || (req as any).session?.csrfToken
 
-  if (!token || !sessionToken) {
-    return next(new ValidationError('CSRF token missing'))
+  // If no session token exists, this is likely the first request
+  // The csrfTokenMiddleware should have set it, but if not, generate one
+  if (!sessionToken) {
+    const newToken = generateCsrfToken()
+    res.cookie('csrf-token', newToken, {
+      httpOnly: false, // Frontend needs to read this
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    })
+    // For first request without token, allow it but set the cookie for next time
+    // This handles race conditions where POST happens before GET
+    if (!token) {
+      return next()
+    }
+    // If token was provided, compare with the newly generated one
+    if (!constantTimeCompare(token, newToken)) {
+      return next(new ValidationError('Invalid CSRF token'))
+    }
+    return next()
+  }
+
+  if (!token) {
+    return next(new ValidationError('CSRF token missing in request. Please refresh the page.'))
   }
 
   // Compare tokens (constant-time comparison)

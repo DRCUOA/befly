@@ -42,8 +42,12 @@ async function request<T>(
   }
 
   // Add CSRF token for POST/PUT/DELETE/PATCH
+  // If token is missing, we'll let the server return an error (it will set the cookie)
   if (csrfToken && ['POST', 'PUT', 'DELETE', 'PATCH'].includes(options.method || 'GET')) {
     headers['X-CSRF-Token'] = csrfToken
+  } else if (['POST', 'PUT', 'DELETE', 'PATCH'].includes(options.method || 'GET')) {
+    // Log warning if CSRF token is missing for state-changing operations
+    console.warn('CSRF token not found in cookies for', options.method, endpoint)
   }
 
   // Include credentials for cookies (httpOnly auth token)

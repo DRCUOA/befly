@@ -1,55 +1,45 @@
 <template>
   <div class="reactions-container">
-    <!-- Reaction buttons (emoji picker) -->
-    <div class="relative inline-block">
-      <button
-        @click.stop="showPicker = !showPicker"
-        :disabled="loading"
-        class="inline-flex items-center px-3 py-1 rounded-md text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed border border-gray-300 bg-white hover:bg-gray-50"
-      >
-        <span v-if="loading">...</span>
-        <span v-else class="text-lg">{{ getReactionEmoji(userReaction) || '👍' }}</span>
-        <span v-if="totalCount > 0" class="ml-1 text-xs">{{ totalCount }}</span>
-      </button>
-
-      <!-- Reaction picker dropdown -->
-      <div
-        v-if="showPicker"
-        ref="pickerRef"
-        class="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg p-2 z-50"
-        @click.stop
-      >
-        <div class="flex space-x-1">
-          <button
-            v-for="reaction in reactions"
-            :key="reaction.type"
-            @click="handleReactionClick(reaction.type)"
-            class="p-2 rounded hover:bg-gray-100 transition-colors text-xl"
-            :class="{ 'bg-blue-50': userReaction === reaction.type }"
-            :title="reaction.label"
-          >
-            {{ reaction.emoji }}
-          </button>
-        </div>
-      </div>
-    </div>
-
     <!-- Reaction groups with avatars (Teams-style) -->
-    <div v-if="reactionGroups.length > 0" class="flex items-center space-x-2 flex-wrap">
+    <div class="flex items-center space-x-2 flex-wrap">
       <div
         v-for="group in reactionGroups"
         :key="group.type"
         class="flex items-center space-x-1"
       >
-        <!-- Reaction emoji button -->
-        <button
-          @click="handleReactionClick(group.type)"
-          class="inline-flex items-center px-2 py-1 rounded-md text-sm border border-gray-200 bg-white hover:bg-gray-50 transition-colors"
-          :class="{ 'bg-blue-50 border-blue-300': userReaction === group.type }"
-        >
-          <span class="text-base">{{ getReactionEmoji(group.type) }}</span>
-          <span class="ml-1 text-xs text-gray-600">{{ group.count }}</span>
-        </button>
+        <!-- Reaction emoji button with picker -->
+        <div class="relative inline-block">
+          <button
+            @click.stop="showPickerForType(group.type)"
+            :disabled="loading"
+            class="inline-flex items-center px-2 py-1 rounded-md text-sm border border-gray-200 bg-white hover:bg-gray-50 transition-colors disabled:opacity-50"
+            :class="{ 'bg-blue-50 border-blue-300': userReaction === group.type }"
+          >
+            <span class="text-base">{{ getReactionEmoji(group.type) }}</span>
+            <span class="ml-1 text-xs text-gray-600">{{ group.count }}</span>
+          </button>
+
+          <!-- Reaction picker dropdown for this type -->
+          <div
+            v-if="showPicker && pickerType === group.type"
+            ref="pickerRef"
+            class="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg p-2 z-50"
+            @click.stop
+          >
+            <div class="flex space-x-1">
+              <button
+                v-for="reaction in reactions"
+                :key="reaction.type"
+                @click="handleReactionClick(reaction.type)"
+                class="p-2 rounded hover:bg-gray-100 transition-colors text-xl"
+                :class="{ 'bg-blue-50': userReaction === reaction.type }"
+                :title="reaction.label"
+              >
+                {{ reaction.emoji }}
+              </button>
+            </div>
+          </div>
+        </div>
 
         <!-- Avatars for this reaction type -->
         <div class="flex items-center -space-x-2">
@@ -71,6 +61,40 @@
           >
             +{{ group.users.length - 3 }}
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add reaction button (when no reactions exist) -->
+    <div v-if="reactionGroups.length === 0" class="relative inline-block">
+      <button
+        @click.stop="showPicker = !showPicker"
+        :disabled="loading"
+        class="inline-flex items-center px-3 py-1 rounded-md text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed border border-gray-300 bg-white hover:bg-gray-50"
+      >
+        <span v-if="loading">...</span>
+        <span v-else class="text-lg">👍</span>
+        <span v-if="totalCount > 0" class="ml-1 text-xs">{{ totalCount }}</span>
+      </button>
+
+      <!-- Reaction picker dropdown -->
+      <div
+        v-if="showPicker"
+        ref="pickerRef"
+        class="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg p-2 z-50"
+        @click.stop
+      >
+        <div class="flex space-x-1">
+          <button
+            v-for="reaction in reactions"
+            :key="reaction.type"
+            @click="handleReactionClick(reaction.type)"
+            class="p-2 rounded hover:bg-gray-100 transition-colors text-xl"
+            :class="{ 'bg-blue-50': userReaction === reaction.type }"
+            :title="reaction.label"
+          >
+            {{ reaction.emoji }}
+          </button>
         </div>
       </div>
     </div>
@@ -96,6 +120,7 @@ const { user } = useAuth()
 const loading = ref(false)
 const appreciators = ref<Appreciation[]>(props.appreciators || [])
 const showPicker = ref(false)
+const pickerType = ref<ReactionType | null>(null)
 const userReaction = ref<ReactionType | null>(null)
 const pickerRef = ref<HTMLElement | null>(null)
 
@@ -192,14 +217,28 @@ const getInitials = (name: string): string => {
   return name.substring(0, 2).toUpperCase()
 }
 
+const showPickerForType = (type: ReactionType) => {
+  if (pickerType.value === type && showPicker.value) {
+    // Close if clicking the same button
+    showPicker.value = false
+    pickerType.value = null
+  } else {
+    // Open picker for this reaction type
+    showPicker.value = true
+    pickerType.value = type
+  }
+}
+
 const handleReactionClick = async (reactionType: ReactionType) => {
   if (loading.value) return
 
+  // Check if user already has this exact reaction
   const isCurrentReaction = userReaction.value === reactionType
 
   try {
     loading.value = true
     showPicker.value = false
+    pickerType.value = null
     
     if (isCurrentReaction) {
       // Remove reaction
@@ -208,12 +247,24 @@ const handleReactionClick = async (reactionType: ReactionType) => {
       emit('unappreciated')
     } else {
       // Add or change reaction
-      await api.post(`/appreciations/writing/${props.writingId}`, { reactionType })
-      userReaction.value = reactionType
-      emit('appreciated')
+      try {
+        await api.post(`/appreciations/writing/${props.writingId}`, { reactionType })
+        userReaction.value = reactionType
+        emit('appreciated')
+      } catch (err: any) {
+        // If error says "already exists", it means backend returned existing reaction (idempotent)
+        // Refresh appreciations to get updated state
+        if (err.message && err.message.includes('already exists')) {
+          emit('appreciated') // Trigger refresh
+        } else {
+          throw err // Re-throw other errors
+        }
+      }
     }
   } catch (err) {
     console.error('Failed to toggle reaction:', err)
+    // Show user-friendly error
+    alert(err instanceof Error ? err.message : 'Failed to update reaction')
   } finally {
     loading.value = false
   }
@@ -231,6 +282,9 @@ watch(() => props.appreciators, (newVal) => {
     } else {
       userReaction.value = null
     }
+  } else {
+    appreciators.value = []
+    userReaction.value = null
   }
 }, { immediate: true })
 

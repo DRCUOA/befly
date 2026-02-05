@@ -10,27 +10,28 @@
           Create Theme
         </router-link>
         <div class="flex space-x-2">
-        <button
-          @click="filter = 'all'"
-          :class="filter === 'all' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'"
-          class="px-3 py-1 rounded-md text-sm font-medium"
-        >
-          All
-        </button>
-        <button
-          @click="filter = 'mine'"
-          :class="filter === 'mine' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'"
-          class="px-3 py-1 rounded-md text-sm font-medium"
-        >
-          My Themes
-        </button>
-        <button
-          @click="filter = 'shared'"
-          :class="filter === 'shared' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'"
-          class="px-3 py-1 rounded-md text-sm font-medium"
-        >
-          Shared
-        </button>
+          <button
+            @click="filter = 'all'"
+            :class="filter === 'all' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'"
+            class="px-3 py-1 rounded-md text-sm font-medium"
+          >
+            All
+          </button>
+          <button
+            @click="filter = 'mine'"
+            :class="filter === 'mine' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'"
+            class="px-3 py-1 rounded-md text-sm font-medium"
+          >
+            My Themes
+          </button>
+          <button
+            @click="filter = 'shared'"
+            :class="filter === 'shared' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'"
+            class="px-3 py-1 rounded-md text-sm font-medium"
+          >
+            Shared
+          </button>
+        </div>
       </div>
     </div>
     

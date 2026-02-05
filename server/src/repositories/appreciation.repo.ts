@@ -90,9 +90,23 @@ export const appreciationRepo = {
     
     const existing = await pool.query(existingQuery, existingParams)
 
+    // If user already has this exact reaction, return it (idempotent)
     if (existing.rows.length > 0) {
-      logger.warn('Appreciation creation failed: already exists')
-      throw new ValidationError('Appreciation already exists')
+      const existingId = existing.rows[0].id
+      const existingResult = await pool.query(
+        `SELECT 
+           a.id, 
+           a.writing_id as "writingId", 
+           a.user_id as "userId",
+           COALESCE(u.display_name, u.email) as "userDisplayName",
+           COALESCE(a.reaction_type, 'like') as "reactionType",
+           a.created_at as "createdAt"
+         FROM appreciations a
+         LEFT JOIN users u ON a.user_id = u.id
+         WHERE a.id = $1`,
+        [existingId]
+      )
+      return existingResult.rows[0]
     }
 
     // If user has a different reaction, update it instead
