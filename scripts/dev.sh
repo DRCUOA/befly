@@ -3,15 +3,19 @@
 
 set -e
 
+# Get the project root directory (parent of scripts/)
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+
 echo "Starting development servers..."
 
 # Start server in background
-cd "$(dirname "$0")/../server"
+cd "$PROJECT_ROOT/server"
 npm run dev &
 SERVER_PID=$!
 
 # Start client in background
-cd "$(dirname "$0")/../client"
+cd "$PROJECT_ROOT/client"
 npm run dev &
 CLIENT_PID=$!
 
