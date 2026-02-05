@@ -1,0 +1,173 @@
+{
+  "system": {
+    "selfHosted": true,
+    "vendorNeutral": true,
+    "standalone": true,
+    "cloudDependencyAssumed": true,
+    "ownershipFirst": true,
+    "failLoud": true,
+    "lowCognitiveLoad": true,
+    "readabilityOverOptimization": true,
+    "noDarkPatterns": true
+  },
+  "architecture": {
+    "type": "client-server",
+    "protocol": "REST",
+    "statelessBackend": true,
+    "backendFlow": [
+      "route",
+      "controller",
+      "service",
+      "repository",
+      "database"
+    ],
+    "explicitLayers": true,
+    "sharedContracts": true,
+    "inspectableAndDebuggable": true
+  },
+  "frontend": {
+    "framework": "Vue 3",
+    "compositionApi": true,
+    "buildTool": "Vite",
+    "styling": "Tailwind CSS",
+    "markdownRendering": true,
+    "mobileFirst": true,
+    "accessible": true,
+    "singleApiClient": true,
+    "domainModelsSeparated": true,
+    "presentationFirstComponents": true,
+    "noProprietarySDKs": true
+  },
+  "backend": {
+    "runtime": "Node.js",
+    "language": "TypeScript",
+    "framework": "Express",
+    "apiStyle": "REST",
+    "mvcEnforced": true,
+    "inputValidation": true,
+    "centralErrorHandling": true,
+    "explicitLogging": true,
+    "securityModules": true
+  },
+  "database": {
+    "engine": "PostgreSQL",
+    "explicitSchemas": true,
+    "explicitMigrations": true,
+    "noRuntimeSchemaMutation": true,
+    "repositoryPattern": true,
+    "tables": [
+      "users",
+      "writing_blocks",
+      "themes",
+      "writing_themes",
+      "appreciations"
+    ],
+    "manyToManyExplicit": true
+  },
+  "writingDomain": {
+    "primaryObject": "writing_block",
+    "fields": [
+      "id",
+      "title",
+      "body",
+      "themeIds",
+      "createdAt"
+    ],
+    "readWithoutInteraction": true,
+    "publishable": true,
+    "writingCentricUI": true
+  },
+  "themes": {
+    "optionalAssociation": true,
+    "manyToMany": true,
+    "independentManagement": true,
+    "coalescingNotAlgorithmic": true
+  },
+  "appreciations": {
+    "lightweight": true,
+    "nonPerformative": true,
+    "explicitModel": true,
+    "noEngagementOptimization": true,
+    "noPublicLeaderboards": true
+  },
+  "configuration": {
+    "environmentVariablesOnly": true,
+    "noSecretsCommitted": true,
+    "envExampleRequired": true,
+    "failFastOnMissingEnv": true
+  },
+  "scripts": {
+    "simpleShellScripts": true,
+    "includes": [
+      "dev",
+      "migrate",
+      "seed",
+      "reset-db"
+    ],
+    "clarityOverAbstraction": true
+  },
+  "deployment": {
+    "docker": {
+      "requiredForLaunch": true,
+      "optionalForLocalDev": true,
+      "portableImages": true,
+      "separateDockerfiles": [
+        "client",
+        "server"
+      ],
+      "officialPostgresImage": true,
+      "multiStageBuilds": true,
+      "noSecretsInImages": true
+    },
+    "dockerCompose": {
+      "required": true,
+      "services": [
+        "client",
+        "server",
+        "postgres"
+      ],
+      "explicitNetworking": true,
+      "localProdParity": true
+    }
+  },
+  "cloudHosting": {
+    "vendorNeutral": true,
+    "containerBased": true,
+    "noManagedServicesRequired": true,
+    "minimumRequirements": [
+      "linux",
+      "docker",
+      "persistentStorage",
+      "tcpNetworking"
+    ],
+    "recommendedButOptional": [
+      "reverseProxy",
+      "tlsTermination"
+    ],
+    "exitWithoutCodeChange": true
+  },
+  "operations": {
+    "runtimeSecretInjection": true,
+    "restartSafe": true,
+    "stdoutStderrLogging": true,
+    "databaseBackupViaStandardTools": true
+  },
+  "nonGoals": {
+    "infiniteScroll": false,
+    "recommendationAlgorithms": false,
+    "engagementOptimization": false,
+    "realTimeChat": false,
+    "kubernetes": false,
+    "serverless": false,
+    "providerSpecificServices": false
+  },
+  "futureConstraints": {
+    "additiveOnly": true,
+    "noArchitecturalRewrite": true,
+    "dockerAndAuthAreExtensions": true
+  },
+  "license": {
+    "recommended": "MIT",
+    "locked": false
+  }
+}

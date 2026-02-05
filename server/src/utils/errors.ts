@@ -26,3 +26,17 @@ export class ValidationError extends AppError {
     this.name = 'ValidationError'
   }
 }
+
+export class UnauthorizedError extends AppError {
+  constructor(message: string = 'Unauthorized') {
+    super(message, 401, 'UNAUTHORIZED')
+    this.name = 'UnauthorizedError'
+  }
+}
+
+export class ForbiddenError extends AppError {
+  constructor(message: string = 'Forbidden') {
+    super(message, 403, 'FORBIDDEN')
+    this.name = 'ForbiddenError'
+  }
+}

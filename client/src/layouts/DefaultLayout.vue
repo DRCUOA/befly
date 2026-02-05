@@ -5,31 +5,56 @@
         <div class="flex justify-between h-16">
           <div class="flex">
             <router-link
-              to="/"
+              :to="isAuthenticated ? '/home' : '/'"
               class="inline-flex items-center px-2 pt-1 text-sm font-medium text-gray-900"
             >
               Writing Platform
             </router-link>
           </div>
-          <div class="flex space-x-4">
-            <router-link
-              to="/write"
-              class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900"
-            >
-              Write
-            </router-link>
-            <router-link
-              to="/themes"
-              class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900"
-            >
-              Themes
-            </router-link>
-            <router-link
-              to="/profile"
-              class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900"
-            >
-              Profile
-            </router-link>
+          <div class="flex items-center space-x-4">
+            <template v-if="isAuthenticated">
+              <router-link
+                to="/write"
+                class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900"
+              >
+                Write
+              </router-link>
+              <router-link
+                to="/themes"
+                class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900"
+              >
+                Themes
+              </router-link>
+            </template>
+            <template v-if="isAuthenticated">
+              <span class="text-sm text-gray-600">{{ user?.displayName }}</span>
+              <router-link
+                to="/profile"
+                class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900"
+              >
+                Profile
+              </router-link>
+              <button
+                @click="handleSignOut"
+                class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900"
+              >
+                Sign Out
+              </button>
+            </template>
+            <template v-else>
+              <router-link
+                to="/signin"
+                class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900"
+              >
+                Sign In
+              </router-link>
+              <router-link
+                to="/signup"
+                class="inline-flex items-center px-3 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
+              >
+                Sign Up
+              </router-link>
+            </template>
           </div>
         </div>
       </div>
@@ -41,5 +66,18 @@
 </template>
 
 <script setup lang="ts">
-// Default layout wrapper
+import { useRouter } from 'vue-router'
+import { useAuth } from '../stores/auth'
+
+const router = useRouter()
+const { user, isAuthenticated, signout } = useAuth()
+
+const handleSignOut = async () => {
+  try {
+    await signout()
+    router.push({ name: 'Landing' })
+  } catch (err) {
+    console.error('Sign out error:', err)
+  }
+}
 </script>

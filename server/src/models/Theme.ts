@@ -1,6 +1,2 @@
-export interface Theme {
-  id: string
-  name: string
-  slug: string
-  createdAt: Date
-}
+// Re-export shared types for consistency
+export * from '@shared/Theme'

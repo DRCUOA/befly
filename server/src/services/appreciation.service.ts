@@ -1,5 +1,5 @@
 import { appreciationRepo } from '../repositories/appreciation.repo.js'
-import { Appreciation } from '../models/Appreciation.js'
+import { Appreciation, ReactionType } from '../models/Appreciation.js'
 
 /**
  * Appreciation service - business logic layer
@@ -9,11 +9,11 @@ export const appreciationService = {
     return appreciationRepo.findByWritingId(writingId)
   },
 
-  async create(writingId: string, userId: string): Promise<Appreciation> {
-    return appreciationRepo.create({ writingId, userId })
+  async create(writingId: string, userId: string, reactionType: ReactionType = 'like'): Promise<Appreciation> {
+    return appreciationRepo.create({ writingId, userId, reactionType })
   },
 
-  async remove(writingId: string, userId: string): Promise<void> {
-    return appreciationRepo.delete(writingId, userId)
+  async remove(writingId: string, userId: string, reactionType?: ReactionType): Promise<void> {
+    return appreciationRepo.delete(writingId, userId, reactionType)
   }
 }

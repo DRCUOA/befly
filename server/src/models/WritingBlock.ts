@@ -1,12 +1,2 @@
-export interface WritingBlock {
-  id: string
-  userId: string
-  title: string
-  body: string
-  createdAt: Date
-  updatedAt?: Date
-}
-
-export interface WritingBlockWithThemes extends WritingBlock {
-  themeIds: string[]
-}
+// Re-export shared types for consistency
+export * from '@shared/WritingBlock'

@@ -1,10 +1,15 @@
 import { Router } from 'express'
 import { appreciationController } from '../controllers/appreciation.controller.js'
+import { optionalAuthMiddleware, authMiddleware } from '../middleware/auth.middleware.js'
+import { asyncHandler } from '../utils/asyncHandler.js'
 
 const router = Router()
 
-router.get('/writing/:writingId', appreciationController.getByWritingId)
-router.post('/writing/:writingId', appreciationController.create)
-router.delete('/writing/:writingId', appreciationController.remove)
+// Public route (anyone can see appreciations)
+router.get('/writing/:writingId', optionalAuthMiddleware, asyncHandler(appreciationController.getByWritingId))
+
+// Protected routes require authentication
+router.post('/writing/:writingId', authMiddleware, asyncHandler(appreciationController.create))
+router.delete('/writing/:writingId', authMiddleware, asyncHandler(appreciationController.remove))
 
 export default router

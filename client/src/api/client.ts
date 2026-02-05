@@ -1,12 +1,25 @@
 /**
  * Plain fetch wrapper for API calls
  * No proprietary clients or SDKs
+ * Handles authentication via httpOnly cookies
  */
 
 const API_BASE = '/api'
 
 export interface RequestOptions extends RequestInit {
   params?: Record<string, string>
+}
+
+// Get CSRF token from cookie (set by server)
+function getCsrfToken(): string | null {
+  const cookies = document.cookie.split(';')
+  for (const cookie of cookies) {
+    const [name, value] = cookie.trim().split('=')
+    if (name === 'csrf-token') {
+      return decodeURIComponent(value)
+    }
+  }
+  return null
 }
 
 async function request<T>(
@@ -21,12 +34,27 @@ async function request<T>(
     url += `?${searchParams.toString()}`
   }
 
+  // Get CSRF token for state-changing operations
+  const csrfToken = getCsrfToken()
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+    ...fetchOptions.headers
+  }
+
+  // Add CSRF token for POST/PUT/DELETE/PATCH
+  // If token is missing, we'll let the server return an error (it will set the cookie)
+  if (csrfToken && ['POST', 'PUT', 'DELETE', 'PATCH'].includes(options.method || 'GET')) {
+    headers['X-CSRF-Token'] = csrfToken
+  } else if (['POST', 'PUT', 'DELETE', 'PATCH'].includes(options.method || 'GET')) {
+    // Log warning if CSRF token is missing for state-changing operations
+    console.warn('CSRF token not found in cookies for', options.method, endpoint)
+  }
+
+  // Include credentials for cookies (httpOnly auth token)
   const response = await fetch(url, {
     ...fetchOptions,
-    headers: {
-      'Content-Type': 'application/json',
-      ...fetchOptions.headers
-    }
+    credentials: 'include', // Important for httpOnly cookies
+    headers
   })
 
   if (!response.ok) {
@@ -34,7 +62,33 @@ async function request<T>(
     throw new Error(error.error || `HTTP ${response.status}`)
   }
 
-  return response.json()
+  // Handle empty responses (204 No Content, etc.)
+  if (response.status === 204 || response.status === 205) {
+    return {} as T
+  }
+
+  // Check if response has content
+  const contentType = response.headers.get('content-type')
+  const contentLength = response.headers.get('content-length')
+  
+  // If no content type or content length is 0, return empty object
+  if (!contentType || contentLength === '0') {
+    return {} as T
+  }
+
+  // Only parse JSON if content-type indicates JSON
+  if (contentType.includes('application/json')) {
+    try {
+      const text = await response.text()
+      return text ? JSON.parse(text) : ({} as T)
+    } catch (err) {
+      // If parsing fails, return empty object
+      return {} as T
+    }
+  }
+
+  // For non-JSON responses, return empty object
+  return {} as T
 }
 
 export const api = {
