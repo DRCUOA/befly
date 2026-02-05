@@ -115,4 +115,30 @@ router.beforeEach(async (to, from, next) => {
   next()
 })
 
+// Scroll restoration for reading continuity
+router.afterEach((to, from) => {
+  // Don't restore scroll for reading pages (they handle their own)
+  if (to.name === 'Read') {
+    return
+  }
+
+  // Restore scroll position from sessionStorage for browse pages
+  if (to.name === 'Home' || to.name === 'Themes') {
+    const scrollKey = `${to.name}ScrollPosition`
+    const savedPosition = sessionStorage.getItem(scrollKey)
+    
+    if (savedPosition) {
+      setTimeout(() => {
+        window.scrollTo({
+          top: parseInt(savedPosition),
+          behavior: 'instant',
+        })
+      }, 100)
+    }
+  } else {
+    // Reset scroll for other pages
+    window.scrollTo({ top: 0, behavior: 'instant' })
+  }
+})
+
 export default router

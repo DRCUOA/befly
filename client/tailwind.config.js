@@ -5,7 +5,40 @@ export default {
     "./src/**/*.{vue,js,ts,jsx,tsx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        'serif': ['Crimson Pro', 'serif'],
+        'sans': ['Inter', 'sans-serif'],
+      },
+      colors: {
+        'paper': '#FDFCFA',
+        'ink': '#1A1A1A',
+        'ink-light': '#4A4A4A',
+        'ink-lighter': '#8A8A8A',
+        'ink-whisper': '#B8B8B8',
+        'line': '#E8E6E3',
+      },
+      spacing: {
+        '18': '4.5rem',
+        '22': '5.5rem',
+        '26': '6.5rem',
+        '30': '7.5rem',
+      },
+      lineHeight: {
+        'relaxed': '1.8',
+        'reading': '2.2',
+        'loose': '2.4',
+      },
+      transitionDuration: {
+        'slow': '500ms',
+        'slower': '800ms',
+        'slowest': '1200ms',
+      },
+      transitionTimingFunction: {
+        'gentle': 'cubic-bezier(0.25, 0.1, 0.25, 1)',
+        'smooth': 'cubic-bezier(0.4, 0, 0.2, 1)',
+      },
+    },
   },
   plugins: [],
 }
