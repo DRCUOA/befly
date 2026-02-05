@@ -22,8 +22,7 @@
           <!-- Reaction picker dropdown for this type -->
           <div
             v-if="showPicker && pickerType === group.type"
-            ref="pickerRef"
-            class="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg p-2 z-50"
+            class="reaction-picker absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg p-2 z-50"
             @click.stop
           >
             <div class="flex space-x-1">
@@ -80,8 +79,7 @@
       <!-- Reaction picker dropdown -->
       <div
         v-if="showPicker"
-        ref="pickerRef"
-        class="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg p-2 z-50"
+        class="reaction-picker absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg p-2 z-50"
         @click.stop
       >
         <div class="flex space-x-1">
@@ -122,12 +120,16 @@ const appreciators = ref<Appreciation[]>(props.appreciators || [])
 const showPicker = ref(false)
 const pickerType = ref<ReactionType | null>(null)
 const userReaction = ref<ReactionType | null>(null)
-const pickerRef = ref<HTMLElement | null>(null)
 
 // Handle click outside to close picker
 const handleClickOutside = (event: MouseEvent) => {
-  if (pickerRef.value && !pickerRef.value.contains(event.target as Node)) {
+  const target = event.target as HTMLElement
+  // Check if click is inside any reaction picker (using class selector)
+  const isClickInsidePicker = target.closest('.reaction-picker') !== null
+  
+  if (!isClickInsidePicker) {
     showPicker.value = false
+    pickerType.value = null
   }
 }
 
@@ -189,6 +191,9 @@ const reactionGroups = computed(() => {
     const type = app.reactionType || 'like'
     if (groups[type]) {
       groups[type].push(app)
+    } else {
+      // Fallback to like if type is invalid
+      groups.like.push(app)
     }
   })
 

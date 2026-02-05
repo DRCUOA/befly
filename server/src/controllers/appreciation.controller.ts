@@ -19,8 +19,15 @@ export const appreciationController = {
     }
 
     const { writingId } = req.params
-    const reactionType = req.body.reactionType || 'like'
-    const appreciation = await appreciationService.create(writingId, userId, reactionType)
+    let reactionType = req.body.reactionType || 'like'
+    
+    // Validate reaction type
+    const validReactionTypes = ['like', 'love', 'laugh', 'wow', 'sad', 'angry']
+    if (!validReactionTypes.includes(reactionType)) {
+      reactionType = 'like' // Default to 'like' if invalid
+    }
+    
+    const appreciation = await appreciationService.create(writingId, userId, reactionType as any)
     res.status(201).json({ data: appreciation })
   },
 

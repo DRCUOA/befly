@@ -104,8 +104,12 @@ export function useAuth() {
       currentUser.value = response.data
       
       return response.data
-    } catch (err) {
-      // Not authenticated - clear user
+    } catch (err: any) {
+      // Not authenticated - clear user (401 is expected when not logged in)
+      // Only log non-401 errors
+      if (err.message && !err.message.includes('401') && !err.message.includes('Unauthorized')) {
+        console.error('Error fetching current user:', err)
+      }
       currentUser.value = null
       return null
     } finally {

@@ -37,5 +37,14 @@ export async function initDb() {
 }
 
 export async function closeDb() {
-  await pool.end()
+  if (_pool) {
+    try {
+      await _pool.end()
+      _pool = null
+      console.log('Database pool closed')
+    } catch (error) {
+      console.error('Error closing database pool:', error)
+      throw error
+    }
+  }
 }

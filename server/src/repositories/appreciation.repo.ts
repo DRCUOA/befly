@@ -52,11 +52,36 @@ export const appreciationRepo = {
     }
     
     const result = await pool.query(query, [writingId])
+    
+    // Log for debugging
+    if (result.rows.length > 0) {
+      logger.debug(`Found ${result.rows.length} appreciations for writing ${writingId}`, {
+        hasReactionType,
+        sampleReactionTypes: result.rows.slice(0, 3).map(r => r.reactionType)
+      })
+    }
+    
     return result.rows
   },
 
   async create(appreciation: Omit<Appreciation, 'id' | 'createdAt'>): Promise<Appreciation> {
-    const reactionType = appreciation.reactionType || 'like'
+    let reactionType = appreciation.reactionType || 'like'
+    
+    // Validate reaction type
+    const validReactionTypes = ['like', 'love', 'laugh', 'wow', 'sad', 'angry']
+    if (!validReactionTypes.includes(reactionType)) {
+      logger.warn(`Invalid reaction type: ${reactionType}, defaulting to 'like'`, {
+        received: reactionType,
+        validTypes: validReactionTypes
+      })
+      reactionType = 'like'
+    }
+    
+    logger.debug('Creating appreciation with reactionType', {
+      reactionType,
+      writingId: appreciation.writingId,
+      userId: appreciation.userId
+    })
     
     // Check if reaction_type column exists
     let hasReactionType = true
@@ -64,8 +89,11 @@ export const appreciationRepo = {
       await pool.query('SELECT reaction_type FROM appreciations LIMIT 1')
     } catch (error: any) {
       if (error.code === '42703') {
+        // Column doesn't exist - migration hasn't run yet
         hasReactionType = false
+        logger.debug('reaction_type column does not exist, using default "like"')
       } else {
+        logger.error('Error checking for reaction_type column:', error)
         throw error
       }
     }
@@ -93,19 +121,38 @@ export const appreciationRepo = {
     // If user already has this exact reaction, return it (idempotent)
     if (existing.rows.length > 0) {
       const existingId = existing.rows[0].id
-      const existingResult = await pool.query(
-        `SELECT 
-           a.id, 
-           a.writing_id as "writingId", 
-           a.user_id as "userId",
-           COALESCE(u.display_name, u.email) as "userDisplayName",
-           COALESCE(a.reaction_type, 'like') as "reactionType",
-           a.created_at as "createdAt"
-         FROM appreciations a
-         LEFT JOIN users u ON a.user_id = u.id
-         WHERE a.id = $1`,
-        [existingId]
-      )
+      let existingQuery: string
+      if (hasReactionType) {
+        existingQuery = `
+          SELECT 
+            a.id, 
+            a.writing_id as "writingId", 
+            a.user_id as "userId",
+            COALESCE(u.display_name, u.email) as "userDisplayName",
+            COALESCE(a.reaction_type, 'like') as "reactionType",
+            a.created_at as "createdAt"
+          FROM appreciations a
+          LEFT JOIN users u ON a.user_id = u.id
+          WHERE a.id = $1
+        `
+      } else {
+        existingQuery = `
+          SELECT 
+            a.id, 
+            a.writing_id as "writingId", 
+            a.user_id as "userId",
+            COALESCE(u.display_name, u.email) as "userDisplayName",
+            'like' as "reactionType",
+            a.created_at as "createdAt"
+          FROM appreciations a
+          LEFT JOIN users u ON a.user_id = u.id
+          WHERE a.id = $1
+        `
+      }
+      const existingResult = await pool.query(existingQuery, [existingId])
+      if (existingResult.rows.length === 0) {
+        throw new NotFoundError('Appreciation not found')
+      }
       return existingResult.rows[0]
     }
 
@@ -161,7 +208,88 @@ export const appreciationRepo = {
       insertParams = [appreciation.writingId, appreciation.userId]
     }
 
-    const result = await pool.query(insertQuery, insertParams)
+    // Log for debugging
+    logger.debug('Creating appreciation', {
+      writingId: appreciation.writingId,
+      userId: appreciation.userId,
+      reactionType,
+      hasReactionType,
+      insertQuery: insertQuery.substring(0, 100) + '...'
+    })
+    
+    let result
+    try {
+      result = await pool.query(insertQuery, insertParams)
+      
+      // Log successful insert
+      logger.debug('Appreciation created successfully', {
+        id: result.rows[0]?.id,
+        reactionType: result.rows[0]?.reactionType || 'like'
+      })
+    } catch (error: any) {
+      logger.error('Error inserting appreciation:', {
+        error: error.message,
+        code: error.code,
+        writingId: appreciation.writingId,
+        userId: appreciation.userId,
+        reactionType
+      })
+      
+      // Check if it's a unique constraint violation (user already has this reaction)
+      if (error.code === '23505') {
+        // Unique constraint violation - user already has an appreciation
+        // This can happen if:
+        // 1. Migration 007 hasn't run (old constraint: one appreciation per user per writing)
+        // 2. User already has this exact reaction type (new constraint: one per reaction type)
+        
+        // Fetch the existing appreciation
+        let fetchQuery: string
+        let fetchParams: unknown[]
+        if (hasReactionType) {
+          // Try to fetch by reaction type first
+          fetchQuery = `
+            SELECT 
+              a.id, 
+              a.writing_id as "writingId", 
+              a.user_id as "userId",
+              COALESCE(u.display_name, u.email) as "userDisplayName",
+              COALESCE(a.reaction_type, 'like') as "reactionType",
+              a.created_at as "createdAt"
+            FROM appreciations a
+            LEFT JOIN users u ON a.user_id = u.id
+            WHERE a.writing_id = $1 AND a.user_id = $2 AND a.reaction_type = $3
+          `
+          fetchParams = [appreciation.writingId, appreciation.userId, reactionType]
+        } else {
+          // No reaction_type column - fetch any existing appreciation
+          fetchQuery = `
+            SELECT 
+              a.id, 
+              a.writing_id as "writingId", 
+              a.user_id as "userId",
+              COALESCE(u.display_name, u.email) as "userDisplayName",
+              'like' as "reactionType",
+              a.created_at as "createdAt"
+            FROM appreciations a
+            LEFT JOIN users u ON a.user_id = u.id
+            WHERE a.writing_id = $1 AND a.user_id = $2
+          `
+          fetchParams = [appreciation.writingId, appreciation.userId]
+        }
+        
+        const existingResult = await pool.query(fetchQuery, fetchParams)
+        if (existingResult.rows.length > 0) {
+          logger.info('Returning existing appreciation due to unique constraint violation')
+          return existingResult.rows[0]
+        }
+        
+        // If we can't find it, it might be a different constraint violation
+        logger.warn('Unique constraint violation but could not find existing appreciation')
+      }
+      
+      // Re-throw if we can't handle it
+      throw error
+    }
     
     // Fetch user display name for the response
     const userResult = await pool.query(
