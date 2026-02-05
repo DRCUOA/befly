@@ -1,9 +1,11 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuth } from '../stores/auth'
 import Home from '../pages/Home.vue'
+import Landing from '../pages/Landing.vue'
 import Read from '../pages/Read.vue'
 import Write from '../pages/Write.vue'
 import Themes from '../pages/Themes.vue'
+import ThemeForm from '../pages/ThemeForm.vue'
 import Profile from '../pages/Profile.vue'
 import SignIn from '../pages/SignIn.vue'
 import SignUp from '../pages/SignUp.vue'
@@ -13,8 +15,14 @@ const router = createRouter({
   routes: [
     {
       path: '/',
+      name: 'Landing',
+      component: Landing
+    },
+    {
+      path: '/home',
       name: 'Home',
-      component: Home
+      component: Home,
+      meta: { requiresAuth: true }
     },
     {
       path: '/read/:id?',
@@ -28,9 +36,27 @@ const router = createRouter({
       meta: { requiresAuth: true }
     },
     {
+      path: '/write/:id',
+      name: 'EditWriting',
+      component: Write,
+      meta: { requiresAuth: true }
+    },
+    {
       path: '/themes',
       name: 'Themes',
       component: Themes
+    },
+    {
+      path: '/themes/create',
+      name: 'CreateTheme',
+      component: ThemeForm,
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/themes/edit/:id',
+      name: 'EditTheme',
+      component: ThemeForm,
+      meta: { requiresAuth: true }
     },
     {
       path: '/profile',
@@ -64,13 +90,25 @@ router.beforeEach(async (to, from, next) => {
 
   // Check if route requires authentication
   if (to.meta.requiresAuth && !isAuthenticated.value) {
-    next({ name: 'SignIn', query: { redirect: to.fullPath } })
+    next({ name: 'SignIn', query: { redirect: to.fullPath || '/home' } })
     return
   }
 
   // Check if route requires guest (not authenticated)
   if (to.meta.requiresGuest && isAuthenticated.value) {
     next({ name: 'Home' })
+    return
+  }
+
+  // Redirect authenticated users from landing page to home
+  if (to.name === 'Landing' && isAuthenticated.value) {
+    next({ name: 'Home' })
+    return
+  }
+
+  // Redirect non-authenticated users from home to landing
+  if (to.name === 'Home' && !isAuthenticated.value) {
+    next({ name: 'Landing' })
     return
   }
 

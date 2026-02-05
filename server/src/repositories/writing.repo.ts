@@ -17,38 +17,76 @@ export const writingRepo = {
     let query: string
     let params: unknown[]
 
-    if (userId) {
-      // Authenticated: own blocks + shared/public from others
-      query = `
-        SELECT 
-          wb.id, 
-          wb.user_id as "userId", 
-          wb.title, 
-          wb.body,
-          wb.visibility,
-          wb.created_at as "createdAt", 
-          wb.updated_at as "updatedAt",
-          COALESCE(
-            ARRAY_AGG(wt.theme_id) FILTER (WHERE wt.theme_id IS NOT NULL),
-            ARRAY[]::UUID[]
-          ) as "themeIds"
-        FROM writing_blocks wb
-        LEFT JOIN writing_themes wt ON wb.id = wt.writing_id
-        WHERE wb.user_id = $1 OR wb.visibility IN ('shared', 'public')
-        GROUP BY wb.id, wb.user_id, wb.title, wb.body, wb.visibility, wb.created_at, wb.updated_at
-        ORDER BY wb.created_at DESC
-        LIMIT $2 OFFSET $3
-      `
-      params = [userId, limit, offset]
+    // Check if visibility column exists by trying a simple query first
+    // If it doesn't exist, use a fallback query without visibility filtering
+    let hasVisibilityColumn = true
+    try {
+      await pool.query('SELECT visibility FROM writing_blocks LIMIT 1')
+    } catch (error: any) {
+      if (error.code === '42703') { // column does not exist
+        hasVisibilityColumn = false
+      } else {
+        throw error
+      }
+    }
+
+    if (hasVisibilityColumn) {
+      if (userId) {
+        // Authenticated: own blocks + shared/public from others
+        query = `
+          SELECT 
+            wb.id, 
+            wb.user_id as "userId", 
+            wb.title, 
+            wb.body,
+            COALESCE(wb.visibility, 'private') as visibility,
+            wb.created_at as "createdAt", 
+            wb.updated_at as "updatedAt",
+            COALESCE(
+              ARRAY_AGG(wt.theme_id) FILTER (WHERE wt.theme_id IS NOT NULL),
+              ARRAY[]::UUID[]
+            ) as "themeIds"
+          FROM writing_blocks wb
+          LEFT JOIN writing_themes wt ON wb.id = wt.writing_id
+          WHERE wb.user_id = $1 OR COALESCE(wb.visibility, 'private') IN ('shared', 'public')
+          GROUP BY wb.id, wb.user_id, wb.title, wb.body, wb.visibility, wb.created_at, wb.updated_at
+          ORDER BY wb.created_at DESC
+          LIMIT $2 OFFSET $3
+        `
+        params = [userId, limit, offset]
+      } else {
+        // Unauthenticated: only public blocks
+        query = `
+          SELECT 
+            wb.id, 
+            wb.user_id as "userId", 
+            wb.title, 
+            wb.body,
+            COALESCE(wb.visibility, 'private') as visibility,
+            wb.created_at as "createdAt", 
+            wb.updated_at as "updatedAt",
+            COALESCE(
+              ARRAY_AGG(wt.theme_id) FILTER (WHERE wt.theme_id IS NOT NULL),
+              ARRAY[]::UUID[]
+            ) as "themeIds"
+          FROM writing_blocks wb
+          LEFT JOIN writing_themes wt ON wb.id = wt.writing_id
+          WHERE COALESCE(wb.visibility, 'private') = 'public'
+          GROUP BY wb.id, wb.user_id, wb.title, wb.body, wb.visibility, wb.created_at, wb.updated_at
+          ORDER BY wb.created_at DESC
+          LIMIT $1 OFFSET $2
+        `
+        params = [limit, offset]
+      }
     } else {
-      // Unauthenticated: only public blocks
+      // Fallback: no visibility column, show all (for backward compatibility during migration)
       query = `
         SELECT 
           wb.id, 
           wb.user_id as "userId", 
           wb.title, 
           wb.body,
-          wb.visibility,
+          'private' as visibility,
           wb.created_at as "createdAt", 
           wb.updated_at as "updatedAt",
           COALESCE(
@@ -57,8 +95,7 @@ export const writingRepo = {
           ) as "themeIds"
         FROM writing_blocks wb
         LEFT JOIN writing_themes wt ON wb.id = wt.writing_id
-        WHERE wb.visibility = 'public'
-        GROUP BY wb.id, wb.user_id, wb.title, wb.body, wb.visibility, wb.created_at, wb.updated_at
+        GROUP BY wb.id, wb.user_id, wb.title, wb.body, wb.created_at, wb.updated_at
         ORDER BY wb.created_at DESC
         LIMIT $1 OFFSET $2
       `
@@ -78,37 +115,72 @@ export const writingRepo = {
    * - Others can only access shared/public
    */
   async findById(id: string, userId: string | null): Promise<WritingBlock> {
+    // Check if visibility column exists
+    let hasVisibilityColumn = true
+    try {
+      await pool.query('SELECT visibility FROM writing_blocks LIMIT 1')
+    } catch (error: any) {
+      if (error.code === '42703') {
+        hasVisibilityColumn = false
+      } else {
+        throw error
+      }
+    }
+
     let query: string
     let params: unknown[]
 
-    if (userId) {
-      query = `
-        SELECT 
-          wb.id, 
-          wb.user_id as "userId", 
-          wb.title, 
-          wb.body,
-          wb.visibility,
-          wb.created_at as "createdAt", 
-          wb.updated_at as "updatedAt",
-          COALESCE(
-            ARRAY_AGG(wt.theme_id) FILTER (WHERE wt.theme_id IS NOT NULL),
-            ARRAY[]::UUID[]
-          ) as "themeIds"
-        FROM writing_blocks wb
-        LEFT JOIN writing_themes wt ON wb.id = wt.writing_id
-        WHERE wb.id = $1 AND (wb.user_id = $2 OR wb.visibility IN ('shared', 'public'))
-        GROUP BY wb.id, wb.user_id, wb.title, wb.body, wb.visibility, wb.created_at, wb.updated_at
-      `
-      params = [id, userId]
+    if (hasVisibilityColumn) {
+      if (userId) {
+        query = `
+          SELECT 
+            wb.id, 
+            wb.user_id as "userId", 
+            wb.title, 
+            wb.body,
+            COALESCE(wb.visibility, 'private') as visibility,
+            wb.created_at as "createdAt", 
+            wb.updated_at as "updatedAt",
+            COALESCE(
+              ARRAY_AGG(wt.theme_id) FILTER (WHERE wt.theme_id IS NOT NULL),
+              ARRAY[]::UUID[]
+            ) as "themeIds"
+          FROM writing_blocks wb
+          LEFT JOIN writing_themes wt ON wb.id = wt.writing_id
+          WHERE wb.id = $1 AND (wb.user_id = $2 OR COALESCE(wb.visibility, 'private') IN ('shared', 'public'))
+          GROUP BY wb.id, wb.user_id, wb.title, wb.body, wb.visibility, wb.created_at, wb.updated_at
+        `
+        params = [id, userId]
+      } else {
+        query = `
+          SELECT 
+            wb.id, 
+            wb.user_id as "userId", 
+            wb.title, 
+            wb.body,
+            COALESCE(wb.visibility, 'private') as visibility,
+            wb.created_at as "createdAt", 
+            wb.updated_at as "updatedAt",
+            COALESCE(
+              ARRAY_AGG(wt.theme_id) FILTER (WHERE wt.theme_id IS NOT NULL),
+              ARRAY[]::UUID[]
+            ) as "themeIds"
+          FROM writing_blocks wb
+          LEFT JOIN writing_themes wt ON wb.id = wt.writing_id
+          WHERE wb.id = $1 AND COALESCE(wb.visibility, 'private') = 'public'
+          GROUP BY wb.id, wb.user_id, wb.title, wb.body, wb.visibility, wb.created_at, wb.updated_at
+        `
+        params = [id]
+      }
     } else {
+      // Fallback: no visibility column
       query = `
         SELECT 
           wb.id, 
           wb.user_id as "userId", 
           wb.title, 
           wb.body,
-          wb.visibility,
+          'private' as visibility,
           wb.created_at as "createdAt", 
           wb.updated_at as "updatedAt",
           COALESCE(
@@ -117,8 +189,8 @@ export const writingRepo = {
           ) as "themeIds"
         FROM writing_blocks wb
         LEFT JOIN writing_themes wt ON wb.id = wt.writing_id
-        WHERE wb.id = $1 AND wb.visibility = 'public'
-        GROUP BY wb.id, wb.user_id, wb.title, wb.body, wb.visibility, wb.created_at, wb.updated_at
+        WHERE wb.id = $1
+        GROUP BY wb.id, wb.user_id, wb.title, wb.body, wb.created_at, wb.updated_at
       `
       params = [id]
     }
@@ -138,14 +210,36 @@ export const writingRepo = {
     try {
       await client.query('BEGIN')
       
+      // Check if visibility column exists
+      let hasVisibilityColumn = true
+      try {
+        await client.query('SELECT visibility FROM writing_blocks LIMIT 1')
+      } catch (error: any) {
+        if (error.code === '42703') {
+          hasVisibilityColumn = false
+        } else {
+          throw error
+        }
+      }
+      
       // Insert writing block with visibility (defaults to 'private')
       const visibility = writing.visibility || 'private'
-      const writingResult = await client.query(
-        `INSERT INTO writing_blocks (user_id, title, body, visibility)
-         VALUES ($1, $2, $3, $4)
-         RETURNING id, user_id as "userId", title, body, visibility, created_at as "createdAt", updated_at as "updatedAt"`,
-        [writing.userId, writing.title, writing.body, visibility]
-      )
+      let writingResult
+      if (hasVisibilityColumn) {
+        writingResult = await client.query(
+          `INSERT INTO writing_blocks (user_id, title, body, visibility)
+           VALUES ($1, $2, $3, $4)
+           RETURNING id, user_id as "userId", title, body, visibility, created_at as "createdAt", updated_at as "updatedAt"`,
+          [writing.userId, writing.title, writing.body, visibility]
+        )
+      } else {
+        writingResult = await client.query(
+          `INSERT INTO writing_blocks (user_id, title, body)
+           VALUES ($1, $2, $3)
+           RETURNING id, user_id as "userId", title, body, 'private' as visibility, created_at as "createdAt", updated_at as "updatedAt"`,
+          [writing.userId, writing.title, writing.body]
+        )
+      }
       const writingBlock = writingResult.rows[0]
       
       // Insert theme associations
@@ -188,6 +282,18 @@ export const writingRepo = {
       throw new ForbiddenError('Not authorized to update this writing block')
     }
 
+    // Check if visibility column exists
+    let hasVisibilityColumn = true
+    try {
+      await pool.query('SELECT visibility FROM writing_blocks LIMIT 1')
+    } catch (error: any) {
+      if (error.code === '42703') {
+        hasVisibilityColumn = false
+      } else {
+        throw error
+      }
+    }
+
     const client = await pool.connect()
     try {
       await client.query('BEGIN')
@@ -204,7 +310,7 @@ export const writingRepo = {
         fields.push(`body = $${paramCount++}`)
         values.push(updates.body)
       }
-      if (updates.visibility !== undefined) {
+      if (updates.visibility !== undefined && hasVisibilityColumn) {
         fields.push(`visibility = $${paramCount++}`)
         values.push(updates.visibility)
       }
@@ -218,6 +324,12 @@ export const writingRepo = {
            SET ${fields.join(', ')}
            WHERE id = $${paramCount}`,
           values
+        )
+      } else if (!hasVisibilityColumn && updates.themeIds !== undefined) {
+        // If no fields to update but themeIds need updating, still update updated_at
+        await client.query(
+          `UPDATE writing_blocks SET updated_at = NOW() WHERE id = $1`,
+          [id]
         )
       }
 

@@ -5,7 +5,7 @@ import { UnauthorizedError } from '../utils/errors.js'
 /**
  * Auth middleware - validates JWT token and injects user context
  */
-export function authMiddleware(
+export async function authMiddleware(
   req: Request,
   res: Response,
   next: NextFunction
@@ -35,7 +35,7 @@ export function authMiddleware(
  * Optional auth middleware - doesn't fail if no token
  * Useful for endpoints that work both authenticated and unauthenticated
  */
-export function optionalAuthMiddleware(
+export async function optionalAuthMiddleware(
   req: Request,
   res: Response,
   next: NextFunction

@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express'
 import { ValidationError } from '../utils/errors.js'
+import { randomBytes } from 'crypto'
 
 /**
  * CSRF protection middleware
@@ -58,8 +59,7 @@ function constantTimeCompare(a: string, b: string): boolean {
  * In production, use crypto.randomBytes for better security
  */
 export function generateCsrfToken(): string {
-  const crypto = require('crypto')
-  return crypto.randomBytes(32).toString('hex')
+  return randomBytes(32).toString('hex')
 }
 
 /**

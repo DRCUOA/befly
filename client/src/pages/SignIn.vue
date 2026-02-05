@@ -75,7 +75,7 @@ const handleSubmit = async () => {
   try {
     submitting.value = true
     await signin(form.value.email, form.value.password)
-    router.push('/')
+    router.push('/home')
   } catch (err) {
     // Error handled by auth store
   } finally {

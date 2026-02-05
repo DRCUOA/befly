@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h1 class="text-3xl font-bold mb-6">Write</h1>
+    <h1 class="text-3xl font-bold mb-6">{{ isEditing ? 'Edit Writing' : 'Write' }}</h1>
     
     <form @submit.prevent="handleSubmit" class="space-y-6">
       <div>
@@ -52,9 +52,9 @@
         <label class="block text-sm font-medium text-gray-700 mb-2">
           Themes (optional)
         </label>
-        <div v-if="loadingThemes" class="text-sm text-gray-500">
-          Loading themes...
-        </div>
+    <div v-if="loadingThemes || loadingWriting" class="text-sm text-gray-500">
+      {{ loadingWriting ? 'Loading writing...' : 'Loading themes...' }}
+    </div>
         <div v-else class="space-y-2">
           <div
             v-for="theme in availableThemes"
@@ -88,10 +88,10 @@
       <div class="flex space-x-4">
         <button
           type="submit"
-          :disabled="submitting"
+          :disabled="submitting || loadingWriting"
           class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {{ submitting ? 'Publishing...' : 'Publish' }}
+          {{ submitting ? (isEditing ? 'Updating...' : 'Publishing...') : (isEditing ? 'Update' : 'Publish') }}
         </button>
         <router-link
           to="/"
@@ -105,13 +105,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, onMounted, computed } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { api } from '../api/client'
 import type { Theme } from '../domain/Theme'
+import type { WritingBlock } from '../domain/WritingBlock'
 import type { ApiResponse } from '@shared/ApiResponses'
 
 const router = useRouter()
+const route = useRoute()
+
+const writingId = computed(() => route.params.id as string | undefined)
+const isEditing = computed(() => !!writingId.value)
 
 const form = ref({
   title: '',
@@ -122,6 +127,7 @@ const form = ref({
 
 const availableThemes = ref<Theme[]>([])
 const loadingThemes = ref(true)
+const loadingWriting = ref(false)
 const submitting = ref(false)
 const error = ref<string | null>(null)
 
@@ -137,6 +143,28 @@ const loadThemes = async () => {
   }
 }
 
+const loadWriting = async () => {
+  if (!writingId.value) return
+
+  try {
+    loadingWriting.value = true
+    error.value = null
+    const response = await api.get<ApiResponse<WritingBlock>>(`/writing/${writingId.value}`)
+    const writing = response.data
+    
+    form.value = {
+      title: writing.title,
+      body: writing.body,
+      themeIds: writing.themeIds || [],
+      visibility: writing.visibility || 'private'
+    }
+  } catch (err) {
+    error.value = err instanceof Error ? err.message : 'Failed to load writing'
+  } finally {
+    loadingWriting.value = false
+  }
+}
+
 const handleSubmit = async () => {
   if (!form.value.title.trim() || !form.value.body.trim()) {
     error.value = 'Title and body are required'
@@ -147,22 +175,36 @@ const handleSubmit = async () => {
     submitting.value = true
     error.value = null
     
-    await api.post<ApiResponse<any>>('/writing', {
-      title: form.value.title,
-      body: form.value.body,
-      themeIds: form.value.themeIds,
-      visibility: form.value.visibility
-    })
+    if (isEditing.value && writingId.value) {
+      // Update existing writing
+      await api.put<ApiResponse<any>>(`/writing/${writingId.value}`, {
+        title: form.value.title,
+        body: form.value.body,
+        themeIds: form.value.themeIds,
+        visibility: form.value.visibility
+      })
+    } else {
+      // Create new writing
+      await api.post<ApiResponse<any>>('/writing', {
+        title: form.value.title,
+        body: form.value.body,
+        themeIds: form.value.themeIds,
+        visibility: form.value.visibility
+      })
+    }
     
-    router.push('/')
+    router.push('/home')
   } catch (err) {
-    error.value = err instanceof Error ? err.message : 'Failed to publish writing'
+    error.value = err instanceof Error ? err.message : (isEditing.value ? 'Failed to update writing' : 'Failed to publish writing')
   } finally {
     submitting.value = false
   }
 }
 
-onMounted(() => {
-  loadThemes()
+onMounted(async () => {
+  await loadThemes()
+  if (isEditing.value) {
+    await loadWriting()
+  }
 })
 </script>

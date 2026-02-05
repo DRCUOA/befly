@@ -19,7 +19,8 @@ export const appreciationController = {
     }
 
     const { writingId } = req.params
-    const appreciation = await appreciationService.create(writingId, userId)
+    const reactionType = req.body.reactionType || 'like'
+    const appreciation = await appreciationService.create(writingId, userId, reactionType)
     res.status(201).json({ data: appreciation })
   },
 
@@ -30,7 +31,8 @@ export const appreciationController = {
     }
 
     const { writingId } = req.params
-    await appreciationService.remove(writingId, userId)
+    const reactionType = req.query.reactionType as string | undefined
+    await appreciationService.remove(writingId, userId, reactionType)
     res.status(204).send()
   }
 }

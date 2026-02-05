@@ -34,6 +34,7 @@ async function seed() {
     )
 
     // Insert themes
+    // Note: SQL reuses $2 (user_id) and $5 (visibility), so we only need 11 parameters total
     await pool.query(
       `INSERT INTO themes (id, user_id, name, slug, visibility) VALUES
        ($1, $2, $3, $4, $5),
@@ -45,9 +46,17 @@ async function seed() {
          slug = EXCLUDED.slug,
          visibility = EXCLUDED.visibility`,
       [
-        '10000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000001', 'Reflection', 'reflection', 'shared',
-        '10000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000001', 'Technology', 'technology', 'shared',
-        '10000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000001', 'Philosophy', 'philosophy', 'shared'
+        '10000000-0000-0000-0000-000000000001', // $1: first theme id
+        '00000000-0000-0000-0000-000000000001', // $2: user_id (reused for all themes)
+        'Reflection',                            // $3: first theme name
+        'reflection',                            // $4: first theme slug
+        'shared',                                // $5: visibility (reused for all themes)
+        '10000000-0000-0000-0000-000000000002', // $6: second theme id
+        'Technology',                            // $7: second theme name
+        'technology',                            // $8: second theme slug
+        '10000000-0000-0000-0000-000000000003', // $9: third theme id
+        'Philosophy',                            // $10: third theme name
+        'philosophy'                             // $11: third theme slug
       ]
     )
 

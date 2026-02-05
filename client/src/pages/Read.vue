@@ -37,6 +37,7 @@
               :writing-id="writing.id"
               :initial-count="appreciationCount"
               :is-appreciated="isAppreciated"
+              :appreciators="appreciations"
               @appreciated="loadAppreciations"
               @unappreciated="loadAppreciations"
             />

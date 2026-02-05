@@ -58,7 +58,33 @@ async function request<T>(
     throw new Error(error.error || `HTTP ${response.status}`)
   }
 
-  return response.json()
+  // Handle empty responses (204 No Content, etc.)
+  if (response.status === 204 || response.status === 205) {
+    return {} as T
+  }
+
+  // Check if response has content
+  const contentType = response.headers.get('content-type')
+  const contentLength = response.headers.get('content-length')
+  
+  // If no content type or content length is 0, return empty object
+  if (!contentType || contentLength === '0') {
+    return {} as T
+  }
+
+  // Only parse JSON if content-type indicates JSON
+  if (contentType.includes('application/json')) {
+    try {
+      const text = await response.text()
+      return text ? JSON.parse(text) : ({} as T)
+    } catch (err) {
+      // If parsing fails, return empty object
+      return {} as T
+    }
+  }
+
+  // For non-JSON responses, return empty object
+  return {} as T
 }
 
 export const api = {

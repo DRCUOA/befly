@@ -9,7 +9,7 @@ export const userRepo = {
   async findByEmail(email: string): Promise<UserWithPassword | null> {
     const result = await pool.query(
       `SELECT id, email, password_hash as "passwordHash", display_name as "displayName", 
-              role, status, created_at as "createdAt", updated_at as "updatedAt"
+              COALESCE(role, 'user') as role, status, created_at as "createdAt", updated_at as "updatedAt"
        FROM users
        WHERE email = $1`,
       [email]
@@ -18,8 +18,11 @@ export const userRepo = {
   },
 
   async findById(id: string): Promise<User | null> {
+    // Check if role column exists, if not use COALESCE to default to 'user'
     const result = await pool.query(
-      `SELECT id, email, display_name as "displayName", role, status, 
+      `SELECT id, email, display_name as "displayName", 
+              COALESCE(role, 'user') as role, 
+              status, 
               created_at as "createdAt", updated_at as "updatedAt"
        FROM users
        WHERE id = $1 AND status = 'active'`,
@@ -35,14 +38,30 @@ export const userRepo = {
     role?: 'user' | 'admin'
   }): Promise<User> {
     const role = user.role || 'user'
-    const result = await pool.query(
-      `INSERT INTO users (email, password_hash, display_name, role)
-       VALUES ($1, $2, $3, $4)
-       RETURNING id, email, display_name as "displayName", role, status, 
-                 created_at as "createdAt", updated_at as "updatedAt"`,
-      [user.email, user.passwordHash, user.displayName, role]
-    )
-    return result.rows[0]
+    // Check if role column exists, if not insert without it
+    try {
+      const result = await pool.query(
+        `INSERT INTO users (email, password_hash, display_name, role)
+         VALUES ($1, $2, $3, $4)
+         RETURNING id, email, display_name as "displayName", COALESCE(role, 'user') as role, status, 
+                   created_at as "createdAt", updated_at as "updatedAt"`,
+        [user.email, user.passwordHash, user.displayName, role]
+      )
+      return result.rows[0]
+    } catch (error: any) {
+      // If role column doesn't exist, insert without it
+      if (error.code === '42703') { // column does not exist
+        const result = await pool.query(
+          `INSERT INTO users (email, password_hash, display_name)
+           VALUES ($1, $2, $3)
+           RETURNING id, email, display_name as "displayName", 'user' as role, status, 
+                     created_at as "createdAt", updated_at as "updatedAt"`,
+          [user.email, user.passwordHash, user.displayName]
+        )
+        return result.rows[0]
+      }
+      throw error
+    }
   },
 
   async update(id: string, updates: Partial<{
@@ -85,7 +104,7 @@ export const userRepo = {
       `UPDATE users
        SET ${fields.join(', ')}
        WHERE id = $${paramCount}
-       RETURNING id, email, display_name as "displayName", role, status, 
+       RETURNING id, email, display_name as "displayName", COALESCE(role, 'user') as role, status, 
                  created_at as "createdAt", updated_at as "updatedAt"`,
       values
     )

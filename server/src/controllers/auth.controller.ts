@@ -59,17 +59,37 @@ export const authController = {
   },
 
   async getMe(req: Request, res: Response) {
-    // User is attached by authMiddleware
+    try {
+      // User is attached by authMiddleware
+      const userId = (req as any).userId
+      if (!userId) {
+        throw new UnauthorizedError('Not authenticated')
+      }
+
+      const user = await userRepo.findById(userId)
+      if (!user) {
+        throw new UnauthorizedError('User not found')
+      }
+
+      res.json({ data: user })
+    } catch (error) {
+      // Re-throw to let error middleware handle it
+      throw error
+    }
+  },
+
+  async updateProfile(req: Request, res: Response) {
     const userId = (req as any).userId
     if (!userId) {
-      throw new UnauthorizedError('Not authenticated')
+      throw new UnauthorizedError('Authentication required')
     }
 
-    const user = await userRepo.findById(userId)
-    if (!user) {
-      throw new UnauthorizedError('User not found')
-    }
+    const { displayName } = req.body
 
-    res.json({ data: user })
+    const updatedUser = await userRepo.update(userId, {
+      displayName: displayName || undefined
+    })
+
+    res.json({ data: updatedUser })
   }
 }
