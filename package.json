@@ -1,0 +1,20 @@
+{
+  "name": "writing-platform",
+  "version": "0.1.0",
+  "description": "Personal Writing Platform (Vendor-Neutral, Self-Hosted)",
+  "private": true,
+  "scripts": {
+    "dev": "bash scripts/dev.sh",
+    "migrate": "bash scripts/migrate.sh",
+    "seed": "bash scripts/seed.sh",
+    "reset-db": "bash scripts/reset-db.sh"
+  },
+  "workspaces": [
+    "client",
+    "server",
+    "shared"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
