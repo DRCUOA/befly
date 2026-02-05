@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arrival</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script> window.FontAwesomeConfig = { autoReplaceSvg: 'nest'};</script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@300;400;500;600&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        ::-webkit-scrollbar { display: none; }
+        body { 
+            font-family: 'Crimson Pro', serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        .sans { font-family: 'Inter', sans-serif; }
+        .fade-in { animation: fadeIn 1.8s ease-in forwards; opacity: 0; }
+        @keyframes fadeIn { to { opacity: 1; } }
+        .delay-1 { animation-delay: 0.3s; }
+        .delay-2 { animation-delay: 0.6s; }
+        .delay-3 { animation-delay: 0.9s; }
+        .delay-4 { animation-delay: 1.2s; }
+        .cursor-default { cursor: default; }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'serif': ['Crimson Pro', 'serif'],
+                        'sans': ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        'paper': '#FDFCFA',
+                        'ink': '#1A1A1A',
+                        'ink-light': '#4A4A4A',
+                        'ink-lighter': '#8A8A8A',
+                        'line': '#E8E6E3',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-paper text-ink cursor-default">
+
+<div id="arrival-container" class="w-full h-[1024px] flex items-center justify-center relative overflow-hidden">
+    
+    <div id="central-content" class="text-center px-8 max-w-2xl">
+        
+        <div id="author-mark" class="fade-in mb-12">
+            <h1 class="text-6xl font-light tracking-tight leading-none">
+                Elena Morrison
+            </h1>
+        </div>
+        
+        <div id="context-line" class="fade-in delay-1 mb-16">
+            <p class="text-xl font-light text-ink-light tracking-wide">
+                Essays on attention, craft, and quiet rebellion
+            </p>
+        </div>
+        
+        <div id="entry-action" class="fade-in delay-2 mb-24">
+            <button class="group relative inline-block">
+                <span class="text-lg tracking-widest uppercase font-sans font-light text-ink-lighter transition-colors duration-500 group-hover:text-ink">
+                    Enter
+                </span>
+                <span class="absolute bottom-0 left-0 w-0 h-px bg-ink transition-all duration-500 group-hover:w-full"></span>
+            </button>
+        </div>
+        
+        <div id="scroll-indicator" class="fade-in delay-3">
+            <div class="flex flex-col items-center text-ink-lighter">
+                <span class="text-xs tracking-widest uppercase font-sans mb-3">or scroll</span>
+                <i class="fa-solid fa-chevron-down text-xs animate-pulse"></i>
+            </div>
+        </div>
+        
+    </div>
+    
+    <div id="corner-mark" class="absolute top-8 left-8 fade-in delay-4">
+        <span class="text-xs tracking-widest uppercase font-sans text-ink-lighter">2025</span>
+    </div>
+    
+</div>
+
+<div id="threshold-section" class="w-full min-h-[900px] flex items-center justify-center px-8 py-32">
+    
+    <div class="max-w-3xl">
+        
+        <div id="opening-statement" class="mb-24">
+            <h2 class="text-5xl font-light leading-tight mb-8 tracking-tight">
+                This is a place for<br/>slow reading.
+            </h2>
+            <p class="text-2xl font-light text-ink-light leading-relaxed">
+                No notifications. No endless feeds. Just words that ask to be read carefully.
+            </p>
+        </div>
+        
+        <div id="invitation-block" class="border-t border-line pt-16 pb-16">
+            <p class="text-xl font-light leading-loose text-ink-light mb-8">
+                Each piece here is written to be experienced in one sitting, when you have time to think. There's no rush. Nothing expires. The essays will be here when you're ready.
+            </p>
+            <p class="text-xl font-light leading-loose text-ink-light">
+                If you're in a hurry, come back later. This work deserves your full attention, and you deserve the space to give it.
+            </p>
+        </div>
+        
+        <div id="philosophy-grid" class="grid grid-cols-3 gap-12 pt-16 border-t border-line">
+            
+            <div class="text-center">
+                <div class="mb-6">
+                    <i class="fa-solid fa-book-open text-3xl text-ink-lighter"></i>
+                </div>
+                <h3 class="text-sm tracking-widest uppercase font-sans mb-4 text-ink">Depth</h3>
+                <p class="text-base font-light text-ink-light leading-relaxed">
+                    Every word is considered. Every sentence earns its place.
+                </p>
+            </div>
+            
+            <div class="text-center">
+                <div class="mb-6">
+                    <i class="fa-solid fa-pause text-3xl text-ink-lighter"></i>
+                </div>
+                <h3 class="text-sm tracking-widest uppercase font-sans mb-4 text-ink">Silence</h3>
+                <p class="text-base font-light text-ink-light leading-relaxed">
+                    Space between ideas matters as much as the ideas themselves.
+                </p>
+            </div>
+            
+            <div class="text-center">
+                <div class="mb-6">
+                    <i class="fa-solid fa-feather text-3xl text-ink-lighter"></i>
+                </div>
+                <h3 class="text-sm tracking-widest uppercase font-sans mb-4 text-ink">Craft</h3>
+                <p class="text-base font-light text-ink-light leading-relaxed">
+                    Writing as an act of care, not content production.
+                </p>
+            </div>
+            
+        </div>
+        
+    </div>
+    
+</div>
+
+<div id="navigation-emergence" class="w-full min-h-[800px] bg-gradient-to-b from-paper to-gray-50 px-8 py-32">
+    
+    <div class="max-w-4xl mx-auto">
+        
+        <div id="nav-introduction" class="text-center mb-20">
+            <h2 class="text-4xl font-light mb-6 tracking-tight">What you'll find here</h2>
+            <p class="text-lg font-light text-ink-light">Three collections, organized by theme and mood</p>
+        </div>
+        
+        <div id="collection-cards" class="space-y-8">
+            
+            <div class="group bg-paper border border-line hover:border-ink-lighter transition-all duration-500 p-12 cursor-pointer">
+                <div class="flex items-start justify-between mb-6">
+                    <div>
+                        <h3 class="text-3xl font-light mb-3 tracking-tight">Attention</h3>
+                        <p class="text-sm tracking-widest uppercase font-sans text-ink-lighter">12 essays</p>
+                    </div>
+                    <i class="fa-solid fa-arrow-right text-ink-lighter opacity-0 group-hover:opacity-100 transition-opacity duration-500"></i>
+                </div>
+                <p class="text-lg font-light text-ink-light leading-relaxed mb-6">
+                    On focus, distraction, and what it means to truly see. Explorations of how we spend our most precious resource in an economy designed to steal it.
+                </p>
+                <div class="flex gap-3 flex-wrap">
+                    <span class="text-xs tracking-wide font-sans px-3 py-1 bg-gray-100 text-ink-light">Presence</span>
+                    <span class="text-xs tracking-wide font-sans px-3 py-1 bg-gray-100 text-ink-light">Technology</span>
+                    <span class="text-xs tracking-wide font-sans px-3 py-1 bg-gray-100 text-ink-light">Mindfulness</span>
+                </div>
+            </div>
+            
+            <div class="group bg-paper border border-line hover:border-ink-lighter transition-all duration-500 p-12 cursor-pointer">
+                <div class="flex items-start justify-between mb-6">
+                    <div>
+                        <h3 class="text-3xl font-light mb-3 tracking-tight">Craft</h3>
+                        <p class="text-sm tracking-widest uppercase font-sans text-ink-lighter">8 essays</p>
+                    </div>
+                    <i class="fa-solid fa-arrow-right text-ink-lighter opacity-0 group-hover:opacity-100 transition-opacity duration-500"></i>
+                </div>
+                <p class="text-lg font-light text-ink-light leading-relaxed mb-6">
+                    The practice of making things well. Essays on writing, design, and the patient work of refining ideas until they shine.
+                </p>
+                <div class="flex gap-3 flex-wrap">
+                    <span class="text-xs tracking-wide font-sans px-3 py-1 bg-gray-100 text-ink-light">Process</span>
+                    <span class="text-xs tracking-wide font-sans px-3 py-1 bg-gray-100 text-ink-light">Creativity</span>
+                    <span class="text-xs tracking-wide font-sans px-3 py-1 bg-gray-100 text-ink-light">Excellence</span>
+                </div>
+            </div>
+            
+            <div class="group bg-paper border border-line hover:border-ink-lighter transition-all duration-500 p-12 cursor-pointer">
+                <div class="flex items-start justify-between mb-6">
+                    <div>
+                        <h3 class="text-3xl font-light mb-3 tracking-tight">Rebellion</h3>
+                        <p class="text-sm tracking-widest uppercase font-sans text-ink-lighter">15 essays</p>
+                    </div>
+                    <i class="fa-solid fa-arrow-right text-ink-lighter opacity-0 group-hover:opacity-100 transition-opacity duration-500"></i>
+                </div>
+                <p class="text-lg font-light text-ink-light leading-relaxed mb-6">
+                    Quiet resistance to the loud world. On choosing depth over speed, quality over quantity, and meaning over metrics.
+                </p>
+                <div class="flex gap-3 flex-wrap">
+                    <span class="text-xs tracking-wide font-sans px-3 py-1 bg-gray-100 text-ink-light">Values</span>
+                    <span class="text-xs tracking-wide font-sans px-3 py-1 bg-gray-100 text-ink-light">Culture</span>
+                    <span class="text-xs tracking-wide font-sans px-3 py-1 bg-gray-100 text-ink-light">Choice</span>
+                </div>
+            </div>
+            
+        </div>
+        
+    </div>
+    
+</div>
+
+<div id="reading-principles" class="w-full min-h-[900px] bg-paper px-8 py-32">
+    
+    <div class="max-w-5xl mx-auto">
+        
+        <div id="principles-header" class="text-center mb-24">
+            <h2 class="text-4xl font-light mb-6 tracking-tight">How to read here</h2>
+            <p class="text-lg font-light text-ink-light max-w-2xl mx-auto">
+                This site is designed around a few simple principles that honor your time and attention
+            </p>
+        </div>
+        
+        <div id="principles-list" class="space-y-16">
+            
+            <div class="flex gap-12 items-start border-b border-line pb-16">
+                <div class="w-16 flex-shrink-0">
+                    <div class="w-12 h-12 rounded-full border-2 border-ink-lighter flex items-center justify-center">
+                        <span class="text-xl font-light text-ink-lighter">1</span>
+                    </div>
+                </div>
+                <div class="flex-1">
+                    <h3 class="text-2xl font-light mb-4 tracking-tight">One essay at a time</h3>
+                    <p class="text-lg font-light text-ink-light leading-relaxed mb-4">
+                        When you open an essay, that's all you see. No sidebar of recommendations. No "related posts." No distractions competing for your attention. Just the piece you chose to read.
+                    </p>
+                    <p class="text-base font-light text-ink-lighter leading-relaxed">
+                        The navigation reappears only when you finish or choose to leave.
+                    </p>
+                </div>
+            </div>
+            
+            <div class="flex gap-12 items-start border-b border-line pb-16">
+                <div class="w-16 flex-shrink-0">
+                    <div class="w-12 h-12 rounded-full border-2 border-ink-lighter flex items-center justify-center">
+                        <span class="text-xl font-light text-ink-lighter">2</span>
+                    </div>
+                </div>
+                <div class="flex-1">
+                    <h3 class="text-2xl font-light mb-4 tracking-tight">Read at your own pace</h3>
+                    <p class="text-lg font-light text-ink-light leading-relaxed mb-4">
+                        No reading time estimates. No progress bars. No artificial urgency. The text is patient. Take as long as you need.
+                    </p>
+                    <p class="text-base font-light text-ink-lighter leading-relaxed">
+                        Some pieces are meant to be read in twenty minutes. Others might take an hour, or require multiple sessions. Trust your instinct.
+                    </p>
+                </div>
+            </div>
+            
+            <div class="flex gap-12 items-start border-b border-line pb-16">
+                <div class="w-16 flex-shrink-0">
+                    <div class="w-12 h-12 rounded-full border-2 border-ink-lighter flex items-center justify-center">
+                        <span class="text-xl font-light text-ink-lighter">3</span>
+                    </div>
+                </div>
+                <div class="flex-1">
+                    <h3 class="text-2xl font-light mb-4 tracking-tight">Nothing will interrupt you</h3>
+                    <p class="text-lg font-light text-ink-light leading-relaxed mb-4">
+                        No pop-ups asking for your email. No cookie banners. No chat widgets. No analytics tracking your scroll depth. You're here to read, and I respect that.
+                    </p>
+                    <p class="text-base font-light text-ink-lighter leading-relaxed">
+                        If you want to stay connected, there's a simple subscribe option at the end of each essay. One click, no pressure.
+                    </p>
+                </div>
+            </div>
+            
+            <div class="flex gap-12 items-start border-b border-line pb-16">
+                <div class="w-16 flex-shrink-0">
+                    <div class="w-12 h-12 rounded-full border-2 border-ink-lighter flex items-center justify-center">
+                        <span class="text-xl font-light text-ink-lighter">4</span>
+                    </div>
+                </div>
+                <div class="flex-1">
+                    <h3 class="text-2xl font-light mb-4 tracking-tight">Trust the silence</h3>
+                    <p class="text-lg font-light text-ink-light leading-relaxed mb-4">
+                        White space isn't wasted space. The pauses between paragraphs give you room to think. The margins give your eyes a place to rest.
+                    </p>
+                    <p class="text-base font-light text-ink-lighter leading-relaxed">
+                        This emptiness is intentional. It's part of the reading experience.
+                    </p>
+                </div>
+            </div>
+            
+            <div class="flex gap-12 items-start">
+                <div class="w-16 flex-shrink-0">
+                    <div class="w-12 h-12 rounded-full border-2 border-ink-lighter flex items-center justify-center">
+                        <span class="text-xl font-light text-ink-lighter">5</span>
+                    </div>
+                </div>
+                <div class="flex-1">
+                    <h3 class="text-2xl font-light mb-4 tracking-tight">Leave when you're ready</h3>
+                    <p class="text-lg font-light text-ink-light leading-relaxed mb-4">
+                        If an essay isn't resonating, you can leave at any time. No guilt, no friction. Your attention is yours to give.
+                    </p>
+                    <p class="text-base font-light text-ink-lighter leading-relaxed">
+                        The work that matters will find you when the timing is right.
+                    </p>
+                </div>
+            </div>
+            
+        </div>
+        
+    </div>
+    
+</div>
+
+<div id="visual-language" class="w-full min-h-[800px] bg-gradient-to-b from-paper to-gray-50 px-8 py-32">
+    
+    <div class="max-w-6xl mx-auto">
+        
+        <div id="language-header" class="text-center mb-24">
+            <h2 class="text-4xl font-light mb-6 tracking-tight">A note on design</h2>
+            <p class="text-lg font-light text-ink-light max-w-2xl mx-auto">
+                Every visual choice here serves the reading experience
+            </p>
+        </div>
+        
+        <div id="design-elements" class="grid grid-cols-2 gap-16">
+            
+            <div class="space-y-8">
+                <div>
+                    <h3 class="text-sm tracking-widest uppercase font-sans mb-4 text-ink">Typography</h3>
+                    <div class="bg-paper border border-line p-8">
+                        <p class="text-4xl font-light mb-4" style="font-family: 'Crimson Pro', serif;">Crimson Pro</p>
+                        <p class="text-base font-light text-ink-light leading-relaxed mb-6">
+                            A serif typeface designed for long-form reading. Open, elegant, and easy on the eyes at any size.
+                        </p>
+                        <p class="text-lg font-sans mb-2" style="font-family: 'Inter', sans-serif;">Inter</p>
+                        <p class="text-sm font-light text-ink-light leading-relaxed">
+                            For labels, metadata, and UI elements. Neutral and unobtrusive.
+                        </p>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 class="text-sm tracking-widest uppercase font-sans mb-4 text-ink">Color</h3>
+                    <div class="bg-paper border border-line p-8 space-y-4">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded bg-paper border-2 border-ink"></div>
+                            <div>
+                                <p class="text-sm font-sans text-ink mb-1">Paper</p>
+                                <p class="text-xs text-ink-lighter">#FDFCFA</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded bg-ink"></div>
+                            <div>
+                                <p class="text-sm font-sans text-ink mb-1">Ink</p>
+                                <p class="text-xs text-ink-lighter">#1A1A1A</p>
+                            </div>
+                        </div>
+                        <p class="text-sm font-light text-ink-light leading-relaxed pt-4">
+                            High contrast for clarity. Warm neutrals to reduce eye strain. No bright colors to distract.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="space-y-8">
+                <div>
+                    <h3 class="text-sm tracking-widest uppercase font-sans mb-4 text-ink">Spacing</h3>
+                    <div class="bg-paper border border-line p-8">
+                        <div class="space-y-6">
+                            <div class="border-l-2 border-ink pl-6">
+                                <p class="text-lg font-light text-ink-light leading-relaxed">
+                                    Generous line height (1.8) makes text breathable
+                                </p>
+                            </div>
+                            <div class="border-l-2 border-ink-lighter pl-6">
+                                <p class="text-lg font-light text-ink-light leading-relaxed">
+                                    Wide margins (never less than 8% of viewport)
+                                </p>
+                            </div>
+                            <div class="border-l-2 border-line pl-6">
+                                <p class="text-lg font-light text-ink-light leading-relaxed">
+                                    Paragraph breaks create natural pauses
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 class="text-sm tracking-widest uppercase font-sans mb-4 text-ink">Interaction</h3>
+                    <div class="bg-paper border border-line p-8">
+                        <p class="text-base font-light text-ink-light leading-relaxed mb-6">
+                            All interactions are slow and intentional. Hover states fade in over half a second. Transitions respect your pace.
+                        </p>
+                        <div class="flex gap-4">
+                            <button class="group relative px-6 py-3 border border-line hover:border-ink transition-all duration-500">
+                                <span class="text-sm tracking-wide font-sans text-ink-light group-hover:text-ink transition-colors duration-500">Hover me</span>
+                            </button>
+                            <button class="group relative px-6 py-3 bg-ink hover:bg-ink-light transition-all duration-500">
+                                <span class="text-sm tracking-wide font-sans text-paper">Or me</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+        
+        <div id="design-philosophy" class="mt-16 text-center max-w-3xl mx-auto">
+            <p class="text-lg font-light text-ink-light leading-relaxed italic">
+                "The interface should disappear. You should forget you're looking at a screen and remember you're reading words written by a human, for humans."
+            </p>
+        </div>
+        
+    </div>
+    
+</div>
+
+<div id="author-presence" class="w-full min-h-[900px] bg-paper px-8 py-32">
+    
+    <div class="max-w-4xl mx-auto">
+        
+        <div id="author-intro" class="mb-24">
+            <div class="flex flex-col md:flex-row gap-16 items-start">
+                <div class="w-full md:w-1/3">
+                    <div class="aspect-square bg-gray-200 mb-6 overflow-hidden">
+                        <img class="w-full h-full object-cover" src="https://storage.googleapis.com/uxpilot-auth.appspot.com/f81a6455a2-d81cd76ab557d4be35db.png" alt="portrait of thoughtful woman writer in natural light, professional author photo, warm tones, minimalist background" />
+                    </div>
+                    <p class="text-sm tracking-widest uppercase font-sans text-ink-lighter">Elena Morrison</p>
+                </div>
+                <div class="w-full md:w-2/3">
+                    <h2 class="text-4xl font-light mb-8 tracking-tight">About the writer</h2>
+                    <div class="space-y-6 text-lg font-light text-ink-light leading-relaxed">
+                        <p>
+                            I write about attention, craft, and the small rebellions that make life worth living. My background is in design and philosophy, which means I think a lot about how things work and why they matter.
+                        </p>
+                        <p>
+                            This site exists because I wanted a place to publish work that couldn't fit anywhere else—essays too long for social media, too slow for most publications, too personal for professional platforms.
+                        </p>
+                        <p>
+                            I believe in taking time. I believe in revising until the words are right. I believe that readers deserve work that respects their intelligence and their attention.
+                        </p>
+                        <p>
+                            If that resonates with you, welcome. I'm glad you're here.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="author-values" class="border-t border-line pt-16">
+            <h3 class="text-2xl font-light mb-12 tracking-tight text-center">What I believe about writing</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+                
+                <div class="space-y-4">
+                    <h4 class="text-sm tracking-widest uppercase font-sans text-ink">Quality over quantity</h4>
+                    <p class="text-base font-light text-ink-light leading-relaxed">
+                        I publish when I have something worth saying, not on a schedule. Some months bring three essays. Others bring none. The work dictates the timeline.
+                    </p>
+                </div>
+                
+                <div class="space-y-4">
+                    <h4 class="text-sm tracking-widest uppercase font-sans text-ink">Depth over virality</h4>
+                    <p class="text-base font-light text-ink-light leading-relaxed">
+                        I'm not trying to go viral or rack up shares. I'm trying to write something that matters to the handful of people who need to read it.
+                    </p>
+                </div>
+                
+                <div class="space-y-4">
+                    <h4 class="text-sm tracking-widest uppercase font-sans text-ink">Clarity over cleverness</h4>
+                    <p class="text-base font-light text-ink-light leading-relaxed">
+                        Good writing serves the reader, not the writer's ego. If a sentence sounds impressive but obscures meaning, it gets cut.
+                    </p>
+                </div>
+                
+                <div class="space-y-4">
+                    <h4 class="text-sm tracking-widest uppercase font-sans text-ink">Honesty over performance</h4>
+                    <p class="text-base font-light text-ink-light leading-relaxed">
+                        I write what I actually think, not what I think will get applause. Sometimes that means admitting uncertainty. That's okay.
+                    </p>
+                </div>
+                
+            </div>
+        </div>
+        
+    </div>
+    
+</div>
+
+<div id="commitment-threshold" class="w-full min-h-[800px] bg-gradient-to-b from-paper to-gray-50 px-8 py-32">
+    
+    <div class="max-w-3xl mx-auto text-center">
+        
+        <div id="commitment-header" class="mb-16">
+            <h2 class="text-4xl font-light mb-8 tracking-tight">Ready to begin?</h2>
+            <p class="text-xl font-light text-ink-light leading-relaxed">
+                Choose a collection below, or start with the most recent essay
+            </p>
+        </div>
+        
+        <div id="entry-options" class="space-y-6 mb-20">
+            
+            <button class="group w-full bg-paper border-2 border-ink hover:bg-ink transition-all duration-500 p-8 text-left">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-2xl font-light mb-2 tracking-tight group-hover:text-paper transition-colors duration-500">Latest Essay</h3>
+                        <p class="text-sm tracking-wide font-sans text-ink-lighter group-hover:text-paper transition-colors duration-500">On the Architecture of Boredom</p>
+                    </div>
+                    <i class="fa-solid fa-arrow-right text-ink group-hover:text-paper transition-colors duration-500"></i>
+                </div>
+            </button>
+            
+            <button class="group w-full bg-paper border border-line hover:border-ink-lighter transition-all duration-500 p-8 text-left">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-xl font-light mb-2 tracking-tight">Browse Attention</h3>
+                        <p class="text-sm tracking-wide font-sans text-ink-lighter">12 essays on focus and presence</p>
+                    </div>
+                    <i class="fa-solid fa-arrow-right text-ink-lighter opacity-0 group-hover:opacity-100 transition-opacity duration-500"></i>
+                </div>
+            </button>
+            
+            <button class="group w-full bg-paper border border-line hover:border-ink-lighter transition-all duration-500 p-8 text-left">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-xl font-light mb-2 tracking-tight">Browse Craft</h3>
+                        <p class="text-sm tracking-wide font-sans text-ink-lighter">8 essays on making and refining</p>
+                    </div>
+                    <i class="fa-solid fa-arrow-right text-ink-lighter opacity-0 group-hover:opacity-100 transition-opacity duration-500"></i>
+                </div>
+            </button>
+            
+            <button class="group w-full bg-paper border border-line hover:border-ink-lighter transition-all duration-500 p-8 text-left">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-xl font-light mb-2 tracking-tight">Browse Rebellion</h3>
+                        <p class="text-sm tracking-wide font-sans text-ink-lighter">15 essays on quiet resistance</p>
+                    </div>
+                    <i class="fa-solid fa-arrow-right text-ink-lighter opacity-0 group-hover:opacity-100 transition-opacity duration-500"></i>
+                </div>
+            </button>
+            
+        </div>
+        
+        <div id="alternative-path" class="border-t border-line pt-12">
+            <p class="text-base font-light text-ink-lighter mb-6">Not ready to commit yet?</p>
+            <button class="group inline-block">
+                <span class="text-sm tracking-widest uppercase font-sans text-ink-lighter group-hover:text-ink transition-colors duration-500">
+                    Continue exploring
+                </span>
+                <span class="block w-0 h-px bg-ink mt-1 group-hover:w-full transition-all duration-500"></span>
+            </button>
+        </div>
+        
+    </div>
+    
+</div>
+
+<div id="ecosystem-context" class="w-full min-h-[900px] bg-paper px-8 py-32">
+    
+    <div class="max-w-6xl mx-auto">
+        
+        <div id="ecosystem-header" class="text-center mb-24">
+            <h2 class="text-4xl font-light mb-6 tracking-tight">The broader context</h2>
+            <p class="text-lg font-light text-ink-light max-w-2xl mx-auto">
+                This site exists within a larger conversation about attention, craft, and meaning in the digital age
+            </p>
+        </div>
+        
+        <div id="influences-grid" class="grid grid-cols-1 md:grid-cols-3 gap-12 mb-20">
+            
+            <div class="space-y-4">
+                <div class="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-6">
+                    <i class="fa-solid fa-book text-ink-lighter"></i>
+                </div>
+                <h3 class="text-xl font-light tracking-tight">The Slow Web Movement</h3>
+                <p class="text-base font-light text-ink-light leading-relaxed">
+                    A growing resistance to the attention economy. Sites that load slowly on purpose. Platforms that encourage lingering, not scrolling.
+                </p>
+            </div>
+            
+            <div class="space-y-4">
+                <div class="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-6">
+                    <i class="fa-solid fa-pen-nib text-ink-lighter"></i>
+                </div>
+                <h3 class="text-xl font-light tracking-tight">The Essay Renaissance</h3>
+                <p class="text-base font-light text-ink-light leading-relaxed">
+                    Long-form writing is having a moment. Readers are hungry for substance. Writers are reclaiming space for nuanced thought.
+                </p>
+            </div>
+            
+            <div class="space-y-4">
+                <div class="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-6">
+                    <i class="fa-solid fa-palette text-ink-lighter"></i>
+                </div>
+                <h3 class="text-xl font-light tracking-tight">Digital Minimalism</h3>
+                <p class="text-base font-light text-ink-light leading-relaxed">
+                    The aesthetic of restraint. Designs that remove rather than add. Interfaces that disappear so content can breathe.
+                </p>
+            </div>
+            
+        </div>
+        
+        <div id="related-voices" class="border-t border-line pt-16">
+            <h3 class="text-2xl font-light mb-12 tracking-tight">Voices in conversation</h3>
+            <div class="space-y-8">
+                
+                <div class="flex gap-8 items-start pb-8 border-b border-line">
+                    <div class="w-20 flex-shrink-0">
+                        <div class="w-16 h-16 rounded-full bg-gray-200 overflow-hidden">
+                            <img class="w-full h-full object-cover" src="https://storage.googleapis.com/uxpilot-auth.appspot.com/a3190488e4-7bd0cc174e3c0b8c4889.png" alt="portrait of Cal Newport author, professional headshot" />
+                        </div>
+                    </div>
+                    <div class="flex-1">
+                        <h4 class="text-lg font-light mb-2">Cal Newport</h4>
+                        <p class="text-sm font-sans text-ink-lighter mb-3">Deep Work, Digital Minimalism</p>
+                        <p class="text-base font-light text-ink-light leading-relaxed">
+                            On the value of sustained focus and the cost of constant distraction. Essential reading for anyone trying to do meaningful work.
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="flex gap-8 items-start pb-8 border-b border-line">
+                    <div class="w-20 flex-shrink-0">
+                        <div class="w-16 h-16 rounded-full bg-gray-200 overflow-hidden">
+                            <img class="w-full h-full object-cover" src="https://storage.googleapis.com/uxpilot-auth.appspot.com/44e924c7bf-0bf4676b8ef2f8c63597.png" alt="portrait of Jenny Odell author, professional headshot" />
+                        </div>
+                    </div>
+                    <div class="flex-1">
+                        <h4 class="text-lg font-light mb-2">Jenny Odell</h4>
+                        <p class="text-sm font-sans text-ink-lighter mb-3">How to Do Nothing</p>
+                        <p class="text-base font-light text-ink-light leading-relaxed">
+                            On resisting the attention economy and reclaiming time for observation, connection, and genuine presence.
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="flex gap-8 items-start pb-8 border-b border-line">
+                    <div class="w-20 flex-shrink-0">
+                        <div class="w-16 h-16 rounded-full bg-gray-200 overflow-hidden">
+                            <img class="w-full h-full object-cover" src="https://storage.googleapis.com/uxpilot-auth.appspot.com/2ff22e14ea-f4226ba53c8f718f904c.png" alt="portrait of Craig Mod writer, professional headshot" />
+                        </div>
+                    </div>
+                    <div class="flex-1">
+                        <h4 class="text-lg font-light mb-2">Craig Mod</h4>
+                        <p class="text-sm font-sans text-ink-lighter mb-3">Writer, Designer, Walker</p>
+                        <p class="text-base font-light text-ink-light leading-relaxed">
+                            On mindful technology, the craft of publishing, and the value of walking as a creative practice.
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="flex gap-8 items-start">
+                    <div class="w-20 flex-shrink-0">
+                        <div class="w-16 h-16 rounded-full bg-gray-200 overflow-hidden">
+                            <img class="w-full h-full object-cover" src="https://storage.googleapis.com/uxpilot-auth.appspot.com/db6b1931c9-569dd525c879b901616f.png" alt="portrait of Robin Sloan author, professional headshot" />
+                        </div>
+                    </div>
+                    <div class="flex-1">
+                        <h4 class="text-lg font-light mb-2">Robin Sloan</h4>
+                        <p class="text-sm font-sans text-ink-lighter mb-3">Mr. Penumbra's 24-Hour Bookstore</p>
+                        <p class="text-base font-light text-ink-light leading-relaxed">
+                            On the intersection of technology and craft, and building small, intentional communities around meaningful work.
+                        </p>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+        
+    </div>
+    
+</div>
+
+<div id="technical-transparency" class="w-full min-h-[800px] bg-gradient-to-b from-paper to-gray-50 px-8 py-32">
+    
+    <div class="max-w-4xl mx-auto">
+        
+        <div id="tech-header" class="text-center mb-20">
+            <h2 class="text-4xl font-light mb-6 tracking-tight">How this site works</h2>
+            <p class="text-lg font-light text-ink-light max-w-2xl mx-auto">
+                Transparency about the technology and choices behind the experience
+            </p>
+        </div>
+        
+        <div id="tech-details" class="space-y-12">
+            
+            <div class="bg-paper border border-line p-10">
+                <h3 class="text-xl font-light mb-6 tracking-tight">No tracking, no analytics</h3>
+                <p class="text-base font-light text-ink-light leading-relaxed mb-4">
+                    I don't track page views, time on site, scroll depth, or any other metrics. I don't use Google Analytics, Facebook Pixel, or any third-party tracking scripts.
+                </p>
+                <p class="text-base font-light text-ink-light leading-relaxed">
+                    I have no idea how many people read these essays, and I prefer it that way. The work either resonates or it doesn't. Numbers won't change that.
+                </p>
+            </div>
+            
+            <div class="bg-paper border border-line p-10">
+                <h3 class="text-xl font-light mb-6 tracking-tight">Static site, fast loading</h3>
+                <p class="text-base font-light text-ink-light leading-relaxed mb-4">
+                    This is a static website—just HTML, CSS, and minimal JavaScript. No database queries, no server-side rendering, no complex frameworks.
+                </p>
+                <p class="text-base font-light text-ink-light leading-relaxed">
+                    Pages load in under a second. The entire site is under 200KB. Fast by design, not by accident.
+                </p>
+            </div>
+            
+            <div class="bg-paper border border-line p-10">
+                <h3 class="text-xl font-light mb-6 tracking-tight">Accessible to everyone</h3>
+                <p class="text-base font-light text-ink-light leading-relaxed mb-4">
+                    Semantic HTML, proper heading hierarchy, high contrast ratios, keyboard navigation, screen reader support.
+                </p>
+                <p class="text-base font-light text-ink-light leading-relaxed">
+                    If you encounter any accessibility issues, please let me know. Good design should be inclusive design.
+                </p>
+            </div>
+            
+            <div class="bg-paper border border-line p-10">
+                <h3 class="text-xl font-light mb-6 tracking-tight">Privacy by default</h3>
+                <p class="text-base font-light text-ink-light leading-relaxed mb-4">
+                    If you subscribe to the newsletter, your email is stored securely and never shared. You can unsubscribe anytime with one click.
+                </p>
+                <p class="text-base font-light text-ink-light leading-relaxed">
+                    No cookies, no local storage, no fingerprinting. Your visit here leaves no trace.
+                </p>
+            </div>
+            
+        </div>
+        
+        <div id="tech-philosophy" class="mt-16 text-center">
+            <p class="text-lg font-light text-ink-light leading-relaxed italic max-w-2xl mx-auto">
+                Technology should serve the reader, not extract value from them. Every technical choice here reflects that principle.
+            </p>
+        </div>
+        
+    </div>
+    
+</div>
+
+<div id="final-invitation" class="w-full min-h-[700px] bg-paper px-8 py-32">
+    
+    <div class="max-w-3xl mx-auto text-center">
+        
+        <div id="closing-statement" class="mb-16">
+            <h2 class="text-5xl font-light mb-8 tracking-tight leading-tight">
+                Take your time.<br/>The words will wait.
+            </h2>
+            <p class="text-xl font-light text-ink-light leading-relaxed max-w-2xl mx-auto">
+                When you're ready to begin, choose an essay. Or come back tomorrow. Or next week. There's no urgency here.
+            </p>
+        </div>
+        
+        <div id="final-actions" class="flex flex-col items-center gap-6 mb-20">
+            <button class="group relative">
+                <span class="text-lg tracking-widest uppercase font-sans font-light text-ink transition-colors duration-500 group-hover:text-ink-light">
+                    Begin Reading
+                </span>
+                <span class="absolute bottom-0 left-0 w-full h-px bg-ink transition-all duration-500"></span>
+            </button>
+            
+            <div class="flex gap-8 text-sm tracking-wide font-sans text-ink-lighter">
+                <button class="hover:text-ink transition-colors duration-500">Subscribe</button>
+                <button class="hover:text-ink transition-colors duration-500">About</button>
+                <button class="hover:text-ink transition-colors duration-500">Archive</button>
+            </div>
+        </div>
+        
+        <div id="signature" class="border-t border-line pt-12">
+            <p class="text-sm tracking-widest uppercase font-sans text-ink-lighter mb-2">Elena Morrison</p>
+            <p class="text-xs text-ink-lighter">Writer, Designer, Slow Web Advocate</p>
+        </div>
+        
+    </div>
+    
+</div>
+
+<footer id="footer" class="w-full bg-gray-50 border-t border-line px-8 py-16">
+    <div class="max-w-6xl mx-auto">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
+            <div>
+                <p class="text-sm font-light text-ink-lighter mb-2">© 2025 Elena Morrison</p>
+                <p class="text-xs text-ink-lighter">All essays published under Creative Commons BY-NC-SA 4.0</p>
+            </div>
+            <div class="flex gap-6 text-sm text-ink-lighter">
+                <a href="#" class="hover:text-ink transition-colors duration-500">RSS</a>
+                <a href="#" class="hover:text-ink transition-colors duration-500">Email</a>
+                <a href="#" class="hover:text-ink transition-colors duration-500">Mastodon</a>
+            </div>
+        </div>
+    </div>
+</footer>
+
+</body>
+</html>

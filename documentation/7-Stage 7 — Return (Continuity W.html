@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Essays</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script> window.FontAwesomeConfig = { autoReplaceSvg: 'nest'};</script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@300;400;500;600&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        ::-webkit-scrollbar { display: none; }
+        body { 
+            font-family: 'Crimson Pro', serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        .sans { font-family: 'Inter', sans-serif; }
+        .cursor-default { cursor: default; }
+        
+        .essay-card {
+            transition: all 0.6s cubic-bezier(0.25, 0.1, 0.25, 1);
+            border-bottom: 1px solid transparent;
+        }
+        
+        .essay-card:hover {
+            transform: translateX(8px);
+            border-bottom-color: #E8E6E3;
+        }
+        
+        .essay-card.read-marker {
+            opacity: 0.6;
+        }
+        
+        .essay-card.read-marker::before {
+            content: '';
+            position: absolute;
+            left: -24px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #B8B8B8;
+            opacity: 0;
+            transition: opacity 0.6s cubic-bezier(0.25, 0.1, 0.25, 1);
+        }
+        
+        .essay-card.read-marker:hover::before {
+            opacity: 1;
+        }
+        
+        .continuity-preserved {
+            scroll-behavior: smooth;
+        }
+        
+        .gentle-return {
+            animation: gentleReturn 1.2s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+        }
+        
+        @keyframes gentleReturn {
+            from { opacity: 0; transform: translateY(-12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .state-memory {
+            position: relative;
+        }
+        
+        .reading-indicator {
+            position: absolute;
+            left: -32px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(to bottom, #1A1A1A 0%, transparent 100%);
+            opacity: 0;
+            transition: opacity 0.8s cubic-bezier(0.25, 0.1, 0.25, 1);
+        }
+        
+        .essay-card:hover .reading-indicator {
+            opacity: 0.3;
+        }
+        
+        .spatial-anchor {
+            scroll-margin-top: 120px;
+        }
+        
+        .orientation-preserved {
+            position: relative;
+        }
+        
+        .mental-space-indicator {
+            font-size: 0.75rem;
+            letter-spacing: 0.1em;
+            opacity: 0;
+            transition: opacity 0.6s cubic-bezier(0.25, 0.1, 0.25, 1);
+        }
+        
+        .essay-card:hover .mental-space-indicator {
+            opacity: 0.4;
+        }
+        
+        .flow-continuity {
+            transition: all 0.4s cubic-bezier(0.25, 0.1, 0.25, 1);
+        }
+        
+        .natural-resume {
+            opacity: 1;
+        }
+        
+        .contextual-breadcrumb {
+            opacity: 0.5;
+            transition: opacity 0.6s cubic-bezier(0.25, 0.1, 0.25, 1);
+        }
+        
+        .contextual-breadcrumb:hover {
+            opacity: 1;
+        }
+        
+        .read-state-subtle {
+            position: relative;
+        }
+        
+        .read-state-subtle::after {
+            content: 'Previously read';
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.7rem;
+            letter-spacing: 0.08em;
+            color: #B8B8B8;
+            opacity: 0;
+            transition: opacity 0.6s cubic-bezier(0.25, 0.1, 0.25, 1);
+            font-family: 'Inter', sans-serif;
+            text-transform: uppercase;
+        }
+        
+        .read-state-subtle:hover::after {
+            opacity: 1;
+        }
+        
+        .immersive-return {
+            background: linear-gradient(to bottom, rgba(253, 252, 250, 0) 0%, rgba(253, 252, 250, 1) 20%);
+            padding-top: 80px;
+            margin-top: -80px;
+        }
+        
+        .preserved-context {
+            position: sticky;
+            top: 100px;
+            z-index: 10;
+            background: linear-gradient(to bottom, #FDFCFA 0%, #FDFCFA 80%, rgba(253, 252, 250, 0) 100%);
+            padding-bottom: 24px;
+        }
+        
+        .seamless-navigation {
+            transition: all 0.5s cubic-bezier(0.25, 0.1, 0.25, 1);
+        }
+        
+        .time-anchor {
+            font-variant-numeric: oldstyle-nums;
+        }
+        
+        .collection-rhythm {
+            margin-bottom: 4rem;
+        }
+        
+        .deep-collection-rhythm {
+            margin-bottom: 6rem;
+        }
+        
+        .section-breathing {
+            margin-bottom: 8rem;
+        }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'serif': ['Crimson Pro', 'serif'],
+                        'sans': ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        'paper': '#FDFCFA',
+                        'ink': '#1A1A1A',
+                        'ink-light': '#4A4A4A',
+                        'ink-lighter': '#8A8A8A',
+                        'ink-whisper': '#B8B8B8',
+                        'line': '#E8E6E3',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-paper text-ink cursor-default continuity-preserved">
+
+<header id="header" class="w-full bg-paper fixed top-0 z-50 border-b border-line gentle-return">
+    <div class="max-w-7xl mx-auto px-8 py-6 flex items-center justify-between">
+        <div class="flex items-center gap-12">
+            <a href="#" class="text-2xl font-light tracking-tight hover:text-ink-light transition-colors duration-500">
+                Elena Morrison
+            </a>
+            <nav class="hidden md:flex items-center gap-8">
+                <a href="#" class="text-sm font-light text-ink-lighter hover:text-ink transition-colors duration-500 sans tracking-wide">Essays</a>
+                <a href="#" class="text-sm font-light text-ink-lighter hover:text-ink transition-colors duration-500 sans tracking-wide">About</a>
+                <a href="#" class="text-sm font-light text-ink-lighter hover:text-ink transition-colors duration-500 sans tracking-wide">Archive</a>
+            </nav>
+        </div>
+        <button class="text-ink-lighter hover:text-ink transition-colors duration-500">
+            <i class="fa-solid fa-bars text-xl"></i>
+        </button>
+    </div>
+</header>
+
+<div id="return-continuity-space" class="w-full px-8 bg-paper immersive-return">
+    <div class="max-w-4xl mx-auto">
+        
+        <section id="contextual-orientation-section" class="pt-40 pb-12">
+            <div class="flex items-center gap-3 text-sm font-light text-ink-whisper sans tracking-wide contextual-breadcrumb">
+                <a href="#" class="hover:text-ink-lighter transition-colors duration-500">Home</a>
+                <span>/</span>
+                <span class="text-ink-lighter">Essays</span>
+            </div>
+        </section>
+
+        <section id="preserved-state-header-section" class="pb-16 preserved-context">
+            <div class="mb-6">
+                <h1 class="text-5xl font-light tracking-tight leading-tight">
+                    Essays
+                </h1>
+            </div>
+            <div class="flex items-center justify-between">
+                <p class="text-lg font-light text-ink-light leading-relaxed max-w-2xl">
+                    Thoughts on attention, consciousness, and the architecture of experience
+                </p>
+                <div class="text-sm font-light text-ink-whisper sans tracking-wide">
+                    <span class="time-anchor">24 pieces</span>
+                </div>
+            </div>
+        </section>
+
+        <section id="natural-resume-collection-section" class="pb-24 section-breathing">
+            <div class="space-y-16">
+                
+                <article id="essay-card-1" class="essay-card state-memory spatial-anchor py-12 relative collection-rhythm">
+                    <div class="reading-indicator"></div>
+                    <a href="#" class="block group">
+                        <div class="flex items-start justify-between gap-8">
+                            <div class="flex-1">
+                                <div class="mb-4">
+                                    <span class="text-xs font-light text-ink-whisper sans tracking-widest uppercase">Recently Read</span>
+                                </div>
+                                <h2 class="text-3xl font-normal tracking-tight leading-snug mb-4 group-hover:text-ink-light transition-colors duration-500">
+                                    On the Architecture of Flow
+                                </h2>
+                                <p class="text-lg font-light text-ink-light leading-relaxed mb-6">
+                                    How interfaces can disappear by honoring the natural rhythms of attention, creating spaces where consciousness can settle into sustained absorption without friction or interruption.
+                                </p>
+                                <div class="flex items-center gap-6 text-sm font-light text-ink-lighter sans">
+                                    <span class="time-anchor">18 min read</span>
+                                    <span class="text-ink-whisper">·</span>
+                                    <span class="time-anchor">December 2024</span>
+                                </div>
+                            </div>
+                            <div class="w-32 h-32 flex-shrink-0 bg-line rounded flex items-center justify-center opacity-20 group-hover:opacity-30 transition-opacity duration-500">
+                                <i class="fa-solid fa-water text-4xl text-ink-lighter"></i>
+                            </div>
+                        </div>
+                    </a>
+                </article>
+
+                <article id="essay-card-2" class="essay-card state-memory spatial-anchor py-12 relative collection-rhythm">
+                    <div class="reading-indicator"></div>
+                    <a href="#" class="block group">
+                        <div class="flex items-start justify-between gap-8">
+                            <div class="flex-1">
+                                <h2 class="text-3xl font-normal tracking-tight leading-snug mb-4 group-hover:text-ink-light transition-colors duration-500">
+                                    The Slow Web Manifesto
+                                </h2>
+                                <p class="text-lg font-light text-ink-light leading-relaxed mb-6">
+                                    Against the tyranny of feeds and infinite scroll. For digital spaces that respect human attention spans, encourage deep reading, and create room for contemplation rather than compulsion.
+                                </p>
+                                <div class="flex items-center gap-6 text-sm font-light text-ink-lighter sans">
+                                    <span class="time-anchor">12 min read</span>
+                                    <span class="text-ink-whisper">·</span>
+                                    <span class="time-anchor">November 2024</span>
+                                </div>
+                            </div>
+                            <div class="w-32 h-32 flex-shrink-0 bg-line rounded flex items-center justify-center opacity-20 group-hover:opacity-30 transition-opacity duration-500">
+                                <i class="fa-solid fa-hourglass-half text-4xl text-ink-lighter"></i>
+                            </div>
+                        </div>
+                    </a>
+                </article>
+
+                <article id="essay-card-3" class="essay-card state-memory spatial-anchor py-12 relative collection-rhythm">
+                    <div class="reading-indicator"></div>
+                    <a href="#" class="block group">
+                        <div class="flex items-start justify-between gap-8">
+                            <div class="flex-1">
+                                <h2 class="text-3xl font-normal tracking-tight leading-snug mb-4 group-hover:text-ink-light transition-colors duration-500">
+                                    Typography as Hospitality
+                                </h2>
+                                <p class="text-lg font-light text-ink-light leading-relaxed mb-6">
+                                    The choice of typeface, the rhythm of line breaks, the generous use of whitespace—these aren't aesthetic decisions but acts of care. How letterforms create the conditions for sustained attention.
+                                </p>
+                                <div class="flex items-center gap-6 text-sm font-light text-ink-lighter sans">
+                                    <span class="time-anchor">15 min read</span>
+                                    <span class="text-ink-whisper">·</span>
+                                    <span class="time-anchor">October 2024</span>
+                                </div>
+                            </div>
+                            <div class="w-32 h-32 flex-shrink-0 bg-line rounded flex items-center justify-center opacity-20 group-hover:opacity-30 transition-opacity duration-500">
+                                <i class="fa-solid fa-font text-4xl text-ink-lighter"></i>
+                            </div>
+                        </div>
+                    </a>
+                </article>
+
+                <article id="essay-card-4" class="essay-card state-memory spatial-anchor py-12 relative read-state-subtle collection-rhythm">
+                    <div class="reading-indicator"></div>
+                    <a href="#" class="block group">
+                        <div class="flex items-start justify-between gap-8">
+                            <div class="flex-1">
+                                <h2 class="text-3xl font-normal tracking-tight leading-snug mb-4 group-hover:text-ink-light transition-colors duration-500">
+                                    Silence in Digital Spaces
+                                </h2>
+                                <p class="text-lg font-light text-ink-light leading-relaxed mb-6">
+                                    What happens when we design for pause rather than engagement? When we create interfaces that know when to recede, when to hold space, when to let the reader simply exist without demanding action.
+                                </p>
+                                <div class="flex items-center gap-6 text-sm font-light text-ink-lighter sans">
+                                    <span class="time-anchor">20 min read</span>
+                                    <span class="text-ink-whisper">·</span>
+                                    <span class="time-anchor">September 2024</span>
+                                </div>
+                            </div>
+                            <div class="w-32 h-32 flex-shrink-0 bg-line rounded flex items-center justify-center opacity-20 group-hover:opacity-30 transition-opacity duration-500">
+                                <i class="fa-solid fa-volume-xmark text-4xl text-ink-lighter"></i>
+                            </div>
+                        </div>
+                    </a>
+                </article>
+
+            </div>
+        </section>
+
+        <section id="temporal-continuity-section" class="pb-20 deep-collection-rhythm">
+            <div class="border-t border-line pt-16">
+                <h3 class="text-sm font-light text-ink-whisper sans tracking-widest uppercase mb-12">
+                    Earlier This Year
+                </h3>
+                <div class="space-y-12">
+                    
+                    <article id="essay-card-5" class="essay-card state-memory spatial-anchor py-8 relative">
+                        <div class="reading-indicator"></div>
+                        <a href="#" class="block group">
+                            <div class="flex items-start justify-between gap-8">
+                                <div class="flex-1">
+                                    <h2 class="text-2xl font-normal tracking-tight leading-snug mb-3 group-hover:text-ink-light transition-colors duration-500">
+                                        The Ethics of Attention Design
+                                    </h2>
+                                    <p class="text-base font-light text-ink-light leading-relaxed mb-4">
+                                        Every design decision is a moral choice about how we treat human consciousness. On the responsibility that comes with shaping the spaces where minds dwell.
+                                    </p>
+                                    <div class="flex items-center gap-6 text-sm font-light text-ink-lighter sans">
+                                        <span class="time-anchor">16 min read</span>
+                                        <span class="text-ink-whisper">·</span>
+                                        <span class="time-anchor">August 2024</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    </article>
+
+                    <article id="essay-card-6" class="essay-card state-memory spatial-anchor py-8 relative">
+                        <div class="reading-indicator"></div>
+                        <a href="#" class="block group">
+                            <div class="flex items-start justify-between gap-8">
+                                <div class="flex-1">
+                                    <h2 class="text-2xl font-normal tracking-tight leading-snug mb-3 group-hover:text-ink-light transition-colors duration-500">
+                                        Digital Minimalism as Care
+                                    </h2>
+                                    <p class="text-base font-light text-ink-light leading-relaxed mb-4">
+                                        Restraint isn't about aesthetics—it's about creating environments where the mind can rest. Why removing elements is often the most generous act of design.
+                                    </p>
+                                    <div class="flex items-center gap-6 text-sm font-light text-ink-lighter sans">
+                                        <span class="time-anchor">14 min read</span>
+                                        <span class="text-ink-whisper">·</span>
+                                        <span class="time-anchor">July 2024</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    </article>
+
+                    <article id="essay-card-7" class="essay-card state-memory spatial-anchor py-8 relative read-state-subtle">
+                        <div class="reading-indicator"></div>
+                        <a href="#" class="block group">
+                            <div class="flex items-start justify-between gap-8">
+                                <div class="flex-1">
+                                    <h2 class="text-2xl font-normal tracking-tight leading-snug mb-3 group-hover:text-ink-light transition-colors duration-500">
+                                        On Reading as Ritual
+                                    </h2>
+                                    <p class="text-base font-light text-ink-light leading-relaxed mb-4">
+                                        The act of reading online can be sacred if we design for it. Creating digital spaces that honor the contemplative nature of sustained attention.
+                                    </p>
+                                    <div class="flex items-center gap-6 text-sm font-light text-ink-lighter sans">
+                                        <span class="time-anchor">22 min read</span>
+                                        <span class="text-ink-whisper">·</span>
+                                        <span class="time-anchor">June 2024</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    </article>
+
+                    <article id="essay-card-8" class="essay-card state-memory spatial-anchor py-8 relative">
+                        <div class="reading-indicator"></div>
+                        <a href="#" class="block group">
+                            <div class="flex items-start justify-between gap-8">
+                                <div class="flex-1">
+                                    <h2 class="text-2xl font-normal tracking-tight leading-snug mb-3 group-hover:text-ink-light transition-colors duration-500">
+                                        The Texture of Time Online
+                                    </h2>
+                                    <p class="text-base font-light text-ink-light leading-relaxed mb-4">
+                                        Digital experiences flatten time into an endless now. How can we restore temporal depth, create rhythms that feel natural, allow for the passage of hours?
+                                    </p>
+                                    <div class="flex items-center gap-6 text-sm font-light text-ink-lighter sans">
+                                        <span class="time-anchor">19 min read</span>
+                                        <span class="text-ink-whisper">·</span>
+                                        <span class="time-anchor">May 2024</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    </article>
+
+                </div>
+            </div>
+        </section>
+
+        <section id="archive-continuity-section" class="pb-20 deep-collection-rhythm">
+            <div class="border-t border-line pt-16">
+                <h3 class="text-sm font-light text-ink-whisper sans tracking-widest uppercase mb-12">
+                    Spring 2024
+                </h3>
+                <div class="space-y-12">
+                    
+                    <article id="essay-card-9" class="essay-card state-memory spatial-anchor py-8 relative">
+                        <div class="reading-indicator"></div>
+                        <a href="#" class="block group">
+                            <div class="flex items-start justify-between gap-8">
+                                <div class="flex-1">
+                                    <h2 class="text-2xl font-normal tracking-tight leading-snug mb-3 group-hover:text-ink-light transition-colors duration-500">
+                                        Against Gamification
+                                    </h2>
+                                    <p class="text-base font-light text-ink-light leading-relaxed mb-4">
+                                        Points, badges, streaks—these mechanics treat human attention as something to be exploited. A case for interfaces that respect intrinsic motivation.
+                                    </p>
+                                    <div class="flex items-center gap-6 text-sm font-light text-ink-lighter sans">
+                                        <span class="time-anchor">13 min read</span>
+                                        <span class="text-ink-whisper">·</span>
+                                        <span class="time-anchor">April 2024</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    </article>
+
+                    <article id="essay-card-10" class="essay-card state-memory spatial-anchor py-8 relative read-state-subtle">
+                        <div class="reading-indicator"></div>
+                        <a href="#" class="block group">
+                            <div class="flex items-start justify-between gap-8">
+                                <div class="flex-1">
+                                    <h2 class="text-2xl font-normal tracking-tight leading-snug mb-3 group-hover:text-ink-light transition-colors duration-500">
+                                        The Phenomenology of Scrolling
+                                    </h2>
+                                    <p class="text-base font-light text-ink-light leading-relaxed mb-4">
+                                        What does it feel like to move through digital text? The embodied experience of navigation, and how scroll behavior shapes consciousness.
+                                    </p>
+                                    <div class="flex items-center gap-6 text-sm font-light text-ink-lighter sans">
+                                        <span class="time-anchor">17 min read</span>
+                                        <span class="text-ink-whisper">·</span>
+                                        <span class="time-anchor">March 2024</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    </article>
+
+                    <article id="essay-card-11" class="essay-card state-memory spatial-anchor py-8 relative">
+                        <div class="reading-indicator"></div>
+                        <a href="#" class="block group">
+                            <div class="flex items-start justify-between gap-8">
+                                <div class="flex-1">
+                                    <h2 class="text-2xl font-normal tracking-tight leading-snug mb-3 group-hover:text-ink-light transition-colors duration-500">
+                                        Designing for Disappearance
+                                    </h2>
+                                    <p class="text-base font-light text-ink-light leading-relaxed mb-4">
+                                        The best interfaces are the ones you forget exist. On creating transparency, reducing cognitive load, and allowing content to become the entire experience.
+                                    </p>
+                                    <div class="flex items-center gap-6 text-sm font-light text-ink-lighter sans">
+                                        <span class="time-anchor">21 min read</span>
+                                        <span class="text-ink-whisper">·</span>
+                                        <span class="time-anchor">February 2024</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    </article>
+
+                    <article id="essay-card-12" class="essay-card state-memory spatial-anchor py-8 relative">
+                        <div class="reading-indicator"></div>
+                        <a href="#" class="block group">
+                            <div class="flex items-start justify-between gap-8">
+                                <div class="flex-1">
+                                    <h2 class="text-2xl font-normal tracking-tight leading-snug mb-3 group-hover:text-ink-light transition-colors duration-500">
+                                        The Poetics of White Space
+                                    </h2>
+                                    <p class="text-base font-light text-ink-light leading-relaxed mb-4">
+                                        Emptiness isn't absence—it's potential. How generous margins and breathing room create the conditions for meaning to emerge.
+                                    </p>
+                                    <div class="flex items-center gap-6 text-sm font-light text-ink-lighter sans">
+                                        <span class="time-anchor">11 min read</span>
+                                        <span class="text-ink-whisper">·</span>
+                                        <span class="time-anchor">January 2024</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    </article>
+
+                </div>
+            </div>
+        </section>
+
+        <section id="deeper-archive-section" class="pb-20 section-breathing">
+            <div class="border-t border-line pt-16">
+                <h3 class="text-sm font-light text-ink-whisper sans tracking-widest uppercase mb-12">
+                    2023
+                </h3>
+                <div class="grid grid-cols-2 gap-x-12 gap-y-10">
+                    
+                    <article id="essay-card-13" class="essay-card state-memory py-6 relative">
+                        <div class="reading-indicator"></div>
+                        <a href="#" class="block group">
+                            <h2 class="text-xl font-normal tracking-tight leading-snug mb-2 group-hover:text-ink-light transition-colors duration-500">
+                                Attention as a Finite Resource
+                            </h2>
+                            <p class="text-sm font-light text-ink-lighter leading-relaxed mb-3">
+                                Why treating attention as abundant leads to exploitative design, and what changes when we acknowledge its scarcity.
+                            </p>
+                            <div class="flex items-center gap-4 text-xs font-light text-ink-whisper sans">
+                                <span class="time-anchor">9 min</span>
+                                <span>·</span>
+                                <span class="time-anchor">Dec 2023</span>
+                            </div>
+                        </a>
+                    </article>
+
+                    <article id="essay-card-14" class="essay-card state-memory py-6 relative read-state-subtle">
+                        <div class="reading-indicator"></div>
+                        <a href="#" class="block group">
+                            <h2 class="text-xl font-normal tracking-tight leading-snug mb-2 group-hover:text-ink-light transition-colors duration-500">
+                                The Rhythm of Paragraphs
+                            </h2>
+                            <p class="text-sm font-light text-ink-lighter leading-relaxed mb-3">
+                                How the visual cadence of text blocks creates a reading experience that feels either rushed or contemplative.
+                            </p>
+                            <div class="flex items-center gap-4 text-xs font-light text-ink-whisper sans">
+                                <span class="time-anchor">12 min</span>
+                                <span>·</span>
+                                <span class="time-anchor">Nov 2023</span>
+                            </div>
+                        </a>
+                    </article>
+
+                    <article id="essay-card-15" class="essay-card state-memory py-6 relative">
+                        <div class="reading-indicator"></div>
+                        <a href="#" class="block group">
+                            <h2 class="text-xl font-normal tracking-tight leading-snug mb-2 group-hover:text-ink-light transition-colors duration-500">
+                                Interfaces That Listen
+                            </h2>
+                            <p class="text-sm font-light text-ink-lighter leading-relaxed mb-3">
+                                What if digital spaces could sense when we need more or less, when to offer and when to recede?
+                            </p>
+                            <div class="flex items-center gap-4 text-xs font-light text-ink-whisper sans">
+                                <span class="time-anchor">15 min</span>
+                                <span>·</span>
+                                <span class="time-anchor">Oct 2023</span>
+                            </div>
+                        </a>
+                    </article>
+
+                    <article id="essay-card-16" class="essay-card state-memory py-6 relative">
+                        <div class="reading-indicator"></div>
+                        <a href="#" class="block group">
+                            <h2 class="text-xl font-normal tracking-tight leading-snug mb-2 group-hover:text-ink-light transition-colors duration-500">
+                                On Digital Hospitality
+                            </h2>
+                            <p class="text-sm font-light text-ink-lighter leading-relaxed mb-3">
+                                Every website is a host. How do we welcome visitors with warmth rather than manipulation?
+                            </p>
+                            <div class="flex items-center gap-4 text-xs font-light text-ink-whisper sans">
+                                <span class="time-anchor">10 min</span>
+                                <span>·</span>
+                                <span class="time-anchor">Sep 2023</span>
+                            </div>
+                        </a>
+                    </article>
+
+                    <article id="essay-card-17" class="essay-card state-memory py-6 relative">
+                        <div class="reading-indicator"></div>
+                        <a href="#" class="block group">
+                            <h2 class="text-xl font-normal tracking-tight leading-snug mb-2 group-hover:text-ink-light transition-colors duration-500">
+                                The Weight of Words Online
+                            </h2>
+                            <p class="text-sm font-light text-ink-lighter leading-relaxed mb-3">
+                                Digital text feels weightless, but it shouldn't. Restoring gravitas through typographic choices.
+                            </p>
+                            <div class="flex items-center gap-4 text-xs font-light text-ink-whisper sans">
+                                <span class="time-anchor">14 min</span>
+                                <span>·</span>
+                                <span class="time-anchor">Aug 2023</span>
+                            </div>
+                        </a>
+                    </article>
+
+                    <article id="essay-card-18" class="essay-card state-memory py-6 relative read-state-subtle">
+                        <div class="reading-indicator"></div>
+                        <a href="#" class="block group">
+                            <h2 class="text-xl font-normal tracking-tight leading-snug mb-2 group-hover:text-ink-light transition-colors duration-500">
+                                Consciousness and Code
+                            </h2>
+                            <p class="text-sm font-light text-ink-lighter leading-relaxed mb-3">
+                                What programmers can learn from phenomenology about the nature of experience and interface.
+                            </p>
+                            <div class="flex items-center gap-4 text-xs font-light text-ink-whisper sans">
+                                <span class="time-anchor">18 min</span>
+                                <span>·</span>
+                                <span class="time-anchor">Jul 2023</span>
+                            </div>
+                        </a>
+                    </article>
+
+                    <article id="essay-card-19" class="essay-card state-memory py-6 relative">
+                        <div class="reading-indicator"></div>
+                        <a href="#" class="block group">
+                            <h2 class="text-xl font-normal tracking-tight leading-snug mb-2 group-hover:text-ink-light transition-colors duration-500">
+                                The Invisible Labor of Reading
+                            </h2>
+                            <p class="text-sm font-light text-ink-lighter leading-relaxed mb-3">
+                                Every poorly designed interface extracts a cognitive tax. On respecting the reader's effort.
+                            </p>
+                            <div class="flex items-center gap-4 text-xs font-light text-ink-whisper sans">
+                                <span class="time-anchor">11 min</span>
+                                <span>·</span>
+                                <span class="time-anchor">Jun 2023</span>
+                            </div>
+                        </a>
+                    </article>
+
+                    <article id="essay-card-20" class="essay-card state-memory py-6 relative">
+                        <div class="reading-indicator"></div>
+                        <a href="#" class="block group">
+                            <h2 class="text-xl font-normal tracking-tight leading-snug mb-2 group-hover:text-ink-light transition-colors duration-500">
+                                Designing for Solitude
+                            </h2>
+                            <p class="text-sm font-light text-ink-lighter leading-relaxed mb-3">
+                                Social features aren't always better. Creating spaces for private contemplation in public digital realms.
+                            </p>
+                            <div class="flex items-center gap-4 text-xs font-light text-ink-whisper sans">
+                                <span class="time-anchor">16 min</span>
+                                <span>·</span>
+                                <span class="time-anchor">May 2023</span>
+                            </div>
+                        </a>
+                    </article>
+
+                </div>
+            </div>
+        </section>
+
+        <section id="earliest-archive-section" class="pb-24 section-breathing">
+            <div class="border-t border-line pt-16">
+                <h3 class="text-sm font-light text-ink-whisper sans tracking-widest uppercase mb-12">
+                    Earlier Work
+                </h3>
+                <div class="space-y-6">
+                    
+                    <article id="essay-card-21" class="essay-card state-memory py-4 relative">
+                        <div class="reading-indicator"></div>
+                        <a href="#" class="block group">
+                            <div class="flex items-baseline justify-between gap-8">
+                                <h2 class="text-lg font-normal tracking-tight group-hover:text-ink-light transition-colors duration-500">
+                                    The Speed of Thought vs. The Speed of Feeds
+                                </h2>
+                                <div class="flex items-center gap-3 text-xs font-light text-ink-whisper sans whitespace-nowrap">
+                                    <span class="time-anchor">8 min</span>
+                                    <span>·</span>
+                                    <span class="time-anchor">Apr 2023</span>
+                                </div>
+                            </div>
+                        </a>
+                    </article>
+
+                    <article id="essay-card-22" class="essay-card state-memory py-4 relative read-state-subtle">
+                        <div class="reading-indicator"></div>
+                        <a href="#" class="block group">
+                            <div class="flex items-baseline justify-between gap-8">
+                                <h2 class="text-lg font-normal tracking-tight group-hover:text-ink-light transition-colors duration-500">
+                                    Why I Don't Use Analytics
+                                </h2>
+                                <div class="flex items-center gap-3 text-xs font-light text-ink-whisper sans whitespace-nowrap">
+                                    <span class="time-anchor">7 min</span>
+                                    <span>·</span>
+                                    <span class="time-anchor">Mar 2023</span>
+                                </div>
+                            </div>
+                        </a>
+                    </article>
+
+                    <article id="essay-card-23" class="essay-card state-memory py-4 relative">
+                        <div class="reading-indicator"></div>
+                        <a href="#" class="block group">
+                            <div class="flex items-baseline justify-between gap-8">
+                                <h2 class="text-lg font-normal tracking-tight group-hover:text-ink-light transition-colors duration-500">
+                                    The Architecture of Calm
+                                </h2>
+                                <div class="flex items-center gap-3 text-xs font-light text-ink-whisper sans whitespace-nowrap">
+                                    <span class="time-anchor">13 min</span>
+                                    <span>·</span>
+                                    <span class="time-anchor">Feb 2023</span>
+                                </div>
+                            </div>
+                        </a>
+                    </article>
+
+                    <article id="essay-card-24" class="essay-card state-memory py-4 relative">
+                        <div class="reading-indicator"></div>
+                        <a href="#" class="block group">
+                            <div class="flex items-baseline justify-between gap-8">
+                                <h2 class="text-lg font-normal tracking-tight group-hover:text-ink-light transition-colors duration-500">
+                                    First Principles of Attention Design
+                                </h2>
+                                <div class="flex items-center gap-3 text-xs font-light text-ink-whisper sans whitespace-nowrap">
+                                    <span class="time-anchor">19 min</span>
+                                    <span>·</span>
+                                    <span class="time-anchor">Jan 2023</span>
+                                </div>
+                            </div>
+                        </a>
+                    </article>
+
+                </div>
+            </div>
+        </section>
+
+        <section id="continuation-affordance-section" class="pb-20 section-breathing">
+            <div class="flex flex-col items-center space-y-8 border-t border-line pt-16">
+                <div class="text-center">
+                    <p class="text-base font-light text-ink-light leading-relaxed mb-6 max-w-xl">
+                        These pieces represent years of thinking about how we read, how we pay attention, and how digital spaces can honor both. More to come.
+                    </p>
+                </div>
+                <div class="flex items-center gap-8">
+                    <a href="#" class="text-sm font-light text-ink-lighter hover:text-ink transition-colors duration-500 sans tracking-wide">
+                        Subscribe for new essays
+                    </a>
+                    <span class="text-ink-whisper">·</span>
+                    <a href="#" class="text-sm font-light text-ink-lighter hover:text-ink transition-colors duration-500 sans tracking-wide">
+                        View by topic
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <section id="mental-space-preservation-section" class="pb-16">
+            <div class="text-center space-y-4 opacity-40">
+                <p class="text-xs font-light text-ink-whisper sans tracking-widest uppercase">
+                    You're still here
+                </p>
+                <p class="text-sm font-light text-ink-lighter leading-relaxed">
+                    Take your time. Nothing demands your immediate attention.
+                </p>
+            </div>
+        </section>
+
+    </div>
+</div>
+
+<footer id="footer" class="w-full bg-paper border-t border-line py-12">
+    <div class="max-w-7xl mx-auto px-8">
+        <div class="flex flex-col items-center space-y-8">
+            <div class="flex items-center space-x-8 text-xs font-light text-ink-lighter sans tracking-wider">
+                <a href="#" class="hover:text-ink transition-colors duration-500">About</a>
+                <span class="text-ink-whisper">·</span>
+                <a href="#" class="hover:text-ink transition-colors duration-500">Archive</a>
+                <span class="text-ink-whisper">·</span>
+                <a href="#" class="hover:text-ink transition-colors duration-500">Subscribe</a>
+                <span class="text-ink-whisper">·</span>
+                <a href="#" class="hover:text-ink transition-colors duration-500">Contact</a>
+            </div>
+            <div class="text-xs font-light text-ink-whisper sans tracking-wider">
+                © 2024 Elena Morrison
+            </div>
+        </div>
+    </div>
+</footer>
+
+<script>
+window.addEventListener('load', function() {
+    const scrollPosition = sessionStorage.getItem('essayListScrollPosition');
+    
+    if (scrollPosition) {
+        setTimeout(function() {
+            window.scrollTo({
+                top: parseInt(scrollPosition),
+                behavior: 'instant'
+            });
+        }, 50);
+    }
+    
+    const lastReadEssayId = sessionStorage.getItem('lastReadEssay');
+    if (lastReadEssayId) {
+        const essayCard = document.getElementById(lastReadEssayId);
+        if (essayCard) {
+            essayCard.classList.add('read-marker');
+            
+            setTimeout(function() {
+                if (window.scrollY === 0) {
+                    const cardPosition = essayCard.getBoundingClientRect().top + window.scrollY - 140;
+                    window.scrollTo({
+                        top: cardPosition,
+                        behavior: 'smooth'
+                    });
+                }
+            }, 300);
+        }
+    }
+    
+    const essayLinks = document.querySelectorAll('.essay-card a');
+    essayLinks.forEach(function(link, index) {
+        link.addEventListener('click', function(e) {
+            sessionStorage.setItem('essayListScrollPosition', window.scrollY.toString());
+            sessionStorage.setItem('lastReadEssay', 'essay-card-' + (index + 1));
+        });
+    });
+    
+    let scrollTimeout;
+    window.addEventListener('scroll', function() {
+        clearTimeout(scrollTimeout);
+        scrollTimeout = setTimeout(function() {
+            sessionStorage.setItem('essayListScrollPosition', window.scrollY.toString());
+        }, 150);
+    });
+    
+    const header = document.getElementById('header');
+    let lastScroll = 0;
+    
+    window.addEventListener('scroll', function() {
+        const currentScroll = window.pageYOffset;
+        
+        if (currentScroll <= 100) {
+            header.style.transform = 'translateY(0)';
+        } else if (currentScroll > lastScroll && currentScroll > 200) {
+            header.style.transform = 'translateY(-100%)';
+        } else if (currentScroll < lastScroll) {
+            header.style.transform = 'translateY(0)';
+        }
+        
+        lastScroll = currentScroll;
+    });
+    
+    header.style.transition = 'transform 0.4s cubic-bezier(0.25, 0.1, 0.25, 1)';
+});
+</script>
+
+</body>
+</html>

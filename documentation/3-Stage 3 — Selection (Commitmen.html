@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Essay</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script> window.FontAwesomeConfig = { autoReplaceSvg: 'nest'};</script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@300;400;500;600&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        ::-webkit-scrollbar { display: none; }
+        body { 
+            font-family: 'Crimson Pro', serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        .sans { font-family: 'Inter', sans-serif; }
+        .cursor-default { cursor: default; }
+        
+        .fade-in {
+            animation: fadeIn 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+            opacity: 0;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .slide-in-from-top {
+            animation: slideInFromTop 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+        
+        @keyframes slideInFromTop {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .back-button {
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .back-button:hover {
+            transform: translateX(-4px);
+        }
+        
+        .reading-progress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 2px;
+            background: #1A1A1A;
+            width: 0%;
+            z-index: 100;
+            transition: width 0.1s ease-out;
+        }
+        
+        .essay-content {
+            animation: contentFadeIn 1s cubic-bezier(0.4, 0, 0.2, 1) 0.3s forwards;
+            opacity: 0;
+        }
+        
+        @keyframes contentFadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .delay-100 { animation-delay: 0.1s; }
+        .delay-200 { animation-delay: 0.2s; }
+        .delay-300 { animation-delay: 0.3s; }
+        .delay-400 { animation-delay: 0.4s; }
+        .delay-500 { animation-delay: 0.5s; }
+        .delay-600 { animation-delay: 0.6s; }
+        
+        .essay-paragraph {
+            opacity: 0;
+            animation: paragraphFadeIn 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+        
+        @keyframes paragraphFadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'serif': ['Crimson Pro', 'serif'],
+                        'sans': ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        'paper': '#FDFCFA',
+                        'ink': '#1A1A1A',
+                        'ink-light': '#4A4A4A',
+                        'ink-lighter': '#8A8A8A',
+                        'line': '#E8E6E3',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-paper text-ink cursor-default">
+
+<div class="reading-progress" id="readingProgress"></div>
+
+<header id="header" class="w-full bg-paper sticky top-0 z-50 transition-all duration-500" style="border-bottom: 1px solid transparent;">
+    <div class="max-w-7xl mx-auto px-8 py-6 flex items-center justify-between">
+        <div class="flex items-center gap-12">
+            <a href="#" class="text-2xl font-light tracking-tight hover:text-ink-light transition-colors duration-500 opacity-0 slide-in-from-top">
+                Elena Morrison
+            </a>
+        </div>
+        <button class="text-ink-lighter hover:text-ink transition-colors duration-500 opacity-0 slide-in-from-top delay-100">
+            <i class="fa-solid fa-bars text-xl"></i>
+        </button>
+    </div>
+</header>
+
+<div id="back-navigation" class="w-full px-8 pt-12 pb-6 bg-paper">
+    <div class="max-w-4xl mx-auto">
+        <a href="#" class="back-button inline-flex items-center gap-3 text-sm font-sans text-ink-lighter hover:text-ink transition-all duration-500 opacity-0 fade-in">
+            <i class="fa-solid fa-arrow-left text-xs"></i>
+            <span class="tracking-wide">Back to essays</span>
+        </a>
+    </div>
+</div>
+
+<div id="essay-header" class="w-full px-8 pt-16 pb-12 bg-paper">
+    <div class="max-w-4xl mx-auto">
+        <div class="mb-8 opacity-0 fade-in delay-200">
+            <span class="text-xs tracking-widest uppercase font-sans text-ink-lighter">Attention</span>
+            <span class="text-xs text-ink-lighter mx-3">·</span>
+            <span class="text-xs font-sans text-ink-lighter">March 2025</span>
+        </div>
+        
+        <h1 class="text-6xl font-light tracking-tight leading-tight mb-12 opacity-0 fade-in delay-300">
+            On the Architecture of Boredom
+        </h1>
+        
+        <div class="flex items-center gap-8 text-sm font-sans text-ink-lighter mb-16 opacity-0 fade-in delay-400">
+            <span>4,200 words</span>
+            <span>·</span>
+            <span>15 min read</span>
+            <span>·</span>
+            <span>Published March 15, 2025</span>
+        </div>
+        
+        <div class="border-t border-line pt-8 opacity-0 fade-in delay-500">
+            <p class="text-xl font-light text-ink-light leading-relaxed italic">
+                What happens when we stop filling every moment? An exploration of emptiness as creative necessity, and why the spaces between thoughts matter more than the thoughts themselves.
+            </p>
+        </div>
+    </div>
+</div>
+
+<div id="essay-content-main" class="w-full px-8 py-16 bg-paper">
+    <div class="max-w-3xl mx-auto essay-content">
+        
+        <div class="mb-16 essay-paragraph delay-100">
+            <p class="text-xl leading-relaxed font-light mb-8">
+                There is a room in my mind I've been avoiding for years. It has white walls, a single window, and nothing else. No furniture. No decoration. No purpose beyond existing as space. When I was younger, I would peek inside and immediately turn away, uncomfortable with its emptiness. Now I understand: that room is where everything begins.
+            </p>
+            
+            <p class="text-xl leading-relaxed font-light mb-8">
+                We've become architects of constant stimulation, building elaborate structures to keep ourselves occupied every waking moment. Podcasts during commutes. Music during work. Scrolling during waiting. We've eliminated boredom so thoroughly that we've forgotten what it was for.
+            </p>
+            
+            <p class="text-xl leading-relaxed font-light">
+                But boredom isn't the enemy. It's the foundation.
+            </p>
+        </div>
+
+        <div class="mb-16 essay-paragraph delay-200">
+            <h2 class="text-3xl font-light tracking-tight mb-8 border-l-2 border-ink pl-6">
+                The Disappearance of Empty Time
+            </h2>
+            
+            <p class="text-xl leading-relaxed font-light mb-8">
+                Consider the last time you stood in line without looking at your phone. The last time you sat in a waiting room and just... waited. The last time you allowed yourself to be bored without immediately reaching for a distraction. For most of us, these moments have become so rare they're almost archaeological—fragments of a different way of being.
+            </p>
+            
+            <p class="text-xl leading-relaxed font-light mb-8">
+                This isn't accidental. We've engineered boredom out of existence with the precision of urban planners eliminating wetlands. Every gap has been filled, every pause eliminated, every moment of potential emptiness colonized by content. The architecture of modern life leaves no room for rooms with nothing in them.
+            </p>
+            
+            <p class="text-xl leading-relaxed font-light mb-8">
+                But what did we lose when we demolished those empty spaces? What happened to the thoughts that only emerge in silence? The ideas that need stillness to take form? The connections that form when the mind has nothing else to do but wander?
+            </p>
+            
+            <p class="text-xl leading-relaxed font-light">
+                We traded boredom for busyness and called it progress. We filled the silence and called it productivity. We eliminated the empty spaces and wondered why we felt so full yet so hollow.
+            </p>
+        </div>
+
+        <div class="mb-16 essay-paragraph delay-300">
+            <h2 class="text-3xl font-light tracking-tight mb-8 border-l-2 border-ink pl-6">
+                The Creative Necessity of Nothing
+            </h2>
+            
+            <p class="text-xl leading-relaxed font-light mb-8">
+                Every artist knows this secret: the blank canvas isn't empty. It's full of potential. The silence before the note isn't absence. It's possibility. The empty room isn't void. It's space for something to emerge.
+            </p>
+            
+            <p class="text-xl leading-relaxed font-light mb-8">
+                Boredom is the canvas. Distraction is the paint we splash across it before we've even looked at what might appear. We're so afraid of emptiness that we fill it preemptively, never giving ourselves the chance to discover what might arise from nothing.
+            </p>
+            
+            <p class="text-xl leading-relaxed font-light mb-8">
+                The greatest ideas in history didn't emerge from constant stimulation. They came from walks. From baths. From staring out windows. From doing nothing in particular and letting the mind drift until it caught on something interesting. Newton under the apple tree. Archimedes in the bath. Darwin on his daily walks. All of them practicing the lost art of productive boredom.
+            </p>
+            
+            <p class="text-xl leading-relaxed font-light">
+                But we've forgotten how to be bored productively. We've lost the skill of sitting with emptiness long enough for it to transform into something else. We reach for our phones at the first hint of understimulation, aborting the creative process before it can begin.
+            </p>
+        </div>
+
+        <div class="my-24 bg-gray-50 border border-line p-12 essay-paragraph delay-400">
+            <p class="text-2xl font-light text-center leading-relaxed italic text-ink-light">
+                "The cure for boredom is curiosity. There is no cure for curiosity. But we've made ourselves so allergic to boredom that we never give curiosity a chance to emerge."
+            </p>
+        </div>
+
+        <div class="mb-16 essay-paragraph delay-500">
+            <h2 class="text-3xl font-light tracking-tight mb-8 border-l-2 border-ink pl-6">
+                Designing for Emptiness
+            </h2>
+            
+            <p class="text-xl leading-relaxed font-light mb-8">
+                What would it mean to deliberately architect boredom back into our lives? Not as punishment, but as practice. Not as deprivation, but as discipline. Not as absence, but as presence.
+            </p>
+            
+            <p class="text-xl leading-relaxed font-light mb-8">
+                It would mean creating spaces—temporal and physical—where nothing is expected to happen. Rooms with white walls and single windows. Hours with no agenda. Moments with no purpose beyond existing as moments.
+            </p>
+            
+            <p class="text-xl leading-relaxed font-light mb-8">
+                It would mean resisting the urge to fill every gap, to optimize every minute, to extract productivity from every second. It would mean accepting that some time is meant to be wasted, because "waste" is where the unexpected grows.
+            </p>
+            
+            <p class="text-xl leading-relaxed font-light">
+                This isn't romantic nostalgia for a pre-digital past. It's a recognition that certain kinds of thinking require certain kinds of space, and we've eliminated those spaces in the name of efficiency.
+            </p>
+        </div>
+
+        <div class="mb-16 essay-paragraph delay-600">
+            <h2 class="text-3xl font-light tracking-tight mb-8 border-l-2 border-ink pl-6">
+                The Practice of Productive Boredom
+            </h2>
+            
+            <p class="text-xl leading-relaxed font-light mb-8">
+                Here's what I've learned from deliberately courting boredom: it's uncomfortable at first. Deeply uncomfortable. The mind rebels. It demands stimulation. It insists that this is a waste of time, that you should be doing something, anything, else.
+            </p>
+            
+            <p class="text-xl leading-relaxed font-light mb-8">
+                But if you sit with it—if you resist the urge to fill the emptiness—something shifts. The discomfort doesn't disappear, but it changes quality. It becomes less like an itch demanding to be scratched and more like a clearing where something might appear.
+            </p>
+            
+            <p class="text-xl leading-relaxed font-light mb-8">
+                The thoughts that emerge from this space are different from the thoughts that come from constant stimulation. They're slower. Stranger. More personal. They don't arrive fully formed; they drift in like fog, gradually taking shape until you realize you've been thinking about something for twenty minutes without noticing.
+            </p>
+            
+            <p class="text-xl leading-relaxed font-light mb-8">
+                This is the architecture of boredom: not a prison, but a garden. Not deprivation, but cultivation. Not absence, but a different kind of presence.
+            </p>
+        </div>
+
+        <div class="mb-16 essay-paragraph delay-100">
+            <h2 class="text-3xl font-light tracking-tight mb-8 border-l-2 border-ink pl-6">
+                The Spaces Between Thoughts
+            </h2>
+            
+            <p class="text-xl leading-relaxed font-light mb-8">
+                Music isn't just notes. It's the silence between them. Language isn't just words. It's the pauses that give them meaning. Life isn't just experiences. It's the emptiness that allows us to process them.
+            </p>
+            
+            <p class="text-xl leading-relaxed font-light mb-8">
+                We've become so focused on the notes that we've forgotten about the silence. So obsessed with the words that we've eliminated the pauses. So committed to constant experience that we've left no room for reflection.
+            </p>
+            
+            <p class="text-xl leading-relaxed font-light mb-8">
+                But the spaces between thoughts aren't empty. They're where meaning is made. They're where connections form. They're where the unconscious does its work, processing and integrating and making sense of everything we've consumed.
+            </p>
+            
+            <p class="text-xl leading-relaxed font-light">
+                When we eliminate boredom, we eliminate these spaces. We create a constant stream of input with no time for processing. We fill our minds so completely that there's no room for anything to settle, to integrate, to transform into understanding.
+            </p>
+        </div>
+
+        <div class="mb-16 essay-paragraph delay-200">
+            <h2 class="text-3xl font-light tracking-tight mb-8 border-l-2 border-ink pl-6">
+                Reclaiming the Empty Room
+            </h2>
+            
+            <p class="text-xl leading-relaxed font-light mb-8">
+                That room in my mind—the one with white walls and a single window—I visit it regularly now. Not because I enjoy being bored (I don't), but because I've learned what happens when I stay long enough.
+            </p>
+            
+            <p class="text-xl leading-relaxed font-light mb-8">
+                At first, there's just discomfort. The urge to leave, to find something more interesting, to fill the emptiness with anything at all. But if I stay—if I resist the urge to flee—the room begins to change.
+            </p>
+            
+            <p class="text-xl leading-relaxed font-light mb-8">
+                Ideas appear. Not grand revelations, but small observations. Connections form between things I didn't know were related. Questions emerge that I didn't know I had. The emptiness becomes generative, productive, necessary.
+            </p>
+            
+            <p class="text-xl leading-relaxed font-light mb-8">
+                This is what we lose when we eliminate boredom: the chance for these emergent thoughts. The possibility of discovery. The space for the mind to do its most important work—the work that can't be forced or scheduled or optimized.
+            </p>
+        </div>
+
+        <div class="my-24 bg-gray-50 border border-line p-12 essay-paragraph delay-300">
+            <div class="text-center">
+                <p class="text-xl font-light leading-relaxed mb-6">
+                    Three practices for reclaiming boredom:
+                </p>
+                <div class="space-y-6 text-left max-w-2xl mx-auto">
+                    <div class="border-l-2 border-ink-lighter pl-6">
+                        <p class="text-lg font-light text-ink-light leading-relaxed">
+                            <span class="font-medium text-ink">Leave your phone at home.</span> Take a walk with nothing but yourself. No music, no podcasts, no distractions. Just you and your thoughts.
+                        </p>
+                    </div>
+                    <div class="border-l-2 border-ink-lighter pl-6">
+                        <p class="text-lg font-light text-ink-light leading-relaxed">
+                            <span class="font-medium text-ink">Sit in a waiting room without devices.</span> When you have to wait, just wait. Watch people. Look out the window. Let your mind wander.
+                        </p>
+                    </div>
+                    <div class="border-l-2 border-ink-lighter pl-6">
+                        <p class="text-lg font-light text-ink-light leading-relaxed">
+                            <span class="font-medium text-ink">Schedule empty time.</span> Block out an hour with no agenda. No goals, no tasks, no expectations. Just space for whatever might emerge.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mb-16 essay-paragraph delay-400">
+            <h2 class="text-3xl font-light tracking-tight mb-8 border-l-2 border-ink pl-6">
+                The Resistance to Emptiness
+            </h2>
+            
+            <p class="text-xl leading-relaxed font-light mb-8">
+                The hardest part isn't finding time for boredom. It's allowing yourself to be bored in the time you've found. The mind resists. It tells you this is unproductive, wasteful, pointless. It insists you should be doing something useful.
+            </p>
+            
+            <p class="text-xl leading-relaxed font-light mb-8">
+                This resistance is cultural as much as personal. We live in a society that values productivity above all else, that measures worth in output, that sees empty time as time wasted. To deliberately cultivate boredom is to rebel against these values, to insist that not all value can be measured, that some of the most important work happens when we appear to be doing nothing at all.
+            </p>
+            
+            <p class="text-xl leading-relaxed font-light mb-8">
+                But the resistance is also deeper than culture. It's existential. Boredom forces us to confront ourselves without distraction. It strips away the constant stimulation we use to avoid difficult thoughts, uncomfortable feelings, questions we'd rather not face.
+            </p>
+            
+            <p class="text-xl leading-relaxed font-light">
+                This is why boredom feels dangerous. Not because it is, but because it removes our defenses. It leaves us alone with ourselves, and that's the last place many of us want to be.
+            </p>
+        </div>
+
+        <div class="mb-16 essay-paragraph delay-500">
+            <h2 class="text-3xl font-light tracking-tight mb-8 border-l-2 border-ink pl-6">
+                What Emerges from Nothing
+            </h2>
+            
+            <p class="text-xl leading-relaxed font-light mb-8">
+                I can't tell you what will emerge when you allow yourself to be bored. It's different for everyone, and it's different each time. Sometimes it's ideas. Sometimes it's emotions. Sometimes it's just a deep sense of rest, of finally stopping long enough to catch your breath.
+            </p>
+            
+            <p class="text-xl leading-relaxed font-light mb-8">
+                But I can tell you this: something will emerge. The emptiness is never truly empty. It's full of potential, of possibility, of things waiting to surface when we finally stop filling every moment with noise.
+            </p>
+            
+            <p class="text-xl leading-relaxed font-light mb-8">
+                The architecture of boredom isn't about building structures. It's about creating space. Not space for something specific, but space for whatever needs to happen. Space for the mind to wander, to wonder, to make unexpected connections. Space for the unconscious to do its work. Space for you to discover what you think when you're not being told what to think about.
+            </p>
+        </div>
+
+        <div class="mb-16 essay-paragraph delay-600">
+            <h2 class="text-3xl font-light tracking-tight mb-8 border-l-2 border-ink pl-6">
+                The Room with White Walls
+            </h2>
+            
+            <p class="text-xl leading-relaxed font-light mb-8">
+                I still visit that room in my mind—the one with white walls and a single window. But I don't avoid it anymore. I seek it out. I go there when I'm stuck, when I'm overwhelmed, when I need to remember what my own thoughts sound like without the constant background noise of other people's ideas.
+            </p>
+            
+            <p class="text-xl leading-relaxed font-light mb-8">
+                The room hasn't changed. It's still empty. Still just white walls and a window. But I've changed. I've learned to see the emptiness not as lack but as possibility. Not as absence but as presence. Not as nothing but as everything that might be.
+            </p>
+            
+            <p class="text-xl leading-relaxed font-light mb-8">
+                This is the gift of boredom: it teaches us that emptiness is generative. That silence is fertile. That the spaces between thoughts are where meaning is made. That sometimes the most productive thing we can do is nothing at all.
+            </p>
+            
+            <p class="text-xl leading-relaxed font-light">
+                So I keep returning to the empty room. Not because I've mastered boredom (I haven't), but because I've learned to trust it. To trust that if I stay long enough, something will emerge. To trust that the emptiness is working even when it feels like nothing is happening. To trust that the architecture of boredom is building something I can't yet see.
+            </p>
+        </div>
+
+        <div class="mt-24 pt-16 border-t border-line essay-paragraph delay-100">
+            <p class="text-xl leading-relaxed font-light mb-8">
+                The next time you feel bored, resist the urge to fill the emptiness. Sit with it. See what happens. You might be surprised by what emerges from nothing.
+            </p>
+            
+            <p class="text-xl leading-relaxed font-light italic text-ink-light">
+                Or you might just be bored. And that's okay too. That's the point.
+            </p>
+        </div>
+
+    </div>
+</div>
+
+<div id="essay-footer-meta" class="w-full px-8 py-16 bg-gradient-to-b from-paper to-gray-50 border-t border-line">
+    <div class="max-w-3xl mx-auto">
+        <div class="text-center mb-12">
+            <p class="text-sm tracking-widest uppercase font-sans text-ink-lighter mb-4">End of essay</p>
+            <p class="text-base font-light text-ink-light">
+                Thank you for reading. Take your time returning to the world.
+            </p>
+        </div>
+        
+        <div class="flex items-center justify-center gap-8 mb-16">
+            <button class="text-ink-lighter hover:text-ink transition-colors duration-500">
+                <i class="fa-solid fa-bookmark text-xl"></i>
+            </button>
+            <button class="text-ink-lighter hover:text-ink transition-colors duration-500">
+                <i class="fa-solid fa-share-nodes text-xl"></i>
+            </button>
+            <button class="text-ink-lighter hover:text-ink transition-colors duration-500">
+                <i class="fa-solid fa-print text-xl"></i>
+            </button>
+        </div>
+        
+        <div class="bg-paper border border-line p-10 mb-16">
+            <div class="text-center mb-8">
+                <h3 class="text-2xl font-light mb-4 tracking-tight">About this essay</h3>
+            </div>
+            <div class="space-y-6 text-base font-light text-ink-light leading-relaxed">
+                <div class="flex gap-8 pb-6 border-b border-line">
+                    <div class="w-32 flex-shrink-0 text-sm tracking-wide font-sans text-ink-lighter">Written</div>
+                    <div class="flex-1">January–March 2025, over the course of eight weeks</div>
+                </div>
+                <div class="flex gap-8 pb-6 border-b border-line">
+                    <div class="w-32 flex-shrink-0 text-sm tracking-wide font-sans text-ink-lighter">Revised</div>
+                    <div class="flex-1">Twelve times, including one complete restructure</div>
+                </div>
+                <div class="flex gap-8 pb-6 border-b border-line">
+                    <div class="w-32 flex-shrink-0 text-sm tracking-wide font-sans text-ink-lighter">Inspired by</div>
+                    <div class="flex-1">A week without internet, several long walks, and too many hours in waiting rooms</div>
+                </div>
+                <div class="flex gap-8">
+                    <div class="w-32 flex-shrink-0 text-sm tracking-wide font-sans text-ink-lighter">Collection</div>
+                    <div class="flex-1">Part of the Attention series, exploring presence and focus in the digital age</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="text-center">
+            <a href="#" class="back-button inline-flex items-center gap-3 text-sm font-sans text-ink-lighter hover:text-ink transition-all duration-500">
+                <i class="fa-solid fa-arrow-left text-xs"></i>
+                <span class="tracking-wide">Back to all essays</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<div id="related-essays" class="w-full px-8 py-24 bg-paper">
+    <div class="max-w-6xl mx-auto">
+        <div class="text-center mb-16">
+            <h2 class="text-4xl font-light mb-6 tracking-tight">Continue reading</h2>
+            <p class="text-lg font-light text-ink-light">
+                Other essays you might find interesting
+            </p>
+        </div>
+        
+        <div class="grid grid-cols-2 gap-12">
+            <article class="border border-line p-10 group cursor-pointer hover:border-ink-lighter transition-all duration-500">
+                <div class="mb-6">
+                    <span class="text-xs tracking-widest uppercase font-sans text-ink-lighter">Attention</span>
+                    <span class="text-xs text-ink-lighter mx-3">·</span>
+                    <span class="text-xs font-sans text-ink-lighter">December 2024</span>
+                </div>
+                <h3 class="text-2xl font-light mb-4 tracking-tight group-hover:text-ink-light transition-colors duration-500">
+                    The Cost of Constant Connection
+                </h3>
+                <p class="text-base font-light text-ink-light leading-relaxed mb-6">
+                    We carry the entire internet in our pockets, but what did we give up to get here? An examination of presence, solitude, and the forgotten art of being unreachable.
+                </p>
+                <div class="flex items-center gap-6 text-sm font-sans text-ink-lighter">
+                    <span>4,600 words</span>
+                    <span>·</span>
+                    <span>16 min read</span>
+                </div>
+            </article>
+            
+            <article class="border border-line p-10 group cursor-pointer hover:border-ink-lighter transition-all duration-500">
+                <div class="mb-6">
+                    <span class="text-xs tracking-widest uppercase font-sans text-ink-lighter">Rebellion</span>
+                    <span class="text-xs text-ink-lighter mx-3">·</span>
+                    <span class="text-xs font-sans text-ink-lighter">October 2024</span>
+                </div>
+                <h3 class="text-2xl font-light mb-4 tracking-tight group-hover:text-ink-light transition-colors duration-500">
+                    The Luxury of Slow Time
+                </h3>
+                <p class="text-base font-light text-ink-light leading-relaxed mb-6">
+                    In a world obsessed with speed, taking your time becomes an act of resistance. On the radical choice to move slowly, think deeply, and refuse to rush.
+                </p>
+                <div class="flex items-center gap-6 text-sm font-sans text-ink-lighter">
+                    <span>4,900 words</span>
+                    <span>·</span>
+                    <span>17 min read</span>
+                </div>
+            </article>
+        </div>
+    </div>
+</div>
+
+<div id="author-note" class="w-full px-8 py-24 bg-gradient-to-b from-paper to-gray-50">
+    <div class="max-w-3xl mx-auto">
+        <div class="bg-paper border border-line p-12">
+            <div class="flex gap-8 items-start">
+                <div class="w-24 h-24 rounded-full bg-gray-200 flex-shrink-0 overflow-hidden">
+                    <img src="https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-5.jpg" alt="Elena Morrison" class="w-full h-full object-cover" />
+                </div>
+                <div>
+                    <h3 class="text-2xl font-light mb-4 tracking-tight">Elena Morrison</h3>
+                    <p class="text-base font-light text-ink-light leading-relaxed mb-6">
+                        Writer exploring attention, craft, and quiet rebellion. Interested in the spaces between thoughts and the thoughts that emerge from emptiness. Based in Portland, working slowly.
+                    </p>
+                    <div class="flex gap-6 text-sm text-ink-lighter">
+                        <a href="#" class="hover:text-ink transition-colors duration-500">More essays</a>
+                        <a href="#" class="hover:text-ink transition-colors duration-500">Subscribe</a>
+                        <a href="#" class="hover:text-ink transition-colors duration-500">Email</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="newsletter-signup" class="w-full px-8 py-24 bg-paper border-t border-line">
+    <div class="max-w-3xl mx-auto text-center">
+        <h2 class="text-3xl font-light mb-6 tracking-tight">Get new essays</h2>
+        <p class="text-lg font-light text-ink-light leading-relaxed mb-12 max-w-2xl mx-auto">
+            Subscribe to receive new essays when they're published. Usually 2-3 times per month. No spam, no noise.
+        </p>
+        
+        <div class="bg-gradient-to-b from-gray-50 to-paper border border-line p-10 max-w-xl mx-auto">
+            <form class="flex gap-4 mb-6">
+                <input 
+                    type="email" 
+                    placeholder="your@email.com" 
+                    class="flex-1 px-6 py-3 border border-line focus:border-ink focus:outline-none text-base font-light transition-colors duration-500"
+                />
+                <button class="px-8 py-3 bg-ink text-paper hover:bg-ink-light transition-colors duration-500 text-sm tracking-wide font-sans">
+                    Subscribe
+                </button>
+            </form>
+            <p class="text-xs text-ink-lighter leading-relaxed">
+                Unsubscribe anytime. Your email is never shared.
+            </p>
+        </div>
+    </div>
+</div>
+
+<footer id="footer" class="w-full bg-gray-50 border-t border-line px-8 py-16">
+    <div class="max-w-6xl mx-auto">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
+            <div>
+                <p class="text-sm font-light text-ink-lighter mb-2">© 2025 Elena Morrison</p>
+                <p class="text-xs text-ink-lighter">All essays published under Creative Commons BY-NC-SA 4.0</p>
+            </div>
+            <div class="flex gap-6 text-sm text-ink-lighter">
+                <a href="#" class="hover:text-ink transition-colors duration-500">RSS</a>
+                <a href="#" class="hover:text-ink transition-colors duration-500">Email</a>
+                <a href="#" class="hover:text-ink transition-colors duration-500">Mastodon</a>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<script>
+window.addEventListener('load', function() {
+    const header = document.getElementById('header');
+    const progressBar = document.getElementById('readingProgress');
+    const essayContent = document.getElementById('essay-content-main');
+    
+    window.addEventListener('scroll', function() {
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        const docHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+        const scrollPercent = (scrollTop / docHeight) * 100;
+        
+        progressBar.style.width = scrollPercent + '%';
+        
+        if (scrollTop > 100) {
+            header.style.borderBottom = '1px solid #E8E6E3';
+        } else {
+            header.style.borderBottom = '1px solid transparent';
+        }
+    });
+    
+    const paragraphs = document.querySelectorAll('.essay-paragraph');
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -100px 0px'
+    };
+    
+    const observer = new IntersectionObserver(function(entries) {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+            }
+        });
+    }, observerOptions);
+    
+    paragraphs.forEach(p => observer.observe(p));
+});
+</script>
+
+</body>
+</html>

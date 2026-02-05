@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Essay</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script> window.FontAwesomeConfig = { autoReplaceSvg: 'nest'};</script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@300;400;500;600&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        ::-webkit-scrollbar { display: none; }
+        body { 
+            font-family: 'Crimson Pro', serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        .sans { font-family: 'Inter', sans-serif; }
+        .cursor-default { cursor: default; }
+        
+        .gentle-fade-in {
+            animation: gentleFadeIn 2s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+            opacity: 0;
+        }
+        
+        @keyframes gentleFadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .delay-surface-1 { animation-delay: 1s; }
+        .delay-surface-2 { animation-delay: 2s; }
+        .delay-surface-3 { animation-delay: 3s; }
+        .delay-surface-4 { animation-delay: 4s; }
+        .delay-surface-5 { animation-delay: 5s; }
+        
+        .soft-link {
+            opacity: 0;
+            transition: opacity 0.8s cubic-bezier(0.25, 0.1, 0.25, 1);
+        }
+        
+        .soft-link.visible {
+            opacity: 0.4;
+        }
+        
+        .soft-link:hover {
+            opacity: 1;
+            transition: opacity 0.3s ease;
+        }
+        
+        .earned-ending {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .breath-space {
+            margin-bottom: 4rem;
+        }
+        
+        .deep-breath-space {
+            margin-bottom: 8rem;
+        }
+        
+        .contemplative-space {
+            margin-bottom: 12rem;
+        }
+        
+        .suggestive-link {
+            border: none;
+            background: none;
+            text-decoration: none;
+            position: relative;
+        }
+        
+        .suggestive-link::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 1px;
+            background: currentColor;
+            transition: width 0.6s cubic-bezier(0.25, 0.1, 0.25, 1);
+        }
+        
+        .suggestive-link:hover::after {
+            width: 100%;
+        }
+        
+        .no-snap-back {
+            scroll-behavior: smooth;
+        }
+        
+        .ending-reverence {
+            line-height: 2.4;
+            letter-spacing: 0.02em;
+        }
+        
+        .silence-space {
+            height: 50vh;
+        }
+        
+        .final-breath {
+            height: 40vh;
+        }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'serif': ['Crimson Pro', 'serif'],
+                        'sans': ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        'paper': '#FDFCFA',
+                        'ink': '#1A1A1A',
+                        'ink-light': '#4A4A4A',
+                        'ink-lighter': '#8A8A8A',
+                        'ink-whisper': '#B8B8B8',
+                        'line': '#E8E6E3',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-paper text-ink cursor-default no-snap-back">
+
+<header id="header" class="w-full bg-paper fixed top-0 z-50" style="opacity: 0; pointer-events: none;">
+    <div class="max-w-7xl mx-auto px-8 py-6 flex items-center justify-between">
+        <div class="flex items-center gap-12">
+            <a href="#" class="text-2xl font-light tracking-tight hover:text-ink-light transition-colors duration-500">
+                Elena Morrison
+            </a>
+        </div>
+        <button class="text-ink-lighter hover:text-ink transition-colors duration-500">
+            <i class="fa-solid fa-bars text-xl"></i>
+        </button>
+    </div>
+</header>
+
+<div id="completion-space" class="w-full px-8 bg-paper">
+    <div class="max-w-3xl mx-auto">
+        
+        <section id="final-paragraph-section" class="pt-32">
+            <div class="deep-breath-space">
+                <p class="text-2xl leading-loose font-light ending-reverence">
+                    And then, without ceremony, without fanfare, without any signal except the natural completion of thought—it ends. The final sentence arrives not as a conclusion but as a resting place, a moment where the rhythm gently comes to stillness. You've been carried this far, and now the current releases you, setting you down softly on the shore.
+                </p>
+            </div>
+        </section>
+
+        <div class="silence-space"></div>
+
+        <section id="gentle-resurfacing-section" class="earned-ending">
+            <div class="contemplative-space gentle-fade-in delay-surface-1">
+                <p class="text-xl leading-relaxed font-light text-ink-light ending-reverence">
+                    You sit in the silence that follows. Not an empty silence, but one full of resonance, like the moment after a bell has stopped ringing but the air still vibrates with its tone. The words have ended, but their presence remains, settling into the spaces between your thoughts.
+                </p>
+            </div>
+            
+            <div class="deep-breath-space gentle-fade-in delay-surface-2">
+                <p class="text-xl leading-relaxed font-light text-ink-light ending-reverence">
+                    There's no rush to move. No urgent pull toward the next thing. The experience has earned this pause, this moment of integration, this gentle transition from the world of the text back to the world of ordinary time. You're grateful for both: for where you've been, and for the care with which you're being returned.
+                </p>
+            </div>
+            
+            <div class="contemplative-space gentle-fade-in delay-surface-3">
+                <p class="text-lg leading-relaxed font-light text-ink-lighter ending-reverence">
+                    The afternoon light has changed completely now. Hours have passed, though you couldn't say exactly how many. Time has been transformed, and now it's transforming back, but you're not the same. Something has shifted, subtly but irreversibly. You've spent time in a different quality of consciousness, and traces of it linger.
+                </p>
+            </div>
+        </section>
+
+        <div class="silence-space"></div>
+
+        <section id="soft-affordances-section" class="pb-32">
+            <div class="flex flex-col items-center space-y-12 gentle-fade-in delay-surface-4">
+                <div class="text-center">
+                    <a href="#" class="suggestive-link soft-link text-base font-light text-ink-lighter sans tracking-wide">
+                        Another piece
+                    </a>
+                </div>
+                
+                <div class="text-center">
+                    <a href="#" class="suggestive-link soft-link text-base font-light text-ink-lighter sans tracking-wide">
+                        Return to essays
+                    </a>
+                </div>
+                
+                <div class="text-center">
+                    <button class="suggestive-link soft-link text-base font-light text-ink-whisper sans tracking-wide">
+                        Stay here a moment
+                    </button>
+                </div>
+            </div>
+            
+            <div class="mt-24 text-center gentle-fade-in delay-surface-5">
+                <p class="text-sm font-light text-ink-whisper sans tracking-wider">
+                    Thank you for reading
+                </p>
+            </div>
+        </section>
+
+        <div class="final-breath"></div>
+
+        <section id="reverent-footer-section" class="pb-20">
+            <div class="flex flex-col items-center space-y-8 opacity-30">
+                <div class="flex items-center space-x-8 text-xs font-light text-ink-lighter sans tracking-wider">
+                    <a href="#" class="hover:text-ink transition-colors duration-500">About</a>
+                    <span class="text-ink-whisper">·</span>
+                    <a href="#" class="hover:text-ink transition-colors duration-500">Archive</a>
+                    <span class="text-ink-whisper">·</span>
+                    <a href="#" class="hover:text-ink transition-colors duration-500">Subscribe</a>
+                </div>
+                
+                <div class="text-xs font-light text-ink-whisper sans tracking-wider">
+                    © 2024 Elena Morrison
+                </div>
+            </div>
+        </section>
+
+        <div class="h-32"></div>
+
+    </div>
+</div>
+
+<script>
+window.addEventListener('load', function() {
+    const softLinks = document.querySelectorAll('.soft-link');
+    
+    setTimeout(function() {
+        softLinks.forEach(function(link, index) {
+            setTimeout(function() {
+                link.classList.add('visible');
+            }, index * 800);
+        });
+    }, 5000);
+    
+    const stayButton = document.querySelector('button.soft-link');
+    if (stayButton) {
+        stayButton.addEventListener('click', function() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+            
+            setTimeout(function() {
+                softLinks.forEach(function(link) {
+                    link.style.opacity = '0';
+                });
+            }, 800);
+            
+            setTimeout(function() {
+                softLinks.forEach(function(link) {
+                    link.classList.add('visible');
+                });
+            }, 3000);
+        });
+    }
+    
+    let lastScrollTop = 0;
+    window.addEventListener('scroll', function() {
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        
+        if (scrollTop < lastScrollTop) {
+        }
+        
+        lastScrollTop = scrollTop <= 0 ? 0 : scrollTop;
+    }, false);
+    
+    document.addEventListener('mousemove', function(e) {
+        const windowHeight = window.innerHeight;
+        const mouseY = e.clientY;
+        
+        if (mouseY < windowHeight * 0.15) {
+        }
+    });
+});
+</script>
+
+</body>
+</html>
