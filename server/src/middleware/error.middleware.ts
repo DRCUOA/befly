@@ -8,8 +8,14 @@ export function errorMiddleware(
   res: Response,
   next: NextFunction
 ) {
-  // Fail loud and early - log all errors
-  logger.error('Error:', err.message, err.stack)
+  // Fail loud and early - log all errors with context
+  logger.error('Error:', {
+    message: err.message,
+    stack: err.stack,
+    path: req.path,
+    method: req.method,
+    statusCode: err instanceof AppError ? err.statusCode : 500
+  })
 
   if (err instanceof AppError) {
     return res.status(err.statusCode).json({
@@ -18,7 +24,8 @@ export function errorMiddleware(
     })
   }
 
-  // Unknown error
+  // Unknown error - don't expose internal details
+  logger.error('Unhandled error:', err)
   res.status(500).json({
     error: 'Internal server error'
   })

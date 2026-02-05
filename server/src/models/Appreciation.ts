@@ -1,6 +1,2 @@
-export interface Appreciation {
-  id: string
-  writingId: string
-  userId: string
-  createdAt: Date
-}
+// Re-export shared types for consistency
+export * from '@shared/Appreciation'

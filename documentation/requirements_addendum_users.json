@@ -1,0 +1,131 @@
+{
+  "multiUserAddendum": {
+    "principles": {
+      "explicitUserBoundaries": true,
+      "secureByDefault": true,
+      "leastPrivilege": true,
+      "dataIsolationFirst": true,
+      "sharedViewsAreIntentional": true,
+      "noImplicitSharing": true
+    },
+    "userModel": {
+      "userEntityRequired": true,
+      "userFields": [
+        "id",
+        "email",
+        "passwordHash",
+        "displayName",
+        "createdAt",
+        "updatedAt",
+        "status"
+      ],
+      "emailUnique": true,
+      "passwordsNeverStoredPlaintext": true
+    },
+    "authentication": {
+      "required": true,
+      "signUp": true,
+      "signIn": true,
+      "signOut": true,
+      "sessionOrTokenBased": true,
+      "supportedMethods": [
+        "email_password"
+      ],
+      "passwordHashing": {
+        "algorithm": "bcrypt_or_argon2",
+        "salted": true
+      },
+      "tokenHandling": {
+        "httpOnlyCookiesPreferred": true,
+        "secureFlagRequiredInProduction": true,
+        "expirationRequired": true,
+        "refreshMechanismExplicit": true
+      }
+    },
+    "authorization": {
+      "required": true,
+      "model": "role_and_ownership_based",
+      "roles": [
+        "user",
+        "admin"
+      ],
+      "ownershipEnforcedAtRepositoryLayer": true,
+      "authorizationNeverInClientOnly": true
+    },
+    "dataIsolation": {
+      "userOwnedData": [
+        "writing_blocks",
+        "themes",
+        "appreciations"
+      ],
+      "ownershipFieldRequired": "user_id",
+      "defaultVisibility": "private",
+      "crossUserAccessDeniedByDefault": true,
+      "enforcedInQueries": true
+    },
+    "sharedViews": {
+      "explicitSharingModel": true,
+      "sharedWritingBlocks": true,
+      "sharedThemes": true,
+      "visibilityStates": [
+        "private",
+        "shared",
+        "public"
+      ],
+      "sharedDoesNotImplyEditable": true,
+      "permissionsDefinedExplicitly": true
+    },
+    "appreciationsMultiUser": {
+      "userScoped": true,
+      "noCrossUserInference": true,
+      "aggregationOptionalAndExplicit": true
+    },
+    "apiRequirements": {
+      "authEndpointsRequired": [
+        "POST /auth/signup",
+        "POST /auth/login",
+        "POST /auth/logout",
+        "GET /auth/me"
+      ],
+      "authMiddlewareRequired": true,
+      "userContextInjectedPerRequest": true
+    },
+    "frontendRequirements": {
+      "authStateManagedExplicitly": true,
+      "noSensitiveDataInLocalStorage": true,
+      "clearUserSessionBoundaries": true,
+      "separateViews": {
+        "ownData": true,
+        "sharedData": true
+      }
+    },
+    "databaseRequirements": {
+      "usersTableRequired": true,
+      "foreignKeysEnforced": true,
+      "onDeleteBehaviorExplicit": true,
+      "indexesOnUserScopedQueries": true
+    },
+    "security": {
+      "csrfProtection": true,
+      "rateLimitingOnAuthEndpoints": true,
+      "inputSanitization": true,
+      "outputEscaping": true,
+      "auditabilityPreferred": true
+    },
+    "privacy": {
+      "usersCannotSeeOthersPrivateData": true,
+      "sharedDataClearlyLabeled": true,
+      "noImplicitSocialGraph": true
+    },
+    "nonGoals": {
+      "socialNetworkFeatures": false,
+      "publicFollowerGraphs": false,
+      "algorithmicDiscovery": false
+    },
+    "futureExtensions": {
+      "oauthProvidersOptional": true,
+      "federationOptional": true,
+      "moderationAdditive": true
+    }
+  }
+}

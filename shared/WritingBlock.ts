@@ -4,6 +4,7 @@ export interface WritingBlock {
   title: string
   body: string
   themeIds: string[]
+  visibility: 'private' | 'shared' | 'public'
   createdAt: string
   updatedAt?: string
 }

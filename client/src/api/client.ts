@@ -1,12 +1,25 @@
 /**
  * Plain fetch wrapper for API calls
  * No proprietary clients or SDKs
+ * Handles authentication via httpOnly cookies
  */
 
 const API_BASE = '/api'
 
 export interface RequestOptions extends RequestInit {
   params?: Record<string, string>
+}
+
+// Get CSRF token from cookie (set by server)
+function getCsrfToken(): string | null {
+  const cookies = document.cookie.split(';')
+  for (const cookie of cookies) {
+    const [name, value] = cookie.trim().split('=')
+    if (name === 'csrf-token') {
+      return decodeURIComponent(value)
+    }
+  }
+  return null
 }
 
 async function request<T>(
@@ -21,12 +34,23 @@ async function request<T>(
     url += `?${searchParams.toString()}`
   }
 
+  // Get CSRF token for state-changing operations
+  const csrfToken = getCsrfToken()
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+    ...fetchOptions.headers
+  }
+
+  // Add CSRF token for POST/PUT/DELETE/PATCH
+  if (csrfToken && ['POST', 'PUT', 'DELETE', 'PATCH'].includes(options.method || 'GET')) {
+    headers['X-CSRF-Token'] = csrfToken
+  }
+
+  // Include credentials for cookies (httpOnly auth token)
   const response = await fetch(url, {
     ...fetchOptions,
-    headers: {
-      'Content-Type': 'application/json',
-      ...fetchOptions.headers
-    }
+    credentials: 'include', // Important for httpOnly cookies
+    headers
   })
 
   if (!response.ok) {

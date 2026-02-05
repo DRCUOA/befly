@@ -1,6 +1,7 @@
 import { pool } from '../config/db.js'
 import { Appreciation } from '../models/Appreciation.js'
-import { NotFoundError } from '../utils/errors.js'
+import { NotFoundError, ValidationError } from '../utils/errors.js'
+import { logger } from '../utils/logger.js'
 
 /**
  * Appreciation repository - thin DAO layer
@@ -26,7 +27,8 @@ export const appreciationRepo = {
     )
 
     if (existing.rows.length > 0) {
-      throw new Error('Appreciation already exists')
+      logger.warn('Appreciation creation failed: already exists')
+      throw new ValidationError('Appreciation already exists')
     }
 
     const result = await pool.query(
