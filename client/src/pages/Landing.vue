@@ -52,59 +52,29 @@
       <div class="max-w-3xl">
         <div id="opening-statement" class="mb-24">
           <h2 class="text-5xl font-light leading-tight mb-8 tracking-tight">
-            This is a place for<br/>slow reading.
+            Staying in the Arena
           </h2>
-          <p class="text-2xl font-light text-ink-light leading-relaxed">
-            No notifications. No endless feeds. Just words that ask to be read carefully.
+          <p class="text-xl font-light text-ink-light leading-relaxed mb-6">
+            This is a place for people who think too much, feel deeply, and still believe responsibility matters — even when certainty has collapsed.
           </p>
-        </div>
-        
-        <div id="invitation-block" class="border-t border-line pt-16 pb-16">
-          <p class="text-xl font-light leading-loose text-ink-light mb-8">
-            Each piece here is written to be experienced in one sitting, when you have time to think. There's no rush. Nothing expires. The essays will be here when you're ready.
+          <p class="text-xl font-light text-ink-light leading-relaxed mb-6">
+            I write about agency under pressure, identity after fracture, and what it means to stay human in an age of acceleration: technological, cultural, and personal. Some of this comes from philosophy, some from software and systems thinking, and some from lived experience that refused to stay theoretical.
           </p>
-          <p class="text-xl font-light leading-loose text-ink-light">
-            If you're in a hurry, come back later. This work deserves your full attention, and you deserve the space to give it.
+          <p class="text-xl font-light text-ink-light leading-relaxed mb-6">
+            This isn't self-help.<br/>
+            It isn't therapy.<br/>
+            It isn't tech hype.
           </p>
-        </div>
-        
-        <!-- Philosophy Grid -->
-        <div id="philosophy-grid" class="grid grid-cols-1 md:grid-cols-3 gap-12 pt-16 border-t border-line">
-          <div class="text-center">
-            <div class="mb-6">
-              <svg class="w-12 h-12 text-ink-lighter mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-              </svg>
-            </div>
-            <h3 class="text-sm tracking-widest uppercase font-sans mb-4 text-ink">Depth</h3>
-            <p class="text-base font-light text-ink-light leading-relaxed">
-              Every word is considered. Every sentence earns its place.
-            </p>
-          </div>
-          
-          <div class="text-center">
-            <div class="mb-6">
-              <svg class="w-12 h-12 text-ink-lighter mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <h3 class="text-sm tracking-widest uppercase font-sans mb-4 text-ink">Silence</h3>
-            <p class="text-base font-light text-ink-light leading-relaxed">
-              Space between ideas matters as much as the ideas themselves.
-            </p>
-          </div>
-          
-          <div class="text-center">
-            <div class="mb-6">
-              <svg class="w-12 h-12 text-ink-lighter mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-              </svg>
-            </div>
-            <h3 class="text-sm tracking-widest uppercase font-sans mb-4 text-ink">Craft</h3>
-            <p class="text-base font-light text-ink-light leading-relaxed">
-              Writing as an act of care, not content production.
-            </p>
-          </div>
+          <p class="text-xl font-light text-ink-light leading-relaxed mb-6">
+            It's an attempt to think clearly — and live honestly — when the old stories stop working.
+          </p>
+          <p class="text-xl font-light text-ink-light leading-relaxed mb-6">
+            You don't need to agree with everything here.<br/>
+            You don't need to be fixed, impressive, or optimistic.
+          </p>
+          <p class="text-xl font-light text-ink leading-relaxed">
+            If you're trying to live responsibly anyway — you're welcome.
+          </p>
         </div>
       </div>
     </div>
@@ -113,37 +83,49 @@
     <div id="navigation-emergence" class="w-full min-h-screen bg-gradient-to-b from-paper to-gray-50 px-8 py-32">
       <div class="max-w-4xl mx-auto">
         <div id="nav-introduction" class="text-center mb-20">
-          <h2 class="text-4xl font-light mb-6 tracking-tight">What you'll find here</h2>
-          <p class="text-lg font-light text-ink-light">Essays and writing organized by theme</p>
+          <h2 class="text-4xl font-light mb-6 tracking-tight">What You'll Find Here</h2>
         </div>
         
         <div id="collection-cards" class="space-y-8">
-          <router-link
-            v-for="theme in featuredThemes"
-            :key="theme.id"
-            :to="`/themes?filter=${theme.id}`"
-            class="group bg-paper border border-line hover:border-ink-lighter p-12 cursor-pointer block"
-          >
-            <div class="flex items-start justify-between mb-6">
-              <div>
-                <h3 class="text-3xl font-light mb-3 tracking-tight">{{ theme.name }}</h3>
-                <p class="text-sm tracking-widest uppercase font-sans text-ink-lighter">
-                  {{ getThemeCount(theme.id) }} {{ getThemeCount(theme.id) === 1 ? 'essay' : 'essays' }}
-                </p>
-              </div>
-              <svg
-                class="w-6 h-6 text-ink-lighter group-hover:opacity-100"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-              </svg>
-            </div>
+          <div class="bg-paper border border-line p-12">
+            <h3 class="text-3xl font-light mb-3 tracking-tight">Agency</h3>
             <p class="text-lg font-light text-ink-light leading-relaxed mb-6">
-              {{ theme.description || `Essays exploring ${theme.name.toLowerCase()}` }}
+              What responsibility looks like when freedom feels unbearable.
             </p>
-          </router-link>
+            <p class="text-base font-light text-ink-lighter italic">
+              Each piece ends with a question. Not because I lack answers — but because connection starts there.
+            </p>
+          </div>
+          
+          <div class="bg-paper border border-line p-12">
+            <h3 class="text-3xl font-light mb-3 tracking-tight">Integration</h3>
+            <p class="text-lg font-light text-ink-light leading-relaxed mb-6">
+              Living without boxes — after they collapse.
+            </p>
+            <p class="text-base font-light text-ink-lighter italic">
+              Each piece ends with a question. Not because I lack answers — but because connection starts there.
+            </p>
+          </div>
+          
+          <div class="bg-paper border border-line p-12">
+            <h3 class="text-3xl font-light mb-3 tracking-tight">Humanity in the AI Age</h3>
+            <p class="text-lg font-light text-ink-light leading-relaxed mb-6">
+              Why tools don't absolve us of authorship.
+            </p>
+            <p class="text-base font-light text-ink-lighter italic">
+              Each piece ends with a question. Not because I lack answers — but because connection starts there.
+            </p>
+          </div>
+          
+          <div class="bg-paper border border-line p-12">
+            <h3 class="text-3xl font-light mb-3 tracking-tight">Words That Held</h3>
+            <p class="text-lg font-light text-ink-light leading-relaxed mb-6">
+              Fragments from others — and myself — that earned their place by surviving contact with reality.
+            </p>
+            <p class="text-base font-light text-ink-lighter italic">
+              Each piece ends with a question. Not because I lack answers — but because connection starts there.
+            </p>
+          </div>
         </div>
       </div>
     </div>
@@ -298,6 +280,16 @@ const featuredThemes = computed(() => {
 
 const getThemeCount = (themeId: string): number => {
   return writings.value.filter(w => w.themeIds.includes(themeId)).length
+}
+
+const getCategoryDescription = (categoryName: string): string => {
+  const descriptions: Record<string, string> = {
+    'Agency': 'What responsibility looks like when freedom feels unbearable.',
+    'Integration': 'Living without boxes — after they collapse.',
+    'Humanity in the AI Age': 'Why tools don\'t absolve us of authorship.',
+    'Words That Held': 'Fragments from others — and myself — that earned their place by surviving contact with reality.'
+  }
+  return descriptions[categoryName] || `Essays exploring ${categoryName.toLowerCase()}`
 }
 
 const loadThemes = async () => {
