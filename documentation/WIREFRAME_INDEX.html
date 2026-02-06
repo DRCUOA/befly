@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UX Wireframes Index</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@300;400;500;600&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        ::-webkit-scrollbar { display: none; }
+        body { 
+            font-family: 'Crimson Pro', serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        .sans { font-family: 'Inter', sans-serif; }
+        .stage-card {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .stage-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'serif': ['Crimson Pro', 'serif'],
+                        'sans': ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        'paper': '#FDFCFA',
+                        'ink': '#1A1A1A',
+                        'ink-light': '#4A4A4A',
+                        'ink-lighter': '#8A8A8A',
+                        'line': '#E8E6E3',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-paper text-ink">
+
+<div class="min-h-screen px-8 py-16">
+    <div class="max-w-6xl mx-auto">
+        
+        <header class="mb-16 text-center">
+            <h1 class="text-5xl font-light tracking-tight mb-6">UX Wireframes</h1>
+            <p class="text-xl font-light text-ink-light max-w-2xl mx-auto">
+                A progressive reading experience design system exemplar
+            </p>
+        </header>
+
+        <div class="mb-12 border-t border-line pt-12">
+            <h2 class="text-2xl font-light mb-8 tracking-tight">Design Philosophy</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+                <div>
+                    <h3 class="text-sm tracking-widest uppercase font-sans mb-4 text-ink">Progressive Disclosure</h3>
+                    <p class="text-base font-light text-ink-light leading-relaxed">
+                        Interface elements fade away as engagement deepens, creating space for focused attention.
+                    </p>
+                </div>
+                <div>
+                    <h3 class="text-sm tracking-widest uppercase font-sans mb-4 text-ink">Respectful Attention</h3>
+                    <p class="text-base font-light text-ink-light leading-relaxed">
+                        No interruptions, no forced interactions, no artificial urgency. The design honors the reader's time.
+                    </p>
+                </div>
+                <div>
+                    <h3 class="text-sm tracking-widest uppercase font-sans mb-4 text-ink">Temporal Awareness</h3>
+                    <p class="text-base font-light text-ink-light leading-relaxed">
+                        Design acknowledges the passage of time and allows for natural reading rhythms.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="space-y-8">
+            
+            <div class="stage-card border border-line bg-paper p-8 rounded-sm">
+                <div class="flex items-start justify-between mb-4">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-4 mb-3">
+                            <span class="text-sm tracking-widest uppercase font-sans text-ink-lighter">Stage 1</span>
+                            <span class="text-sm font-light text-ink-lighter">Arrival</span>
+                        </div>
+                        <h3 class="text-2xl font-light tracking-tight mb-3">Orientation</h3>
+                        <p class="text-base font-light text-ink-light leading-relaxed mb-4">
+                            Welcome page that sets expectations and introduces the reading philosophy. Minimal interface with clear value proposition.
+                        </p>
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            <span class="text-xs px-3 py-1 bg-gray-100 text-ink-light rounded">Hero Section</span>
+                            <span class="text-xs px-3 py-1 bg-gray-100 text-ink-light rounded">Philosophy Grid</span>
+                            <span class="text-xs px-3 py-1 bg-gray-100 text-ink-light rounded">Collection Preview</span>
+                            <span class="text-xs px-3 py-1 bg-gray-100 text-ink-light rounded">Fade Animations</span>
+                        </div>
+                    </div>
+                    <a href="1-Stage 1 — Arrival (Orientation.html" class="ml-8 px-6 py-3 bg-ink text-paper hover:bg-ink-light transition-colors duration-500 text-sm tracking-wide font-sans whitespace-nowrap">
+                        View Wireframe
+                    </a>
+                </div>
+            </div>
+
+            <div class="stage-card border border-line bg-paper p-8 rounded-sm">
+                <div class="flex items-start justify-between mb-4">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-4 mb-3">
+                            <span class="text-sm tracking-widest uppercase font-sans text-ink-lighter">Stage 2</span>
+                            <span class="text-sm font-light text-ink-lighter">Invitation</span>
+                        </div>
+                        <h3 class="text-2xl font-light tracking-tight mb-3">Curiosity</h3>
+                        <p class="text-base font-light text-ink-light leading-relaxed mb-4">
+                            Browse and discovery interface. Sticky navigation, essay cards, filtering, and collection organization.
+                        </p>
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            <span class="text-xs px-3 py-1 bg-gray-100 text-ink-light rounded">Sticky Header</span>
+                            <span class="text-xs px-3 py-1 bg-gray-100 text-ink-light rounded">Essay Cards</span>
+                            <span class="text-xs px-3 py-1 bg-gray-100 text-ink-light rounded">Filter System</span>
+                            <span class="text-xs px-3 py-1 bg-gray-100 text-ink-light rounded">Metadata Display</span>
+                        </div>
+                    </div>
+                    <a href="2-Stage 2 — Invitation (Curiosit.html" class="ml-8 px-6 py-3 bg-ink text-paper hover:bg-ink-light transition-colors duration-500 text-sm tracking-wide font-sans whitespace-nowrap">
+                        View Wireframe
+                    </a>
+                </div>
+            </div>
+
+            <div class="stage-card border border-line bg-paper p-8 rounded-sm">
+                <div class="flex items-start justify-between mb-4">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-4 mb-3">
+                            <span class="text-sm tracking-widest uppercase font-sans text-ink-lighter">Stage 3</span>
+                            <span class="text-sm font-light text-ink-lighter">Selection</span>
+                        </div>
+                        <h3 class="text-2xl font-light tracking-tight mb-3">Commitment</h3>
+                        <p class="text-base font-light text-ink-light leading-relaxed mb-4">
+                            Initial reading experience with full navigation visible. Reading progress indicator, back button, paragraph reveals.
+                        </p>
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            <span class="text-xs px-3 py-1 bg-gray-100 text-ink-light rounded">Progress Bar</span>
+                            <span class="text-xs px-3 py-1 bg-gray-100 text-ink-light rounded">Paragraph Reveal</span>
+                            <span class="text-xs px-3 py-1 bg-gray-100 text-ink-light rounded">Auto-Continue</span>
+                            <span class="text-xs px-3 py-1 bg-gray-100 text-ink-light rounded">Back Navigation</span>
+                        </div>
+                    </div>
+                    <a href="3-Stage 3 — Selection (Commitmen.html" class="ml-8 px-6 py-3 bg-ink text-paper hover:bg-ink-light transition-colors duration-500 text-sm tracking-wide font-sans whitespace-nowrap">
+                        View Wireframe
+                    </a>
+                </div>
+            </div>
+
+            <div class="stage-card border border-line bg-paper p-8 rounded-sm">
+                <div class="flex items-start justify-between mb-4">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-4 mb-3">
+                            <span class="text-sm tracking-widest uppercase font-sans text-ink-lighter">Stage 4</span>
+                            <span class="text-sm font-light text-ink-lighter">Descent</span>
+                        </div>
+                        <h3 class="text-2xl font-light tracking-tight mb-3">Interface Dissolution</h3>
+                        <p class="text-base font-light text-ink-light leading-relaxed mb-4">
+                            Interface begins to fade as reading deepens. Header hides, back button becomes subtle, focus shifts to content.
+                        </p>
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            <span class="text-xs px-3 py-1 bg-gray-100 text-ink-light rounded">Reading Mode</span>
+                            <span class="text-xs px-3 py-1 bg-gray-100 text-ink-light rounded">Interface Fade</span>
+                            <span class="text-xs px-3 py-1 bg-gray-100 text-ink-light rounded">Scroll Detection</span>
+                            <span class="text-xs px-3 py-1 bg-gray-100 text-ink-light rounded">Auto-Continue</span>
+                        </div>
+                    </div>
+                    <a href="4-Stage 4 — Descent (Interface D.html" class="ml-8 px-6 py-3 bg-ink text-paper hover:bg-ink-light transition-colors duration-500 text-sm tracking-wide font-sans whitespace-nowrap">
+                        View Wireframe
+                    </a>
+                </div>
+            </div>
+
+            <div class="stage-card border border-line bg-paper p-8 rounded-sm">
+                <div class="flex items-start justify-between mb-4">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-4 mb-3">
+                            <span class="text-sm tracking-widest uppercase font-sans text-ink-lighter">Stage 5</span>
+                            <span class="text-sm font-light text-ink-lighter">Immersion</span>
+                        </div>
+                        <h3 class="text-2xl font-light tracking-tight mb-3">Temporal Flow</h3>
+                        <p class="text-base font-light text-ink-light leading-relaxed mb-4">
+                            Deep reading state with minimal interface. Full-screen content, sequential reveals, time becomes elastic.
+                        </p>
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            <span class="text-xs px-3 py-1 bg-gray-100 text-ink-light rounded">Deep Flow</span>
+                            <span class="text-xs px-3 py-1 bg-gray-100 text-ink-light rounded">Sequential Reveal</span>
+                            <span class="text-xs px-3 py-1 bg-gray-100 text-ink-light rounded">No Interface</span>
+                            <span class="text-xs px-3 py-1 bg-gray-100 text-ink-light rounded">Auto-Transition</span>
+                        </div>
+                    </div>
+                    <a href="5-Stage 5 — Immersion (Temporal.html" class="ml-8 px-6 py-3 bg-ink text-paper hover:bg-ink-light transition-colors duration-500 text-sm tracking-wide font-sans whitespace-nowrap">
+                        View Wireframe
+                    </a>
+                </div>
+            </div>
+
+            <div class="stage-card border border-line bg-paper p-8 rounded-sm">
+                <div class="flex items-start justify-between mb-4">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-4 mb-3">
+                            <span class="text-sm tracking-widest uppercase font-sans text-ink-lighter">Stage 6</span>
+                            <span class="text-sm font-light text-ink-lighter">Completion</span>
+                        </div>
+                        <h3 class="text-2xl font-light tracking-tight mb-3">Gentle Return</h3>
+                        <p class="text-base font-light text-ink-light leading-relaxed mb-4">
+                            Thoughtful ending that honors the reading experience. Earned whitespace, delayed affordances, reflection time.
+                        </p>
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            <span class="text-xs px-3 py-1 bg-gray-100 text-ink-light rounded">Completion Ritual</span>
+                            <span class="text-xs px-3 py-1 bg-gray-100 text-ink-light rounded">Delayed Affordances</span>
+                            <span class="text-xs px-3 py-1 bg-gray-100 text-ink-light rounded">Reflection Space</span>
+                            <span class="text-xs px-3 py-1 bg-gray-100 text-ink-light rounded">Multiple Exits</span>
+                        </div>
+                    </div>
+                    <a href="6-Stage 6 — Completion (Gentle R.html" class="ml-8 px-6 py-3 bg-ink text-paper hover:bg-ink-light transition-colors duration-500 text-sm tracking-wide font-sans whitespace-nowrap">
+                        View Wireframe
+                    </a>
+                </div>
+            </div>
+
+            <div class="stage-card border border-line bg-paper p-8 rounded-sm">
+                <div class="flex items-start justify-between mb-4">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-4 mb-3">
+                            <span class="text-sm tracking-widest uppercase font-sans text-ink-lighter">Stage 7</span>
+                            <span class="text-sm font-light text-ink-lighter">Return</span>
+                        </div>
+                        <h3 class="text-2xl font-light tracking-tight mb-3">Continuity</h3>
+                        <p class="text-base font-light text-ink-light leading-relaxed mb-4">
+                            Return to browsing with preserved context. Scroll position remembered, reading state indicated, natural resume.
+                        </p>
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            <span class="text-xs px-3 py-1 bg-gray-100 text-ink-light rounded">State Preservation</span>
+                            <span class="text-xs px-3 py-1 bg-gray-100 text-ink-light rounded">Reading History</span>
+                            <span class="text-xs px-3 py-1 bg-gray-100 text-ink-light rounded">Scroll Restoration</span>
+                            <span class="text-xs px-3 py-1 bg-gray-100 text-ink-light rounded">Context Indicators</span>
+                        </div>
+                    </div>
+                    <a href="7-Stage 7 — Return (Continuity W.html" class="ml-8 px-6 py-3 bg-ink text-paper hover:bg-ink-light transition-colors duration-500 text-sm tracking-wide font-sans whitespace-nowrap">
+                        View Wireframe
+                    </a>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="mt-16 border-t border-line pt-12">
+            <h2 class="text-2xl font-light mb-6 tracking-tight">Quick Start</h2>
+            <div class="bg-gray-50 border border-line p-8 rounded-sm">
+                <ol class="space-y-4 text-base font-light text-ink-light leading-relaxed">
+                    <li class="flex items-start gap-4">
+                        <span class="text-ink-lighter font-sans">1.</span>
+                        <span>Start with <a href="1-Stage 1 — Arrival (Orientation.html" class="text-ink underline">Stage 1</a> to experience the full journey</span>
+                    </li>
+                    <li class="flex items-start gap-4">
+                        <span class="text-ink-lighter font-sans">2.</span>
+                        <span>Navigate through each stage sequentially to observe progressive interface reduction</span>
+                    </li>
+                    <li class="flex items-start gap-4">
+                        <span class="text-ink-lighter font-sans">3.</span>
+                        <span>Review <a href="WIREFRAMES_README.md" class="text-ink underline">WIREFRAMES_README.md</a> for detailed documentation</span>
+                    </li>
+                    <li class="flex items-start gap-4">
+                        <span class="text-ink-lighter font-sans">4.</span>
+                        <span>Adapt patterns and components for your application</span>
+                    </li>
+                </ol>
+            </div>
+        </div>
+
+        <div class="mt-12 border-t border-line pt-12 text-center">
+            <p class="text-sm font-light text-ink-lighter">
+                These wireframes exemplify attention-respecting UX patterns for reading experiences
+            </p>
+        </div>
+
+    </div>
+</div>
+
+</body>
+</html>

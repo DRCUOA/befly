@@ -15,5 +15,8 @@ export const config = {
   },
   get corsOrigin() {
     return getEnv('CORS_ORIGIN', 'http://localhost:5178')
+  },
+  get appName() {
+    return getEnv('APP_NAME', 'Rambulations')
   }
 }

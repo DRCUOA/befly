@@ -4,7 +4,7 @@
     
     <form @submit.prevent="handleSubmit" class="space-y-6">
       <div>
-        <label for="email" class="block text-sm font-medium text-gray-700 mb-1">
+        <label for="email" class="block text-sm font-medium text-ink mb-1">
           Email
         </label>
         <input
@@ -13,13 +13,13 @@
           type="email"
           required
           autocomplete="email"
-          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+          class="mt-1 block w-full rounded-md border-line bg-paper text-ink focus:border-[#717171] focus:ring-[#717171] focus:outline-none"
           placeholder="your@email.com"
         />
       </div>
       
       <div>
-        <label for="password" class="block text-sm font-medium text-gray-700 mb-1">
+        <label for="password" class="block text-sm font-medium text-ink mb-1">
           Password
         </label>
         <input
@@ -28,7 +28,7 @@
           type="password"
           required
           autocomplete="current-password"
-          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+          class="mt-1 block w-full rounded-md border-line bg-paper text-ink focus:border-[#717171] focus:ring-[#717171] focus:outline-none"
           placeholder="Enter your password"
         />
       </div>
@@ -41,13 +41,13 @@
         <button
           type="submit"
           :disabled="submitting || isLoading"
-          class="flex-1 px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          class="flex-1 px-6 py-2 border border-line bg-paper hover:bg-[#E5E5E5] text-[#717171] rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {{ submitting ? 'Signing In...' : 'Sign In' }}
         </button>
         <router-link
           to="/signup"
-          class="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+          class="px-6 py-2 border border-line bg-paper hover:bg-[#E5E5E5] text-[#717171] rounded-md"
         >
           Sign Up
         </router-link>

@@ -115,4 +115,13 @@ router.beforeEach(async (to, from, next) => {
   next()
 })
 
+// Reset scroll to top on navigation (pages handle their own restoration)
+router.afterEach((to) => {
+  // Pages that need scroll restoration handle it themselves
+  // For all other pages, reset to top
+  if (to.name !== 'Home' && to.name !== 'Read' && to.name !== 'Themes') {
+    window.scrollTo({ top: 0, behavior: 'instant' })
+  }
+})
+
 export default router

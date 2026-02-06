@@ -183,13 +183,13 @@
         <section id="soft-affordances-section" class="pb-32">
             <div class="flex flex-col items-center space-y-12 gentle-fade-in delay-surface-4">
                 <div class="text-center">
-                    <a href="#" class="suggestive-link soft-link text-base font-light text-ink-lighter sans tracking-wide">
+                    <a href="3-Stage 3 — Selection (Commitmen.html" class="suggestive-link soft-link text-base font-light text-ink-lighter sans tracking-wide">
                         Another piece
                     </a>
                 </div>
                 
                 <div class="text-center">
-                    <a href="#" class="suggestive-link soft-link text-base font-light text-ink-lighter sans tracking-wide">
+                    <a href="7-Stage 7 — Return (Continuity W.html" class="suggestive-link soft-link text-base font-light text-ink-lighter sans tracking-wide">
                         Return to essays
                     </a>
                 </div>
@@ -213,9 +213,9 @@
         <section id="reverent-footer-section" class="pb-20">
             <div class="flex flex-col items-center space-y-8 opacity-30">
                 <div class="flex items-center space-x-8 text-xs font-light text-ink-lighter sans tracking-wider">
-                    <a href="#" class="hover:text-ink transition-colors duration-500">About</a>
+                    <a href="1-Stage 1 — Arrival (Orientation.html" class="hover:text-ink transition-colors duration-500">About</a>
                     <span class="text-ink-whisper">·</span>
-                    <a href="#" class="hover:text-ink transition-colors duration-500">Archive</a>
+                    <a href="7-Stage 7 — Return (Continuity W.html" class="hover:text-ink transition-colors duration-500">Archive</a>
                     <span class="text-ink-whisper">·</span>
                     <a href="#" class="hover:text-ink transition-colors duration-500">Subscribe</a>
                 </div>
@@ -282,6 +282,30 @@ window.addEventListener('load', function() {
         if (mouseY < windowHeight * 0.15) {
         }
     });
+});
+</script>
+
+<script>
+// Smooth page transitions
+document.addEventListener('DOMContentLoaded', function() {
+    const links = document.querySelectorAll('a[href$=".html"]');
+    
+    links.forEach(link => {
+        link.addEventListener('click', function(e) {
+            const href = this.getAttribute('href');
+            if (href && href.endsWith('.html')) {
+                document.body.style.opacity = '0';
+                document.body.style.transition = 'opacity 0.5s ease-out';
+            }
+        });
+    });
+    
+    // Fade in on page load
+    document.body.style.opacity = '0';
+    setTimeout(() => {
+        document.body.style.transition = 'opacity 1s ease-in';
+        document.body.style.opacity = '1';
+    }, 100);
 });
 </script>
 

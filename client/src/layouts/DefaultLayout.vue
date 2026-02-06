@@ -1,76 +1,221 @@
 <template>
-  <div class="min-h-screen bg-gray-50">
-    <nav class="bg-white border-b border-gray-200">
-      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between h-16">
-          <div class="flex">
+  <div class="min-h-screen bg-paper">
+    <header
+      class="w-full border-b border-line bg-paper sticky top-0 z-50"
+    >
+      <div class="max-w-7xl mx-auto px-8 py-6 flex items-center justify-between">
+        <div class="flex items-center gap-12">
+          <router-link
+            :to="isAuthenticated ? '/home' : '/'"
+            class="text-2xl font-light tracking-tight hover:text-ink-light"
+          >
+            {{ appConfig.appName }}
+          </router-link>
+          <nav class="hidden md:flex gap-8 text-sm tracking-wide font-sans">
             <router-link
-              :to="isAuthenticated ? '/home' : '/'"
-              class="inline-flex items-center px-2 pt-1 text-sm font-medium text-gray-900"
+              v-if="isAuthenticated"
+              to="/home"
+              class="text-ink-lighter hover:text-ink"
             >
-              Writing Platform
+              Essays
             </router-link>
-          </div>
-          <div class="flex items-center space-x-4">
-            <template v-if="isAuthenticated">
-              <router-link
-                to="/write"
-                class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900"
-              >
-                Write
-              </router-link>
-              <router-link
-                to="/themes"
-                class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900"
-              >
-                Themes
-              </router-link>
-            </template>
-            <template v-if="isAuthenticated">
-              <span class="text-sm text-gray-600">{{ user?.displayName }}</span>
-              <router-link
-                to="/profile"
-                class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900"
-              >
-                Profile
-              </router-link>
-              <button
-                @click="handleSignOut"
-                class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900"
-              >
-                Sign Out
-              </button>
-            </template>
-            <template v-else>
-              <router-link
-                to="/signin"
-                class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900"
-              >
-                Sign In
-              </router-link>
-              <router-link
-                to="/signup"
-                class="inline-flex items-center px-3 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
-              >
-                Sign Up
-              </router-link>
-            </template>
-          </div>
+            <router-link
+              v-if="isAuthenticated"
+              to="/themes"
+              class="text-ink-lighter hover:text-ink"
+            >
+              Themes
+            </router-link>
+            <router-link
+              to="/"
+              class="text-ink-lighter hover:text-ink"
+            >
+              About
+            </router-link>
+          </nav>
+        </div>
+        <div class="flex items-center gap-4">
+          <template v-if="isAuthenticated">
+            <router-link
+              to="/write"
+              class="text-sm tracking-wide font-sans text-ink-lighter hover:text-ink"
+            >
+              Write
+            </router-link>
+            <span class="text-sm text-ink-lighter font-sans">{{ user?.displayName }}</span>
+            <router-link
+              to="/profile"
+              class="text-sm tracking-wide font-sans text-ink-lighter hover:text-ink"
+            >
+              Profile
+            </router-link>
+            <button
+              @click="handleSignOut"
+              class="text-sm tracking-wide font-sans text-ink-lighter hover:text-ink"
+            >
+              Sign Out
+            </button>
+          </template>
+          <template v-else>
+            <router-link
+              to="/signin"
+              class="text-sm tracking-wide font-sans text-ink-lighter hover:text-ink"
+            >
+              Sign In
+            </router-link>
+            <router-link
+              to="/signup"
+              class="px-4 py-2 text-sm tracking-wide font-sans border border-line bg-paper hover:bg-[#E5E5E5] text-[#717171]"
+            >
+              Sign Up
+            </router-link>
+          </template>
+          <button
+            @click.stop="menuOpen = !menuOpen"
+            class="md:hidden text-ink-lighter hover:text-ink"
+            aria-label="Menu"
+          >
+            <svg
+              v-if="!menuOpen"
+              class="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M4 6h16M4 12h16M4 18h16"
+              />
+            </svg>
+            <svg
+              v-else
+              class="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
         </div>
       </div>
-    </nav>
-    <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      
+      <!-- Mobile Menu -->
+      <div
+        v-if="menuOpen"
+        @click.stop
+        class="md:hidden border-t border-line bg-paper"
+      >
+        <nav class="px-8 py-6 space-y-4">
+          <router-link
+            v-if="isAuthenticated"
+            to="/home"
+            @click="menuOpen = false"
+            class="block text-sm tracking-wide font-sans text-ink-lighter hover:text-ink"
+          >
+            Essays
+          </router-link>
+          <router-link
+            v-if="isAuthenticated"
+            to="/themes"
+            @click="menuOpen = false"
+            class="block text-sm tracking-wide font-sans text-ink-lighter hover:text-ink"
+          >
+            Themes
+          </router-link>
+          <router-link
+            to="/"
+            @click="menuOpen = false"
+            class="block text-sm tracking-wide font-sans text-ink-lighter hover:text-ink"
+          >
+            About
+          </router-link>
+          <template v-if="isAuthenticated">
+            <router-link
+              to="/write"
+              @click="menuOpen = false"
+              class="block text-sm tracking-wide font-sans text-ink-lighter hover:text-ink"
+            >
+              Write
+            </router-link>
+            <router-link
+              to="/profile"
+              @click="menuOpen = false"
+              class="block text-sm tracking-wide font-sans text-ink-lighter hover:text-ink"
+            >
+              Profile
+            </router-link>
+            <button
+              @click="handleSignOut"
+              class="block text-sm tracking-wide font-sans text-ink-lighter hover:text-ink w-full text-left"
+            >
+              Sign Out
+            </button>
+          </template>
+          <template v-else>
+            <router-link
+              to="/signin"
+              @click="menuOpen = false"
+              class="block text-sm tracking-wide font-sans text-ink-lighter hover:text-ink"
+            >
+              Sign In
+            </router-link>
+            <router-link
+              to="/signup"
+              @click="menuOpen = false"
+              class="block px-4 py-2 text-sm tracking-wide font-sans border border-line bg-paper hover:bg-[#E5E5E5] text-[#717171] w-fit"
+            >
+              Sign Up
+            </router-link>
+          </template>
+        </nav>
+      </div>
+    </header>
+    <main :class="mainClasses">
       <slot />
     </main>
   </div>
 </template>
 
 <script setup lang="ts">
-import { useRouter } from 'vue-router'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { useAuth } from '../stores/auth'
+import { appConfig } from '../config/app'
 
 const router = useRouter()
+const route = useRoute()
 const { user, isAuthenticated, signout } = useAuth()
+const menuOpen = ref(false)
+
+// Close menu when clicking outside
+const handleClickOutside = (event: MouseEvent) => {
+  const target = event.target as HTMLElement
+  if (!target.closest('header')) {
+    menuOpen.value = false
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('click', handleClickOutside)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside)
+})
+
+// For Home and Themes pages, remove padding to allow full-width sections
+const mainClasses = computed(() => {
+  const isBrowsePage = route.name === 'Home' || route.name === 'Themes'
+  return isBrowsePage ? '' : 'max-w-7xl mx-auto px-8 py-8'
+})
 
 const handleSignOut = async () => {
   try {

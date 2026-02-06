@@ -85,8 +85,8 @@ process.on('SIGINT', () => gracefulShutdown('SIGINT'))
 async function start() {
   try {
     await initDb()
-    server = app.listen(PORT, () => {
-      console.log(`Server running on http://localhost:${PORT}`)
+    server = app.listen(PORT, '0.0.0.0', () => {
+      console.log(`Server running on http://0.0.0.0:${PORT}`)
     })
   } catch (error) {
     process.stdout.write(`\n[FATAL] Failed to start server:\n`)

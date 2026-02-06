@@ -4,7 +4,7 @@
     
     <form @submit.prevent="handleSubmit" class="space-y-6">
       <div>
-        <label for="email" class="block text-sm font-medium text-gray-700 mb-1">
+        <label for="email" class="block text-sm font-medium text-ink mb-1">
           Email
         </label>
         <input
@@ -13,14 +13,14 @@
           type="email"
           required
           autocomplete="email"
-          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+          class="mt-1 block w-full rounded-md border-line bg-paper text-ink focus:border-[#717171] focus:ring-[#717171] focus:outline-none"
           placeholder="your@email.com"
         />
         <p v-if="errors.email" class="mt-1 text-sm text-red-600">{{ errors.email }}</p>
       </div>
       
       <div>
-        <label for="displayName" class="block text-sm font-medium text-gray-700 mb-1">
+        <label for="displayName" class="block text-sm font-medium text-ink mb-1">
           Display Name
         </label>
         <input
@@ -29,14 +29,14 @@
           type="text"
           required
           autocomplete="name"
-          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+          class="mt-1 block w-full rounded-md border-line bg-paper text-ink focus:border-[#717171] focus:ring-[#717171] focus:outline-none"
           placeholder="Your Name"
         />
         <p v-if="errors.displayName" class="mt-1 text-sm text-red-600">{{ errors.displayName }}</p>
       </div>
       
       <div>
-        <label for="password" class="block text-sm font-medium text-gray-700 mb-1">
+        <label for="password" class="block text-sm font-medium text-ink mb-1">
           Password
         </label>
         <input
@@ -46,15 +46,15 @@
           required
           autocomplete="new-password"
           minlength="8"
-          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+          class="mt-1 block w-full rounded-md border-line bg-paper text-ink focus:border-[#717171] focus:ring-[#717171] focus:outline-none"
           placeholder="At least 8 characters"
         />
         <p v-if="errors.password" class="mt-1 text-sm text-red-600">{{ errors.password }}</p>
-        <p class="mt-1 text-sm text-gray-500">Must be at least 8 characters</p>
+        <p class="mt-1 text-sm text-ink-lighter">Must be at least 8 characters</p>
       </div>
       
       <div>
-        <label for="confirmPassword" class="block text-sm font-medium text-gray-700 mb-1">
+        <label for="confirmPassword" class="block text-sm font-medium text-ink mb-1">
           Confirm Password
         </label>
         <input
@@ -63,7 +63,7 @@
           type="password"
           required
           autocomplete="new-password"
-          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+          class="mt-1 block w-full rounded-md border-line bg-paper text-ink focus:border-[#717171] focus:ring-[#717171] focus:outline-none"
           placeholder="Confirm your password"
         />
         <p v-if="errors.confirmPassword" class="mt-1 text-sm text-red-600">{{ errors.confirmPassword }}</p>
@@ -77,13 +77,13 @@
         <button
           type="submit"
           :disabled="submitting || isLoading"
-          class="flex-1 px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          class="flex-1 px-6 py-2 border border-line bg-paper hover:bg-[#E5E5E5] text-[#717171] rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {{ submitting ? 'Creating Account...' : 'Sign Up' }}
         </button>
         <router-link
           to="/signin"
-          class="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+          class="px-6 py-2 border border-line bg-paper hover:bg-[#E5E5E5] text-[#717171] rounded-md"
         >
           Sign In
         </router-link>

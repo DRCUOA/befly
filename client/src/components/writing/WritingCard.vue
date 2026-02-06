@@ -1,62 +1,74 @@
 <template>
-  <div class="bg-white rounded-lg shadow p-6 hover:shadow-md transition-shadow">
-    <div class="flex items-start justify-between mb-2">
-      <router-link
-        :to="`/read/${writing.id}`"
-        class="flex-1"
-      >
-        <h2 class="text-xl font-semibold mb-2 text-gray-900 hover:text-blue-600">{{ writing.title }}</h2>
-      </router-link>
-      <div v-if="isOwner" class="flex items-center space-x-2 ml-4">
-        <router-link
-          :to="`/write/${writing.id}`"
-          class="p-1 text-gray-400 hover:text-blue-600 transition-colors"
-          title="Edit"
-          @click.stop
-        >
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-          </svg>
-        </router-link>
-        <button
-          @click.stop="handleDelete"
-          :disabled="deleting"
-          class="p-1 text-gray-400 hover:text-red-600 transition-colors disabled:opacity-50"
-          title="Delete"
-        >
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-          </svg>
-        </button>
-      </div>
-    </div>
+  <article
+    class="essay-card border-b border-line py-16 group cursor-pointer"
+    :class="{ 'read-marker': isRecentlyRead }"
+  >
     <router-link
       :to="`/read/${writing.id}`"
-      class="block"
+      class="flex gap-16 items-start block"
+      @click="handleClick"
     >
-      <p class="text-gray-600 mb-4 line-clamp-3">{{ preview }}</p>
-      <div class="flex items-center justify-between">
-        <div class="flex flex-wrap gap-2 items-center">
-          <ThemeTag
-            v-for="theme in themes"
-            :key="theme.id"
-            :name="theme.name"
-          />
-          <span
-            v-if="writing.visibility !== 'private'"
-            class="px-2 py-1 text-xs rounded"
-            :class="{
-              'bg-green-100 text-green-800': writing.visibility === 'public',
-              'bg-blue-100 text-blue-800': writing.visibility === 'shared'
-            }"
-          >
-            {{ writing.visibility === 'public' ? 'Public' : 'Shared' }}
-          </span>
+      <div class="flex-1">
+        <div class="mb-4">
+          <div class="flex items-center gap-3 flex-wrap">
+            <ThemeTag
+              v-for="theme in themes"
+              :key="theme.id"
+              :name="theme.name"
+              class="text-xs tracking-widest uppercase font-sans text-ink-lighter"
+            />
+            <span v-if="isRecentlyRead" class="text-xs tracking-widest uppercase font-sans text-ink-whisper">
+              Recently Read
+            </span>
+            <span class="text-xs text-ink-lighter mx-3">·</span>
+            <span class="text-xs font-sans text-ink-lighter">{{ formattedDate }}</span>
+          </div>
         </div>
-        <span class="text-sm text-gray-500">{{ formattedDate }}</span>
+        <h2 class="text-4xl font-light tracking-tight mb-6 leading-tight group-hover:text-ink-light">
+          {{ writing.title }}
+        </h2>
+        <p class="text-lg font-light text-ink-light leading-relaxed mb-6">
+          {{ preview }}
+        </p>
+        <div class="flex items-center gap-6 text-sm font-sans text-ink-lighter">
+          <span>{{ wordCount }} words</span>
+          <span>·</span>
+          <span>{{ readTime }} min read</span>
+        </div>
+      </div>
+      <div
+        v-if="showImage"
+        class="w-64 h-64 flex-shrink-0 bg-gray-200 overflow-hidden rounded-sm"
+      >
+        <div class="w-full h-full bg-gradient-to-br from-line to-ink-lighter opacity-30 group-hover:opacity-40"></div>
       </div>
     </router-link>
-  </div>
+    <div
+      v-if="isOwner"
+      class="flex items-center gap-2 mt-4"
+      @click.stop
+    >
+      <router-link
+        :to="`/write/${writing.id}`"
+        class="p-2 text-ink-lighter hover:text-ink"
+        title="Edit"
+      >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+        </svg>
+      </router-link>
+      <button
+        @click="handleDelete"
+        :disabled="deleting"
+        class="p-2 text-ink-lighter hover:text-red-600 disabled:opacity-50"
+        title="Delete"
+      >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+        </svg>
+      </button>
+    </div>
+  </article>
 </template>
 
 <script setup lang="ts">
@@ -64,6 +76,7 @@ import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { api } from '../../api/client'
 import { useAuth } from '../../stores/auth'
+import { useReadingStore } from '../../stores/reading'
 import type { WritingBlock } from '../../domain/WritingBlock'
 import type { Theme } from '../../domain/Theme'
 import ThemeTag from './ThemeTag.vue'
@@ -72,29 +85,52 @@ import { markdownToText } from '../../utils/markdown'
 interface Props {
   writing: WritingBlock
   themes: Theme[]
+  showImage?: boolean
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  showImage: false,
+})
+
 const router = useRouter()
 const { user } = useAuth()
+const readingStore = useReadingStore()
 const deleting = ref(false)
 
 const isOwner = computed(() => {
   return user.value && props.writing.userId === user.value.id
 })
 
+const isRecentlyRead = computed(() => {
+  return readingStore.isRecentlyRead(props.writing.id)
+})
+
 const preview = computed(() => {
-  return markdownToText(props.writing.body).substring(0, 150) + '...'
+  const text = markdownToText(props.writing.body)
+  return text.substring(0, 200) + (text.length > 200 ? '...' : '')
+})
+
+const wordCount = computed(() => {
+  const text = markdownToText(props.writing.body)
+  return text.split(/\s+/).filter(word => word.length > 0).length
+})
+
+const readTime = computed(() => {
+  // Estimate at 280 words per minute
+  return Math.max(1, Math.round(wordCount.value / 280))
 })
 
 const formattedDate = computed(() => {
   const date = new Date(props.writing.createdAt)
   return date.toLocaleDateString('en-US', {
     year: 'numeric',
-    month: 'short',
-    day: 'numeric'
+    month: 'long'
   })
 })
+
+const handleClick = () => {
+  readingStore.setCurrentReading(props.writing.id)
+}
 
 const handleDelete = async () => {
   if (!confirm(`Are you sure you want to delete "${props.writing.title}"? This action cannot be undone.`)) {
@@ -113,3 +149,31 @@ const handleDelete = async () => {
   }
 }
 </script>
+
+<style scoped>
+.essay-card:hover {
+  transform: translateY(-4px);
+}
+
+.essay-card.read-marker {
+  opacity: 0.9;
+  position: relative;
+}
+
+.essay-card.read-marker::before {
+  content: '';
+  position: absolute;
+  left: -24px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #B8B8B8;
+  opacity: 0;
+}
+
+.essay-card.read-marker:hover::before {
+  opacity: 1;
+}
+</style>
