@@ -12,11 +12,13 @@ function getPool(): pg.Pool {
     console.log('[DB] Initialising connection pool')
 
     _pool = new Pool({
-      connectionString: config.databaseUrl,
+      connectionString: process.env.DATABASE_URL,
       ssl: {
         rejectUnauthorized: false
       }
     })
+    
+    
 
     console.log('[DB] SSL enabled (forced)')
   }
