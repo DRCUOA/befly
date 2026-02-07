@@ -1,5 +1,9 @@
 build:
   docker:
     web: Dockerfile
+release:
+  image: web
+  command:
+    - sh scripts/migrate.sh
 run:
-   web: node dist/index.js
+  web: sh scripts/start.sh

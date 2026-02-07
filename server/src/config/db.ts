@@ -7,20 +7,34 @@ const { Pool } = pg
 // This ensures dotenv has loaded before reading config.databaseUrl
 let _pool: pg.Pool | null = null
 
+function buildPoolConfig(): pg.PoolConfig {
+  const connectionString = config.databaseUrl
+
+  // pg can override `ssl` object settings when ssl query params are present
+  // in DATABASE_URL, so strip them and control SSL explicitly in code.
+  const url = new URL(connectionString)
+  url.searchParams.delete('sslmode')
+  url.searchParams.delete('sslrootcert')
+  url.searchParams.delete('sslcert')
+  url.searchParams.delete('sslkey')
+
+  const isProduction = config.nodeEnv === 'production'
+
+  return {
+    connectionString: url.toString(),
+    ssl: isProduction
+      ? { rejectUnauthorized: false }
+      : false
+  }
+}
+
 function getPool(): pg.Pool {
   if (!_pool) {
     console.log('[DB] Initialising connection pool')
 
-    _pool = new Pool({
-      connectionString: process.env.DATABASE_URL,
-      ssl: {
-        rejectUnauthorized: false
-      }
-    })
-    
-    
-
-    console.log('[DB] SSL enabled (forced)')
+    const poolConfig = buildPoolConfig()
+    _pool = new Pool(poolConfig)
+    console.log(`[DB] SSL ${config.nodeEnv === 'production' ? 'enabled' : 'disabled'} (${config.nodeEnv})`)
   }
   return _pool
 }

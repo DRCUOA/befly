@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 # Run SQL migrations
 
 set -e
@@ -17,11 +17,28 @@ DATABASE_URL="${DATABASE_URL:-postgres://user:pass@localhost:5432/writing}"
 echo "Running migrations..."
 echo "Database: $DATABASE_URL"
 
-# Run each migration file in order
+# Track applied migrations so releases are idempotent
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 <<'SQL'
+CREATE TABLE IF NOT EXISTS schema_migrations (
+  filename VARCHAR(255) PRIMARY KEY,
+  applied_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+);
+SQL
+
+# Run each migration file in order (once)
 for migration in "$MIGRATIONS_DIR"/*.sql; do
   if [ -f "$migration" ]; then
-    echo "Running $(basename "$migration")..."
-    psql "$DATABASE_URL" -f "$migration"
+    filename="$(basename "$migration")"
+    applied=$(psql "$DATABASE_URL" -tAc "SELECT 1 FROM schema_migrations WHERE filename = '$filename' LIMIT 1;")
+
+    if [ "$applied" = "1" ]; then
+      echo "Skipping $filename (already applied)"
+      continue
+    fi
+
+    echo "Running $filename..."
+    psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f "$migration"
+    psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -c "INSERT INTO schema_migrations (filename) VALUES ('$filename');"
   fi
 done
 

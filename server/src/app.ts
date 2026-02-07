@@ -16,6 +16,11 @@ import { config } from './config/env.js'
 
 const app = express()
 
+// Heroku sits behind a router/proxy and forwards client IP via X-Forwarded-For.
+// Trust the first proxy hop so express-rate-limit can derive client IP correctly.
+if (config.nodeEnv === 'production') {
+  app.set('trust proxy', 1)
+}
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -37,7 +42,7 @@ const generalRateLimit = rateLimit({
 
 // Middleware
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || 'http://localhost:5178',
+  origin: config.corsOrigin,
   credentials: true
 }))
 app.use(cookieParser())

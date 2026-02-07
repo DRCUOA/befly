@@ -19,15 +19,18 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
+RUN apk add --no-cache ca-certificates postgresql-client
+
 COPY package.json package-lock.json ./
+COPY scripts ./scripts
 COPY shared ./shared
 COPY server/package.json ./server/package.json
+COPY server/src/db/migrations ./server/src/db/migrations
 RUN npm ci --omit=dev
 
 COPY --from=builder /app/server/dist ./server/dist
 COPY --from=builder /app/client/dist ./server/public
 
-WORKDIR /app/server
 EXPOSE 3005
 
-CMD ["node", "dist/index.js"]
+CMD ["sh", "scripts/start.sh"]
