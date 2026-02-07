@@ -7,7 +7,7 @@ import app from './app.js'
 import { initDb, closeDb } from './config/db.js'
 import type { Server } from 'http'
 
-const PORT = process.env.PORT || 3005
+const PORT = Number(process.env.PORT) || 3005
 let server: Server | null = null
 
 // Handle uncaught exceptions

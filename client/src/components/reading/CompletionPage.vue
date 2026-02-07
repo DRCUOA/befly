@@ -58,7 +58,6 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
 
 interface ExitOption {
   type: 'link' | 'button'
@@ -70,7 +69,7 @@ interface Props {
   exitOptions?: ExitOption[]
 }
 
-const props = withDefaults(defineProps<Props>(), {
+withDefaults(defineProps<Props>(), {
   exitOptions: () => [
     { type: 'link', label: 'Back to essays', route: '/home' },
     { type: 'link', label: 'Browse more', route: '/home' },

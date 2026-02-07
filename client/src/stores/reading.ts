@@ -86,9 +86,6 @@ export function useReadingStore() {
     return recentlyReadIds.value.has(writingId)
   }
 
-  // Get reading history
-  const getReadingHistory = computed(() => readingHistory.value)
-
   // Set current reading
   const setCurrentReading = (writingId: string | null) => {
     currentReadingId.value = writingId
@@ -108,7 +105,6 @@ export function useReadingStore() {
     saveScrollPosition,
     getScrollPosition,
     isRecentlyRead,
-    getReadingHistory: computed(() => readingHistory.value),
     setCurrentReading,
   }
 }

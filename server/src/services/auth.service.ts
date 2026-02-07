@@ -1,5 +1,5 @@
 import bcrypt from 'bcrypt'
-import jwt from 'jsonwebtoken'
+import jwt, { SignOptions } from 'jsonwebtoken'
 import { userRepo } from '../repositories/user.repo.js'
 import { User } from '../models/User.js'
 import { UnauthorizedError, ValidationError } from '../utils/errors.js'
@@ -124,6 +124,6 @@ export const authService = {
   generateToken(userId: string): string {
     return jwt.sign({ userId }, JWT_SECRET, {
       expiresIn: JWT_EXPIRES_IN
-    })
+    } as SignOptions)
   }
 }

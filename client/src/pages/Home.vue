@@ -113,11 +113,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed, onMounted } from 'vue'
 import { api } from '../api/client'
 import { useAuth } from '../stores/auth'
-import { useReadingStore } from '../stores/reading'
 import type { WritingBlock } from '../domain/WritingBlock'
 import type { Theme } from '../domain/Theme'
 import WritingCard from '../components/writing/WritingCard.vue'
@@ -125,9 +123,7 @@ import FilterNavigation from '../components/browse/FilterNavigation.vue'
 import CollectionCard from '../components/browse/CollectionCard.vue'
 import type { ApiResponse } from '@shared/ApiResponses'
 
-const router = useRouter()
 const { user, isAuthenticated } = useAuth()
-const readingStore = useReadingStore()
 
 const writings = ref<WritingBlock[]>([])
 const themes = ref<Theme[]>([])

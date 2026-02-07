@@ -103,7 +103,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 import { api } from '../api/client'
 import { useAuth } from '../stores/auth'
 import { useReadingStore } from '../stores/reading'
@@ -119,8 +119,7 @@ import type { ApiResponse } from '@shared/ApiResponses'
 import { markdownToText } from '../utils/markdown'
 
 const route = useRoute()
-const router = useRouter()
-const { user, isAuthenticated } = useAuth()
+const { isAuthenticated } = useAuth()
 const readingStore = useReadingStore()
 
 const writing = ref<WritingBlock | null>(null)

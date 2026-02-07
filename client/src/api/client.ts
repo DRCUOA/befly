@@ -36,9 +36,9 @@ async function request<T>(
 
   // Get CSRF token for state-changing operations
   const csrfToken = getCsrfToken()
-  const headers: HeadersInit = {
+  const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    ...fetchOptions.headers
+    ...(fetchOptions.headers as Record<string, string>)
   }
 
   // Add CSRF token for POST/PUT/DELETE/PATCH

@@ -87,7 +87,7 @@
             </div>
             
             <p class="text-base font-light text-ink-light leading-relaxed mb-6">
-              {{ theme.description || `Essays exploring ${theme.name.toLowerCase()}` }}
+              Essays exploring {{ theme.name.toLowerCase() }}
             </p>
             
             <div class="flex items-center justify-between">
@@ -126,7 +126,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { api } from '../api/client'
 import { useAuth } from '../stores/auth'
 import type { Theme } from '../domain/Theme'

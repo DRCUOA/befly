@@ -4,10 +4,11 @@ import { marked } from 'marked'
  * Render markdown to HTML
  */
 export function renderMarkdown(markdown: string): string {
-  return marked(markdown, {
+  const result = marked(markdown, {
     breaks: true,
     gfm: true
   })
+  return typeof result === 'string' ? result : String(result)
 }
 
 /**

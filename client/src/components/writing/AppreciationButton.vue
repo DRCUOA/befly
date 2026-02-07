@@ -173,7 +173,7 @@ const getReactionIcon = (type: ReactionType | null): string => {
 }
 
 // Get color class for reaction avatar - pastel grey and dark silver
-const getReactionColor = (type: ReactionType): string => {
+const getReactionColor = (_type: ReactionType): string => {
   // All reactions use the same conservative color scheme
   return 'bg-[#D3D3D3]' // Pastel grey
 }

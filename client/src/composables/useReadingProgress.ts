@@ -19,7 +19,7 @@ export function useReadingProgress() {
   const readingTime = ref(0)
   const startTime = ref<number | null>(null)
 
-  let scrollTimeout: ReturnType<typeof setTimeout> | null = null
+  let scrollTimeout: number | null = null
 
   const calculateProgress = () => {
     const windowHeight = window.innerHeight
