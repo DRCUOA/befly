@@ -89,7 +89,7 @@ export function useReadingStage() {
       }
       
       // Transition to immersion after delay
-      if (!deepReadingTimeout && previousStage !== 'immersion') {
+      if (!deepReadingTimeout && currentStage.value === 'descent') {
         deepReadingTimeout = setTimeout(() => {
           if (scrollPosition.value >= READING_MODE_THRESHOLD && currentStage.value === 'descent') {
             currentStage.value = 'immersion'

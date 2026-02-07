@@ -264,7 +264,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { api } from '../api/client'
 import { appConfig } from '../config/app'
 import type { Theme } from '../domain/Theme'
@@ -273,24 +273,6 @@ import type { ApiResponse } from '@shared/ApiResponses'
 
 const themes = ref<Theme[]>([])
 const writings = ref<WritingBlock[]>([])
-
-const featuredThemes = computed(() => {
-  return themes.value.slice(0, 3)
-})
-
-const getThemeCount = (themeId: string): number => {
-  return writings.value.filter(w => w.themeIds.includes(themeId)).length
-}
-
-const getCategoryDescription = (categoryName: string): string => {
-  const descriptions: Record<string, string> = {
-    'Agency': 'What responsibility looks like when freedom feels unbearable.',
-    'Integration': 'Living without boxes — after they collapse.',
-    'Humanity in the AI Age': 'Why tools don\'t absolve us of authorship.',
-    'Words That Held': 'Fragments from others — and myself — that earned their place by surviving contact with reality.'
-  }
-  return descriptions[categoryName] || `Essays exploring ${categoryName.toLowerCase()}`
-}
 
 const loadThemes = async () => {
   try {

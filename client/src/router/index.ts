@@ -80,7 +80,7 @@ const router = createRouter({
 })
 
 // Route guards
-router.beforeEach(async (to, from, next) => {
+router.beforeEach(async (to, _from, next) => {
   const { isAuthenticated, fetchCurrentUser } = useAuth()
   
   // Fetch current user if not already loaded

@@ -73,7 +73,6 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { useRouter } from 'vue-router'
 import { api } from '../../api/client'
 import { useAuth } from '../../stores/auth'
 import { useReadingStore } from '../../stores/reading'
@@ -92,7 +91,6 @@ const props = withDefaults(defineProps<Props>(), {
   showImage: false,
 })
 
-const router = useRouter()
 const { user } = useAuth()
 const readingStore = useReadingStore()
 const deleting = ref(false)

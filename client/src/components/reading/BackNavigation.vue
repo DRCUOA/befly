@@ -26,7 +26,6 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
 
 interface Props {
   backRoute?: string
@@ -36,9 +35,6 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   backLabel: 'Back to essays',
 })
-
-const route = useRoute()
-const router = useRouter()
 
 const backRoute = computed(() => {
   if (props.backRoute) return props.backRoute

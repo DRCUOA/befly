@@ -39,7 +39,12 @@ export const appreciationController = {
 
     const { writingId } = req.params
     const reactionType = req.query.reactionType as string | undefined
-    await appreciationService.remove(writingId, userId, reactionType)
+    // Validate reaction type if provided
+    const validReactionTypes = ['like', 'love', 'laugh', 'wow', 'sad', 'angry']
+    const validReactionType = reactionType && validReactionTypes.includes(reactionType) 
+      ? reactionType as 'like' | 'love' | 'laugh' | 'wow' | 'sad' | 'angry'
+      : undefined
+    await appreciationService.remove(writingId, userId, validReactionType)
     res.status(204).send()
   }
 }

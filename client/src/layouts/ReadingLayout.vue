@@ -113,6 +113,9 @@ const props = withDefaults(defineProps<Props>(), {
   siteName: appConfig.appName,
 })
 
+// Access props for TypeScript (used in template)
+const { backRoute, backLabel, siteName } = props
+
 const menuOpen = ref(false)
 
 // Close menu when clicking outside
