@@ -9,9 +9,24 @@ let _pool: pg.Pool | null = null
 
 function getPool(): pg.Pool {
   if (!_pool) {
-    _pool = new Pool({
+    const connectionConfig: pg.PoolConfig = {
       connectionString: config.databaseUrl
-    })
+    }
+    
+    // Enable SSL for any non-localhost database (Heroku Postgres, AWS RDS, etc.)
+    // Check if DATABASE_URL is NOT pointing to localhost
+    const isLocalhost = config.databaseUrl.includes('localhost') || 
+                        config.databaseUrl.includes('127.0.0.1') ||
+                        config.databaseUrl.includes('::1')
+    
+    // Always enable SSL in production OR for remote databases
+    if (config.nodeEnv === 'production' || !isLocalhost) {
+      connectionConfig.ssl = {
+        rejectUnauthorized: false // Heroku and most cloud providers use self-signed certificates
+      }
+    }
+    
+    _pool = new Pool(connectionConfig)
   }
   return _pool
 }
