@@ -1,4 +1,7 @@
 import express from 'express'
+import path from 'path'
+import { fileURLToPath } from 'url'
+import fs from 'fs'
 import cors from 'cors'
 import cookieParser from 'cookie-parser'
 import rateLimit from 'express-rate-limit'
@@ -12,6 +15,13 @@ import commentRoutes from './routes/comment.routes.js'
 import { config } from './config/env.js'
 
 const app = express()
+
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+const staticDir = path.resolve(__dirname, '../public')
+const hasStaticBuild = fs.existsSync(path.join(staticDir, 'index.html'))
+
 
 // General API rate limiting (applied to all routes)
 // More lenient than auth endpoints to allow normal usage
@@ -76,6 +86,18 @@ app.get('/api/health', (req, res) => {
 app.get('/api/config', (req, res) => {
   res.json({ appName: config.appName })
 })
+
+
+// Serve frontend build when present (Docker/Heroku production image)
+if (hasStaticBuild) {
+  app.use(express.static(staticDir))
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api')) {
+      return next()
+    }
+    res.sendFile(path.join(staticDir, 'index.html'))
+  })
+}
 
 // Error handling
 app.use(errorMiddleware)
