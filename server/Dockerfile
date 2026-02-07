@@ -49,8 +49,8 @@ RUN addgroup -g 1001 -S nodejs && \
 
 USER nodejs
 
-WORKDIR /app/server
+WORKDIR /app
 
 EXPOSE 3005
 
-CMD ["node", "dist/index.js"]
+CMD ["node", "server/dist/index.js"]
