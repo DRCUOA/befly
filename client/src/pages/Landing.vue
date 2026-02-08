@@ -1,21 +1,21 @@
 <template>
   <div class="landing-page">
     <!-- Hero Section - Arrival -->
-    <div id="arrival-container" class="w-full h-screen flex items-center justify-center relative overflow-hidden">
-      <div id="central-content" class="text-center px-8 max-w-2xl">
-        <div id="author-mark" class="mb-12">
-          <h1 class="text-6xl font-light tracking-tight leading-none">
+    <div id="arrival-container" class="w-full min-h-screen flex items-center justify-center relative overflow-hidden px-4 sm:px-6 md:px-8">
+      <div id="central-content" class="text-center max-w-2xl">
+        <div id="author-mark" class="mb-8 sm:mb-10 md:mb-12">
+          <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-light tracking-tight leading-none">
             {{ appConfig.appName }}
           </h1>
         </div>
         
-        <div id="context-line" class="mb-16">
-          <p class="text-xl font-light text-ink-light tracking-wide">
+        <div id="context-line" class="mb-8 sm:mb-12 md:mb-16">
+          <p class="text-base sm:text-lg md:text-xl font-light text-ink-light tracking-wide px-4">
             A place for slow reading and thoughtful writing
           </p>
         </div>
         
-        <div id="entry-action" class="mb-24">
+        <div id="entry-action" class="mb-12 sm:mb-16 md:mb-24">
           <router-link
             to="/home"
             class="group relative inline-block"
@@ -42,19 +42,19 @@
         </div>
       </div>
       
-      <div id="corner-mark" class="absolute top-8 left-8">
+      <div id="corner-mark" class="absolute top-4 left-4 sm:top-6 sm:left-6 md:top-8 md:left-8">
         <span class="text-xs tracking-widest uppercase font-sans text-ink-lighter">2025</span>
       </div>
     </div>
 
     <!-- Opening Statement -->
-    <div id="threshold-section" class="w-full min-h-screen flex items-center justify-center px-8 py-32">
+    <div id="threshold-section" class="w-full min-h-screen flex items-center justify-center px-4 sm:px-6 md:px-8 py-16 sm:py-24 md:py-32">
       <div class="max-w-3xl">
-        <div id="opening-statement" class="mb-24">
-          <h2 class="text-5xl font-light leading-tight mb-8 tracking-tight">
+        <div id="opening-statement" class="mb-12 sm:mb-16 md:mb-24">
+          <h2 class="text-3xl sm:text-4xl md:text-5xl font-light leading-tight mb-6 sm:mb-8 tracking-tight">
             Staying in the Arena
           </h2>
-          <p class="text-xl font-light text-ink-light leading-relaxed mb-6">
+          <p class="text-base sm:text-lg md:text-xl font-light text-ink-light leading-relaxed mb-4 sm:mb-6">
             This is a place for people who think too much, feel deeply, and still believe responsibility matters — even when certainty has collapsed.
           </p>
           <p class="text-xl font-light text-ink-light leading-relaxed mb-6">
@@ -80,16 +80,16 @@
     </div>
 
     <!-- Collection Preview -->
-    <div id="navigation-emergence" class="w-full min-h-screen bg-gradient-to-b from-paper to-gray-50 px-8 py-32">
+    <div id="navigation-emergence" class="w-full min-h-screen bg-gradient-to-b from-paper to-gray-50 px-4 sm:px-6 md:px-8 py-16 sm:py-24 md:py-32">
       <div class="max-w-4xl mx-auto">
-        <div id="nav-introduction" class="text-center mb-20">
-          <h2 class="text-4xl font-light mb-6 tracking-tight">What You'll Find Here</h2>
+        <div id="nav-introduction" class="text-center mb-12 sm:mb-16 md:mb-20">
+          <h2 class="text-2xl sm:text-3xl md:text-4xl font-light mb-4 sm:mb-6 tracking-tight">What You'll Find Here</h2>
         </div>
         
-        <div id="collection-cards" class="space-y-8">
-          <div class="bg-paper border border-line p-12">
-            <h3 class="text-3xl font-light mb-3 tracking-tight">Agency</h3>
-            <p class="text-lg font-light text-ink-light leading-relaxed mb-6">
+        <div id="collection-cards" class="space-y-6 sm:space-y-8">
+          <div class="bg-paper border border-line p-6 sm:p-8 md:p-12">
+            <h3 class="text-2xl sm:text-3xl font-light mb-3 tracking-tight">Agency</h3>
+            <p class="text-base sm:text-lg font-light text-ink-light leading-relaxed mb-4 sm:mb-6">
               What responsibility looks like when freedom feels unbearable.
             </p>
             <p class="text-base font-light text-ink-lighter italic">
@@ -97,9 +97,9 @@
             </p>
           </div>
           
-          <div class="bg-paper border border-line p-12">
-            <h3 class="text-3xl font-light mb-3 tracking-tight">Integration</h3>
-            <p class="text-lg font-light text-ink-light leading-relaxed mb-6">
+          <div class="bg-paper border border-line p-6 sm:p-8 md:p-12">
+            <h3 class="text-2xl sm:text-3xl font-light mb-3 tracking-tight">Integration</h3>
+            <p class="text-base sm:text-lg font-light text-ink-light leading-relaxed mb-4 sm:mb-6">
               Living without boxes — after they collapse.
             </p>
             <p class="text-base font-light text-ink-lighter italic">
@@ -107,9 +107,9 @@
             </p>
           </div>
           
-          <div class="bg-paper border border-line p-12">
-            <h3 class="text-3xl font-light mb-3 tracking-tight">Humanity in the AI Age</h3>
-            <p class="text-lg font-light text-ink-light leading-relaxed mb-6">
+          <div class="bg-paper border border-line p-6 sm:p-8 md:p-12">
+            <h3 class="text-2xl sm:text-3xl font-light mb-3 tracking-tight">Humanity in the AI Age</h3>
+            <p class="text-base sm:text-lg font-light text-ink-light leading-relaxed mb-4 sm:mb-6">
               Why tools don't absolve us of authorship.
             </p>
             <p class="text-base font-light text-ink-lighter italic">
@@ -117,9 +117,9 @@
             </p>
           </div>
           
-          <div class="bg-paper border border-line p-12">
-            <h3 class="text-3xl font-light mb-3 tracking-tight">Words That Held</h3>
-            <p class="text-lg font-light text-ink-light leading-relaxed mb-6">
+          <div class="bg-paper border border-line p-6 sm:p-8 md:p-12">
+            <h3 class="text-2xl sm:text-3xl font-light mb-3 tracking-tight">Words That Held</h3>
+            <p class="text-base sm:text-lg font-light text-ink-light leading-relaxed mb-4 sm:mb-6">
               Fragments from others — and myself — that earned their place by surviving contact with reality.
             </p>
             <p class="text-base font-light text-ink-lighter italic">
@@ -131,25 +131,25 @@
     </div>
 
     <!-- Reading Principles -->
-    <div id="reading-principles" class="w-full min-h-screen bg-paper px-8 py-32">
+    <div id="reading-principles" class="w-full min-h-screen bg-paper px-4 sm:px-6 md:px-8 py-16 sm:py-24 md:py-32">
       <div class="max-w-5xl mx-auto">
-        <div id="principles-header" class="text-center mb-24">
-          <h2 class="text-4xl font-light mb-6 tracking-tight">How to read here</h2>
-          <p class="text-lg font-light text-ink-light max-w-2xl mx-auto">
+        <div id="principles-header" class="text-center mb-12 sm:mb-16 md:mb-24">
+          <h2 class="text-2xl sm:text-3xl md:text-4xl font-light mb-4 sm:mb-6 tracking-tight">How to read here</h2>
+          <p class="text-base sm:text-lg font-light text-ink-light max-w-2xl mx-auto px-4">
             This site is designed around a few simple principles that honor your time and attention
           </p>
         </div>
         
-        <div id="principles-list" class="space-y-16">
-          <div class="flex gap-12 items-start border-b border-line pb-16">
-            <div class="w-16 flex-shrink-0">
-              <div class="w-12 h-12 rounded-full border-2 border-ink-lighter flex items-center justify-center">
-                <span class="text-xl font-light text-ink-lighter">1</span>
+        <div id="principles-list" class="space-y-8 sm:space-y-12 md:space-y-16">
+          <div class="flex flex-col sm:flex-row gap-6 sm:gap-8 md:gap-12 items-start border-b border-line pb-8 sm:pb-12 md:pb-16">
+            <div class="w-12 sm:w-16 flex-shrink-0">
+              <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 border-ink-lighter flex items-center justify-center">
+                <span class="text-lg sm:text-xl font-light text-ink-lighter">1</span>
               </div>
             </div>
             <div class="flex-1">
-              <h3 class="text-2xl font-light mb-4 tracking-tight">One essay at a time</h3>
-              <p class="text-lg font-light text-ink-light leading-relaxed mb-4">
+              <h3 class="text-xl sm:text-2xl font-light mb-3 sm:mb-4 tracking-tight">One essay at a time</h3>
+              <p class="text-base sm:text-lg font-light text-ink-light leading-relaxed mb-3 sm:mb-4">
                 When you open an essay, that's all you see. No sidebar of recommendations. No "related posts." No distractions competing for your attention. Just the piece you chose to read.
               </p>
               <p class="text-base font-light text-ink-lighter leading-relaxed">
@@ -158,15 +158,15 @@
             </div>
           </div>
           
-          <div class="flex gap-12 items-start border-b border-line pb-16">
-            <div class="w-16 flex-shrink-0">
-              <div class="w-12 h-12 rounded-full border-2 border-ink-lighter flex items-center justify-center">
-                <span class="text-xl font-light text-ink-lighter">2</span>
+          <div class="flex flex-col sm:flex-row gap-6 sm:gap-8 md:gap-12 items-start border-b border-line pb-8 sm:pb-12 md:pb-16">
+            <div class="w-12 sm:w-16 flex-shrink-0">
+              <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 border-ink-lighter flex items-center justify-center">
+                <span class="text-lg sm:text-xl font-light text-ink-lighter">2</span>
               </div>
             </div>
             <div class="flex-1">
-              <h3 class="text-2xl font-light mb-4 tracking-tight">Read at your own pace</h3>
-              <p class="text-lg font-light text-ink-light leading-relaxed mb-4">
+              <h3 class="text-xl sm:text-2xl font-light mb-3 sm:mb-4 tracking-tight">Read at your own pace</h3>
+              <p class="text-base sm:text-lg font-light text-ink-light leading-relaxed mb-3 sm:mb-4">
                 No reading time estimates. No progress bars. No artificial urgency. The text is patient. Take as long as you need.
               </p>
               <p class="text-base font-light text-ink-lighter leading-relaxed">
@@ -175,15 +175,15 @@
             </div>
           </div>
           
-          <div class="flex gap-12 items-start border-b border-line pb-16">
-            <div class="w-16 flex-shrink-0">
-              <div class="w-12 h-12 rounded-full border-2 border-ink-lighter flex items-center justify-center">
-                <span class="text-xl font-light text-ink-lighter">3</span>
+          <div class="flex flex-col sm:flex-row gap-6 sm:gap-8 md:gap-12 items-start border-b border-line pb-8 sm:pb-12 md:pb-16">
+            <div class="w-12 sm:w-16 flex-shrink-0">
+              <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 border-ink-lighter flex items-center justify-center">
+                <span class="text-lg sm:text-xl font-light text-ink-lighter">3</span>
               </div>
             </div>
             <div class="flex-1">
-              <h3 class="text-2xl font-light mb-4 tracking-tight">Nothing will interrupt you</h3>
-              <p class="text-lg font-light text-ink-light leading-relaxed mb-4">
+              <h3 class="text-xl sm:text-2xl font-light mb-3 sm:mb-4 tracking-tight">Nothing will interrupt you</h3>
+              <p class="text-base sm:text-lg font-light text-ink-light leading-relaxed mb-3 sm:mb-4">
                 No pop-ups asking for your email. No cookie banners. No chat widgets. No analytics tracking your scroll depth. You're here to read, and we respect that.
               </p>
               <p class="text-base font-light text-ink-lighter leading-relaxed">
@@ -192,15 +192,15 @@
             </div>
           </div>
           
-          <div class="flex gap-12 items-start border-b border-line pb-16">
-            <div class="w-16 flex-shrink-0">
-              <div class="w-12 h-12 rounded-full border-2 border-ink-lighter flex items-center justify-center">
-                <span class="text-xl font-light text-ink-lighter">4</span>
+          <div class="flex flex-col sm:flex-row gap-6 sm:gap-8 md:gap-12 items-start border-b border-line pb-8 sm:pb-12 md:pb-16">
+            <div class="w-12 sm:w-16 flex-shrink-0">
+              <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 border-ink-lighter flex items-center justify-center">
+                <span class="text-lg sm:text-xl font-light text-ink-lighter">4</span>
               </div>
             </div>
             <div class="flex-1">
-              <h3 class="text-2xl font-light mb-4 tracking-tight">Trust the silence</h3>
-              <p class="text-lg font-light text-ink-light leading-relaxed mb-4">
+              <h3 class="text-xl sm:text-2xl font-light mb-3 sm:mb-4 tracking-tight">Trust the silence</h3>
+              <p class="text-base sm:text-lg font-light text-ink-light leading-relaxed mb-3 sm:mb-4">
                 White space isn't wasted space. The pauses between paragraphs give you room to think. The margins give your eyes a place to rest.
               </p>
               <p class="text-base font-light text-ink-lighter leading-relaxed">
@@ -209,15 +209,15 @@
             </div>
           </div>
           
-          <div class="flex gap-12 items-start">
-            <div class="w-16 flex-shrink-0">
-              <div class="w-12 h-12 rounded-full border-2 border-ink-lighter flex items-center justify-center">
-                <span class="text-xl font-light text-ink-lighter">5</span>
+          <div class="flex flex-col sm:flex-row gap-6 sm:gap-8 md:gap-12 items-start">
+            <div class="w-12 sm:w-16 flex-shrink-0">
+              <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 border-ink-lighter flex items-center justify-center">
+                <span class="text-lg sm:text-xl font-light text-ink-lighter">5</span>
               </div>
             </div>
             <div class="flex-1">
-              <h3 class="text-2xl font-light mb-4 tracking-tight">Leave when you're ready</h3>
-              <p class="text-lg font-light text-ink-light leading-relaxed mb-4">
+              <h3 class="text-xl sm:text-2xl font-light mb-3 sm:mb-4 tracking-tight">Leave when you're ready</h3>
+              <p class="text-base sm:text-lg font-light text-ink-light leading-relaxed mb-3 sm:mb-4">
                 If an essay isn't resonating, you can leave at any time. No guilt, no friction. Your attention is yours to give.
               </p>
               <p class="text-base font-light text-ink-lighter leading-relaxed">
@@ -230,18 +230,18 @@
     </div>
 
     <!-- Final Invitation -->
-    <div id="final-invitation" class="w-full min-h-screen bg-paper px-8 py-32">
+    <div id="final-invitation" class="w-full min-h-screen bg-paper px-4 sm:px-6 md:px-8 py-16 sm:py-24 md:py-32">
       <div class="max-w-3xl mx-auto text-center">
-        <div id="closing-statement" class="mb-16">
-          <h2 class="text-5xl font-light mb-8 tracking-tight leading-tight">
+        <div id="closing-statement" class="mb-12 sm:mb-16">
+          <h2 class="text-3xl sm:text-4xl md:text-5xl font-light mb-6 sm:mb-8 tracking-tight leading-tight">
             Take your time.<br/>The words will wait.
           </h2>
-          <p class="text-xl font-light text-ink-light leading-relaxed max-w-2xl mx-auto">
+          <p class="text-base sm:text-lg md:text-xl font-light text-ink-light leading-relaxed max-w-2xl mx-auto px-4">
             When you're ready to begin, choose an essay. Or come back tomorrow. Or next week. There's no urgency here.
           </p>
         </div>
         
-        <div id="final-actions" class="flex flex-col items-center gap-6 mb-20">
+        <div id="final-actions" class="flex flex-col items-center gap-4 sm:gap-6 mb-12 sm:mb-16 md:mb-20">
           <router-link
             to="/home"
             class="group relative"

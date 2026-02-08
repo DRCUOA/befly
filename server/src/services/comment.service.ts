@@ -35,6 +35,14 @@ export const commentService = {
     return commentRepo.update(commentId, userId, trimmedContent)
   },
 
+  async getById(commentId: string): Promise<Comment> {
+    const comment = await commentRepo.findById(commentId)
+    if (!comment) {
+      throw new Error('Comment not found')
+    }
+    return comment
+  },
+
   async remove(commentId: string, userId: string): Promise<void> {
     return commentRepo.delete(commentId, userId)
   }

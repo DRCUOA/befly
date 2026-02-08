@@ -7,7 +7,7 @@
       <p class="text-lg font-light text-ink-light">Loading...</p>
     </div>
     
-    <div v-else-if="error" class="max-w-4xl mx-auto px-8 py-16">
+    <div v-else-if="error" class="max-w-4xl mx-auto px-4 sm:px-6 md:px-8 py-8 sm:py-12 md:py-16">
       <div class="bg-red-50 border border-red-200 rounded-md p-8 mb-6">
         <p class="text-red-800 mb-4">{{ error }}</p>
           <router-link
@@ -21,26 +21,26 @@
     
     <div v-else-if="writing" class="reading-content-wrapper">
       <!-- Essay Header -->
-      <div class="w-full px-8 pt-16 pb-12 bg-paper">
+      <div class="w-full px-4 sm:px-6 md:px-8 pt-8 sm:pt-12 md:pt-16 pb-8 sm:pb-10 md:pb-12 bg-paper">
         <div class="max-w-4xl mx-auto">
-          <div class="mb-8">
-            <div class="flex items-center gap-3 flex-wrap mb-4">
+          <div class="mb-6 sm:mb-8">
+            <div class="flex items-center gap-2 sm:gap-3 flex-wrap mb-3 sm:mb-4">
               <ThemeTag
                 v-for="theme in themes"
                 :key="theme.id"
                 :name="theme.name"
                 class="text-xs tracking-widest uppercase font-sans text-ink-lighter"
               />
-              <span class="text-xs text-ink-lighter mx-3">·</span>
+              <span class="text-xs text-ink-lighter mx-2 sm:mx-3">·</span>
               <span class="text-xs font-sans text-ink-lighter">{{ formattedDate }}</span>
             </div>
           </div>
           
-          <h1 class="text-6xl font-light tracking-tight leading-tight mb-12">
+          <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-light tracking-tight leading-tight mb-8 sm:mb-10 md:mb-12">
             {{ writing.title }}
           </h1>
           
-          <div class="flex items-center gap-8 text-sm font-sans text-ink-lighter mb-16">
+          <div class="flex flex-wrap items-center gap-4 sm:gap-6 md:gap-8 text-xs sm:text-sm font-sans text-ink-lighter mb-8 sm:mb-12 md:mb-16">
             <span>{{ wordCount }} words</span>
             <span>·</span>
             <span>{{ readTime }} min read</span>
@@ -48,8 +48,8 @@
             <span>Published {{ formattedDate }}</span>
           </div>
           
-          <div class="border-t border-line pt-8">
-            <p class="text-xl font-light text-ink-light leading-relaxed italic">
+          <div class="border-t border-line pt-6 sm:pt-8">
+            <p class="text-base sm:text-lg md:text-xl font-light text-ink-light leading-relaxed italic">
               {{ excerpt }}
             </p>
           </div>
@@ -57,8 +57,8 @@
       </div>
 
       <!-- Essay Content -->
-      <div class="w-full px-8 py-16 bg-paper">
-        <div class="max-w-3xl mx-auto essay-content text-xl leading-relaxed">
+      <div class="w-full px-4 sm:px-6 md:px-8 py-8 sm:py-12 md:py-16 bg-paper">
+        <div class="max-w-3xl mx-auto essay-content text-base sm:text-lg md:text-xl leading-relaxed">
           <div
             v-for="(paragraph, index) in paragraphs"
             :key="index"
@@ -70,11 +70,11 @@
       </div>
 
       <!-- Appreciation Section -->
-      <div class="w-full px-8 py-16 bg-paper border-t border-line">
+      <div class="w-full px-4 sm:px-6 md:px-8 py-8 sm:py-12 md:py-16 bg-paper border-t border-line">
         <div class="max-w-3xl mx-auto">
-          <div class="mb-8">
-            <h2 class="text-2xl font-light tracking-tight mb-4">Appreciation</h2>
-            <p class="text-sm font-light text-ink-lighter">
+          <div class="mb-6 sm:mb-8">
+            <h2 class="text-xl sm:text-2xl font-light tracking-tight mb-3 sm:mb-4">Appreciation</h2>
+            <p class="text-xs sm:text-sm font-light text-ink-lighter">
               {{ isAuthenticated ? 'Share your reaction to this piece' : 'Sign in to share your reaction' }}
             </p>
           </div>
@@ -92,7 +92,7 @@
       </div>
 
       <!-- Comments Section -->
-      <div class="w-full px-8 py-16 bg-paper border-t border-line">
+      <div class="w-full px-4 sm:px-6 md:px-8 py-8 sm:py-12 md:py-16 bg-paper border-t border-line">
         <div class="max-w-3xl mx-auto">
           <CommentSection :writing-id="writing.id" />
         </div>

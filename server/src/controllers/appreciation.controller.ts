@@ -1,6 +1,8 @@
 import { Request, Response } from 'express'
 import { appreciationService } from '../services/appreciation.service.js'
 import { UnauthorizedError } from '../utils/errors.js'
+import { activityService } from '../services/activity.service.js'
+import { getClientIp, getUserAgent } from '../utils/activity-logger.js'
 
 /**
  * Appreciation controller - handles HTTP requests/responses
@@ -28,6 +30,17 @@ export const appreciationController = {
     }
     
     const appreciation = await appreciationService.create(writingId, userId, reactionType as any)
+    
+    // Log appreciation activity
+    await activityService.logAppreciation(
+      'create',
+      writingId,
+      userId,
+      getClientIp(req),
+      getUserAgent(req),
+      { reactionType, appreciationId: appreciation.id }
+    )
+    
     res.status(201).json({ data: appreciation })
   },
 
@@ -45,6 +58,17 @@ export const appreciationController = {
       ? reactionType as 'like' | 'love' | 'laugh' | 'wow' | 'sad' | 'angry'
       : undefined
     await appreciationService.remove(writingId, userId, validReactionType)
+    
+    // Log appreciation removal activity
+    await activityService.logAppreciation(
+      'remove',
+      writingId,
+      userId,
+      getClientIp(req),
+      getUserAgent(req),
+      { reactionType: validReactionType || 'all' }
+    )
+    
     res.status(204).send()
   }
 }

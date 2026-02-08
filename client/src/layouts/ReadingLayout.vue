@@ -4,11 +4,11 @@
       id="header"
       class="w-full bg-paper fixed top-0 z-50 border-b border-line"
     >
-      <div class="max-w-7xl mx-auto px-8 py-6 flex items-center justify-between">
-        <div class="flex items-center gap-12">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-4 md:py-6 flex items-center justify-between">
+        <div class="flex items-center gap-4 md:gap-12">
           <router-link
             to="/home"
-            class="text-2xl font-light tracking-tight hover:text-ink-light"
+            class="text-xl sm:text-2xl font-light tracking-tight hover:text-ink-light"
           >
             {{ siteName }}
           </router-link>
@@ -55,7 +55,7 @@
         @click.stop
         class="border-t border-line bg-paper"
       >
-        <nav class="px-8 py-6 space-y-4">
+        <nav class="px-4 sm:px-6 md:px-8 py-6 space-y-4">
           <router-link
             to="/home"
             @click="menuOpen = false"
@@ -81,7 +81,7 @@
       </div>
     </header>
 
-    <div class="w-full px-8 pt-32 pb-6 bg-paper">
+    <div class="w-full px-4 sm:px-6 md:px-8 pt-20 sm:pt-24 md:pt-32 pb-6 bg-paper">
       <div class="max-w-4xl mx-auto">
         <BackNavigation
           :back-route="backRoute"
@@ -93,6 +93,7 @@
     <main class="reading-content">
       <slot />
     </main>
+    <AppFooter />
   </div>
 </template>
 
@@ -100,6 +101,7 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import BackNavigation from '../components/reading/BackNavigation.vue'
 import { appConfig } from '../config/app'
+import AppFooter from '../components/ui/AppFooter.vue'
 
 interface Props {
   backRoute?: string

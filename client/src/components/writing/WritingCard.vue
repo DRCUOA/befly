@@ -1,16 +1,16 @@
 <template>
   <article
-    class="essay-card border-b border-line py-16 group cursor-pointer"
+    class="essay-card border-b border-line py-8 sm:py-12 md:py-16 group cursor-pointer"
     :class="{ 'read-marker': isRecentlyRead }"
   >
     <router-link
       :to="`/read/${writing.id}`"
-      class="flex gap-16 items-start block"
+      class="flex flex-col md:flex-row gap-6 md:gap-16 items-start block"
       @click="handleClick"
     >
-      <div class="flex-1">
-        <div class="mb-4">
-          <div class="flex items-center gap-3 flex-wrap">
+      <div class="flex-1 w-full">
+        <div class="mb-3 sm:mb-4">
+          <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
             <ThemeTag
               v-for="theme in themes"
               :key="theme.id"
@@ -20,17 +20,17 @@
             <span v-if="isRecentlyRead" class="text-xs tracking-widest uppercase font-sans text-ink-whisper">
               Recently Read
             </span>
-            <span class="text-xs text-ink-lighter mx-3">·</span>
+            <span class="text-xs text-ink-lighter mx-2 sm:mx-3">·</span>
             <span class="text-xs font-sans text-ink-lighter">{{ formattedDate }}</span>
           </div>
         </div>
-        <h2 class="text-4xl font-light tracking-tight mb-6 leading-tight group-hover:text-ink-light">
+        <h2 class="text-2xl sm:text-3xl md:text-4xl font-light tracking-tight mb-4 sm:mb-6 leading-tight group-hover:text-ink-light">
           {{ writing.title }}
         </h2>
-        <p class="text-lg font-light text-ink-light leading-relaxed mb-6">
+        <p class="text-base sm:text-lg font-light text-ink-light leading-relaxed mb-4 sm:mb-6">
           {{ preview }}
         </p>
-        <div class="flex items-center gap-6 text-sm font-sans text-ink-lighter">
+        <div class="flex flex-wrap items-center gap-4 sm:gap-6 text-xs sm:text-sm font-sans text-ink-lighter">
           <span>{{ wordCount }} words</span>
           <span>·</span>
           <span>{{ readTime }} min read</span>
@@ -38,7 +38,7 @@
       </div>
       <div
         v-if="showImage"
-        class="w-64 h-64 flex-shrink-0 bg-gray-200 overflow-hidden rounded-sm"
+        class="hidden md:block w-64 h-64 flex-shrink-0 bg-gray-200 overflow-hidden rounded-sm"
       >
         <div class="w-full h-full bg-gradient-to-br from-line to-ink-lighter opacity-30 group-hover:opacity-40"></div>
       </div>

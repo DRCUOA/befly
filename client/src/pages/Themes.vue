@@ -1,12 +1,12 @@
 <template>
   <div class="themes-page">
     <!-- Hero Section -->
-    <div class="w-full px-8 py-24 bg-gradient-to-b from-paper to-gray-50">
+    <div class="w-full px-4 sm:px-6 md:px-8 py-12 sm:py-16 md:py-24 bg-gradient-to-b from-paper to-gray-50">
       <div class="max-w-4xl mx-auto text-center">
-        <h1 class="text-6xl font-light tracking-tight mb-8 leading-tight">
+        <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-light tracking-tight mb-6 sm:mb-8 leading-tight">
           Themes
         </h1>
-        <p class="text-xl font-light text-ink-light leading-relaxed max-w-2xl mx-auto">
+        <p class="text-base sm:text-lg md:text-xl font-light text-ink-light leading-relaxed max-w-2xl mx-auto px-4">
           Organize your writing by themes. Create collections that help readers discover related ideas.
         </p>
       </div>
@@ -22,7 +22,7 @@
     />
 
     <!-- Themes List -->
-    <div class="w-full px-8 py-20 bg-paper">
+    <div class="w-full px-4 sm:px-6 md:px-8 py-12 sm:py-16 md:py-20 bg-paper">
       <div class="max-w-7xl mx-auto">
         <div v-if="loading" class="text-center py-16">
           <p class="text-lg font-light text-ink-light">Loading themes...</p>
@@ -47,15 +47,15 @@
           </router-link>
         </div>
         
-        <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
           <div
             v-for="theme in filteredThemes"
             :key="theme.id"
-            class="theme-card bg-paper border border-line p-10 group cursor-pointer hover:border-ink-lighter transition-all duration-500"
+            class="theme-card bg-paper border border-line p-6 sm:p-8 md:p-10 group cursor-pointer hover:border-ink-lighter transition-all duration-500"
           >
-            <div class="flex items-start justify-between mb-6">
+            <div class="flex items-start justify-between mb-4 sm:mb-6">
               <div class="flex-1">
-                <h2 class="text-2xl font-light mb-3 tracking-tight group-hover:text-ink-light transition-colors duration-500">
+                <h2 class="text-xl sm:text-2xl font-light mb-2 sm:mb-3 tracking-tight group-hover:text-ink-light transition-colors duration-500">
                   {{ theme.name }}
                 </h2>
                 <p class="text-xs tracking-widest uppercase font-sans text-ink-lighter">
@@ -86,7 +86,7 @@
               </div>
             </div>
             
-            <p class="text-base font-light text-ink-light leading-relaxed mb-6">
+            <p class="text-sm sm:text-base font-light text-ink-light leading-relaxed mb-4 sm:mb-6">
               Essays exploring {{ theme.name.toLowerCase() }}
             </p>
             
@@ -109,9 +109,9 @@
     </div>
 
     <!-- Create Theme CTA -->
-    <div v-if="isAuthenticated && filteredThemes.length > 0" class="w-full px-8 py-24 bg-gradient-to-b from-paper to-gray-50">
+    <div v-if="isAuthenticated && filteredThemes.length > 0" class="w-full px-4 sm:px-6 md:px-8 py-12 sm:py-16 md:py-24 bg-gradient-to-b from-paper to-gray-50">
       <div class="max-w-4xl mx-auto text-center">
-        <p class="text-lg font-light text-ink-light mb-8">
+        <p class="text-base sm:text-lg font-light text-ink-light mb-6 sm:mb-8">
           Want to organize your writing differently?
         </p>
         <router-link

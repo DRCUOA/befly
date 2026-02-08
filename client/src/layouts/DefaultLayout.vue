@@ -3,11 +3,11 @@
     <header
       class="w-full border-b border-line bg-paper sticky top-0 z-50"
     >
-      <div class="max-w-7xl mx-auto px-8 py-6 flex items-center justify-between">
-        <div class="flex items-center gap-12">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-4 md:py-6 flex items-center justify-between">
+        <div class="flex items-center gap-4 md:gap-12">
           <router-link
             :to="isAuthenticated ? '/home' : '/'"
-            class="text-2xl font-light tracking-tight hover:text-ink-light"
+            class="text-xl sm:text-2xl font-light tracking-tight hover:text-ink-light"
           >
             {{ appConfig.appName }}
           </router-link>
@@ -34,24 +34,24 @@
             </router-link>
           </nav>
         </div>
-        <div class="flex items-center gap-4">
+        <div class="flex items-center gap-2 md:gap-4">
           <template v-if="isAuthenticated">
             <router-link
               to="/write"
-              class="text-sm tracking-wide font-sans text-ink-lighter hover:text-ink"
+              class="hidden sm:block text-sm tracking-wide font-sans text-ink-lighter hover:text-ink"
             >
               Write
             </router-link>
-            <span class="text-sm text-ink-lighter font-sans">{{ user?.displayName }}</span>
+            <span class="hidden md:block text-sm text-ink-lighter font-sans">{{ user?.displayName }}</span>
             <router-link
               to="/profile"
-              class="text-sm tracking-wide font-sans text-ink-lighter hover:text-ink"
+              class="hidden sm:block text-sm tracking-wide font-sans text-ink-lighter hover:text-ink"
             >
               Profile
             </router-link>
             <button
               @click="handleSignOut"
-              class="text-sm tracking-wide font-sans text-ink-lighter hover:text-ink"
+              class="hidden sm:block text-sm tracking-wide font-sans text-ink-lighter hover:text-ink"
             >
               Sign Out
             </button>
@@ -59,13 +59,13 @@
           <template v-else>
             <router-link
               to="/signin"
-              class="text-sm tracking-wide font-sans text-ink-lighter hover:text-ink"
+              class="hidden sm:block text-sm tracking-wide font-sans text-ink-lighter hover:text-ink"
             >
               Sign In
             </router-link>
             <router-link
               to="/signup"
-              class="px-4 py-2 text-sm tracking-wide font-sans border border-line bg-paper hover:bg-[#E5E5E5] text-[#717171]"
+              class="hidden sm:block px-4 py-2 text-sm tracking-wide font-sans border border-line bg-paper hover:bg-[#E5E5E5] text-[#717171]"
             >
               Sign Up
             </router-link>
@@ -113,7 +113,7 @@
         @click.stop
         class="md:hidden border-t border-line bg-paper"
       >
-        <nav class="px-8 py-6 space-y-4">
+        <nav class="px-4 sm:px-6 md:px-8 py-6 space-y-4">
           <router-link
             v-if="isAuthenticated"
             to="/home"
@@ -181,6 +181,7 @@
     <main :class="mainClasses">
       <slot />
     </main>
+    <AppFooter />
   </div>
 </template>
 
@@ -189,6 +190,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuth } from '../stores/auth'
 import { appConfig } from '../config/app'
+import AppFooter from '../components/ui/AppFooter.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -214,7 +216,7 @@ onUnmounted(() => {
 // For Home and Themes pages, remove padding to allow full-width sections
 const mainClasses = computed(() => {
   const isBrowsePage = route.name === 'Home' || route.name === 'Themes'
-  return isBrowsePage ? '' : 'max-w-7xl mx-auto px-8 py-8'
+  return isBrowsePage ? '' : 'max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-6 md:py-8'
 })
 
 const handleSignOut = async () => {

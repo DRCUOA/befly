@@ -1,6 +1,13 @@
 <template>
-  <div class="min-h-screen bg-paper">
+  <div class="min-h-screen bg-paper flex flex-col">
     <!-- Minimal layout for landing page - full width sections -->
-    <slot />
+    <div class="flex-1">
+      <slot />
+    </div>
+    <AppFooter />
   </div>
 </template>
+
+<script setup lang="ts">
+import AppFooter from '../components/ui/AppFooter.vue'
+</script>

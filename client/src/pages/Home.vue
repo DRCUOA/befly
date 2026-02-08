@@ -1,15 +1,15 @@
 <template>
   <div class="browse-page">
     <!-- Hero Section -->
-    <div class="w-full px-8 py-24 bg-gradient-to-b from-paper to-gray-50">
+    <div class="w-full px-4 sm:px-6 md:px-8 py-12 sm:py-16 md:py-24 bg-gradient-to-b from-paper to-gray-50">
       <div class="max-w-4xl mx-auto text-center">
-        <p class="text-sm tracking-widest uppercase font-sans text-ink-lighter mb-6">
+        <p class="text-xs sm:text-sm tracking-widest uppercase font-sans text-ink-lighter mb-4 sm:mb-6">
           Browse at your pace
         </p>
-        <h1 class="text-6xl font-light tracking-tight mb-8 leading-tight">
+        <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-light tracking-tight mb-6 sm:mb-8 leading-tight">
           Recent Essays
         </h1>
-        <p class="text-xl font-light text-ink-light leading-relaxed max-w-2xl mx-auto">
+        <p class="text-base sm:text-lg md:text-xl font-light text-ink-light leading-relaxed max-w-2xl mx-auto px-4">
           Titles that read like thoughts, not headlines. No urgency, no pressure—just ideas waiting to be explored.
         </p>
       </div>
@@ -24,7 +24,7 @@
     />
 
     <!-- Essay List -->
-    <div class="w-full px-8 py-20 bg-paper">
+    <div class="w-full px-4 sm:px-6 md:px-8 py-12 sm:py-16 md:py-20 bg-paper">
       <div class="max-w-7xl mx-auto">
         <div v-if="loading" class="text-center py-16">
           <p class="text-lg font-light text-ink-light">Loading...</p>
@@ -69,9 +69,9 @@
     </div>
 
     <!-- Load More Section -->
-    <div v-if="!loading && filteredWritings.length > 0 && filteredWritings.length < writings.length" class="w-full px-8 py-20 bg-gradient-to-b from-paper to-gray-50">
+    <div v-if="!loading && filteredWritings.length > 0 && filteredWritings.length < writings.length" class="w-full px-4 sm:px-6 md:px-8 py-12 sm:py-16 md:py-20 bg-gradient-to-b from-paper to-gray-50">
       <div class="max-w-4xl mx-auto text-center">
-        <p class="text-base font-light text-ink-lighter mb-8">
+        <p class="text-sm sm:text-base font-light text-ink-lighter mb-6 sm:mb-8">
           Showing {{ filteredWritings.length }} of {{ writings.length }} essays
         </p>
         <button
@@ -87,16 +87,16 @@
     </div>
 
     <!-- Collection Navigation -->
-    <div v-if="themes.length > 0" class="w-full px-8 py-24 bg-gradient-to-b from-paper to-gray-50">
+    <div v-if="themes.length > 0" class="w-full px-4 sm:px-6 md:px-8 py-12 sm:py-16 md:py-24 bg-gradient-to-b from-paper to-gray-50">
       <div class="max-w-6xl mx-auto">
-        <div class="text-center mb-16">
-          <h2 class="text-4xl font-light mb-6 tracking-tight">Or browse by theme</h2>
-          <p class="text-lg font-light text-ink-light">
+        <div class="text-center mb-8 sm:mb-12 md:mb-16">
+          <h2 class="text-2xl sm:text-3xl md:text-4xl font-light mb-4 sm:mb-6 tracking-tight">Or browse by theme</h2>
+          <p class="text-base sm:text-lg font-light text-ink-light px-4">
             Essays grouped by theme for a more focused exploration
           </p>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
           <CollectionCard
             v-for="theme in featuredThemes"
             :key="theme.id"

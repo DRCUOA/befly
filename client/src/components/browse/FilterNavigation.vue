@@ -1,15 +1,15 @@
 <template>
   <div
-    class="filter-navigation sticky top-[73px] z-40 w-full bg-paper border-b border-line py-12"
+    class="filter-navigation sticky top-[57px] sm:top-[65px] md:top-[73px] z-40 w-full bg-paper border-b border-line py-6 sm:py-8 md:py-12"
   >
-    <div class="max-w-7xl mx-auto px-8">
-      <div class="flex items-center justify-between">
-        <div class="flex gap-6 text-sm tracking-wide font-sans">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-0">
+        <div class="flex gap-4 sm:gap-6 text-xs sm:text-sm tracking-wide font-sans overflow-x-auto w-full sm:w-auto">
           <button
             v-for="filter in filters"
             :key="filter.value"
             @click="$emit('filter-change', filter.value)"
-            class="pb-1"
+            class="pb-1 whitespace-nowrap"
             :class="
               currentFilter === filter.value
                 ? 'text-ink border-b-2 border-ink'
@@ -19,7 +19,7 @@
             {{ filter.label }}
           </button>
         </div>
-        <div class="flex items-center gap-4">
+        <div class="flex items-center gap-3 sm:gap-4">
           <span class="text-xs tracking-wide font-sans text-ink-lighter">
             {{ count }} {{ count === 1 ? 'essay' : 'essays' }}
           </span>

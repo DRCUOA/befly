@@ -1,6 +1,8 @@
 import { Request, Response } from 'express'
 import { commentService } from '../services/comment.service.js'
 import { UnauthorizedError, ValidationError } from '../utils/errors.js'
+import { activityService } from '../services/activity.service.js'
+import { getClientIp, getUserAgent } from '../utils/activity-logger.js'
 
 /**
  * Comment controller - handles HTTP requests/responses
@@ -26,6 +28,17 @@ export const commentController = {
     }
     
     const comment = await commentService.create(writingId, userId, content)
+    
+    // Log comment creation activity
+    await activityService.logComment(
+      'create',
+      comment.id,
+      userId,
+      getClientIp(req),
+      getUserAgent(req),
+      { writingId, contentLength: content.length }
+    )
+    
     res.status(201).json({ data: comment })
   },
 
@@ -43,6 +56,17 @@ export const commentController = {
     }
     
     const comment = await commentService.update(commentId, userId, content)
+    
+    // Log comment update activity
+    await activityService.logComment(
+      'update',
+      commentId,
+      userId,
+      getClientIp(req),
+      getUserAgent(req),
+      { contentLength: content.length }
+    )
+    
     res.json({ data: comment })
   },
 
@@ -53,7 +77,22 @@ export const commentController = {
     }
 
     const { commentId } = req.params
+    
+    // Get comment details before deletion for logging
+    const comment = await commentService.getById(commentId)
+    
     await commentService.remove(commentId, userId)
+    
+    // Log comment deletion activity
+    await activityService.logComment(
+      'delete',
+      commentId,
+      userId,
+      getClientIp(req),
+      getUserAgent(req),
+      { writingId: comment.writingId }
+    )
+    
     res.status(204).send()
   }
 }

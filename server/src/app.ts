@@ -12,6 +12,7 @@ import writingRoutes from './routes/writing.routes.js'
 import themeRoutes from './routes/theme.routes.js'
 import appreciationRoutes from './routes/appreciation.routes.js'
 import commentRoutes from './routes/comment.routes.js'
+import activityRoutes from './routes/activity.routes.js'
 import { config } from './config/env.js'
 
 const app = express()
@@ -81,6 +82,7 @@ app.use('/api/writing', writingRoutes)
 app.use('/api/themes', themeRoutes)
 app.use('/api/appreciations', appreciationRoutes)
 app.use('/api/comments', commentRoutes)
+app.use('/api/activity', activityRoutes)
 
 // Health check
 app.get('/api/health', (req, res) => {

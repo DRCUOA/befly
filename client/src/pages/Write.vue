@@ -1,8 +1,8 @@
 <template>
   <div>
-    <h1 class="text-3xl font-bold mb-6">{{ isEditing ? 'Edit Writing' : 'Write' }}</h1>
+    <h1 class="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6">{{ isEditing ? 'Edit Writing' : 'Write' }}</h1>
     
-    <form @submit.prevent="handleSubmit" class="space-y-6">
+    <form @submit.prevent="handleSubmit" class="space-y-4 sm:space-y-6">
       <div>
         <label for="title" class="block text-sm font-medium text-gray-700 mb-1">
           Title
@@ -12,7 +12,7 @@
           v-model="form.title"
           type="text"
           required
-          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-base sm:text-sm"
           placeholder="Enter title..."
         />
       </div>
@@ -24,7 +24,7 @@
         <textarea
           id="body"
           v-model="form.body"
-          rows="15"
+          rows="12"
           required
           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 font-mono text-sm"
           placeholder="Write your thoughts in Markdown..."
@@ -37,13 +37,13 @@
         </label>
         <select
           v-model="form.visibility"
-          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-base sm:text-sm"
         >
           <option value="private">Private (only you can see)</option>
           <option value="shared">Shared (others can see but not edit)</option>
           <option value="public">Public (everyone can see)</option>
         </select>
-        <p class="mt-1 text-sm text-gray-500">
+        <p class="mt-1 text-xs sm:text-sm text-gray-500">
           Choose who can see this writing block
         </p>
       </div>
@@ -52,7 +52,7 @@
         <label class="block text-sm font-medium text-gray-700 mb-2">
           Themes (optional)
         </label>
-    <div v-if="loadingThemes || loadingWriting" class="text-sm text-gray-500">
+    <div v-if="loadingThemes || loadingWriting" class="text-xs sm:text-sm text-gray-500">
       {{ loadingWriting ? 'Loading writing...' : 'Loading themes...' }}
     </div>
         <div v-else class="space-y-2">
@@ -75,27 +75,27 @@
               {{ theme.name }}
             </label>
           </div>
-          <p v-if="availableThemes.length === 0" class="text-sm text-gray-500">
+          <p v-if="availableThemes.length === 0" class="text-xs sm:text-sm text-gray-500">
             No themes available. Create themes on the Themes page.
           </p>
         </div>
       </div>
       
-      <div v-if="error" class="bg-red-50 border border-red-200 rounded-md p-4">
-        <p class="text-red-800 text-sm">{{ error }}</p>
+      <div v-if="error" class="bg-red-50 border border-red-200 rounded-md p-3 sm:p-4">
+        <p class="text-red-800 text-xs sm:text-sm">{{ error }}</p>
       </div>
       
-      <div class="flex space-x-4">
+      <div class="flex flex-col sm:flex-row gap-3 sm:space-x-4">
         <button
           type="submit"
           :disabled="submitting || loadingWriting"
-          class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
         >
           {{ submitting ? (isEditing ? 'Updating...' : 'Publishing...') : (isEditing ? 'Update' : 'Publish') }}
         </button>
         <router-link
           to="/"
-          class="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+          class="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 text-center text-sm sm:text-base"
         >
           Cancel
         </router-link>

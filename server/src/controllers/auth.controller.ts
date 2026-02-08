@@ -2,6 +2,8 @@ import { Request, Response } from 'express'
 import { authService } from '../services/auth.service.js'
 import { userRepo } from '../repositories/user.repo.js'
 import { UnauthorizedError } from '../utils/errors.js'
+import { activityService } from '../services/activity.service.js'
+import { getClientIp, getUserAgent } from '../utils/activity-logger.js'
 
 /**
  * Auth controller - handles authentication requests/responses
@@ -24,6 +26,15 @@ export const authController = {
       maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
     })
 
+    // Log signup activity
+    await activityService.logAuth(
+      'signup',
+      user.id,
+      getClientIp(req),
+      getUserAgent(req),
+      { email, displayName }
+    )
+
     res.status(201).json({
       data: {
         user,
@@ -45,6 +56,15 @@ export const authController = {
       maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
     })
 
+    // Log login activity
+    await activityService.logAuth(
+      'login',
+      user.id,
+      getClientIp(req),
+      getUserAgent(req),
+      { email }
+    )
+
     res.json({
       data: {
         user,
@@ -54,6 +74,18 @@ export const authController = {
   },
 
   async logout(req: Request, res: Response) {
+    const userId = (req as any).userId || null
+    
+    // Log logout activity (before clearing cookie)
+    if (userId) {
+      await activityService.logAuth(
+        'logout',
+        userId,
+        getClientIp(req),
+        getUserAgent(req)
+      )
+    }
+    
     res.clearCookie('token')
     res.status(204).send()
   },
@@ -88,6 +120,18 @@ export const authController = {
 
     const updatedUser = await userRepo.update(userId, {
       displayName: displayName || undefined
+    })
+
+    // Log profile update activity
+    await activityService.logActivity({
+      userId,
+      activityType: 'profile',
+      resourceType: 'user',
+      resourceId: userId,
+      action: 'update',
+      details: { displayName },
+      ipAddress: getClientIp(req),
+      userAgent: getUserAgent(req)
     })
 
     res.json({ data: updatedUser })

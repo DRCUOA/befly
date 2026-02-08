@@ -1,17 +1,17 @@
 <template>
   <router-link
     :to="route"
-    class="collection-card group bg-paper border border-line hover:border-ink-lighter p-12 cursor-pointer block"
+    class="collection-card group bg-paper border border-line hover:border-ink-lighter p-6 sm:p-8 md:p-12 cursor-pointer block"
   >
-    <div class="flex items-start justify-between mb-6">
+    <div class="flex items-start justify-between mb-4 sm:mb-6">
       <div>
-        <h3 class="text-3xl font-light mb-3 tracking-tight">{{ title }}</h3>
-        <p class="text-sm tracking-widest uppercase font-sans text-ink-lighter">
+        <h3 class="text-2xl sm:text-3xl font-light mb-2 sm:mb-3 tracking-tight">{{ title }}</h3>
+        <p class="text-xs sm:text-sm tracking-widest uppercase font-sans text-ink-lighter">
           {{ count }} {{ count === 1 ? 'essay' : 'essays' }}
         </p>
       </div>
       <svg
-        class="w-5 h-5 text-ink-lighter opacity-0 group-hover:opacity-100"
+        class="w-5 h-5 text-ink-lighter opacity-0 group-hover:opacity-100 flex-shrink-0"
         fill="none"
         stroke="currentColor"
         viewBox="0 0 24 24"
@@ -25,7 +25,7 @@
         />
       </svg>
     </div>
-    <p class="text-lg font-light text-ink-light leading-relaxed mb-6">
+    <p class="text-base sm:text-lg font-light text-ink-light leading-relaxed mb-4 sm:mb-6">
       {{ description }}
     </p>
     <div class="flex gap-3 flex-wrap">
