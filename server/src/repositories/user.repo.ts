@@ -38,30 +38,60 @@ export const userRepo = {
     role?: 'user' | 'admin'
   }): Promise<User> {
     const role = user.role || 'user'
-    // Check if role column exists, if not insert without it
-    try {
-      const result = await pool.query(
-        `INSERT INTO users (email, password_hash, display_name, role)
-         VALUES ($1, $2, $3, $4)
-         RETURNING id, email, display_name as "displayName", COALESCE(role, 'user') as role, status, 
-                   created_at as "createdAt", updated_at as "updatedAt"`,
-        [user.email, user.passwordHash, user.displayName, role]
-      )
-      return result.rows[0]
-    } catch (error: any) {
-      // If role column doesn't exist, insert without it
-      if (error.code === '42703') { // column does not exist
-        const result = await pool.query(
-          `INSERT INTO users (email, password_hash, display_name)
-           VALUES ($1, $2, $3)
-           RETURNING id, email, display_name as "displayName", 'user' as role, status, 
-                     created_at as "createdAt", updated_at as "updatedAt"`,
-          [user.email, user.passwordHash, user.displayName]
-        )
-        return result.rows[0]
+
+    // Compatibility insert order:
+    // 1) Newer schema with role + legacy username still present/not-null
+    // 2) Legacy schema without role but with username
+    // 3) Schema where username has been dropped but role exists
+    // 4) Minimal schema without role and without username
+    const attempts: Array<{ query: string; values: unknown[] }> = [
+      {
+        query: `INSERT INTO users (email, password_hash, display_name, role, username)
+                VALUES ($1, $2, $3, $4, $1)
+                RETURNING id, email, display_name as "displayName", COALESCE(role, 'user') as role, status, 
+                          created_at as "createdAt", updated_at as "updatedAt"`,
+        values: [user.email, user.passwordHash, user.displayName, role]
+      },
+      {
+        query: `INSERT INTO users (email, password_hash, display_name, username)
+                VALUES ($1, $2, $3, $1)
+                RETURNING id, email, display_name as "displayName", 'user' as role, status, 
+                          created_at as "createdAt", updated_at as "updatedAt"`,
+        values: [user.email, user.passwordHash, user.displayName]
+      },
+      {
+        query: `INSERT INTO users (email, password_hash, display_name, role)
+                VALUES ($1, $2, $3, $4)
+                RETURNING id, email, display_name as "displayName", COALESCE(role, 'user') as role, status, 
+                          created_at as "createdAt", updated_at as "updatedAt"`,
+        values: [user.email, user.passwordHash, user.displayName, role]
+      },
+      {
+        query: `INSERT INTO users (email, password_hash, display_name)
+                VALUES ($1, $2, $3)
+                RETURNING id, email, display_name as "displayName", 'user' as role, status, 
+                          created_at as "createdAt", updated_at as "updatedAt"`,
+        values: [user.email, user.passwordHash, user.displayName]
       }
-      throw error
+    ]
+
+    let lastError: unknown
+
+    for (const attempt of attempts) {
+      try {
+        const result = await pool.query(attempt.query, attempt.values)
+        return result.rows[0]
+      } catch (error: any) {
+        // Fallback only for schema-shape mismatch.
+        if (error.code === '42703') {
+          lastError = error
+          continue
+        }
+        throw error
+      }
     }
+
+    throw lastError
   },
 
   async update(id: string, updates: Partial<{

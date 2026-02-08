@@ -15,7 +15,8 @@ fi
 DATABASE_URL="${DATABASE_URL:-postgres://user:pass@localhost:5432/writing}"
 
 echo "Running migrations..."
-echo "Database: $DATABASE_URL"
+SAFE_DATABASE_URL="$(printf '%s' "$DATABASE_URL" | sed -E 's#(://[^:]+):[^@]*@#\1:***@#')"
+echo "Database: $SAFE_DATABASE_URL"
 
 # Track applied migrations so releases are idempotent
 psql "$DATABASE_URL" -v ON_ERROR_STOP=1 <<'SQL'

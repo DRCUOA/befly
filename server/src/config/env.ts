@@ -14,7 +14,7 @@ export const config = {
     return getEnv('DATABASE_URL', 'postgres://user:pass@localhost:5432/writing')
   },
   get corsOrigin() {
-    return getEnv('CORS_ORIGIN', 'http://localhost:5178')
+    return getEnv('CORS_ORIGIN', 'http://localhost:5178').replace(/\/+$/, '')
   },
   get appName() {
     return getEnv('APP_NAME', 'Rambulations')
