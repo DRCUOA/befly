@@ -8,6 +8,9 @@ const router = Router()
 // Get userlog.json formatted data (public endpoint)
 router.get('/userlog', asyncHandler(activityController.getUserLog))
 
+// Get userlog.json formatted data as HTML (public endpoint)
+router.get('/userlog/html', asyncHandler(activityController.getUserLogHtml))
+
 // All activity log routes require authentication
 router.use(authMiddleware)
 
