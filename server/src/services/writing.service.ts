@@ -8,12 +8,12 @@ import { logger } from '../utils/logger.js'
  * Writing service - business logic layer
  */
 export const writingService = {
-  async getAll(userId: string | null, limit?: number, offset?: number): Promise<WritingBlock[]> {
-    return writingRepo.findAll(userId, limit || 50, offset || 0)
+  async getAll(userId: string | null, limit?: number, offset?: number, isAdmin: boolean = false): Promise<WritingBlock[]> {
+    return writingRepo.findAll(userId, limit || 50, offset || 0, isAdmin)
   },
 
-  async getById(id: string, userId: string | null): Promise<WritingBlock> {
-    return writingRepo.findById(id, userId)
+  async getById(id: string, userId: string | null, isAdmin: boolean = false): Promise<WritingBlock> {
+    return writingRepo.findById(id, userId, isAdmin)
   },
 
   async create(data: {
@@ -63,7 +63,8 @@ export const writingService = {
       body: string
       themeIds?: string[]
       visibility?: 'private' | 'shared' | 'public'
-    }>
+    }>,
+    isAdmin: boolean = false
   ): Promise<WritingBlock> {
     const updates: Partial<{
       title: string
@@ -84,10 +85,10 @@ export const writingService = {
       updates.visibility = data.visibility
     }
 
-    return writingRepo.update(id, userId, updates)
+    return writingRepo.update(id, userId, updates, isAdmin)
   },
 
-  async delete(id: string, userId: string): Promise<void> {
-    return writingRepo.delete(id, userId)
+  async delete(id: string, userId: string, isAdmin: boolean = false): Promise<void> {
+    return writingRepo.delete(id, userId, isAdmin)
   }
 }

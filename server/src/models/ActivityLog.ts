@@ -24,6 +24,7 @@ export type ActivityType =
   | 'comment'
   | 'view'
   | 'profile'
+  | 'admin'
 
 export type ResourceType =
   | 'writing_block'

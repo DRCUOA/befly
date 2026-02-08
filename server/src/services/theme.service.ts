@@ -8,12 +8,12 @@ import { logger } from '../utils/logger.js'
  * Theme service - business logic layer
  */
 export const themeService = {
-  async getAll(userId: string | null): Promise<Theme[]> {
-    return themeRepo.findAll(userId)
+  async getAll(userId: string | null, isAdmin: boolean = false): Promise<Theme[]> {
+    return themeRepo.findAll(userId, isAdmin)
   },
 
-  async getById(id: string, userId: string | null): Promise<Theme> {
-    return themeRepo.findById(id, userId)
+  async getById(id: string, userId: string | null, isAdmin: boolean = false): Promise<Theme> {
+    return themeRepo.findById(id, userId, isAdmin)
   },
 
   async create(data: {
@@ -53,7 +53,8 @@ export const themeService = {
     data: Partial<{
       name: string
       visibility: 'private' | 'shared' | 'public'
-    }>
+    }>,
+    isAdmin: boolean = false
   ): Promise<Theme> {
     const updates: Partial<{ name: string; visibility: 'private' | 'shared' | 'public' }> = {}
     if (data.name !== undefined) {
@@ -63,10 +64,10 @@ export const themeService = {
       updates.visibility = data.visibility
     }
 
-    return themeRepo.update(id, userId, updates)
+    return themeRepo.update(id, userId, updates, isAdmin)
   },
 
-  async delete(id: string, userId: string): Promise<void> {
-    return themeRepo.delete(id, userId)
+  async delete(id: string, userId: string, isAdmin: boolean = false): Promise<void> {
+    return themeRepo.delete(id, userId, isAdmin)
   }
 }

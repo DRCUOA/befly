@@ -62,7 +62,7 @@
                   {{ getThemeCount(theme.id) }} {{ getThemeCount(theme.id) === 1 ? 'essay' : 'essays' }}
                 </p>
               </div>
-              <div v-if="isOwner(theme)" class="flex items-center gap-2">
+              <div v-if="canModify(theme)" class="flex items-center gap-2">
                 <router-link
                   :to="`/themes/edit/${theme.id}`"
                   class="p-2 text-ink-lighter hover:text-ink transition-colors"
@@ -135,7 +135,7 @@ import FilterNavigation from '../components/browse/FilterNavigation.vue'
 import type { ApiResponse } from '@shared/ApiResponses'
 import type { WritingBlock } from '../domain/WritingBlock'
 
-const { user, isAuthenticated } = useAuth()
+const { user, isAuthenticated, isAdmin } = useAuth()
 
 const themes = ref<Theme[]>([])
 const writings = ref<WritingBlock[]>([])
@@ -152,6 +152,13 @@ const filters = [
 
 const isOwner = (theme: Theme): boolean => {
   return user.value !== null && theme.userId === user.value.id
+}
+
+/**
+ * Can modify: owner or admin
+ */
+const canModify = (theme: Theme): boolean => {
+  return isOwner(theme) || isAdmin.value
 }
 
 const getThemeCount = (themeId: string): number => {

@@ -94,6 +94,42 @@ export const userRepo = {
     throw lastError
   },
 
+  /**
+   * Find all users (admin-only)
+   */
+  async findAll(limit: number = 100, offset: number = 0): Promise<User[]> {
+    const result = await pool.query(
+      `SELECT id, email, display_name as "displayName", 
+              COALESCE(role, 'user') as role, 
+              status, 
+              created_at as "createdAt", updated_at as "updatedAt"
+       FROM users
+       ORDER BY created_at DESC
+       LIMIT $1 OFFSET $2`,
+      [limit, offset]
+    )
+    return result.rows
+  },
+
+  /**
+   * Count all users (admin-only)
+   */
+  async count(): Promise<number> {
+    const result = await pool.query('SELECT COUNT(*) as count FROM users')
+    return parseInt(result.rows[0].count, 10)
+  },
+
+  /**
+   * Delete a user by ID (admin-only)
+   * Cascading deletes handle related data (writing_blocks, themes, comments, appreciations)
+   */
+  async delete(id: string): Promise<void> {
+    const result = await pool.query('DELETE FROM users WHERE id = $1', [id])
+    if (result.rowCount === 0) {
+      throw new NotFoundError('User not found')
+    }
+  },
+
   async update(id: string, updates: Partial<{
     displayName: string
     passwordHash: string

@@ -18,6 +18,11 @@ export function useAuth() {
   const isAuthenticated = computed(() => currentUser.value !== null)
 
   /**
+   * Check if user has admin role
+   */
+  const isAdmin = computed(() => currentUser.value?.role === 'admin')
+
+  /**
    * Get current user
    */
   const user = computed(() => currentUser.value)
@@ -128,6 +133,7 @@ export function useAuth() {
     // State
     user,
     isAuthenticated,
+    isAdmin,
     isLoading: computed(() => isLoading.value),
     error: computed(() => error.value),
     

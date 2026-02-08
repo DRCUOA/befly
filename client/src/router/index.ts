@@ -9,6 +9,7 @@ import ThemeForm from '../pages/ThemeForm.vue'
 import Profile from '../pages/Profile.vue'
 import SignIn from '../pages/SignIn.vue'
 import SignUp from '../pages/SignUp.vue'
+import Admin from '../pages/Admin.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -65,6 +66,12 @@ const router = createRouter({
       meta: { requiresAuth: true }
     },
     {
+      path: '/admin',
+      name: 'Admin',
+      component: Admin,
+      meta: { requiresAuth: true, requiresAdmin: true }
+    },
+    {
       path: '/signin',
       name: 'SignIn',
       component: SignIn,
@@ -81,7 +88,7 @@ const router = createRouter({
 
 // Route guards
 router.beforeEach(async (to, _from, next) => {
-  const { isAuthenticated, fetchCurrentUser } = useAuth()
+  const { isAuthenticated, isAdmin, fetchCurrentUser } = useAuth()
   
   // Fetch current user if not already loaded
   if (!isAuthenticated.value) {
@@ -91,6 +98,12 @@ router.beforeEach(async (to, _from, next) => {
   // Check if route requires authentication
   if (to.meta.requiresAuth && !isAuthenticated.value) {
     next({ name: 'SignIn', query: { redirect: to.fullPath || '/home' } })
+    return
+  }
+
+  // Check if route requires admin role
+  if (to.meta.requiresAdmin && !isAdmin.value) {
+    next({ name: 'Home' })
     return
   }
 

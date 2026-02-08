@@ -3,6 +3,7 @@ import { themeService } from '../services/theme.service.js'
 import { UnauthorizedError } from '../utils/errors.js'
 import { activityService } from '../services/activity.service.js'
 import { getClientIp, getUserAgent } from '../utils/activity-logger.js'
+import { isAdminRequest } from '../middleware/authorize.middleware.js'
 
 /**
  * Theme controller - handles HTTP requests/responses
@@ -10,7 +11,8 @@ import { getClientIp, getUserAgent } from '../utils/activity-logger.js'
 export const themeController = {
   async getAll(req: Request, res: Response) {
     const userId = (req as any).userId || null // From optionalAuthMiddleware
-    const themes = await themeService.getAll(userId)
+    const admin = isAdminRequest(req)
+    const themes = await themeService.getAll(userId, admin)
     
     // Log view activity
     await activityService.logView(
@@ -28,7 +30,8 @@ export const themeController = {
   async getById(req: Request, res: Response) {
     const { id } = req.params
     const userId = (req as any).userId || null // From optionalAuthMiddleware
-    const theme = await themeService.getById(id, userId)
+    const admin = isAdminRequest(req)
+    const theme = await themeService.getById(id, userId, admin)
     
     // Log view activity
     await activityService.logTheme(
@@ -71,6 +74,7 @@ export const themeController = {
   async update(req: Request, res: Response) {
     const { id } = req.params
     const userId = (req as any).userId
+    const admin = isAdminRequest(req)
     if (!userId) {
       throw new UnauthorizedError('Authentication required')
     }
@@ -78,7 +82,7 @@ export const themeController = {
     const theme = await themeService.update(id, userId, {
       name: req.body.name,
       visibility: req.body.visibility
-    })
+    }, admin)
     
     // Log update activity
     await activityService.logTheme(
@@ -96,14 +100,15 @@ export const themeController = {
   async delete(req: Request, res: Response) {
     const { id } = req.params
     const userId = (req as any).userId
+    const admin = isAdminRequest(req)
     if (!userId) {
       throw new UnauthorizedError('Authentication required')
     }
 
     // Get theme details before deletion for logging
-    const theme = await themeService.getById(id, userId)
+    const theme = await themeService.getById(id, userId, admin)
     
-    await themeService.delete(id, userId)
+    await themeService.delete(id, userId, admin)
     
     // Log delete activity
     await activityService.logTheme(

@@ -1,9 +1,11 @@
 import { Request, Response, NextFunction } from 'express'
 import { ForbiddenError, UnauthorizedError } from '../utils/errors.js'
-import { userRepo } from '../repositories/user.repo.js'
 
 /**
  * Authorization middleware - checks user roles
+ * 
+ * Relies on authMiddleware having already attached userId and userRole
+ * to the request object. This avoids redundant DB lookups.
  */
 
 /**
@@ -18,61 +20,27 @@ export function requireAuth(req: Request, res: Response, next: NextFunction) {
 }
 
 /**
- * Require user to have admin role
+ * Require user to have admin role.
+ * Must be used AFTER authMiddleware which attaches userRole.
  */
-export async function requireAdmin(req: Request, res: Response, next: NextFunction) {
+export function requireAdmin(req: Request, res: Response, next: NextFunction) {
   const userId = (req as any).userId
   if (!userId) {
     return next(new UnauthorizedError('Authentication required'))
   }
 
-  try {
-    const user = await userRepo.findById(userId)
-    if (!user) {
-      return next(new UnauthorizedError('User not found'))
-    }
-
-    if (user.role !== 'admin') {
-      return next(new ForbiddenError('Admin access required'))
-    }
-
-    next()
-  } catch (error) {
-    next(error)
+  const userRole = (req as any).userRole
+  if (userRole !== 'admin') {
+    return next(new ForbiddenError('Admin access required'))
   }
+
+  next()
 }
 
 /**
- * Require user to own resource or be admin
- * Usage: requireOwnershipOrAdmin('userId')
+ * Helper to check if the current request is from an admin user.
+ * Can be used in controllers to pass isAdmin flag to services/repos.
  */
-export function requireOwnershipOrAdmin(ownerIdField: string = 'userId') {
-  return async (req: Request, res: Response, next: NextFunction) => {
-    const userId = (req as any).userId
-    if (!userId) {
-      return next(new UnauthorizedError('Authentication required'))
-    }
-
-    try {
-      const user = await userRepo.findById(userId)
-      if (!user) {
-        return next(new UnauthorizedError('User not found'))
-      }
-
-      // Admin can access anything
-      if (user.role === 'admin') {
-        return next()
-      }
-
-      // Check ownership
-      const resourceOwnerId = req.params[ownerIdField] || req.body[ownerIdField]
-      if (resourceOwnerId !== userId) {
-        return next(new ForbiddenError('Not authorized to access this resource'))
-      }
-
-      next()
-    } catch (error) {
-      next(error)
-    }
-  }
+export function isAdminRequest(req: Request): boolean {
+  return (req as any).userRole === 'admin'
 }
