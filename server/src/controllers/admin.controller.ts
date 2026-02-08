@@ -357,5 +357,128 @@ export const adminController = {
     })
 
     res.status(204).send()
+  },
+
+  // ─── Usage analytics ─────────────────────────────────────────────
+
+  /**
+   * Get aggregated usage statistics from activity logs
+   * Includes both authenticated and anonymous activity
+   */
+  async getStats(req: Request, res: Response) {
+    console.log('[admin/stats] Starting stats query...')
+
+    const queries: Record<string, string> = {
+      total: 'SELECT COUNT(*) as count FROM user_activity_logs',
+
+      byType: `SELECT activity_type as "activityType", COUNT(*) as count
+        FROM user_activity_logs GROUP BY activity_type ORDER BY count DESC`,
+
+      byAction: `SELECT action, COUNT(*) as count
+        FROM user_activity_logs GROUP BY action ORDER BY count DESC`,
+
+      daily: `SELECT created_at::date as date, COUNT(*) as total,
+        COUNT(user_id) as authenticated, COUNT(*) - COUNT(user_id) as anonymous
+        FROM user_activity_logs WHERE created_at >= NOW() - INTERVAL '30 days'
+        GROUP BY created_at::date ORDER BY date ASC`,
+
+      hourly: `SELECT EXTRACT(HOUR FROM created_at)::int as hour, COUNT(*) as count
+        FROM user_activity_logs GROUP BY EXTRACT(HOUR FROM created_at) ORDER BY hour ASC`,
+
+      anonVsAuth: `SELECT COUNT(*) as total, COUNT(user_id) as authenticated,
+        COUNT(*) - COUNT(user_id) as anonymous, COUNT(DISTINCT user_id) as "uniqueUsers"
+        FROM user_activity_logs`,
+
+      topUsers: `SELECT ual.user_id as "userId",
+        COALESCE(u.display_name, u.email, 'Unknown') as "displayName", COUNT(*) as count
+        FROM user_activity_logs ual LEFT JOIN users u ON ual.user_id = u.id
+        WHERE ual.user_id IS NOT NULL
+        GROUP BY ual.user_id, u.display_name, u.email ORDER BY count DESC LIMIT 10`,
+
+      topWritings: `SELECT ual.resource_id as "resourceId",
+        COALESCE(wb.title, 'Deleted') as title, COUNT(*) as count,
+        COUNT(DISTINCT ual.user_id) as "uniqueVisitors"
+        FROM user_activity_logs ual LEFT JOIN writing_blocks wb ON ual.resource_id = wb.id
+        WHERE ual.resource_type = 'writing_block' AND ual.resource_id IS NOT NULL
+        GROUP BY ual.resource_id, wb.title ORDER BY count DESC LIMIT 10`,
+
+      recent: `SELECT ual.id, ual.user_id as "userId",
+        COALESCE(u.display_name, u.email) as "userDisplayName",
+        ual.activity_type as "activityType", ual.action,
+        ual.resource_type as "resourceType", ual.resource_id as "resourceId",
+        ual.details, ual.ip_address as "ipAddress", ual.created_at as "createdAt"
+        FROM user_activity_logs ual LEFT JOIN users u ON ual.user_id = u.id
+        ORDER BY ual.created_at DESC LIMIT 50`
+    }
+
+    // Run each query individually so we can log which one fails
+    const results: Record<string, any> = {}
+    for (const [name, sql] of Object.entries(queries)) {
+      try {
+        console.log(`[admin/stats] Running query: ${name}`)
+        results[name] = await pool.query(sql)
+        console.log(`[admin/stats] ✓ ${name} returned ${results[name].rows.length} rows`)
+      } catch (err: any) {
+        console.error(`[admin/stats] ✗ FAILED query "${name}":`, err.message)
+        console.error(`[admin/stats]   SQL: ${sql.substring(0, 120)}...`)
+        throw err // re-throw so the error handler catches it
+      }
+    }
+
+    const { total: totalResult, byType: byTypeResult, byAction: byActionResult,
+      daily: dailyResult, hourly: hourlyResult, anonVsAuth: anonVsAuthResult,
+      topUsers: topUsersResult, topWritings: topWritingsResult, recent: recentResult
+    } = results
+
+    // Build hourly histogram (fill in missing hours with 0)
+    const hourlyMap = new Map<number, number>()
+    for (const row of hourlyResult.rows) {
+      hourlyMap.set(row.hour, parseInt(row.count, 10))
+    }
+    const hourly = Array.from({ length: 24 }, (_, i) => ({
+      hour: i,
+      count: hourlyMap.get(i) || 0
+    }))
+
+    console.log('[admin/stats] All queries succeeded, building response...')
+
+    res.json({
+      data: {
+        total: parseInt(totalResult.rows[0].count, 10),
+        byType: byTypeResult.rows.map((r: any) => ({
+          activityType: r.activityType,
+          count: parseInt(r.count, 10)
+        })),
+        byAction: byActionResult.rows.map((r: any) => ({
+          action: r.action,
+          count: parseInt(r.count, 10)
+        })),
+        daily: dailyResult.rows.map((r: any) => ({
+          date: r.date,
+          total: parseInt(r.total, 10),
+          authenticated: parseInt(r.authenticated, 10),
+          anonymous: parseInt(r.anonymous, 10)
+        })),
+        hourly,
+        anonVsAuth: {
+          total: parseInt(anonVsAuthResult.rows[0].total, 10),
+          authenticated: parseInt(anonVsAuthResult.rows[0].authenticated, 10),
+          anonymous: parseInt(anonVsAuthResult.rows[0].anonymous, 10),
+          uniqueUsers: parseInt(anonVsAuthResult.rows[0].uniqueUsers, 10)
+        },
+        topUsers: topUsersResult.rows.map((r: any) => ({
+          userId: r.userId,
+          displayName: r.displayName,
+          count: parseInt(r.count, 10)
+        })),
+        topWritings: topWritingsResult.rows.map((r: any) => ({
+          resourceId: r.resourceId,
+          title: r.title,
+          count: parseInt(r.count, 10),
+          uniqueVisitors: parseInt(r.uniqueVisitors, 10)
+        })),
+        recentActivity: recentResult.rows
+      }
+    })
   }
 }

@@ -10,6 +10,9 @@ const router = Router()
 router.use(authMiddleware)
 router.use(requireAdmin)
 
+// Usage analytics
+router.get('/stats', asyncHandler(adminController.getStats))
+
 // User management
 router.get('/users', asyncHandler(adminController.listUsers))
 router.get('/users/:id', asyncHandler(adminController.getUser))
