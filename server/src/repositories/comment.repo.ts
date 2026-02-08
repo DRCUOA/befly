@@ -68,31 +68,34 @@ export const commentRepo = {
     }
   },
 
-  async update(commentId: string, userId: string, content: string): Promise<Comment> {
-    // First verify the comment exists and belongs to the user
+  async update(commentId: string, userId: string, content: string, isAdmin: boolean = false): Promise<Comment> {
+    // First verify the comment exists and belongs to the user (admin bypasses ownership)
     const existing = await this.findById(commentId)
     if (!existing) {
       throw new NotFoundError('Comment not found')
     }
-    if (existing.userId !== userId) {
+    if (!isAdmin && existing.userId !== userId) {
       throw new NotFoundError('Comment not found') // Don't reveal ownership
     }
+
+    // Admin updating someone else's comment: use the comment owner's userId for the query
+    const ownerId = existing.userId
     
     const query = `
       UPDATE comments
       SET content = $1, updated_at = NOW()
-      WHERE id = $2 AND user_id = $3
+      WHERE id = $2
       RETURNING id, writing_id as "writingId", user_id as "userId", content, created_at as "createdAt", updated_at as "updatedAt"
     `
     
-    const result = await pool.query(query, [content, commentId, userId])
+    const result = await pool.query(query, [content, commentId])
     
     // Fetch user display name
     const userResult = await pool.query(
       `SELECT COALESCE(display_name, email) as "userDisplayName"
        FROM users
        WHERE id = $1`,
-      [userId]
+      [ownerId]
     )
     
     return {
@@ -101,18 +104,18 @@ export const commentRepo = {
     }
   },
 
-  async delete(commentId: string, userId: string): Promise<void> {
-    // First verify the comment exists and belongs to the user
+  async delete(commentId: string, userId: string, isAdmin: boolean = false): Promise<void> {
+    // First verify the comment exists and belongs to the user (admin bypasses ownership)
     const existing = await this.findById(commentId)
     if (!existing) {
       throw new NotFoundError('Comment not found')
     }
-    if (existing.userId !== userId) {
+    if (!isAdmin && existing.userId !== userId) {
       throw new NotFoundError('Comment not found') // Don't reveal ownership
     }
     
-    const query = `DELETE FROM comments WHERE id = $1 AND user_id = $2`
-    const result = await pool.query(query, [commentId, userId])
+    const query = `DELETE FROM comments WHERE id = $1`
+    const result = await pool.query(query, [commentId])
     
     if (result.rowCount === 0) {
       throw new NotFoundError('Comment not found')

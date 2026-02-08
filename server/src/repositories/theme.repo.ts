@@ -9,10 +9,11 @@ import { NotFoundError, ForbiddenError } from '../utils/errors.js'
 export const themeRepo = {
   /**
    * Find all themes visible to the user
+   * - Admin: sees ALL themes regardless of visibility
    * - Own private/shared/public themes
    * - Others' shared/public themes
    */
-  async findAll(userId: string | null): Promise<Theme[]> {
+  async findAll(userId: string | null, isAdmin: boolean = false): Promise<Theme[]> {
     // Check if visibility and user_id columns exist
     let hasVisibilityColumn = true
     let hasUserIdColumn = true
@@ -42,7 +43,15 @@ export const themeRepo = {
     let params: unknown[]
 
     if (hasVisibilityColumn && hasUserIdColumn) {
-      if (userId) {
+      if (isAdmin) {
+        // Admin: see ALL themes regardless of visibility
+        query = `
+          SELECT id, user_id as "userId", name, slug, COALESCE(visibility, 'private') as visibility, created_at as "createdAt"
+          FROM themes
+          ORDER BY name ASC
+        `
+        params = []
+      } else if (userId) {
         query = `
           SELECT id, user_id as "userId", name, slug, COALESCE(visibility, 'private') as visibility, created_at as "createdAt"
           FROM themes
@@ -81,7 +90,7 @@ export const themeRepo = {
     return result.rows
   },
 
-  async findById(id: string, userId: string | null): Promise<Theme> {
+  async findById(id: string, userId: string | null, isAdmin: boolean = false): Promise<Theme> {
     // Check if columns exist
     let hasVisibilityColumn = true
     let hasUserIdColumn = true
@@ -110,7 +119,15 @@ export const themeRepo = {
     let params: unknown[]
 
     if (hasVisibilityColumn && hasUserIdColumn) {
-      if (userId) {
+      if (isAdmin) {
+        // Admin: access any theme regardless of visibility
+        query = `
+          SELECT id, user_id as "userId", name, slug, COALESCE(visibility, 'private') as visibility, created_at as "createdAt"
+          FROM themes
+          WHERE id = $1
+        `
+        params = [id]
+      } else if (userId) {
         query = `
           SELECT id, user_id as "userId", name, slug, COALESCE(visibility, 'private') as visibility, created_at as "createdAt"
           FROM themes
@@ -268,7 +285,7 @@ export const themeRepo = {
     return result.rows[0]
   },
 
-  async update(id: string, userId: string, updates: Partial<Pick<Theme, 'name' | 'visibility'>>): Promise<Theme> {
+  async update(id: string, userId: string, updates: Partial<Pick<Theme, 'name' | 'visibility'>>, isAdmin: boolean = false): Promise<Theme> {
     // Check if columns exist
     let hasVisibilityColumn = true
     let hasUserIdColumn = true
@@ -293,7 +310,7 @@ export const themeRepo = {
       }
     }
 
-    // Verify ownership if user_id column exists
+    // Verify ownership if user_id column exists (admin bypasses)
     if (hasUserIdColumn) {
       const existing = await pool.query(
         'SELECT user_id FROM themes WHERE id = $1',
@@ -302,7 +319,7 @@ export const themeRepo = {
       if (existing.rows.length === 0) {
         throw new NotFoundError('Theme not found')
       }
-      if (existing.rows[0].user_id !== userId) {
+      if (!isAdmin && existing.rows[0].user_id !== userId) {
         throw new ForbiddenError('Not authorized to update this theme')
       }
     }
@@ -359,7 +376,7 @@ export const themeRepo = {
     return result.rows[0]
   },
 
-  async delete(id: string, userId: string): Promise<void> {
+  async delete(id: string, userId: string, isAdmin: boolean = false): Promise<void> {
     // Check if user_id column exists
     let hasUserIdColumn = true
     try {
@@ -372,7 +389,7 @@ export const themeRepo = {
       }
     }
 
-    // Verify ownership if user_id column exists
+    // Verify ownership if user_id column exists (admin bypasses)
     if (hasUserIdColumn) {
       const existing = await pool.query(
         'SELECT user_id FROM themes WHERE id = $1',
@@ -381,7 +398,7 @@ export const themeRepo = {
       if (existing.rows.length === 0) {
         throw new NotFoundError('Theme not found')
       }
-      if (existing.rows[0].user_id !== userId) {
+      if (!isAdmin && existing.rows[0].user_id !== userId) {
         throw new ForbiddenError('Not authorized to delete this theme')
       }
     }

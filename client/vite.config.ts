@@ -17,7 +17,7 @@ const versionPlugin = (): Plugin => {
     transform(code, id) {
       if (id.includes('config/version.ts')) {
         return code.replace(
-          "export const APP_VERSION = '0.1.0'",
+          /export const APP_VERSION = '[^']*'/,
           `export const APP_VERSION = '${packageJson.version}'`
         )
       }

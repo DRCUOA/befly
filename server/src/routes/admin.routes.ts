@@ -1,0 +1,29 @@
+import { Router } from 'express'
+import { adminController } from '../controllers/admin.controller.js'
+import { authMiddleware } from '../middleware/auth.middleware.js'
+import { requireAdmin } from '../middleware/authorize.middleware.js'
+import { asyncHandler } from '../utils/asyncHandler.js'
+
+const router = Router()
+
+// All admin routes require authentication AND admin role
+router.use(authMiddleware)
+router.use(requireAdmin)
+
+// Usage analytics
+router.get('/stats', asyncHandler(adminController.getStats))
+
+// User management
+router.get('/users', asyncHandler(adminController.listUsers))
+router.get('/users/:id', asyncHandler(adminController.getUser))
+router.get('/users/:id/content', asyncHandler(adminController.getUserContent))
+router.put('/users/:id', asyncHandler(adminController.updateUser))
+router.delete('/users/:id', asyncHandler(adminController.deleteUser))
+
+// Content management (admin CRUD on any content)
+router.put('/writings/:id/visibility', asyncHandler(adminController.updateWritingVisibility))
+router.delete('/writings/:id', asyncHandler(adminController.deleteWriting))
+router.delete('/comments/:id', asyncHandler(adminController.deleteComment))
+router.delete('/appreciations/:id', asyncHandler(adminController.deleteAppreciation))
+
+export default router

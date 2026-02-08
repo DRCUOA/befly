@@ -10,10 +10,11 @@ import { NotFoundError, ForbiddenError } from '../utils/errors.js'
 export const writingRepo = {
   /**
    * Find all writing blocks visible to the user
+   * - Admin: sees ALL blocks regardless of visibility
    * - Own private/shared/public blocks
    * - Others' shared/public blocks
    */
-  async findAll(userId: string | null, limit: number = 50, offset: number = 0): Promise<WritingBlock[]> {
+  async findAll(userId: string | null, limit: number = 50, offset: number = 0, isAdmin: boolean = false): Promise<WritingBlock[]> {
     let query: string
     let params: unknown[]
 
@@ -31,7 +32,29 @@ export const writingRepo = {
     }
 
     if (hasVisibilityColumn) {
-      if (userId) {
+      if (isAdmin) {
+        // Admin: see ALL writing blocks regardless of visibility
+        query = `
+          SELECT 
+            wb.id, 
+            wb.user_id as "userId", 
+            wb.title, 
+            wb.body,
+            COALESCE(wb.visibility, 'private') as visibility,
+            wb.created_at as "createdAt", 
+            wb.updated_at as "updatedAt",
+            COALESCE(
+              ARRAY_AGG(wt.theme_id) FILTER (WHERE wt.theme_id IS NOT NULL),
+              ARRAY[]::UUID[]
+            ) as "themeIds"
+          FROM writing_blocks wb
+          LEFT JOIN writing_themes wt ON wb.id = wt.writing_id
+          GROUP BY wb.id, wb.user_id, wb.title, wb.body, wb.visibility, wb.created_at, wb.updated_at
+          ORDER BY wb.created_at DESC
+          LIMIT $1 OFFSET $2
+        `
+        params = [limit, offset]
+      } else if (userId) {
         // Authenticated: own blocks + shared/public from others
         query = `
           SELECT 
@@ -111,10 +134,11 @@ export const writingRepo = {
 
   /**
    * Find by ID with visibility check
+   * - Admin can access ANY writing regardless of visibility
    * - Owner can access any visibility
    * - Others can only access shared/public
    */
-  async findById(id: string, userId: string | null): Promise<WritingBlock> {
+  async findById(id: string, userId: string | null, isAdmin: boolean = false): Promise<WritingBlock> {
     // Check if visibility column exists
     let hasVisibilityColumn = true
     try {
@@ -131,7 +155,28 @@ export const writingRepo = {
     let params: unknown[]
 
     if (hasVisibilityColumn) {
-      if (userId) {
+      if (isAdmin) {
+        // Admin: access any writing regardless of visibility
+        query = `
+          SELECT 
+            wb.id, 
+            wb.user_id as "userId", 
+            wb.title, 
+            wb.body,
+            COALESCE(wb.visibility, 'private') as visibility,
+            wb.created_at as "createdAt", 
+            wb.updated_at as "updatedAt",
+            COALESCE(
+              ARRAY_AGG(wt.theme_id) FILTER (WHERE wt.theme_id IS NOT NULL),
+              ARRAY[]::UUID[]
+            ) as "themeIds"
+          FROM writing_blocks wb
+          LEFT JOIN writing_themes wt ON wb.id = wt.writing_id
+          WHERE wb.id = $1
+          GROUP BY wb.id, wb.user_id, wb.title, wb.body, wb.visibility, wb.created_at, wb.updated_at
+        `
+        params = [id]
+      } else if (userId) {
         query = `
           SELECT 
             wb.id, 
@@ -267,10 +312,10 @@ export const writingRepo = {
   },
 
   /**
-   * Update writing block - enforces ownership
+   * Update writing block - enforces ownership (admin bypasses)
    */
-  async update(id: string, userId: string, updates: Partial<Pick<WritingBlock, 'title' | 'body' | 'themeIds' | 'visibility'>>): Promise<WritingBlock> {
-    // First verify ownership
+  async update(id: string, userId: string, updates: Partial<Pick<WritingBlock, 'title' | 'body' | 'themeIds' | 'visibility'>>, isAdmin: boolean = false): Promise<WritingBlock> {
+    // First verify ownership (admin can update any)
     const existing = await pool.query(
       'SELECT user_id FROM writing_blocks WHERE id = $1',
       [id]
@@ -278,7 +323,7 @@ export const writingRepo = {
     if (existing.rows.length === 0) {
       throw new NotFoundError('Writing block not found')
     }
-    if (existing.rows[0].user_id !== userId) {
+    if (!isAdmin && existing.rows[0].user_id !== userId) {
       throw new ForbiddenError('Not authorized to update this writing block')
     }
 
@@ -356,7 +401,7 @@ export const writingRepo = {
       
       await client.query('COMMIT')
       
-      return this.findById(id, userId)
+      return this.findById(id, userId, isAdmin)
     } catch (error) {
       await client.query('ROLLBACK')
       throw error
@@ -366,10 +411,10 @@ export const writingRepo = {
   },
 
   /**
-   * Delete writing block - enforces ownership
+   * Delete writing block - enforces ownership (admin bypasses)
    */
-  async delete(id: string, userId: string): Promise<void> {
-    // Verify ownership
+  async delete(id: string, userId: string, isAdmin: boolean = false): Promise<void> {
+    // Verify ownership (admin can delete any)
     const existing = await pool.query(
       'SELECT user_id FROM writing_blocks WHERE id = $1',
       [id]
@@ -377,7 +422,7 @@ export const writingRepo = {
     if (existing.rows.length === 0) {
       throw new NotFoundError('Writing block not found')
     }
-    if (existing.rows[0].user_id !== userId) {
+    if (!isAdmin && existing.rows[0].user_id !== userId) {
       throw new ForbiddenError('Not authorized to delete this writing block')
     }
 

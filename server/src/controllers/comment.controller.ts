@@ -3,6 +3,7 @@ import { commentService } from '../services/comment.service.js'
 import { UnauthorizedError, ValidationError } from '../utils/errors.js'
 import { activityService } from '../services/activity.service.js'
 import { getClientIp, getUserAgent } from '../utils/activity-logger.js'
+import { isAdminRequest } from '../middleware/authorize.middleware.js'
 
 /**
  * Comment controller - handles HTTP requests/responses
@@ -44,6 +45,7 @@ export const commentController = {
 
   async update(req: Request, res: Response) {
     const userId = (req as any).userId
+    const admin = isAdminRequest(req)
     if (!userId) {
       throw new UnauthorizedError('Authentication required')
     }
@@ -55,7 +57,7 @@ export const commentController = {
       throw new ValidationError('Comment content is required')
     }
     
-    const comment = await commentService.update(commentId, userId, content)
+    const comment = await commentService.update(commentId, userId, content, admin)
     
     // Log comment update activity
     await activityService.logComment(
@@ -72,6 +74,7 @@ export const commentController = {
 
   async remove(req: Request, res: Response) {
     const userId = (req as any).userId
+    const admin = isAdminRequest(req)
     if (!userId) {
       throw new UnauthorizedError('Authentication required')
     }
@@ -81,7 +84,7 @@ export const commentController = {
     // Get comment details before deletion for logging
     const comment = await commentService.getById(commentId)
     
-    await commentService.remove(commentId, userId)
+    await commentService.remove(commentId, userId, admin)
     
     // Log comment deletion activity
     await activityService.logComment(

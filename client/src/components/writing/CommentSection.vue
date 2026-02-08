@@ -62,8 +62,8 @@
             </div>
           </div>
           
-          <!-- Edit/Delete buttons (own comments only) -->
-          <div v-if="isAuthenticated && user?.id === comment.userId" class="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+          <!-- Edit/Delete buttons (own comments or admin) -->
+          <div v-if="isAuthenticated && (user?.id === comment.userId || isAdmin)" class="flex items-center gap-1 sm:gap-2 flex-shrink-0">
             <button
               v-if="editingCommentId !== comment.id"
               @click="startEdit(comment)"
@@ -140,7 +140,7 @@ interface Props {
 }
 
 const props = defineProps<Props>()
-const { user, isAuthenticated } = useAuth()
+const { user, isAuthenticated, isAdmin } = useAuth()
 
 const comments = ref<Comment[]>([])
 const loading = ref(false)

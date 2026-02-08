@@ -22,7 +22,7 @@ export const commentService = {
     return commentRepo.create({ writingId, userId, content: trimmedContent })
   },
 
-  async update(commentId: string, userId: string, content: string): Promise<Comment> {
+  async update(commentId: string, userId: string, content: string, isAdmin: boolean = false): Promise<Comment> {
     // Validate content
     const trimmedContent = content.trim()
     if (!trimmedContent) {
@@ -32,7 +32,7 @@ export const commentService = {
       throw new Error('Comment content cannot exceed 5000 characters')
     }
     
-    return commentRepo.update(commentId, userId, trimmedContent)
+    return commentRepo.update(commentId, userId, trimmedContent, isAdmin)
   },
 
   async getById(commentId: string): Promise<Comment> {
@@ -43,7 +43,7 @@ export const commentService = {
     return comment
   },
 
-  async remove(commentId: string, userId: string): Promise<void> {
-    return commentRepo.delete(commentId, userId)
+  async remove(commentId: string, userId: string, isAdmin: boolean = false): Promise<void> {
+    return commentRepo.delete(commentId, userId, isAdmin)
   }
 }

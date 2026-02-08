@@ -44,7 +44,7 @@
       </div>
     </router-link>
     <div
-      v-if="isOwner"
+      v-if="canModify"
       class="flex items-center gap-2 mt-4"
       @click.stop
     >
@@ -91,12 +91,19 @@ const props = withDefaults(defineProps<Props>(), {
   showImage: false,
 })
 
-const { user } = useAuth()
+const { user, isAdmin } = useAuth()
 const readingStore = useReadingStore()
 const deleting = ref(false)
 
 const isOwner = computed(() => {
   return user.value && props.writing.userId === user.value.id
+})
+
+/**
+ * Can edit/delete: owner or admin
+ */
+const canModify = computed(() => {
+  return isOwner.value || isAdmin.value
 })
 
 const isRecentlyRead = computed(() => {

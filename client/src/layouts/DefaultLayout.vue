@@ -32,6 +32,13 @@
             >
               About
             </router-link>
+            <router-link
+              v-if="isAdmin"
+              to="/admin"
+              class="text-purple-600 hover:text-purple-800"
+            >
+              Admin
+            </router-link>
           </nav>
         </div>
         <div class="flex items-center gap-2 md:gap-4">
@@ -152,6 +159,14 @@
             >
               Profile
             </router-link>
+            <router-link
+              v-if="isAdmin"
+              to="/admin"
+              @click="menuOpen = false"
+              class="block text-sm tracking-wide font-sans text-purple-600 hover:text-purple-800"
+            >
+              Admin
+            </router-link>
             <button
               @click="handleSignOut"
               class="block text-sm tracking-wide font-sans text-ink-lighter hover:text-ink w-full text-left"
@@ -194,7 +209,7 @@ import AppFooter from '../components/ui/AppFooter.vue'
 
 const router = useRouter()
 const route = useRoute()
-const { user, isAuthenticated, signout } = useAuth()
+const { user, isAuthenticated, isAdmin, signout } = useAuth()
 const menuOpen = ref(false)
 
 // Close menu when clicking outside
