@@ -41,5 +41,16 @@ export const activityController = {
 
     const logs = await activityService.getRecentLogs(limit)
     res.json({ data: logs })
+  },
+
+  /**
+   * Get userlog.json formatted data
+   */
+  async getUserLog(req: Request, res: Response) {
+    const formattedData = activityService.getUserLogFromFile()
+    if (!formattedData) {
+      return res.status(404).json({ error: 'User log file not found' })
+    }
+    res.json(formattedData)
   }
 }

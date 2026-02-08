@@ -5,6 +5,9 @@ import { asyncHandler } from '../utils/asyncHandler.js'
 
 const router = Router()
 
+// Get userlog.json formatted data (public endpoint)
+router.get('/userlog', asyncHandler(activityController.getUserLog))
+
 // All activity log routes require authentication
 router.use(authMiddleware)
 

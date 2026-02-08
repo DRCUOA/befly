@@ -85,8 +85,17 @@ app.use('/api/comments', commentRoutes)
 app.use('/api/activity', activityRoutes)
 
 // Health check
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok' })
+app.get('/api/health', async (req, res) => {
+  const { activityService } = await import('./services/activity.service.js')
+  const userActivity = activityService.getUserLogFromFile()
+  
+  res.json({ 
+    status: 'ok',
+    userActivity: userActivity ? {
+      summary: userActivity.summary,
+      recentActivity: userActivity.recentActivity
+    } : null
+  })
 })
 
 // Config endpoint (public, no auth required)
