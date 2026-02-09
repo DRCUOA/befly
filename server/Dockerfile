@@ -43,9 +43,10 @@ RUN npm ci --omit=dev
 # Copy built files from builder
 COPY --from=builder /app/server/dist ./server/dist
 
-# Create non-root user
+# Create non-root user and log directory
 RUN addgroup -g 1001 -S nodejs && \
-    adduser -S nodejs -u 1001
+    adduser -S nodejs -u 1001 && \
+    mkdir -p /app/server/logs && chown -R nodejs:nodejs /app/server/logs
 
 USER nodejs
 
