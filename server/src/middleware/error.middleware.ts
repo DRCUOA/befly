@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express'
 import { AppError } from '../utils/errors.js'
-import { logger } from '../utils/logger.js'
+import { getOffendingLocation, logger } from '../utils/logger.js'
 
 export function errorMiddleware(
   err: Error | AppError,
@@ -8,10 +8,10 @@ export function errorMiddleware(
   res: Response,
   next: NextFunction
 ) {
-  // Fail loud and early - log all errors with context
+  const at = getOffendingLocation(err)
   logger.error('Error:', {
     message: err.message,
-    stack: err.stack,
+    ...(at && { at }),
     path: req.path,
     method: req.method,
     statusCode: err instanceof AppError ? err.statusCode : 500
@@ -24,8 +24,7 @@ export function errorMiddleware(
     })
   }
 
-  // Unknown error - don't expose internal details
-  logger.error('Unhandled error:', err)
+  logger.error('Unhandled error:', { message: err.message, ...(at && { at }) })
   res.status(500).json({
     error: 'Internal server error'
   })

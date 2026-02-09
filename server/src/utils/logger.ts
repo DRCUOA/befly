@@ -4,6 +4,18 @@
  * Explicit logging for all operations
  */
 
+/**
+ * Extract offending file and line from an Error's stack (no full stack trace).
+ */
+export function getOffendingLocation(err: Error): string | null {
+  if (!err.stack) return null
+  const lines = err.stack.split('\n')
+  const atLine = lines.slice(1).find((l) => l.trim().startsWith('at '))
+  if (!atLine) return null
+  const match = atLine.match(/\(([^)]+):(\d+):(\d+)\)/) || atLine.match(/\s+at\s+(.+):(\d+):(\d+)/)
+  return match ? `${match[1]}:${match[2]}` : atLine.trim()
+}
+
 export const logger = {
   info: (message: string, ...args: unknown[]) => {
     const timestamp = new Date().toISOString()

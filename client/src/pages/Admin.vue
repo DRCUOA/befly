@@ -733,7 +733,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, nextTick, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 // Fix default marker icon in Vite (paths are broken otherwise)
@@ -1016,17 +1016,19 @@ const actionPillClass = (action: string): string => {
 
 // ─── Data loading ───
 
-const loadUsers = async () => {
+const loadUsers = async (silent = false) => {
   try {
-    loading.value = true
-    error.value = null
+    if (!silent) {
+      loading.value = true
+      error.value = null
+    }
     const response = await api.get<UserListResponse>('/admin/users')
     users.value = response.data
     totalUsers.value = response.meta.total
   } catch (err) {
-    error.value = err instanceof Error ? err.message : 'Failed to load users'
+    if (!silent) error.value = err instanceof Error ? err.message : 'Failed to load users'
   } finally {
-    loading.value = false
+    if (!silent) loading.value = false
   }
 }
 
@@ -1286,12 +1288,28 @@ const executeDelete = () => {
 
 // ─── Init ───
 
+const REFRESH_USERS_MS = 45 * 1000 // refresh users (and map pins) every 45s so new logins with location appear
+let refreshUsersInterval: ReturnType<typeof setInterval> | null = null
+
+function onVisibilityChange() {
+  if (document.visibilityState === 'visible') {
+    loadUsers(true) // refetch when admin tab is focused so pins from recent logins appear (silent)
+  }
+}
+
 onMounted(async () => {
   await loadUsers()
   await loadStats()
   await nextTick()
   initMap()
   addMarkers()
+  document.addEventListener('visibilitychange', onVisibilityChange)
+  refreshUsersInterval = setInterval(() => loadUsers(true), REFRESH_USERS_MS) // silent refresh so map pins update
+})
+
+onUnmounted(() => {
+  document.removeEventListener('visibilitychange', onVisibilityChange)
+  if (refreshUsersInterval) clearInterval(refreshUsersInterval)
 })
 
 watch(usersWithLocation, () => {
