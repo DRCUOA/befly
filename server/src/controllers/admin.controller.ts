@@ -110,7 +110,7 @@ export const adminController = {
   async updateUser(req: Request, res: Response) {
     const { id } = req.params
     const adminUserId = (req as any).userId
-    const { role, status, displayName } = req.body
+    const { role, status, displayName, latitude, longitude } = req.body
 
     // Prevent admin from demoting themselves
     if (id === adminUserId && role && role !== 'admin') {
@@ -123,19 +123,28 @@ export const adminController = {
     }
 
     // Validate role if provided
-    if (role && !['user', 'admin'].includes(role)) {
+    if (role !== undefined && !['user', 'admin'].includes(role)) {
       throw new ValidationError('Role must be "user" or "admin"')
     }
 
     // Validate status if provided
-    if (status && !['active', 'inactive', 'suspended'].includes(status)) {
+    if (status !== undefined && !['active', 'inactive', 'suspended'].includes(status)) {
       throw new ValidationError('Status must be "active", "inactive", or "suspended"')
+    }
+
+    if (latitude !== undefined && (typeof latitude !== 'number' || latitude < -90 || latitude > 90)) {
+      throw new ValidationError('Latitude must be a number between -90 and 90')
+    }
+    if (longitude !== undefined && (typeof longitude !== 'number' || longitude < -180 || longitude > 180)) {
+      throw new ValidationError('Longitude must be a number between -180 and 180')
     }
 
     const updates: Record<string, any> = {}
     if (role !== undefined) updates.role = role
     if (status !== undefined) updates.status = status
     if (displayName !== undefined) updates.displayName = displayName
+    if (latitude !== undefined) updates.latitude = latitude
+    if (longitude !== undefined) updates.longitude = longitude
 
     if (Object.keys(updates).length === 0) {
       throw new ValidationError('No updates provided')
@@ -366,8 +375,6 @@ export const adminController = {
    * Includes both authenticated and anonymous activity
    */
   async getStats(req: Request, res: Response) {
-    console.log('[admin/stats] Starting stats query...')
-
     const queries: Record<string, string> = {
       total: 'SELECT COUNT(*) as count FROM user_activity_logs',
 
@@ -415,13 +422,9 @@ export const adminController = {
     const results: Record<string, any> = {}
     for (const [name, sql] of Object.entries(queries)) {
       try {
-        console.log(`[admin/stats] Running query: ${name}`)
         results[name] = await pool.query(sql)
-        console.log(`[admin/stats] ✓ ${name} returned ${results[name].rows.length} rows`)
       } catch (err: any) {
-        console.error(`[admin/stats] ✗ FAILED query "${name}":`, err.message)
-        console.error(`[admin/stats]   SQL: ${sql.substring(0, 120)}...`)
-        throw err // re-throw so the error handler catches it
+        throw err
       }
     }
 
@@ -439,8 +442,6 @@ export const adminController = {
       hour: i,
       count: hourlyMap.get(i) || 0
     }))
-
-    console.log('[admin/stats] All queries succeeded, building response...')
 
     res.json({
       data: {

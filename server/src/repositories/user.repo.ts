@@ -23,7 +23,8 @@ export const userRepo = {
       `SELECT id, email, display_name as "displayName", 
               COALESCE(role, 'user') as role, 
               status, 
-              created_at as "createdAt", updated_at as "updatedAt"
+              created_at as "createdAt", updated_at as "updatedAt",
+              latitude, longitude
        FROM users
        WHERE id = $1 AND status = 'active'`,
       [id]
@@ -102,7 +103,8 @@ export const userRepo = {
       `SELECT id, email, display_name as "displayName", 
               COALESCE(role, 'user') as role, 
               status, 
-              created_at as "createdAt", updated_at as "updatedAt"
+              created_at as "createdAt", updated_at as "updatedAt",
+              latitude, longitude
        FROM users
        ORDER BY created_at DESC
        LIMIT $1 OFFSET $2`,
@@ -135,6 +137,8 @@ export const userRepo = {
     passwordHash: string
     status: string
     role: 'user' | 'admin'
+    latitude: number
+    longitude: number
   }>): Promise<User> {
     const fields: string[] = []
     const values: unknown[] = []
@@ -156,6 +160,14 @@ export const userRepo = {
       fields.push(`role = $${paramCount++}`)
       values.push(updates.role)
     }
+    if (updates.latitude !== undefined) {
+      fields.push(`latitude = $${paramCount++}`)
+      values.push(updates.latitude)
+    }
+    if (updates.longitude !== undefined) {
+      fields.push(`longitude = $${paramCount++}`)
+      values.push(updates.longitude)
+    }
 
     if (fields.length === 0) {
       const user = await this.findById(id)
@@ -171,7 +183,7 @@ export const userRepo = {
        SET ${fields.join(', ')}
        WHERE id = $${paramCount}
        RETURNING id, email, display_name as "displayName", COALESCE(role, 'user') as role, status, 
-                 created_at as "createdAt", updated_at as "updatedAt"`,
+                 created_at as "createdAt", updated_at as "updatedAt", latitude, longitude`,
       values
     )
     return result.rows[0]

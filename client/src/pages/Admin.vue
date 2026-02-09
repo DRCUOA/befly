@@ -38,6 +38,18 @@
           </div>
         </div>
 
+        <!-- User locations map (global outline + pins) -->
+        <div class="mb-8">
+          <h2 class="text-lg font-semibold text-ink mb-3">User locations</h2>
+          <div ref="mapContainer" class="h-96 w-full rounded-lg border border-gray-200 overflow-hidden bg-gray-50" />
+          <p v-if="!loading && usersWithLocation.length === 0" class="text-sm text-ink-lighter mt-2">
+            No user locations set. Set latitude and longitude in a user's panel below to show pins on the map.
+          </p>
+          <p v-else-if="!loading && usersWithLocation.length > 0" class="text-sm text-ink-lighter mt-2">
+            {{ usersWithLocation.length }} user{{ usersWithLocation.length === 1 ? '' : 's' }} with location
+          </p>
+        </div>
+
         <!-- Loading State -->
         <div v-if="loading" class="text-center py-16">
           <p class="text-lg font-light text-ink-light">Loading users...</p>
@@ -154,6 +166,42 @@
               </div>
 
               <div v-else-if="userContent" class="p-4 space-y-6">
+                <!-- ── Map location (for expanded user u) ── -->
+                <div v-if="expandedUserId === u.id" class="flex flex-wrap items-end gap-3 p-3 bg-gray-50 rounded-lg">
+                  <h3 class="text-sm font-semibold uppercase tracking-wider text-ink-lighter w-full">Map location</h3>
+                  <div class="flex items-center gap-2">
+                    <label class="text-xs text-ink-lighter">Lat</label>
+                    <input
+                      v-model="locationForm.lat"
+                      type="number"
+                      step="any"
+                      min="-90"
+                      max="90"
+                      placeholder="e.g. 37.77"
+                      class="w-24 text-sm border border-gray-200 rounded px-2 py-1"
+                    />
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <label class="text-xs text-ink-lighter">Lng</label>
+                    <input
+                      v-model="locationForm.lng"
+                      type="number"
+                      step="any"
+                      min="-180"
+                      max="180"
+                      placeholder="e.g. -122.42"
+                      class="w-24 text-sm border border-gray-200 rounded px-2 py-1"
+                    />
+                  </div>
+                  <button
+                    @click="setUserLocation(u)"
+                    :disabled="actionInProgress === u.id || locationForm.lat === '' || locationForm.lng === ''"
+                    class="px-3 py-1.5 text-xs rounded border border-blue-300 text-blue-700 hover:bg-blue-50 disabled:opacity-50"
+                  >
+                    Set location
+                  </button>
+                </div>
+
                 <!-- ── Writings ── -->
                 <div>
                   <h3 class="text-sm font-semibold uppercase tracking-wider text-ink-lighter mb-3">
@@ -685,7 +733,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, nextTick, watch } from 'vue'
+import L from 'leaflet'
+import 'leaflet/dist/leaflet.css'
+// Fix default marker icon in Vite (paths are broken otherwise)
+import markerIconUrl from 'leaflet/dist/images/marker-icon.png'
+import markerIconRetinaUrl from 'leaflet/dist/images/marker-icon-2x.png'
+import markerShadowUrl from 'leaflet/dist/images/marker-shadow.png'
+L.Icon.Default.mergeOptions({ iconUrl: markerIconUrl, iconRetinaUrl: markerIconRetinaUrl, shadowUrl: markerShadowUrl })
 import { api } from '../api/client'
 import { useAuth } from '../stores/auth'
 import type { User } from '../domain/User'
@@ -795,11 +850,22 @@ const stats = ref<UsageStats | null>(null)
 const statsLoading = ref(true)
 const statsError = ref<string | null>(null)
 
+// Map state
+const mapContainer = ref<HTMLElement | null>(null)
+let mapInstance: L.Map | null = null
+let markerLayer: L.LayerGroup | null = null
+const locationForm = ref({ lat: '', lng: '' })
+
 // ─── Computed ───
 
 const adminCount = computed(() => users.value.filter(u => u.role === 'admin').length)
 const activeCount = computed(() => users.value.filter(u => u.status === 'active').length)
 const suspendedCount = computed(() => users.value.filter(u => u.status === 'suspended').length)
+const usersWithLocation = computed(() =>
+  users.value.filter(
+    (u) => typeof u.latitude === 'number' && typeof u.longitude === 'number'
+  )
+)
 
 // Analytics computed
 const maxTypeCount = computed(() => stats.value ? Math.max(...stats.value.byType.map(t => t.count), 1) : 1)
@@ -997,7 +1063,65 @@ const toggleExpand = (userId: string) => {
   } else {
     expandedUserId.value = userId
     userContent.value = null
+    const u = users.value.find((us) => us.id === userId)
+    if (u) {
+      locationForm.value = {
+        lat: u.latitude != null ? String(u.latitude) : '',
+        lng: u.longitude != null ? String(u.longitude) : ''
+      }
+    }
     loadUserContent(userId)
+  }
+}
+
+function initMap() {
+  if (!mapContainer.value || mapInstance) return
+  mapInstance = L.map(mapContainer.value).setView([20, 0], 2)
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors'
+  }).addTo(mapInstance)
+  markerLayer = L.layerGroup().addTo(mapInstance)
+}
+
+function addMarkers() {
+  if (!markerLayer || !mapInstance) return
+  markerLayer.clearLayers()
+  for (const u of usersWithLocation.value) {
+    const lat = Number(u.latitude)
+    const lng = Number(u.longitude)
+    if (Number.isFinite(lat) && Number.isFinite(lng)) {
+      const marker = L.marker([lat, lng]).addTo(markerLayer!)
+      marker.bindPopup(`<strong>${escapeHtml(u.displayName || u.email)}</strong>`)
+    }
+  }
+}
+
+function escapeHtml(text: string): string {
+  const div = document.createElement('div')
+  div.textContent = text
+  return div.innerHTML
+}
+
+const setUserLocation = async (u: User) => {
+  const lat = Number(locationForm.value.lat)
+  const lng = Number(locationForm.value.lng)
+  if (!Number.isFinite(lat) || lat < -90 || lat > 90 || !Number.isFinite(lng) || lng < -180 || lng > 180) {
+    showFeedback('Invalid latitude or longitude', 'error')
+    return
+  }
+  try {
+    actionInProgress.value = u.id
+    await api.put(`/admin/users/${u.id}`, { latitude: lat, longitude: lng })
+    const idx = users.value.findIndex((us) => us.id === u.id)
+    if (idx >= 0) {
+      users.value[idx] = { ...users.value[idx], latitude: lat, longitude: lng }
+    }
+    addMarkers()
+    showFeedback('Location updated')
+  } catch (err) {
+    showFeedback(err instanceof Error ? err.message : 'Failed to update location', 'error')
+  } finally {
+    actionInProgress.value = null
   }
 }
 
@@ -1162,10 +1286,17 @@ const executeDelete = () => {
 
 // ─── Init ───
 
-onMounted(() => {
-  loadUsers()
-  loadStats()
+onMounted(async () => {
+  await loadUsers()
+  await loadStats()
+  await nextTick()
+  initMap()
+  addMarkers()
 })
+
+watch(usersWithLocation, () => {
+  addMarkers()
+}, { deep: true })
 </script>
 
 <style scoped>

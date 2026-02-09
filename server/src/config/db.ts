@@ -30,11 +30,8 @@ function buildPoolConfig(): pg.PoolConfig {
 
 function getPool(): pg.Pool {
   if (!_pool) {
-    console.log('[DB] Initialising connection pool')
-
     const poolConfig = buildPoolConfig()
     _pool = new Pool(poolConfig)
-    console.log(`[DB] SSL ${config.nodeEnv === 'production' ? 'enabled' : 'disabled'} (${config.nodeEnv})`)
   }
   return _pool
 }
@@ -52,8 +49,7 @@ export const pool = {
 
 export async function initDb() {
   try {
-    const result = await pool.query('SELECT NOW()')
-    console.log('Database connected:', result.rows[0].now)
+    await pool.query('SELECT NOW()')
   } catch (error) {
     console.error('Database connection error:', error)
     throw error
@@ -65,7 +61,6 @@ export async function closeDb() {
     try {
       await _pool.end()
       _pool = null
-      console.log('Database pool closed')
     } catch (error) {
       console.error('Error closing database pool:', error)
       throw error
