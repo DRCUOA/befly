@@ -40,37 +40,21 @@ process.on('unhandledRejection', (reason, promise) => {
 
 // Graceful shutdown handler
 async function gracefulShutdown(signal: string) {
-  console.log(`\nReceived ${signal}. Starting graceful shutdown...`)
-  
-  // Close HTTP server
   if (server) {
     return new Promise<void>((resolve) => {
-      server!.close(() => {
-        console.log('HTTP server closed')
-        resolve()
-      })
-      
-      // Force close after 10 seconds
-      setTimeout(() => {
-        console.log('Forcing server close after timeout')
-        resolve()
-      }, 10000)
+      server!.close(() => resolve())
+      setTimeout(() => resolve(), 10000)
     }).then(async () => {
-      // Close database connections
       try {
         await closeDb()
-        console.log('Database connections closed')
       } catch (error) {
         console.error('Error closing database:', error)
       }
-      
       process.exit(0)
     })
   } else {
-    // No server to close, just close DB and exit
     try {
       await closeDb()
-      console.log('Database connections closed')
     } catch (error) {
       console.error('Error closing database:', error)
     }

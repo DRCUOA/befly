@@ -5,6 +5,16 @@ All notable changes to the Rambulations writing platform are documented in this 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2026-02-10
+
+### Added
+- Admin user locations map: global Leaflet/OpenStreetMap view with pins for users who have coordinates set
+- Optional `latitude` and `longitude` on users (migration 011); admin can set location per user in the expanded panel
+- `PUT /api/admin/users/:id` accepts `latitude` and `longitude` for location updates
+
+### Changed
+- Removed debug console logging: admin stats queries, DB pool init/connect/close, graceful shutdown messages, client CSRF and config load warnings
+
 ## [0.2.0] - 2026-02-09
 
 ### Added
@@ -83,6 +93,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Database migrations (001-008): users, writing_blocks, themes, appreciations, auth/visibility, roles, reaction types, comments
 - Development setup documentation and quick-start guide
 
+[0.3.0]: https://github.com/DRCUOA/befly/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/DRCUOA/befly/compare/v0.1.2...v0.2.0
 [0.1.2]: https://github.com/DRCUOA/befly/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/DRCUOA/befly/compare/v0.1.0...v0.1.1

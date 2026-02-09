@@ -6,6 +6,9 @@ export interface User {
   status: 'active' | 'inactive' | 'suspended'
   createdAt: string
   updatedAt: string
+  /** Optional: used for admin map pins */
+  latitude?: number
+  longitude?: number
 }
 
 export interface UserWithPassword extends User {

@@ -19,8 +19,7 @@ export async function loadAppConfig(): Promise<void> {
     const response = await api.get<ApiResponse<ConfigResponse>>('/config')
     appName.value = response.data.appName
     configLoaded = true
-  } catch (err) {
-    console.warn('Failed to load app config from server, using default:', err)
+  } catch {
     // Keep default value
   }
 }
