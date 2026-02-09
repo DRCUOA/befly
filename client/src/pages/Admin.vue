@@ -58,7 +58,7 @@
         <!-- Error State -->
         <div v-else-if="error" class="bg-red-50 border border-red-200 rounded-md p-6 mb-6">
           <p class="text-red-800">{{ error }}</p>
-          <button @click="loadUsers" class="mt-3 text-sm text-red-600 hover:text-red-800 underline">
+          <button @click="() => loadUsers()" class="mt-3 text-sm text-red-600 hover:text-red-800 underline">
             Try again
           </button>
         </div>
