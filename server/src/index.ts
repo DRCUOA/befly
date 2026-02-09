@@ -5,19 +5,22 @@ import './config/env-loader.js'
 
 import app from './app.js'
 import { initDb, closeDb } from './config/db.js'
+import { getOffendingLocation } from './utils/logger.js'
 import type { Server } from 'http'
 
 const PORT = Number(process.env.PORT) || 3005
 let server: Server | null = null
 
+function formatErrorForLog(err: Error): string {
+  const at = getOffendingLocation(err)
+  return at ? `${err.message} at ${at}` : err.message
+}
+
 // Handle uncaught exceptions
 process.on('uncaughtException', (error) => {
   process.stdout.write(`\n[FATAL] Uncaught exception:\n`)
   process.stdout.write(`==========================================\n`)
-  process.stdout.write(`${error.message}\n`)
-  if (error.stack) {
-    process.stdout.write(`\nStack trace:\n${error.stack}\n`)
-  }
+  process.stdout.write(`${error instanceof Error ? formatErrorForLog(error) : String(error)}\n`)
   process.stdout.write(`==========================================\n\n`)
   gracefulShutdown('uncaughtException')
 })
@@ -27,10 +30,7 @@ process.on('unhandledRejection', (reason, promise) => {
   process.stdout.write(`\n[FATAL] Unhandled promise rejection:\n`)
   process.stdout.write(`==========================================\n`)
   if (reason instanceof Error) {
-    process.stdout.write(`${reason.message}\n`)
-    if (reason.stack) {
-      process.stdout.write(`\nStack trace:\n${reason.stack}\n`)
-    }
+    process.stdout.write(`${formatErrorForLog(reason)}\n`)
   } else {
     process.stdout.write(`${String(reason)}\n`)
   }
@@ -48,7 +48,9 @@ async function gracefulShutdown(signal: string) {
       try {
         await closeDb()
       } catch (error) {
-        console.error('Error closing database:', error)
+        const at = error instanceof Error ? getOffendingLocation(error) : null
+        const msg = error instanceof Error ? `${error.message}${at ? ` at ${at}` : ''}` : String(error)
+        console.error('Error closing database:', msg)
       }
       process.exit(0)
     })
@@ -56,7 +58,9 @@ async function gracefulShutdown(signal: string) {
     try {
       await closeDb()
     } catch (error) {
-      console.error('Error closing database:', error)
+      const at = error instanceof Error ? getOffendingLocation(error) : null
+      const msg = error instanceof Error ? `${error.message}${at ? ` at ${at}` : ''}` : String(error)
+      console.error('Error closing database:', msg)
     }
     process.exit(0)
   }
@@ -75,21 +79,16 @@ async function start() {
   } catch (error) {
     process.stdout.write(`\n[FATAL] Failed to start server:\n`)
     process.stdout.write(`==========================================\n`)
-    if (error instanceof Error) {
-      process.stdout.write(`${error.message}\n`)
-      if (error.stack) {
-        process.stdout.write(`\nStack trace:\n${error.stack}\n`)
-      }
-    } else {
-      process.stdout.write(`${String(error)}\n`)
-    }
+    process.stdout.write(`${error instanceof Error ? formatErrorForLog(error) : String(error)}\n`)
     process.stdout.write(`==========================================\n\n`)
     
     // Clean up on startup failure
     try {
       await closeDb()
     } catch (dbError) {
-      console.error('Error closing database on startup failure:', dbError)
+      const at = dbError instanceof Error ? getOffendingLocation(dbError) : null
+      const msg = dbError instanceof Error ? `${dbError.message}${at ? ` at ${at}` : ''}` : String(dbError)
+      console.error('Error closing database on startup failure:', msg)
     }
     
     process.exit(1)

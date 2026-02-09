@@ -1,5 +1,6 @@
 import pg from 'pg'
 import { config } from './env.js'
+import { getOffendingLocation } from '../utils/logger.js'
 
 const { Pool } = pg
 
@@ -51,7 +52,9 @@ export async function initDb() {
   try {
     await pool.query('SELECT NOW()')
   } catch (error) {
-    console.error('Database connection error:', error)
+    const at = error instanceof Error ? getOffendingLocation(error) : null
+    const msg = error instanceof Error ? `${error.message}${at ? ` at ${at}` : ''}` : String(error)
+    console.error('Database connection error:', msg)
     throw error
   }
 }
@@ -62,7 +65,9 @@ export async function closeDb() {
       await _pool.end()
       _pool = null
     } catch (error) {
-      console.error('Error closing database pool:', error)
+      const at = error instanceof Error ? getOffendingLocation(error) : null
+      const msg = error instanceof Error ? `${error.message}${at ? ` at ${at}` : ''}` : String(error)
+      console.error('Error closing database pool:', msg)
       throw error
     }
   }

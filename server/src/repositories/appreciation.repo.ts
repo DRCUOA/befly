@@ -1,7 +1,7 @@
 import { pool } from '../config/db.js'
 import { Appreciation } from '../models/Appreciation.js'
 import { NotFoundError, ValidationError } from '../utils/errors.js'
-import { logger } from '../utils/logger.js'
+import { getOffendingLocation, logger } from '../utils/logger.js'
 
 /**
  * Appreciation repository - thin DAO layer
@@ -93,7 +93,8 @@ export const appreciationRepo = {
         hasReactionType = false
         logger.debug('reaction_type column does not exist, using default "like"')
       } else {
-        logger.error('Error checking for reaction_type column:', error)
+        const at = getOffendingLocation(error)
+        logger.error('Error checking for reaction_type column:', { message: error.message, ...(at && { at }) })
         throw error
       }
     }
@@ -227,8 +228,10 @@ export const appreciationRepo = {
         reactionType: result.rows[0]?.reactionType || 'like'
       })
     } catch (error: any) {
+      const at = getOffendingLocation(error)
       logger.error('Error inserting appreciation:', {
-        error: error.message,
+        message: error.message,
+        ...(at && { at }),
         code: error.code,
         writingId: appreciation.writingId,
         userId: appreciation.userId,

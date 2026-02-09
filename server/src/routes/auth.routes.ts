@@ -24,5 +24,6 @@ router.post('/login', authRateLimit, validateBody(['email', 'password']), asyncH
 router.post('/logout', asyncHandler(authController.logout))
 router.get('/me', authMiddleware, asyncHandler(authController.getMe))
 router.put('/me', authMiddleware, asyncHandler(authController.updateProfile))
+router.patch('/me/location', authMiddleware, asyncHandler(authController.refreshLocation))
 
 export default router

@@ -5,7 +5,7 @@
 
 import { activityRepo } from '../repositories/activity.repo.js'
 import type { ActivityType, ResourceType, CreateActivityLogParams } from '../models/ActivityLog.js'
-import { logger } from '../utils/logger.js'
+import { getOffendingLocation, logger } from '../utils/logger.js'
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
@@ -18,8 +18,8 @@ export const activityService = {
     try {
       await activityRepo.create(params)
     } catch (error) {
-      // Log error but don't fail the request
-      logger.error('Failed to log activity:', error)
+      const at = error instanceof Error ? getOffendingLocation(error) : null
+      logger.error('Failed to log activity:', { message: error instanceof Error ? error.message : String(error), ...(at && { at }) })
     }
   },
 
@@ -275,7 +275,8 @@ export const activityService = {
         allActivities: formattedLogs
       }
     } catch (error) {
-      logger.error('Failed to read userlog.json:', error)
+      const at = error instanceof Error ? getOffendingLocation(error) : null
+      logger.error('Failed to read userlog.json:', { message: error instanceof Error ? error.message : String(error), ...(at && { at }) })
       return null
     }
   }

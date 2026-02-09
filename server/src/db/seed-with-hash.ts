@@ -1,6 +1,7 @@
 import bcrypt from 'bcrypt'
 import pg from 'pg'
 import { config } from '../config/env.js'
+import { getOffendingLocation } from '../utils/logger.js'
 
 const { Pool } = pg
 
@@ -82,7 +83,9 @@ async function seed() {
 
     console.log('Seed data inserted successfully!')
   } catch (error) {
-    console.error('Error seeding database:', error)
+    const at = error instanceof Error ? getOffendingLocation(error) : null
+    const msg = error instanceof Error ? `${error.message}${at ? ` at ${at}` : ''}` : String(error)
+    console.error('Error seeding database:', msg)
     process.exit(1)
   } finally {
     await pool.end()

@@ -32,6 +32,15 @@ function loadEnv() {
   }
 }
 
+function getOffendingLocationFromStack(stack: string | undefined): string | null {
+  if (!stack) return null
+  const lines = stack.split('\n')
+  const atLine = lines.slice(1).find((l) => l.trim().startsWith('at '))
+  if (!atLine) return null
+  const match = atLine.match(/\(([^)]+):(\d+):(\d+)\)/) || atLine.match(/\s+at\s+(.+):(\d+):(\d+)/)
+  return match ? `${match[1]}:${match[2]}` : atLine.trim()
+}
+
 try {
   loadEnv()
 } catch (error) {
@@ -39,13 +48,12 @@ try {
     ? error
     : new Error(`Unknown error loading environment: ${String(error)}`)
 
+  const cause = envError.cause instanceof Error ? envError.cause : null
+  const at = getOffendingLocationFromStack(cause?.stack ?? envError.stack)
+
   process.stdout.write(`\n[FATAL] Environment configuration failed\n`)
   process.stdout.write(`------------------------------------------\n`)
-  if (envError.cause instanceof Error && envError.cause.stack) {
-    process.stdout.write(`\nCaused by:\n\n${envError.cause.stack}\n`)
-  } else if (envError.stack) {
-    process.stdout.write(`${envError.stack}\n`)
-  }
+  process.stdout.write(`${envError.message}${at ? ` at ${at}` : ''}\n`)
   process.stdout.write(`\n----------------------------------------\n\n`)
   process.exit(1)
 }
