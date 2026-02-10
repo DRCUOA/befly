@@ -1,0 +1,43 @@
+{
+  "meta": {
+    "cohort": "c26",
+    "repo": "befly"
+  },
+  "summary": "Audit existing editor stack and integration surface",
+  "problem_statement": "Editor-level auto-correction must integrate safely within the existing editor, Vue lifecycle, and persistence flows without disrupting cursor position, undo history, or long-form performance. Without a precise audit of the current stack, configuration, and data flow, subsequent implementation risks introducing subtle trust-breaking bugs or architectural misalignment.",
+  "in_scope": [
+    "Identify current editor technology and versions",
+    "Document editor extensions, plugins, and schema",
+    "Map text input, key handling, and paste interception points",
+    "Document undo/redo and history configuration",
+    "Trace autosave and persistence flows end-to-end",
+    "Assess performance characteristics for long-form documents"
+  ],
+  "out_of_scope": [
+    "Implementing auto-correction logic",
+    "Adding or modifying editor extensions",
+    "Changing editor UX or behavior",
+    "Introducing grammar or spell tooling",
+    "Refactoring unrelated frontend or backend code"
+  ],
+  "requirements": [
+    "Editor stack and versions are identified and recorded",
+    "All active editor extensions and plugins are enumerated",
+    "Safe interception points for future auto-correction are identified"
+  ],
+  "acceptance_criteria": [
+    "An audit document exists describing the current editor stack and constraints",
+    "Known risks and unknowns are explicitly listed",
+    "No production code behavior has changed"
+  ],
+  "dependencies": [
+    "Access to frontend repository",
+    "Ability to run the editor locally with representative long-form content"
+  ],
+  "risks": [
+    "Hidden editor plugins mutating content unexpectedly",
+    "Existing undo history misconfiguration",
+    "Performance bottlenecks exposed by long documents"
+  ],
+  "implementation_notes": "This is an investigative task only. Bias toward documentation over refactoring. Prefer concrete observations and diagrams over speculative fixes."
+}
