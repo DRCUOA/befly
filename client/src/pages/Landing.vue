@@ -43,7 +43,7 @@
       </div>
       
       <div id="corner-mark" class="absolute top-4 left-4 sm:top-6 sm:left-6 md:top-8 md:left-8">
-        <span class="text-xs tracking-widest uppercase font-sans text-ink-lighter">2025</span>
+        <span class="text-xs tracking-widest uppercase font-sans text-ink-lighter">2026</span>
       </div>
     </div>
 

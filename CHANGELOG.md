@@ -5,6 +5,11 @@ All notable changes to the Rambulations writing platform are documented in this 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.1] - 2026-02-10
+
+### Changed
+- Landing page corner year 2025 → 2026
+
 ## [0.3.0] - 2026-02-10
 
 ### Added
