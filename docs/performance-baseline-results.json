@@ -1,0 +1,363 @@
+{
+  "timestamp": "2026-02-10T22:08:19.258Z",
+  "testEnvironment": {
+    "nodeVersion": "v24.13.0",
+    "platform": "linux",
+    "arch": "x64"
+  },
+  "documentSizeTests": [
+    {
+      "name": "Tiny",
+      "targetBytes": 100,
+      "characteristics": {
+        "characterCount": 99,
+        "wordCount": 15,
+        "lineCount": 1,
+        "sizeBytes": 99,
+        "sizeKB": "0.10",
+        "sizeMB": "0.00",
+        "averageWordLength": "6.60",
+        "averageLineLength": "99.00"
+      },
+      "estimatedMemoryUsage": {
+        "textBytes": 99,
+        "vueReactivityOverhead": 50,
+        "domSize": 198,
+        "totalEstimated": 347,
+        "totalKB": "0.34"
+      },
+      "networkConstraints": {
+        "uncompressedSize": 99,
+        "estimatedCompressedSize": 30,
+        "compressionRatio": "30%",
+        "uploadTimes": {
+          "fast": {
+            "raw": "0ms",
+            "compressed": "0ms"
+          },
+          "medium": {
+            "raw": "0ms",
+            "compressed": "0ms"
+          },
+          "slow": {
+            "raw": "1ms",
+            "compressed": "0ms"
+          },
+          "mobile": {
+            "raw": "2ms",
+            "compressed": "0ms"
+          }
+        }
+      },
+      "performanceExpectation": "EXCELLENT - No lag expected"
+    },
+    {
+      "name": "Small",
+      "targetBytes": 1024,
+      "characteristics": {
+        "characterCount": 1023,
+        "wordCount": 159,
+        "lineCount": 1,
+        "sizeBytes": 1023,
+        "sizeKB": "1.00",
+        "sizeMB": "0.00",
+        "averageWordLength": "6.43",
+        "averageLineLength": "1023.00"
+      },
+      "estimatedMemoryUsage": {
+        "textBytes": 1023,
+        "vueReactivityOverhead": 512,
+        "domSize": 2046,
+        "totalEstimated": 3581,
+        "totalKB": "3.50"
+      },
+      "networkConstraints": {
+        "uncompressedSize": 1023,
+        "estimatedCompressedSize": 307,
+        "compressionRatio": "30%",
+        "uploadTimes": {
+          "fast": {
+            "raw": "1ms",
+            "compressed": "0ms"
+          },
+          "medium": {
+            "raw": "2ms",
+            "compressed": "0ms"
+          },
+          "slow": {
+            "raw": "8ms",
+            "compressed": "2ms"
+          },
+          "mobile": {
+            "raw": "16ms",
+            "compressed": "5ms"
+          }
+        }
+      },
+      "performanceExpectation": "EXCELLENT - No lag expected"
+    },
+    {
+      "name": "Medium",
+      "targetBytes": 10240,
+      "characteristics": {
+        "characterCount": 10236,
+        "wordCount": 1583,
+        "lineCount": 1,
+        "sizeBytes": 10236,
+        "sizeKB": "10.00",
+        "sizeMB": "0.01",
+        "averageWordLength": "6.47",
+        "averageLineLength": "10236.00"
+      },
+      "estimatedMemoryUsage": {
+        "textBytes": 10236,
+        "vueReactivityOverhead": 5118,
+        "domSize": 20472,
+        "totalEstimated": 35826,
+        "totalKB": "34.99"
+      },
+      "networkConstraints": {
+        "uncompressedSize": 10236,
+        "estimatedCompressedSize": 3071,
+        "compressionRatio": "30%",
+        "uploadTimes": {
+          "fast": {
+            "raw": "8ms",
+            "compressed": "2ms"
+          },
+          "medium": {
+            "raw": "16ms",
+            "compressed": "5ms"
+          },
+          "slow": {
+            "raw": "82ms",
+            "compressed": "25ms"
+          },
+          "mobile": {
+            "raw": "164ms",
+            "compressed": "49ms"
+          }
+        }
+      },
+      "performanceExpectation": "GOOD - Minimal lag possible"
+    },
+    {
+      "name": "Large",
+      "targetBytes": 102400,
+      "characteristics": {
+        "characterCount": 102390,
+        "wordCount": 15842,
+        "lineCount": 1,
+        "sizeBytes": 102390,
+        "sizeKB": "99.99",
+        "sizeMB": "0.10",
+        "averageWordLength": "6.46",
+        "averageLineLength": "102390.00"
+      },
+      "estimatedMemoryUsage": {
+        "textBytes": 102390,
+        "vueReactivityOverhead": 51195,
+        "domSize": 204780,
+        "totalEstimated": 358365,
+        "totalKB": "349.97"
+      },
+      "networkConstraints": {
+        "uncompressedSize": 102390,
+        "estimatedCompressedSize": 30717,
+        "compressionRatio": "30%",
+        "uploadTimes": {
+          "fast": {
+            "raw": "82ms",
+            "compressed": "25ms"
+          },
+          "medium": {
+            "raw": "164ms",
+            "compressed": "49ms"
+          },
+          "slow": {
+            "raw": "819ms",
+            "compressed": "246ms"
+          },
+          "mobile": {
+            "raw": "1638ms",
+            "compressed": "491ms"
+          }
+        }
+      },
+      "performanceExpectation": "ACCEPTABLE - Some lag on slower devices"
+    },
+    {
+      "name": "X-Large",
+      "targetBytes": 512000,
+      "characteristics": {
+        "characterCount": 511998,
+        "wordCount": 79211,
+        "lineCount": 1,
+        "sizeBytes": 511998,
+        "sizeKB": "500.00",
+        "sizeMB": "0.49",
+        "averageWordLength": "6.46",
+        "averageLineLength": "511998.00"
+      },
+      "estimatedMemoryUsage": {
+        "textBytes": 511998,
+        "vueReactivityOverhead": 255999,
+        "domSize": 1023996,
+        "totalEstimated": 1791993,
+        "totalKB": "1749.99"
+      },
+      "networkConstraints": {
+        "uncompressedSize": 511998,
+        "estimatedCompressedSize": 153599,
+        "compressionRatio": "30%",
+        "uploadTimes": {
+          "fast": {
+            "raw": "410ms",
+            "compressed": "123ms"
+          },
+          "medium": {
+            "raw": "819ms",
+            "compressed": "246ms"
+          },
+          "slow": {
+            "raw": "4096ms",
+            "compressed": "1229ms"
+          },
+          "mobile": {
+            "raw": "8192ms",
+            "compressed": "2458ms"
+          }
+        }
+      },
+      "performanceExpectation": "DEGRADED - Noticeable lag likely"
+    },
+    {
+      "name": "XX-Large",
+      "targetBytes": 1048576,
+      "characteristics": {
+        "characterCount": 1048573,
+        "wordCount": 162224,
+        "lineCount": 1,
+        "sizeBytes": 1048573,
+        "sizeKB": "1024.00",
+        "sizeMB": "1.00",
+        "averageWordLength": "6.46",
+        "averageLineLength": "1048573.00"
+      },
+      "estimatedMemoryUsage": {
+        "textBytes": 1048573,
+        "vueReactivityOverhead": 524287,
+        "domSize": 2097146,
+        "totalEstimated": 3670006,
+        "totalKB": "3583.99"
+      },
+      "networkConstraints": {
+        "uncompressedSize": 1048573,
+        "estimatedCompressedSize": 314572,
+        "compressionRatio": "30%",
+        "uploadTimes": {
+          "fast": {
+            "raw": "839ms",
+            "compressed": "252ms"
+          },
+          "medium": {
+            "raw": "1678ms",
+            "compressed": "503ms"
+          },
+          "slow": {
+            "raw": "8389ms",
+            "compressed": "2517ms"
+          },
+          "mobile": {
+            "raw": "16777ms",
+            "compressed": "5033ms"
+          }
+        }
+      },
+      "performanceExpectation": "POOR - Significant performance issues expected"
+    }
+  ],
+  "databaseConstraints": {
+    "fieldType": "TEXT",
+    "theoreticalMaxSize": "1 GB (PostgreSQL TEXT limit)",
+    "practicalMaxSize": "10-100 MB (recommended for performance)",
+    "titleConstraint": "VARCHAR(500)",
+    "concerns": [
+      "No explicit size limit enforced in application layer",
+      "Very large documents may cause memory issues during save/load",
+      "Database backup and replication may be impacted by large BLOBs",
+      "API response times will degrade with large payloads"
+    ]
+  },
+  "dataLossRisks": {
+    "noAutosave": {
+      "risk": "HIGH",
+      "scenarios": [
+        "Browser crash loses all unsaved work",
+        "Accidental tab close loses work",
+        "System crash or power loss",
+        "Network error during save (partial loss)",
+        "User navigates away without saving"
+      ],
+      "impact": "Complete loss of work since last manual save"
+    },
+    "noDraftPersistence": {
+      "risk": "HIGH",
+      "scenarios": [
+        "No recovery after browser crash",
+        "No ability to restore previous versions",
+        "Session timeout loses work"
+      ],
+      "impact": "No recovery mechanism available"
+    },
+    "browserStorage": {
+      "risk": "MEDIUM",
+      "scenarios": [
+        "localStorage could be used but is not implemented",
+        "sessionStorage would lose data on tab close"
+      ],
+      "mitigation": "localStorage autosave every 30-60 seconds recommended"
+    },
+    "networkFailures": {
+      "risk": "MEDIUM",
+      "scenarios": [
+        "Save fails silently with poor error handling",
+        "Optimistic updates without confirmation",
+        "Retry logic not visible to user"
+      ],
+      "impact": "User may believe work is saved when it is not"
+    }
+  },
+  "recommendations": [
+    {
+      "priority": "CRITICAL",
+      "item": "Implement localStorage-based autosave (every 30-60 seconds)",
+      "reason": "Prevent complete data loss on browser crash or accidental navigation"
+    },
+    {
+      "priority": "HIGH",
+      "item": "Add draft persistence with recovery mechanism",
+      "reason": "Allow users to recover work after unexpected interruptions"
+    },
+    {
+      "priority": "HIGH",
+      "item": "Implement \"unsaved changes\" warning on navigation",
+      "reason": "Prevent accidental data loss from leaving page"
+    },
+    {
+      "priority": "MEDIUM",
+      "item": "Add soft size limit warning at 100KB",
+      "reason": "Warn users before performance degradation occurs"
+    },
+    {
+      "priority": "MEDIUM",
+      "item": "Improve save confirmation feedback",
+      "reason": "Ensure users know their work is successfully saved"
+    },
+    {
+      "priority": "LOW",
+      "item": "Consider debouncing/throttling for very large documents",
+      "reason": "Reduce reactivity overhead for documents >100KB"
+    }
+  ]
+}
