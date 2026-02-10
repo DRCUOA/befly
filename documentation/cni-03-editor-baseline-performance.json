@@ -1,0 +1,40 @@
+{
+  "meta": {
+    "cohort": "c26",
+    "repo": "befly"
+  },
+  "summary": "Establish performance and safety baseline for long-form editor input",
+  "problem_statement": "Before introducing any auto-correction or editor mutation, the current editor’s performance, undo behavior, and data safety characteristics for long-form writing are unknown. Without a baseline, it is impossible to evaluate regressions or determine safe intervention thresholds.",
+  "in_scope": [
+    "Measure typing latency for small, medium, and large documents",
+    "Observe browser undo/redo behavior under programmatic text changes",
+    "Identify document size limits and database constraints",
+    "Assess risk of data loss due to lack of autosave or draft persistence"
+  ],
+  "out_of_scope": [
+    "Optimizing editor performance",
+    "Adding autosave or draft recovery",
+    "Implementing auto-correction logic",
+    "Changing editor UX or architecture"
+  ],
+  "requirements": [
+    "Baseline typing latency measurements are recorded",
+    "Undo/redo behavior under mutation is documented",
+    "Document size thresholds and risks are identified"
+  ],
+  "acceptance_criteria": [
+    "A baseline report exists and is linked from the issue",
+    "Known performance and safety risks are explicitly listed",
+    "No editor behavior has been modified"
+  ],
+  "dependencies": [
+    "Ability to run the editor locally",
+    "Representative long-form writing samples"
+  ],
+  "risks": [
+    "Hidden performance degradation at large document sizes",
+    "Undo stack corruption when text is mutated",
+    "Silent data loss due to missing draft persistence"
+  ],
+  "implementation_notes": "This is an observational and measurement task only. Do not introduce fixes or mitigations. The goal is to make current limits visible before changing behavior."
+}

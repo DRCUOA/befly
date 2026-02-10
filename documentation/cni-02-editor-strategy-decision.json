@@ -1,0 +1,40 @@
+{
+  "meta": {
+    "cohort": "c26",
+    "repo": "befly"
+  },
+  "summary": "Decide editor strategy for long-form writing and future auto-correction",
+  "problem_statement": "The platform currently uses a native textarea-based Markdown editor while future plans assume editor-level capabilities such as safe auto-correction and transaction-aware undo. Without an explicit editor strategy decision, subsequent work risks architectural misalignment, wasted effort, and trust-breaking UX regressions for long-form writers.",
+  "in_scope": [
+    "Evaluate current textarea-based Markdown editor against long-term product goals",
+    "Assess feasibility and implications of migrating to TipTap/ProseMirror",
+    "Compare UX, performance, accessibility, and complexity trade-offs",
+    "Decide and document the chosen editor direction"
+  ],
+  "out_of_scope": [
+    "Implementing a new editor",
+    "Refactoring existing editor code",
+    "Adding auto-correction or grammar logic",
+    "Changing persistence or rendering behavior"
+  ],
+  "requirements": [
+    "At least two viable editor strategies are clearly articulated",
+    "Trade-offs are evaluated against long-form writer UX goals",
+    "A single editor direction is explicitly selected and justified"
+  ],
+  "acceptance_criteria": [
+    "A written decision document exists and is linked from the issue",
+    "The decision is explicit, unambiguous, and future-facing",
+    "No production code behavior has changed"
+  ],
+  "dependencies": [
+    "Completed editor stack audit",
+    "Clarity on long-term writing and UX goals"
+  ],
+  "risks": [
+    "Deferring the decision leads to mis-scoped implementation work",
+    "Choosing an editor that undermines writer trust or flow",
+    "Underestimating migration or maintenance costs"
+  ],
+  "implementation_notes": "This issue is a strategy and positioning decision only. Bias toward clarity and commitment over optionality. The output should constrain future work, not keep options open indefinitely."
+}
