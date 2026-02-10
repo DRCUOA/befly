@@ -27,14 +27,16 @@ This document provides a comprehensive audit of the befly writing platform's edi
 
 ### 1.2 Frontend Stack Versions
 
-| Component | Version | Purpose |
-|-----------|---------|---------|
-| Vue | 3.4.0 | Reactive framework |
-| Vue Router | 4.2.5 | Client-side routing |
-| TypeScript | 5.3.0 | Type safety |
-| Vite | 5.0.0 | Build tool |
-| Tailwind CSS | 3.4.0 | Styling |
-| marked | 11.1.0 | Markdown rendering |
+| Component | Version (package.json) | Version (installed) | Purpose |
+|-----------|------------------------|---------------------|---------|
+| Vue | ^3.4.0 | 3.5.27 | Reactive framework |
+| Vue Router | ^4.2.5 | 4.6.4 | Client-side routing |
+| TypeScript | ^5.3.0 | 5.9.3 | Type safety |
+| Vite | ^5.0.0 | 5.4.21 | Build tool |
+| Tailwind CSS | ^3.4.0 | 3.4.19 | Styling |
+| marked | ^11.1.0 | 11.2.0 | Markdown rendering |
+
+**Note:** Actual installed versions may differ slightly due to semantic versioning ranges in package.json.
 
 ### 1.3 Editor Location
 
@@ -67,6 +69,30 @@ This document provides a comprehensive audit of the befly writing platform's edi
 - Auto-resize: No (fixed 12 rows)
 - Spell-check: Browser default (enabled)
 - Auto-complete: Browser default
+
+### 1.5 Build and Development Tools
+
+**Available Scripts:**
+- `npm run dev` - Start development server (Vite)
+- `npm run build` - Type-check and production build (`vue-tsc && vite build`)
+- `npm run preview` - Preview production build
+- `npm run type-check` - Type-checking only (`vue-tsc --noEmit`)
+
+**Build Output:**
+- Directory: `/client/dist`
+- Main bundle: ~403 KB (126 KB gzipped)
+- CSS bundle: ~51 KB (13 KB gzipped)
+- Build time: ~2-3 seconds (typical)
+
+**Type Safety:**
+- TypeScript strict mode enabled
+- Vue SFC type checking via `vue-tsc`
+- Path aliases: `@/*` → `./src/*`, `@shared/*` → `../shared/*`
+
+**No testing infrastructure detected:**
+- No Jest, Vitest, or other test runners
+- No E2E testing framework (Playwright, Cypress)
+- No linting configuration files (.eslintrc, etc.)
 
 ## 2. Extensions, Plugins, and Schema
 
