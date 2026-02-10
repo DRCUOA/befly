@@ -205,18 +205,49 @@ User Input → textarea DOM event → v-model reactive ref → form.body ref
 
 **Current Flow:**
 ```
-Write.vue (form.body ref)
-    ↓ (on form submit)
-API Client (/client/src/api/client.ts)
-    ↓ (HTTP POST/PUT with JSON body)
-Express Server (/server/src/controllers/writing.controller.ts)
-    ↓ (validation & business logic)
-Writing Service (/server/src/services/writing.service.ts)
-    ↓ (data access)
-Writing Repository (/server/src/repositories/writing.repo.ts)
-    ↓ (SQL queries)
-PostgreSQL Database
+┌──────────────────────────────────────────────────────────────┐
+│                     USER INTERACTION                         │
+└──────────────────────┬───────────────────────────────────────┘
+                       │
+                       ▼
+┌──────────────────────────────────────────────────────────────┐
+│  Write.vue (Component)                                       │
+│  - textarea element (native HTML)                            │
+│  - v-model="form.body" (Vue 3 reactivity)                   │
+│  - @submit.prevent="handleSubmit"                           │
+└──────────────────────┬───────────────────────────────────────┘
+                       │ (form submission)
+                       ▼
+┌──────────────────────────────────────────────────────────────┐
+│  API Client (/client/src/api/client.ts)                     │
+│  - Native fetch wrapper                                      │
+│  - POST /api/writing (create)                               │
+│  - PUT /api/writing/:id (update)                            │
+│  - Credentials: httpOnly cookies                            │
+│  - CSRF: X-CSRF-Token header                                │
+└──────────────────────┬───────────────────────────────────────┘
+                       │ (HTTP request)
+                       ▼
+┌──────────────────────────────────────────────────────────────┐
+│  Express Server (/server/src)                               │
+│  - writing.controller.ts (HTTP layer)                       │
+│  - writing.service.ts (business logic)                      │
+│  - writing.repo.ts (data access)                            │
+└──────────────────────┬───────────────────────────────────────┘
+                       │ (SQL query)
+                       ▼
+┌──────────────────────────────────────────────────────────────┐
+│  PostgreSQL Database                                         │
+│  - writing_blocks table                                     │
+│  - Fields: id, userId, title, body, themeIds, visibility    │
+└──────────────────────────────────────────────────────────────┘
 ```
+
+**Data Flow Timing:**
+- User types: Instant (v-model updates ref)
+- Form submit: ~100-500ms (network + server processing)
+- Success: Redirect to /home
+- Failure: Display error message
 
 ### 5.2 Save Triggers
 
@@ -299,6 +330,45 @@ PostgreSQL Database
 ## 7. Safe Interception Points for Auto-Correction
 
 ### 7.1 Recommended Interception Approach
+
+**Auto-Correction Integration Points Diagram:**
+```
+┌─────────────────────────────────────────────────────────────┐
+│  User Types in Textarea                                     │
+└──────────────────┬──────────────────────────────────────────┘
+                   │
+        ┌──────────┴──────────┐
+        │                     │
+        ▼                     ▼
+   [Option 1]            [Option 2]
+   @input event          @keydown event
+   (After input)         (Before input)
+        │                     │
+        ▼                     ▼
+┌──────────────────┐   ┌──────────────────┐
+│ Auto-Correction  │   │ Auto-Correction  │
+│ Logic            │   │ Logic            │
+│                  │   │                  │
+│ 1. Save cursor   │   │ 1. Intercept key │
+│ 2. Apply rules   │   │ 2. Apply rules   │
+│ 3. Update text   │   │ 3. preventDefault│
+│ 4. Restore cursor│   │ 4. Insert text   │
+└──────┬───────────┘   └──────┬───────────┘
+       │                      │
+       └──────────┬───────────┘
+                  │
+                  ▼
+       ┌────────────────────┐
+       │ v-model Updates    │
+       │ form.body Ref      │
+       └──────┬─────────────┘
+              │
+              ▼
+       ┌────────────────────┐
+       │ Vue Reactivity     │
+       │ Updates DOM        │
+       └────────────────────┘
+```
 
 **Option 1: Input Event Handler (Recommended)**
 ```vue
