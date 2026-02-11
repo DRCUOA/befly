@@ -149,7 +149,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, onBeforeUnmount } from 'vue'
+import { ref, onMounted, onBeforeUnmount, computed } from 'vue'
 import { useRouter, useRoute, onBeforeRouteLeave } from 'vue-router'
 import { api } from '../api/client'
 import type { Theme } from '../domain/Theme'
@@ -171,6 +171,13 @@ const form = ref({
   visibility: 'private' as 'private' | 'shared' | 'public'
 })
 
+const initialFormState = ref({
+  title: '',
+  body: '',
+  themeIds: [] as string[],
+  visibility: 'private' as 'private' | 'shared' | 'public'
+})
+
 const availableThemes = ref<Theme[]>([])
 const loadingThemes = ref(true)
 const loadingWriting = ref(false)
@@ -181,6 +188,29 @@ const error = ref<string | null>(null)
 const draft = useWriteDraft(writingId.value, form.value)
 const showRecoveryModal = ref(false)
 const recoveryDraft = ref<{ title: string; body: string; themeIds: string[]; visibility: 'private' | 'shared' | 'public'; timestamp: number } | null>(null)
+// Track if form has unsaved changes
+const hasUnsavedChanges = computed(() => {
+  // Check simple fields first (most common changes)
+  if (form.value.title !== initialFormState.value.title ||
+      form.value.body !== initialFormState.value.body ||
+      form.value.visibility !== initialFormState.value.visibility) {
+    return true
+  }
+  
+  // Check themeIds array efficiently
+  const currentThemes = form.value.themeIds
+  const initialThemes = initialFormState.value.themeIds
+  
+  if (currentThemes.length !== initialThemes.length) {
+    return true
+  }
+  
+  // Sort and compare element-by-element
+  const sortedCurrent = [...currentThemes].sort()
+  const sortedInitial = [...initialThemes].sort()
+  
+  return sortedCurrent.some((id, index) => id !== sortedInitial[index])
+})
 
 const loadThemes = async () => {
   try {
@@ -194,6 +224,18 @@ const loadThemes = async () => {
   }
 }
 
+const setFormState = (writing: Partial<WritingBlock>) => {
+  const formState = {
+    title: writing.title || '',
+    body: writing.body || '',
+    themeIds: writing.themeIds || [],
+    visibility: (writing.visibility || 'private') as 'private' | 'shared' | 'public'
+  }
+  
+  form.value = { ...formState }
+  initialFormState.value = { ...formState, themeIds: [...formState.themeIds] }
+}
+
 const loadWriting = async () => {
   if (!writingId.value) return
 
@@ -201,14 +243,7 @@ const loadWriting = async () => {
     loadingWriting.value = true
     error.value = null
     const response = await api.get<ApiResponse<WritingBlock>>(`/writing/${writingId.value}`)
-    const writing = response.data
-    
-    form.value = {
-      title: writing.title,
-      body: writing.body,
-      themeIds: writing.themeIds || [],
-      visibility: writing.visibility || 'private'
-    }
+    setFormState(response.data)
   } catch (err) {
     error.value = err instanceof Error ? err.message : 'Failed to load writing'
   } finally {
@@ -294,6 +329,8 @@ const handleSubmit = async () => {
     
     // Clear draft on successful submission
     draft.clearDraft()
+    // Clear dirty state after successful save
+    setFormState(form.value)
     
     router.push('/home')
   } catch (err) {
@@ -302,6 +339,31 @@ const handleSubmit = async () => {
     submitting.value = false
   }
 }
+
+// beforeunload handler for external navigation (back button, close tab, refresh)
+const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+  if (hasUnsavedChanges.value) {
+    e.preventDefault()
+    // Modern browsers ignore returnValue and show their own message
+    e.returnValue = ''
+  }
+}
+
+// Vue Router guard for in-app navigation
+onBeforeRouteLeave((_to, _from, next) => {
+  if (hasUnsavedChanges.value) {
+    const answer = window.confirm(
+      'You have unsaved changes. Are you sure you want to leave?'
+    )
+    if (answer) {
+      next()
+    } else {
+      next(false)
+    }
+  } else {
+    next()
+  }
+})
 
 onMounted(async () => {
   await loadThemes()
@@ -316,9 +378,14 @@ onMounted(async () => {
       draft.enableAutosave()
     }
   }
-
-  // Add beforeunload listener to warn user about unsaved changes
+  
+  // Add beforeunload event listener
   window.addEventListener('beforeunload', handleBeforeUnload)
+})
+
+onBeforeUnmount(() => {
+  // Clean up beforeunload event listener
+  window.removeEventListener('beforeunload', handleBeforeUnload)
 })
 
 // Cleanup on unmount
