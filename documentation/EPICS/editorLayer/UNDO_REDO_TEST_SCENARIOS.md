@@ -9,17 +9,13 @@
 
 ## Test Environment Setup
 
-1. Open the performance baseline test page:
+1. Open the baseline test page in the befly app:
    ```bash
-   # Option 1: Direct file open
-   open docs/performance-baseline-test.html
-   
-   # Option 2: Via static server
-   npx serve docs
-   # Then navigate to http://localhost:3000/performance-baseline-test.html
+   npm run dev
+   # Navigate to /baseline-test
    ```
 
-2. Or test directly in the befly app:
+2. Or test the actual Write editor:
    ```bash
    npm run dev
    # Navigate to /write
