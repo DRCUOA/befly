@@ -7,8 +7,9 @@
         <div class="flex items-center gap-4 md:gap-12">
           <router-link
             :to="isAuthenticated ? '/home' : '/'"
-            class="text-xl sm:text-2xl font-light tracking-tight hover:text-ink-light"
+            class="flex items-center gap-2 text-xl sm:text-2xl font-light tracking-tight hover:text-ink-light"
           >
+            <img :src="logoUrl" alt="" class="h-8 w-8 sm:h-9 sm:w-9" />
             {{ appConfig.appName }}
           </router-link>
           <nav class="hidden md:flex gap-8 text-sm tracking-wide font-sans">
@@ -206,6 +207,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { useAuth } from '../stores/auth'
 import { appConfig } from '../config/app'
 import AppFooter from '../components/ui/AppFooter.vue'
+import logoUrl from '../assets/logo2.png'
 
 const router = useRouter()
 const route = useRoute()

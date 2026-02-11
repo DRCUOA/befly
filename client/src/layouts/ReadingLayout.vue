@@ -8,8 +8,9 @@
         <div class="flex items-center gap-4 md:gap-12">
           <router-link
             to="/home"
-            class="text-xl sm:text-2xl font-light tracking-tight hover:text-ink-light"
+            class="flex items-center gap-2 text-xl sm:text-2xl font-light tracking-tight hover:text-ink-light"
           >
+            <img :src="logoUrl" alt="" class="h-8 w-8 sm:h-9 sm:w-9" />
             {{ siteName }}
           </router-link>
         </div>
@@ -102,6 +103,7 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import BackNavigation from '../components/reading/BackNavigation.vue'
 import { appConfig } from '../config/app'
 import AppFooter from '../components/ui/AppFooter.vue'
+import logoUrl from '../assets/logo2.png'
 
 interface Props {
   backRoute?: string
