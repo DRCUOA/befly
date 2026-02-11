@@ -23,12 +23,17 @@
         </label>
         <textarea
           id="body"
+          ref="bodyTextareaRef"
           v-model="form.body"
           rows="12"
           required
           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 font-mono text-sm"
           placeholder="Write your thoughts in Markdown..."
+          @blur="onBodyBlur"
         />
+        <p v-if="blurSuggestionCount > 0 && !showTypographyModal" class="mt-1 text-xs text-amber-600">
+          {{ blurSuggestionCount }} typography suggestion{{ blurSuggestionCount === 1 ? '' : 's' }} — review before publishing
+        </p>
       </div>
       
       <div>
@@ -111,6 +116,69 @@
       Draft saved at {{ draftSavedAt ?? '—' }}
     </div>
 
+    <!-- Typography Suggestions Modal (before save) -->
+    <div v-if="showTypographyModal && typographySuggestions.length > 0" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      <div class="bg-white rounded-lg shadow-xl p-6 max-w-lg w-full mx-4 max-h-[80vh] flex flex-col">
+        <h3 class="text-lg font-semibold mb-2">Typography Suggestions</h3>
+        <p class="text-gray-600 text-sm mb-4">
+          Review these typography suggestions before publishing. Accept or dismiss each one.
+        </p>
+        <div class="overflow-y-auto flex-1 space-y-3 mb-4">
+          <div
+            v-for="(suggestion, idx) in typographySuggestions"
+            :key="`${suggestion.start}-${suggestion.original}`"
+            class="flex items-center justify-between gap-3 p-3 bg-gray-50 rounded-md text-sm"
+          >
+            <div class="flex-1 min-w-0">
+              <span class="text-gray-500">{{ suggestion.description }}:</span>
+              <span class="ml-1 font-mono text-gray-800">"{{ suggestion.original }}"</span>
+              <span class="mx-1 text-gray-400">→</span>
+              <span class="font-mono text-green-700">"{{ suggestion.replacement }}"</span>
+            </div>
+            <div class="flex gap-2 shrink-0">
+              <button
+                type="button"
+                @click="acceptTypographySuggestion(idx)"
+                class="px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700"
+              >
+                Accept
+              </button>
+              <button
+                type="button"
+                @click="dismissTypographySuggestion(idx)"
+                class="px-2 py-1 text-xs border border-gray-300 rounded text-gray-700 hover:bg-gray-50"
+              >
+                Dismiss
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="flex justify-end gap-3 pt-2 border-t">
+          <button
+            type="button"
+            @click="dismissAllTypographySuggestions"
+            class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 text-sm"
+          >
+            Dismiss all
+          </button>
+          <button
+            type="button"
+            @click="acceptAllTypographySuggestions"
+            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm"
+          >
+            Accept all
+          </button>
+          <button
+            type="button"
+            @click="closeTypographyModalAndSubmit"
+            class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 text-sm"
+          >
+            Continue without changes
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Draft Recovery Modal -->
     <div v-if="showRecoveryModal && recoveryDraft" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <div class="bg-white rounded-lg shadow-xl p-6 max-w-md w-full mx-4">
@@ -161,6 +229,12 @@ import type { WritingBlock } from '../domain/WritingBlock'
 import type { ApiResponse } from '@shared/ApiResponses'
 import { useWriteDraft } from '../composables/useWriteDraft'
 import { formatTime, formatTimeWithSeconds } from '../utils/time'
+import {
+  scanTypography,
+  applySuggestion,
+  applySuggestions,
+  type TypographySuggestion
+} from '../utils/typography-suggestions'
 
 const router = useRouter()
 const route = useRoute()
@@ -187,6 +261,17 @@ const loadingThemes = ref(true)
 const loadingWriting = ref(false)
 const submitting = ref(false)
 const error = ref<string | null>(null)
+
+// Typography suggestions (Option A: suggest only, on blur/save)
+const bodyTextareaRef = ref<HTMLTextAreaElement | null>(null)
+const showTypographyModal = ref(false)
+const typographySuggestions = ref<TypographySuggestion[]>([])
+const pendingSubmit = ref(false)
+const blurSuggestionCount = ref(0)
+
+function onBodyBlur() {
+  blurSuggestionCount.value = scanTypography(form.value.body).length
+}
 
 // Draft management
 const draft = useWriteDraft(writingId.value, form)
@@ -332,7 +417,8 @@ const dismissRecoveryModal = () => {
   draft.enableAutosave()
 }
 
-const handleSubmit = async () => {
+/** Perform the actual API call. Called after typography modal or when no suggestions. */
+const doSubmit = async () => {
   if (!form.value.title.trim() || !form.value.body.trim()) {
     error.value = 'Title and body are required'
     return
@@ -341,9 +427,8 @@ const handleSubmit = async () => {
   try {
     submitting.value = true
     error.value = null
-    
+
     if (isEditing.value && writingId.value) {
-      // Update existing writing
       await api.put<ApiResponse<any>>(`/writing/${writingId.value}`, {
         title: form.value.title,
         body: form.value.body,
@@ -351,7 +436,6 @@ const handleSubmit = async () => {
         visibility: form.value.visibility
       })
     } else {
-      // Create new writing
       await api.post<ApiResponse<any>>('/writing', {
         title: form.value.title,
         body: form.value.body,
@@ -359,18 +443,96 @@ const handleSubmit = async () => {
         visibility: form.value.visibility
       })
     }
-    
-    // Clear draft on successful submission
+
     draft.clearDraft()
-    // Clear dirty state after successful save
     setFormState(form.value)
-    
     router.push('/home')
   } catch (err) {
     error.value = err instanceof Error ? err.message : (isEditing.value ? 'Failed to update writing' : 'Failed to publish writing')
   } finally {
     submitting.value = false
   }
+}
+
+const handleSubmit = async () => {
+  if (!form.value.title.trim() || !form.value.body.trim()) {
+    error.value = 'Title and body are required'
+    return
+  }
+
+  const suggestions = scanTypography(form.value.body)
+  if (suggestions.length > 0) {
+    typographySuggestions.value = suggestions
+    showTypographyModal.value = true
+    pendingSubmit.value = true
+    return
+  }
+
+  await doSubmit()
+}
+
+function applySuggestionViaTextarea(suggestion: TypographySuggestion) {
+  const textarea = bodyTextareaRef.value
+  if (textarea) {
+    textarea.focus()
+    textarea.setSelectionRange(suggestion.start, suggestion.end)
+    textarea.setRangeText(suggestion.replacement, suggestion.start, suggestion.end, 'select')
+    form.value.body = textarea.value
+  } else {
+    form.value.body = applySuggestion(form.value.body, suggestion)
+  }
+}
+
+function acceptTypographySuggestion(idx: number) {
+  const suggestion = typographySuggestions.value[idx]
+  if (!suggestion) return
+  applySuggestionViaTextarea(suggestion)
+  const next = scanTypography(form.value.body)
+  typographySuggestions.value = next
+  if (next.length === 0) {
+    showTypographyModal.value = false
+    if (pendingSubmit.value) {
+      pendingSubmit.value = false
+      doSubmit()
+    }
+  }
+}
+
+function dismissTypographySuggestion(idx: number) {
+  typographySuggestions.value = typographySuggestions.value.filter((_, i) => i !== idx)
+  if (typographySuggestions.value.length === 0) {
+    showTypographyModal.value = false
+    if (pendingSubmit.value) {
+      pendingSubmit.value = false
+      doSubmit()
+    }
+  }
+}
+
+function acceptAllTypographySuggestions() {
+  const suggestions = typographySuggestions.value
+  if (suggestions.length === 0) return
+  form.value.body = applySuggestions(form.value.body, suggestions)
+  typographySuggestions.value = []
+  showTypographyModal.value = false
+  pendingSubmit.value = false
+  doSubmit()
+}
+
+function dismissAllTypographySuggestions() {
+  typographySuggestions.value = []
+  showTypographyModal.value = false
+  if (pendingSubmit.value) {
+    pendingSubmit.value = false
+    doSubmit()
+  }
+}
+
+function closeTypographyModalAndSubmit() {
+  typographySuggestions.value = []
+  showTypographyModal.value = false
+  pendingSubmit.value = false
+  doSubmit()
 }
 
 // Persist draft to localStorage before leaving (no confirmation dialog)

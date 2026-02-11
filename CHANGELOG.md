@@ -5,6 +5,20 @@ All notable changes to the Rambulations writing platform are documented in this 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.3] - 2026-02-12
+
+### Added
+- Typography suggestions (cni-06): suggest-only autocorrection on blur and before save
+- Typography rule engine (`client/src/utils/typography-suggestions.ts`): smart quotes, en/em dashes, ellipsis
+- Markdown-aware rules: skip inline code, code blocks, and URLs to avoid corrupting syntax
+- Suggestion modal on Write page before publish: Accept/Dismiss per suggestion, Accept all, Continue without changes
+- Blur hint: "X typography suggestions — review before publishing" when body textarea blurs
+- Draft atomic cni-07: typography rules management (admin CRUD, dedicated module) — spec only, not implemented
+
+### Changed
+- EPIC_PROGRESS.md: Phase 3 in progress; cni-06 complete; cni-07 drafted
+- Version bump 0.3.2 → 0.3.3 (build number in footer)
+
 ## [0.3.2] - 2026-02-11
 
 ### Added
@@ -112,6 +126,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Database migrations (001-008): users, writing_blocks, themes, appreciations, auth/visibility, roles, reaction types, comments
 - Development setup documentation and quick-start guide
 
+[0.3.3]: https://github.com/DRCUOA/befly/compare/v0.3.2...v0.3.3
 [0.3.2]: https://github.com/DRCUOA/befly/compare/v0.3.1...v0.3.2
 [0.3.0]: https://github.com/DRCUOA/befly/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/DRCUOA/befly/compare/v0.1.2...v0.2.0
