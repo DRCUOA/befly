@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Editor Performance Baseline Results</title>
+  <style>
+    :root {
+      --bg: #0f1419;
+      --surface: #1a2332;
+      --border: #2d3a4d;
+      --text: #e6edf3;
+      --muted: #8b949e;
+      --accent: #58a6ff;
+      --success: #3fb950;
+      --warning: #d29922;
+      --danger: #f85149;
+      --radius: 8px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: "SF Mono", "Fira Code", "Consolas", monospace;
+      background: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 1.5rem;
+      line-height: 1.5;
+    }
+    .container { max-width: 960px; margin: 0 auto; }
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin: 0 0 0.5rem;
+      color: var(--text);
+    }
+    .meta {
+      color: var(--muted);
+      font-size: 0.85rem;
+      margin-bottom: 2rem;
+    }
+    section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    section h2 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin: 0 0 1rem;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+    th, td {
+      text-align: left;
+      padding: 0.5rem 0.75rem;
+      border-bottom: 1px solid var(--border);
+    }
+    th {
+      color: var(--muted);
+      font-weight: 500;
+    }
+    tr:last-child td { border-bottom: none; }
+    .badge {
+      display: inline-block;
+      padding: 0.2em 0.5em;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .badge-excellent { background: rgba(63, 185, 80, 0.2); color: var(--success); }
+    .badge-good { background: rgba(63, 185, 80, 0.15); color: #7ee787; }
+    .badge-acceptable { background: rgba(210, 153, 34, 0.2); color: var(--warning); }
+    .badge-degraded { background: rgba(210, 153, 34, 0.25); color: #e3b341; }
+    .badge-poor { background: rgba(248, 81, 73, 0.2); color: var(--danger); }
+    .risk-high { color: var(--danger); }
+    .risk-medium { color: var(--warning); }
+    .risk-low { color: var(--muted); }
+    .priority-critical { color: var(--danger); font-weight: 600; }
+    .priority-high { color: var(--warning); }
+    .priority-medium { color: var(--accent); }
+    .priority-low { color: var(--muted); }
+    ul { margin: 0.5rem 0 0; padding-left: 1.25rem; }
+    li { margin: 0.25rem 0; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    @media (max-width: 640px) { .grid-2 { grid-template-columns: 1fr; } }
+    .card {
+      background: rgba(0,0,0,0.2);
+      border-radius: var(--radius);
+      padding: 1rem;
+      margin-bottom: 0.75rem;
+    }
+    .card:last-child { margin-bottom: 0; }
+    .card h3 { margin: 0 0 0.5rem; font-size: 0.9rem; }
+    .card p { margin: 0; font-size: 0.85rem; color: var(--muted); }
+    .num { font-variant-numeric: tabular-nums; }
+    .muted { color: var(--muted); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Editor Performance Baseline Results</h1>
+    <div class="meta" id="meta"></div>
+
+    <section>
+      <h2>Document size tests</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Target</th>
+              <th>Chars / Words / Lines</th>
+              <th>Est. memory</th>
+              <th>Upload (fast → mobile)</th>
+              <th>Expectation</th>
+            </tr>
+          </thead>
+          <tbody id="doc-tests"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section>
+      <h2>Database constraints</h2>
+      <div id="db-constraints"></div>
+    </section>
+
+    <section>
+      <h2>Data loss risks</h2>
+      <div id="data-loss-risks"></div>
+    </section>
+
+    <section>
+      <h2>Recommendations</h2>
+      <ul id="recommendations"></ul>
+    </section>
+  </div>
+
+  <script type="application/json" id="performance-baseline-json">{"timestamp":"2026-02-11T00:18:12.590Z","testEnvironment":{"nodeVersion":"v24.12.0","platform":"darwin","arch":"arm64"},"documentSizeTests":[{"name":"Tiny","targetBytes":100,"characteristics":{"characterCount":99,"wordCount":15,"lineCount":1,"sizeBytes":99,"sizeKB":"0.10","sizeMB":"0.00","averageWordLength":"6.60","averageLineLength":"99.00"},"estimatedMemoryUsage":{"textBytes":99,"vueReactivityOverhead":50,"domSize":198,"totalEstimated":347,"totalKB":"0.34"},"networkConstraints":{"uncompressedSize":99,"estimatedCompressedSize":30,"compressionRatio":"30%","uploadTimes":{"fast":{"raw":"0ms","compressed":"0ms"},"medium":{"raw":"0ms","compressed":"0ms"},"slow":{"raw":"1ms","compressed":"0ms"},"mobile":{"raw":"2ms","compressed":"0ms"}}},"performanceExpectation":"EXCELLENT - No lag expected"},{"name":"Small","targetBytes":1024,"characteristics":{"characterCount":1023,"wordCount":159,"lineCount":1,"sizeBytes":1023,"sizeKB":"1.00","sizeMB":"0.00","averageWordLength":"6.43","averageLineLength":"1023.00"},"estimatedMemoryUsage":{"textBytes":1023,"vueReactivityOverhead":512,"domSize":2046,"totalEstimated":3581,"totalKB":"3.50"},"networkConstraints":{"uncompressedSize":1023,"estimatedCompressedSize":307,"compressionRatio":"30%","uploadTimes":{"fast":{"raw":"1ms","compressed":"0ms"},"medium":{"raw":"2ms","compressed":"0ms"},"slow":{"raw":"8ms","compressed":"2ms"},"mobile":{"raw":"16ms","compressed":"5ms"}}},"performanceExpectation":"EXCELLENT - No lag expected"},{"name":"Medium","targetBytes":10240,"characteristics":{"characterCount":10236,"wordCount":1583,"lineCount":1,"sizeBytes":10236,"sizeKB":"10.00","sizeMB":"0.01","averageWordLength":"6.47","averageLineLength":"10236.00"},"estimatedMemoryUsage":{"textBytes":10236,"vueReactivityOverhead":5118,"domSize":20472,"totalEstimated":35826,"totalKB":"34.99"},"networkConstraints":{"uncompressedSize":10236,"estimatedCompressedSize":3071,"compressionRatio":"30%","uploadTimes":{"fast":{"raw":"8ms","compressed":"2ms"},"medium":{"raw":"16ms","compressed":"5ms"},"slow":{"raw":"82ms","compressed":"25ms"},"mobile":{"raw":"164ms","compressed":"49ms"}}},"performanceExpectation":"GOOD - Minimal lag possible"},{"name":"Large","targetBytes":102400,"characteristics":{"characterCount":102390,"wordCount":15842,"lineCount":1,"sizeBytes":102390,"sizeKB":"99.99","sizeMB":"0.10","averageWordLength":"6.46","averageLineLength":"102390.00"},"estimatedMemoryUsage":{"textBytes":102390,"vueReactivityOverhead":51195,"domSize":204780,"totalEstimated":358365,"totalKB":"349.97"},"networkConstraints":{"uncompressedSize":102390,"estimatedCompressedSize":30717,"compressionRatio":"30%","uploadTimes":{"fast":{"raw":"82ms","compressed":"25ms"},"medium":{"raw":"164ms","compressed":"49ms"},"slow":{"raw":"819ms","compressed":"246ms"},"mobile":{"raw":"1638ms","compressed":"491ms"}}},"performanceExpectation":"ACCEPTABLE - Some lag on slower devices"},{"name":"X-Large","targetBytes":512000,"characteristics":{"characterCount":511998,"wordCount":79211,"lineCount":1,"sizeBytes":511998,"sizeKB":"500.00","sizeMB":"0.49","averageWordLength":"6.46","averageLineLength":"511998.00"},"estimatedMemoryUsage":{"textBytes":511998,"vueReactivityOverhead":255999,"domSize":1023996,"totalEstimated":1791993,"totalKB":"1749.99"},"networkConstraints":{"uncompressedSize":511998,"estimatedCompressedSize":153599,"compressionRatio":"30%","uploadTimes":{"fast":{"raw":"410ms","compressed":"123ms"},"medium":{"raw":"819ms","compressed":"246ms"},"slow":{"raw":"4096ms","compressed":"1229ms"},"mobile":{"raw":"8192ms","compressed":"2458ms"}}},"performanceExpectation":"DEGRADED - Noticeable lag likely"},{"name":"XX-Large","targetBytes":1048576,"characteristics":{"characterCount":1048573,"wordCount":162224,"lineCount":1,"sizeBytes":1048573,"sizeKB":"1024.00","sizeMB":"1.00","averageWordLength":"6.46","averageLineLength":"1048573.00"},"estimatedMemoryUsage":{"textBytes":1048573,"vueReactivityOverhead":524287,"domSize":2097146,"totalEstimated":3670006,"totalKB":"3583.99"},"networkConstraints":{"uncompressedSize":1048573,"estimatedCompressedSize":314572,"compressionRatio":"30%","uploadTimes":{"fast":{"raw":"839ms","compressed":"252ms"},"medium":{"raw":"1678ms","compressed":"503ms"},"slow":{"raw":"8389ms","compressed":"2517ms"},"mobile":{"raw":"16777ms","compressed":"5033ms"}}},"performanceExpectation":"POOR - Significant performance issues expected"}],"databaseConstraints":{"fieldType":"TEXT","theoreticalMaxSize":"1 GB (PostgreSQL TEXT limit)","practicalMaxSize":"10-100 MB (recommended for performance)","titleConstraint":"VARCHAR(500)","concerns":["No explicit size limit enforced in application layer","Very large documents may cause memory issues during save/load","Database backup and replication may be impacted by large BLOBs","API response times will degrade with large payloads"]},"dataLossRisks":{"noAutosave":{"risk":"HIGH","scenarios":["Browser crash loses all unsaved work","Accidental tab close loses work","System crash or power loss","Network error during save (partial loss)","User navigates away without saving"],"impact":"Complete loss of work since last manual save"},"noDraftPersistence":{"risk":"HIGH","scenarios":["No recovery after browser crash","No ability to restore previous versions","Session timeout loses work"],"impact":"No recovery mechanism available"},"browserStorage":{"risk":"MEDIUM","scenarios":["localStorage could be used but is not implemented","sessionStorage would lose data on tab close"],"mitigation":"localStorage autosave every 30-60 seconds recommended"},"networkFailures":{"risk":"MEDIUM","scenarios":["Save fails silently with poor error handling","Optimistic updates without confirmation","Retry logic not visible to user"],"impact":"User may believe work is saved when it is not"}},"recommendations":[{"priority":"CRITICAL","item":"Implement localStorage-based autosave (every 30-60 seconds)","reason":"Prevent complete data loss on browser crash or accidental navigation"},{"priority":"HIGH","item":"Add draft persistence with recovery mechanism","reason":"Allow users to recover work after unexpected interruptions"},{"priority":"HIGH","item":"Implement \"unsaved changes\" warning on navigation","reason":"Prevent accidental data loss from leaving page"},{"priority":"MEDIUM","item":"Add soft size limit warning at 100KB","reason":"Warn users before performance degradation occurs"},{"priority":"MEDIUM","item":"Improve save confirmation feedback","reason":"Ensure users know their work is successfully saved"},{"priority":"LOW","item":"Consider debouncing/throttling for very large documents","reason":"Reduce reactivity overhead for documents >100KB"}]}</script>
+  <script>
+    (function () {
+      const data = JSON.parse(document.getElementById('performance-baseline-json').textContent);
+
+      function formatDate(iso) {
+        try {
+          const d = new Date(iso);
+          return d.toLocaleString();
+        } catch (_) { return iso; }
+      }
+
+      function badgeClass(expectation) {
+        if (!expectation) return '';
+        const s = (expectation + '').toUpperCase();
+        if (s.includes('EXCELLENT')) return 'badge-excellent';
+        if (s.includes('GOOD')) return 'badge-good';
+        if (s.includes('ACCEPTABLE')) return 'badge-acceptable';
+        if (s.includes('DEGRADED')) return 'badge-degraded';
+        if (s.includes('POOR')) return 'badge-poor';
+        return '';
+      }
+
+      // Meta
+      const env = data.testEnvironment || {};
+      document.getElementById('meta').textContent = [
+        'Run: ' + formatDate(data.timestamp),
+        'Node ' + (env.nodeVersion || '—'),
+        (env.platform || '') + ' / ' + (env.arch || '')
+      ].join(' · ');
+
+      // Document size tests
+      const tests = data.documentSizeTests || [];
+      const tbody = document.getElementById('doc-tests');
+      tests.forEach(function (t) {
+        const c = t.characteristics || {};
+        const mem = t.estimatedMemoryUsage || {};
+        const net = t.networkConstraints || {};
+        const times = (net.uploadTimes || {});
+        const uploadStr = ['fast', 'medium', 'slow', 'mobile']
+          .map(function (k) { return (times[k] && times[k].raw) ? times[k].raw : '—'; })
+          .join(' → ');
+        const tr = document.createElement('tr');
+        tr.innerHTML =
+          '<td><strong>' + escapeHtml(t.name) + '</strong></td>' +
+          '<td class="num">' + escapeHtml((t.targetBytes || 0).toLocaleString()) + ' B</td>' +
+          '<td class="num">' + escapeHtml([c.characterCount, c.wordCount, c.lineCount].map(function (n) { return (n != null ? n : '—').toLocaleString(); }).join(' / ')) + '</td>' +
+          '<td class="num">' + escapeHtml(mem.totalKB != null ? mem.totalKB + ' KB' : '—') + '</td>' +
+          '<td class="num">' + escapeHtml(uploadStr) + '</td>' +
+          '<td><span class="badge ' + badgeClass(t.performanceExpectation) + '">' + escapeHtml(t.performanceExpectation || '—') + '</span></td>';
+        tbody.appendChild(tr);
+      });
+
+      // Database constraints
+      const db = data.databaseConstraints || {};
+      const dbEl = document.getElementById('db-constraints');
+      dbEl.innerHTML =
+        '<p><strong>Field type:</strong> ' + escapeHtml(db.fieldType || '—') + '</p>' +
+        '<p><strong>Theoretical max:</strong> ' + escapeHtml(db.theoreticalMaxSize || '—') + '</p>' +
+        '<p><strong>Practical max:</strong> ' + escapeHtml(db.practicalMaxSize || '—') + '</p>' +
+        '<p><strong>Title constraint:</strong> ' + escapeHtml(db.titleConstraint || '—') + '</p>' +
+        (Array.isArray(db.concerns) && db.concerns.length
+          ? '<p><strong>Concerns:</strong></p><ul><li>' + db.concerns.map(escapeHtml).join('</li><li>') + '</li></ul>'
+          : '');
+
+      // Data loss risks
+      const risks = data.dataLossRisks || {};
+      const riskEl = document.getElementById('data-loss-risks');
+      Object.keys(risks).forEach(function (key) {
+        const r = risks[key];
+        const riskClass = (r.risk || '').toLowerCase();
+        const label = key.replace(/([A-Z])/g, ' $1').replace(/^./, function (s) { return s.toUpperCase(); });
+        riskEl.innerHTML +=
+          '<div class="card">' +
+          '<h3>' + escapeHtml(label) + ' <span class="risk-' + riskClass + '">(' + escapeHtml(r.risk || '') + ')</span></h3>' +
+          '<p>' + escapeHtml(r.impact || '') + '</p>' +
+          (Array.isArray(r.scenarios) && r.scenarios.length
+            ? '<ul><li>' + r.scenarios.map(escapeHtml).join('</li><li>') + '</li></ul>'
+            : '') +
+          (r.mitigation ? '<p><em>Mitigation: ' + escapeHtml(r.mitigation) + '</em></p>' : '') +
+          '</div>';
+      });
+
+      // Recommendations
+      const recs = data.recommendations || [];
+      const recEl = document.getElementById('recommendations');
+      recs.forEach(function (r) {
+        const li = document.createElement('li');
+        const pClass = 'priority-' + (r.priority || '').toLowerCase();
+        li.innerHTML = '<span class="' + pClass + '">[' + escapeHtml(r.priority || '') + ']</span> ' +
+          escapeHtml(r.item || '') + ' — <span class="muted">' + escapeHtml(r.reason || '') + '</span>';
+        recEl.appendChild(li);
+      });
+
+      function escapeHtml(s) {
+        if (s == null) return '';
+        const div = document.createElement('div');
+        div.textContent = s;
+        return div.innerHTML;
+      }
+    })();
+  </script>
+</body>
+</html>

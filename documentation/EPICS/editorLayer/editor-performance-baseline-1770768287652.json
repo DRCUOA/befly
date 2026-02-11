@@ -1,0 +1,19 @@
+{
+  "timestamp": "2026-02-11T00:04:47.647Z",
+  "documentSize": 47,
+  "characterCount": 47,
+  "wordCount": 4,
+  "metrics": {
+    "inputCount": 204,
+    "averageLatency": 0.010784315127952426,
+    "maxLatency": 0.10000002384185791,
+    "p95Latency": 0.10000002384185791,
+    "p99Latency": 0.10000002384185791,
+    "slowEventsPercent": 0,
+    "verySlowEventsPercent": 0
+  },
+  "browser": {
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36",
+    "platform": "MacIntel"
+  }
+}

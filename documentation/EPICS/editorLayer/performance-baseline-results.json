@@ -1,9 +1,9 @@
 {
-  "timestamp": "2026-02-10T22:08:19.258Z",
+  "timestamp": "2026-02-11T00:18:12.590Z",
   "testEnvironment": {
-    "nodeVersion": "v24.13.0",
-    "platform": "linux",
-    "arch": "x64"
+    "nodeVersion": "v24.12.0",
+    "platform": "darwin",
+    "arch": "arm64"
   },
   "documentSizeTests": [
     {

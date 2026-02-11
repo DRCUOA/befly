@@ -1,0 +1,43 @@
+{
+  "meta": {
+    "cohort": "c26",
+    "repo": "befly"
+  },
+  "summary": "Add unsaved changes warning to prevent accidental data loss on navigation",
+  "problem_statement": "Users can navigate away from the Write page (browser back, link click, refresh) without warning. Any unsaved changes are lost. The performance baseline identified 'no unsaved changes warning' as a critical data loss risk alongside the lack of autosave.",
+  "in_scope": [
+    "Add beforeunload handler for external navigation (back button, close tab, refresh, new URL)",
+    "Add Vue Router beforeRouteLeave guard for in-app navigation",
+    "Warn only when form has unsaved changes (dirty state)",
+    "Allow navigation to proceed when user confirms, or when form is saved/submitted"
+  ],
+  "out_of_scope": [
+    "Autosave or draft persistence",
+    "Blocking navigation programmatically",
+    "Changing save or publish flow",
+    "Auto-correction or editor mutation"
+  ],
+  "requirements": [
+    "User must be explicitly warned before leaving with unsaved changes",
+    "Dirty state reflects actual edits (compare current form to initial/original)",
+    "Form submission clears dirty state so navigation proceeds without prompt",
+    "Guard does not fire when form is pristine"
+  ],
+  "acceptance_criteria": [
+    "Navigating away with unsaved changes in Write form shows browser confirmation dialog",
+    "In-app navigation (e.g. to Home, Themes) triggers Vue Router guard with confirmation",
+    "After successful save/publish, no warning on subsequent navigation",
+    "No warning when form has no unsaved changes"
+  ],
+  "dependencies": [
+    "Write.vue component with form state",
+    "Vue Router configuration",
+    "Access to route navigation"
+  ],
+  "risks": [
+    "beforeunload has limited customization (browser controls dialog text)",
+    "Complex dirty-state logic with pre-filled edit forms",
+    "Race conditions when save is in progress"
+  ],
+  "implementation_notes": "Use Vue Router's onBeforeRouteLeave or beforeRouteLeave in Write.vue. For beforeunload, assign a handler that returns a string (legacy) or sets event.returnValue. Clear dirty state on successful api.post/api.put. Consider tracking initialValues on mount vs current form to determine dirty state."
+}

@@ -1,0 +1,47 @@
+{
+  "meta": {
+    "cohort": "c26",
+    "repo": "befly"
+  },
+  "summary": "Implement localStorage autosave and draft recovery for the Write editor",
+  "problem_statement": "The editor has no autosave or draft persistence. A browser crash, accidental tab close, or navigation away causes complete loss of unsaved work. The performance baseline identified this as a critical data loss risk that must be addressed before any editor enhancements.",
+  "in_scope": [
+    "Add debounced localStorage autosave (every 30-60 seconds) for form.title and form.body",
+    "Persist draft with timestamp for staleness detection",
+    "Show 'Draft saved at HH:MM' indicator to reassure users",
+    "On page load, detect unsaved draft in localStorage",
+    "Present 'Recover unsaved work?' dialog when draft exists and current form is empty",
+    "Allow user to restore draft, discard draft, or compare before deciding"
+  ],
+  "out_of_scope": [
+    "Server-side draft storage or sync",
+    "IndexedDB (use for documents > 1MB in future phase)",
+    "Draft versioning or history",
+    "Auto-correction or editor mutation",
+    "Changing save or publish flow"
+  ],
+  "requirements": [
+    "Draft is saved to localStorage at configurable interval (default 30-60s)",
+    "Draft key includes user/writing context to avoid cross-draft contamination",
+    "Recovery dialog appears only when appropriate (draft exists, no current content)",
+    "User can restore, discard, or dismiss recovery option"
+  ],
+  "acceptance_criteria": [
+    "Draft is persisted to localStorage within 60 seconds of last edit",
+    "A visible indicator confirms draft was saved",
+    "On return to Write page with unsaved draft, user is offered recovery",
+    "Restored draft populates form correctly",
+    "Discarding draft clears it from localStorage"
+  ],
+  "dependencies": [
+    "Completed editor stack audit",
+    "Completed performance baseline",
+    "Write.vue component and form structure"
+  ],
+  "risks": [
+    "localStorage quota exceeded for very large documents",
+    "Stale draft overwriting intentional new work",
+    "Multiple tabs editing same draft causing conflicts"
+  ],
+  "implementation_notes": "Reference EDITOR_PERFORMANCE_BASELINE.md § 4.3 Browser Storage Analysis for recommended usage pattern. Use debounce (e.g. VueUse useDebounceFn) to avoid saving on every keystroke. Consider draft key: befly-draft-{writingId|new} to scope per-writing-block."
+}
