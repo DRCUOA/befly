@@ -103,8 +103,12 @@
     </form>
 
     <!-- Draft Saved Indicator -->
-    <div v-if="!isEditing && draft.lastSaved" class="mt-4 text-xs sm:text-sm text-gray-500">
-      Draft saved at {{ draft.getFormattedSaveTime() }}
+    <div
+      v-if="showDraftIndicator"
+      class="mt-4 px-3 py-2 rounded-md text-xs sm:text-sm"
+      :class="hasUnsavedChanges ? 'bg-red-50 text-red-800' : 'bg-green-50 text-green-800'"
+    >
+      Draft saved at {{ draftSavedAt ?? '—' }}
     </div>
 
     <!-- Draft Recovery Modal -->
@@ -149,14 +153,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, computed } from 'vue'
+import { ref, onMounted, onBeforeUnmount, computed, watch } from 'vue'
 import { useRouter, useRoute, onBeforeRouteLeave } from 'vue-router'
 import { api } from '../api/client'
 import type { Theme } from '../domain/Theme'
 import type { WritingBlock } from '../domain/WritingBlock'
 import type { ApiResponse } from '@shared/ApiResponses'
 import { useWriteDraft } from '../composables/useWriteDraft'
-import { formatTime } from '../utils/time'
+import { formatTime, formatTimeWithSeconds } from '../utils/time'
 
 const router = useRouter()
 const route = useRoute()
@@ -185,7 +189,7 @@ const submitting = ref(false)
 const error = ref<string | null>(null)
 
 // Draft management
-const draft = useWriteDraft(writingId.value, form.value)
+const draft = useWriteDraft(writingId.value, form)
 const showRecoveryModal = ref(false)
 const recoveryDraft = ref<{ title: string; body: string; themeIds: string[]; visibility: 'private' | 'shared' | 'public'; timestamp: number } | null>(null)
 // Track if form has unsaved changes
@@ -210,6 +214,29 @@ const hasUnsavedChanges = computed(() => {
   const sortedInitial = [...initialThemes].sort()
   
   return sortedCurrent.some((id, index) => id !== sortedInitial[index])
+})
+
+// Reactive draft status for template (ensures updates when lastSaved changes)
+const draftSavedAt = computed(() => {
+  const saved = draft.lastSaved.value
+  return saved ? formatTimeWithSeconds(saved) : null
+})
+
+const showDraftIndicator = computed(() => {
+  if (isEditing.value) return false
+  return !!(form.value.title.trim() || form.value.body.trim() || draft.lastSaved.value)
+})
+
+// Sync initialFormState when draft is saved to localStorage so color turns green
+watch(() => draft.lastSaved.value, (saved) => {
+  if (saved && !isEditing.value) {
+    initialFormState.value = {
+      title: form.value.title,
+      body: form.value.body,
+      themeIds: [...form.value.themeIds],
+      visibility: form.value.visibility
+    }
+  }
 })
 
 const loadThemes = async () => {
@@ -271,15 +298,21 @@ const checkForDraft = () => {
 
 const restoreDraft = () => {
   if (recoveryDraft.value) {
+    const data = recoveryDraft.value
     form.value = {
-      title: recoveryDraft.value.title,
-      body: recoveryDraft.value.body,
-      themeIds: recoveryDraft.value.themeIds,
-      visibility: recoveryDraft.value.visibility
+      title: data.title,
+      body: data.body,
+      themeIds: data.themeIds,
+      visibility: data.visibility
+    }
+    initialFormState.value = {
+      title: data.title,
+      body: data.body,
+      themeIds: [...data.themeIds],
+      visibility: data.visibility
     }
     showRecoveryModal.value = false
     recoveryDraft.value = null
-    // Enable autosave after restoring
     draft.enableAutosave()
   }
 }
@@ -340,29 +373,19 @@ const handleSubmit = async () => {
   }
 }
 
-// beforeunload handler for external navigation (back button, close tab, refresh)
-const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+// Persist draft to localStorage before leaving (no confirmation dialog)
+const handleBeforeUnload = () => {
   if (hasUnsavedChanges.value) {
-    e.preventDefault()
-    // Modern browsers ignore returnValue and show their own message
-    e.returnValue = ''
+    draft.saveDraft()
   }
 }
 
-// Vue Router guard for in-app navigation
+// Vue Router guard: persist draft to localStorage before in-app navigation
 onBeforeRouteLeave((_to, _from, next) => {
   if (hasUnsavedChanges.value) {
-    const answer = window.confirm(
-      'You have unsaved changes. Are you sure you want to leave?'
-    )
-    if (answer) {
-      next()
-    } else {
-      next(false)
-    }
-  } else {
-    next()
+    draft.saveDraft()
   }
+  next()
 })
 
 onMounted(async () => {
@@ -384,39 +407,8 @@ onMounted(async () => {
 })
 
 onBeforeUnmount(() => {
-  // Clean up beforeunload event listener
-  window.removeEventListener('beforeunload', handleBeforeUnload)
-})
-
-// Cleanup on unmount
-onBeforeUnmount(() => {
   draft.disableAutosave()
   window.removeEventListener('beforeunload', handleBeforeUnload)
-})
-
-// Warn user before leaving page with unsaved changes
-const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-  // Only warn if we're creating new content (not editing) and there's unsaved content
-  if (!isEditing.value && (form.value.title.trim() || form.value.body.trim())) {
-    e.preventDefault()
-    e.returnValue = ''
-    return ''
-  }
-}
-
-// Router navigation guard to warn about unsaved changes
-onBeforeRouteLeave((_to, _from, next) => {
-  // Only warn if we're creating new content (not editing) and there's unsaved content
-  if (!isEditing.value && (form.value.title.trim() || form.value.body.trim())) {
-    const answer = window.confirm('You have unsaved changes. Do you really want to leave?')
-    if (answer) {
-      next()
-    } else {
-      next(false)
-    }
-  } else {
-    next()
-  }
 })
 
 </script>
