@@ -1,3 +1,4 @@
+import type { Ref } from 'vue'
 import { ref, watch, onUnmounted } from 'vue'
 import { formatTime } from '../utils/time'
 
@@ -41,12 +42,12 @@ function debounce<T extends (...args: any[]) => any>(func: T, delay: number): (.
  *   enableAutosave 
  * } = useWriteDraft(writingId, form)
  */
-export function useWriteDraft(writingId: string | undefined, formData: {
+export function useWriteDraft(writingId: string | undefined, formDataRef: Ref<{
   title: string
   body: string
   themeIds: string[]
   visibility: 'private' | 'shared' | 'public'
-}) {
+}>) {
   const lastSaved = ref<Date | null>(null)
   const hasDraft = ref(false)
   const autosaveEnabled = ref(false)
@@ -64,6 +65,7 @@ export function useWriteDraft(writingId: string | undefined, formData: {
    */
   const saveDraft = () => {
     try {
+      const formData = formDataRef.value
       const draft: DraftData = {
         title: formData.title,
         body: formData.body,
@@ -93,8 +95,8 @@ export function useWriteDraft(writingId: string | undefined, formData: {
     }
   }
 
-  // Debounced save function (30 seconds default)
-  const debouncedSave = debounce(saveDraft, 30000)
+  // Debounced save function (3 seconds for responsive "Draft saved at" feedback)
+  const debouncedSave = debounce(saveDraft, 3000)
 
   /**
    * Load draft from localStorage
@@ -168,30 +170,24 @@ export function useWriteDraft(writingId: string | undefined, formData: {
     stopWatchers.forEach(stop => stop())
     stopWatchers = []
 
-    // Watch for changes to form data and trigger debounced save
-    stopWatchers.push(watch(() => formData.title, () => {
-      if (autosaveEnabled.value) {
+    const triggerSave = () => {
+      if (!autosaveEnabled.value) return
+      const formData = formDataRef.value
+      const hasContent = formData.title.trim() || formData.body.trim()
+      if (!hasContent) return
+      // Immediate save on first content so "Draft saved at" appears quickly
+      if (!lastSaved.value) {
+        saveDraft()
+      } else {
         debouncedSave()
       }
-    }))
+    }
 
-    stopWatchers.push(watch(() => formData.body, () => {
-      if (autosaveEnabled.value) {
-        debouncedSave()
-      }
-    }))
-
-    stopWatchers.push(watch(() => formData.themeIds, () => {
-      if (autosaveEnabled.value) {
-        debouncedSave()
-      }
-    }, { deep: true }))
-
-    stopWatchers.push(watch(() => formData.visibility, () => {
-      if (autosaveEnabled.value) {
-        debouncedSave()
-      }
-    }))
+    // Watch for changes to form data and trigger save
+    stopWatchers.push(watch(() => formDataRef.value.title, triggerSave))
+    stopWatchers.push(watch(() => formDataRef.value.body, triggerSave))
+    stopWatchers.push(watch(() => formDataRef.value.themeIds, triggerSave, { deep: true }))
+    stopWatchers.push(watch(() => formDataRef.value.visibility, triggerSave))
   }
 
   /**
