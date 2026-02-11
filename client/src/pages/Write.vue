@@ -101,16 +101,61 @@
         </router-link>
       </div>
     </form>
+
+    <!-- Draft Saved Indicator -->
+    <div v-if="!isEditing && draft.lastSaved.value" class="mt-4 text-xs sm:text-sm text-gray-500">
+      Draft saved at {{ draft.getFormattedSaveTime() }}
+    </div>
+
+    <!-- Draft Recovery Modal -->
+    <div v-if="showRecoveryModal && recoveryDraft" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      <div class="bg-white rounded-lg shadow-xl p-6 max-w-md w-full mx-4">
+        <h3 class="text-lg font-semibold mb-2">Recover Unsaved Work?</h3>
+        <p class="text-gray-700 mb-4">
+          You have an unsaved draft from {{ formatDraftTime(recoveryDraft.timestamp) }}. Would you like to recover it?
+        </p>
+        <div class="mb-4 p-3 bg-gray-50 rounded-md text-sm">
+          <div class="font-medium text-gray-700 mb-1">Draft Preview:</div>
+          <div class="text-gray-600">
+            <strong>Title:</strong> {{ recoveryDraft.title || '(empty)' }}
+          </div>
+          <div class="text-gray-600 mt-1">
+            <strong>Body:</strong> {{ recoveryDraft.body.substring(0, 100) }}{{ recoveryDraft.body.length > 100 ? '...' : '' }}
+          </div>
+        </div>
+        <div class="flex justify-end gap-3">
+          <button
+            @click="dismissRecoveryModal"
+            class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 text-sm"
+          >
+            Dismiss
+          </button>
+          <button
+            @click="discardDraft"
+            class="px-4 py-2 border border-red-300 rounded-md text-red-700 hover:bg-red-50 text-sm"
+          >
+            Discard
+          </button>
+          <button
+            @click="restoreDraft"
+            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm"
+          >
+            Restore
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, onBeforeUnmount } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { api } from '../api/client'
 import type { Theme } from '../domain/Theme'
 import type { WritingBlock } from '../domain/WritingBlock'
 import type { ApiResponse } from '@shared/ApiResponses'
+import { useWriteDraft } from '../composables/useWriteDraft'
 
 const router = useRouter()
 const route = useRoute()
@@ -130,6 +175,11 @@ const loadingThemes = ref(true)
 const loadingWriting = ref(false)
 const submitting = ref(false)
 const error = ref<string | null>(null)
+
+// Draft management
+const draft = useWriteDraft(writingId.value, form.value)
+const showRecoveryModal = ref(false)
+const recoveryDraft = ref<{ title: string; body: string; themeIds: string[]; visibility: 'private' | 'shared' | 'public'; timestamp: number } | null>(null)
 
 const loadThemes = async () => {
   try {
@@ -165,6 +215,61 @@ const loadWriting = async () => {
   }
 }
 
+const checkForDraft = () => {
+  // Only check for draft if we're creating a new writing (not editing)
+  if (isEditing.value) {
+    return
+  }
+
+  // Only check if form is currently empty
+  if (form.value.title.trim() || form.value.body.trim()) {
+    return
+  }
+
+  const savedDraft = draft.loadDraft()
+  if (savedDraft) {
+    recoveryDraft.value = savedDraft
+    showRecoveryModal.value = true
+  }
+}
+
+const restoreDraft = () => {
+  if (recoveryDraft.value) {
+    form.value = {
+      title: recoveryDraft.value.title,
+      body: recoveryDraft.value.body,
+      themeIds: recoveryDraft.value.themeIds,
+      visibility: recoveryDraft.value.visibility
+    }
+    showRecoveryModal.value = false
+    recoveryDraft.value = null
+    // Enable autosave after restoring
+    draft.enableAutosave()
+  }
+}
+
+const discardDraft = () => {
+  draft.clearDraft()
+  showRecoveryModal.value = false
+  recoveryDraft.value = null
+  // Enable autosave for new content
+  draft.enableAutosave()
+}
+
+const dismissRecoveryModal = () => {
+  showRecoveryModal.value = false
+  recoveryDraft.value = null
+  // Enable autosave for new content
+  draft.enableAutosave()
+}
+
+const formatDraftTime = (timestamp: number): string => {
+  const date = new Date(timestamp)
+  const hours = date.getHours().toString().padStart(2, '0')
+  const minutes = date.getMinutes().toString().padStart(2, '0')
+  return `${hours}:${minutes}`
+}
+
 const handleSubmit = async () => {
   if (!form.value.title.trim() || !form.value.body.trim()) {
     error.value = 'Title and body are required'
@@ -193,6 +298,9 @@ const handleSubmit = async () => {
       })
     }
     
+    // Clear draft on successful submission
+    draft.clearDraft()
+    
     router.push('/home')
   } catch (err) {
     error.value = err instanceof Error ? err.message : (isEditing.value ? 'Failed to update writing' : 'Failed to publish writing')
@@ -205,6 +313,19 @@ onMounted(async () => {
   await loadThemes()
   if (isEditing.value) {
     await loadWriting()
+    // Don't enable autosave when editing existing writing
+  } else {
+    // Check for draft when creating new writing
+    checkForDraft()
+    // Enable autosave if no recovery modal is shown
+    if (!showRecoveryModal.value) {
+      draft.enableAutosave()
+    }
   }
+})
+
+// Cleanup on unmount
+onBeforeUnmount(() => {
+  draft.disableAutosave()
 })
 </script>
