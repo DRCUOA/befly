@@ -150,7 +150,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed, onBeforeUnmount } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
+import { useRouter, useRoute, onBeforeRouteLeave } from 'vue-router'
 import { api } from '../api/client'
 import type { Theme } from '../domain/Theme'
 import type { WritingBlock } from '../domain/WritingBlock'
@@ -322,10 +322,40 @@ onMounted(async () => {
       draft.enableAutosave()
     }
   }
+
+  // Add beforeunload listener to warn user about unsaved changes
+  window.addEventListener('beforeunload', handleBeforeUnload)
 })
 
 // Cleanup on unmount
 onBeforeUnmount(() => {
   draft.disableAutosave()
+  window.removeEventListener('beforeunload', handleBeforeUnload)
 })
+
+// Warn user before leaving page with unsaved changes
+const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+  // Only warn if we're creating new content (not editing) and there's unsaved content
+  if (!isEditing.value && (form.value.title.trim() || form.value.body.trim())) {
+    e.preventDefault()
+    e.returnValue = ''
+    return ''
+  }
+}
+
+// Router navigation guard to warn about unsaved changes
+onBeforeRouteLeave((_to, _from, next) => {
+  // Only warn if we're creating new content (not editing) and there's unsaved content
+  if (!isEditing.value && (form.value.title.trim() || form.value.body.trim())) {
+    const answer = window.confirm('You have unsaved changes. Do you really want to leave?')
+    if (answer) {
+      next()
+    } else {
+      next(false)
+    }
+  } else {
+    next()
+  }
+})
+
 </script>
