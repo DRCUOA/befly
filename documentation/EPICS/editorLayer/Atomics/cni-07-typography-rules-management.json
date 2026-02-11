@@ -1,0 +1,52 @@
+{
+  "meta": {
+    "cohort": "c26",
+    "repo": "befly"
+  },
+  "summary": "Typography rules management — dedicated module with admin CRUD",
+  "problem_statement": "Typography suggestion rules (cni-06) are currently hardcoded in the client. To make the correction system more useful and adaptable, admins need the ability to create, edit, reorder, enable/disable, and delete rules without code changes. A dedicated module with full-stack CRUD enables site-specific customization and experimentation.",
+  "in_scope": [
+    "Dedicated typography-rules module: shared types, client engine, server persistence",
+    "Database table and migration for typography rules (id, order, enabled, pattern, replacement, description, etc.)",
+    "Server API: GET /api/admin/typography-rules, POST/PUT/DELETE for full CRUD",
+    "Public API: GET /api/typography-rules (or /api/public/typography-rules) — returns enabled rules for Write page (no auth required)",
+    "Admin UI: new view /admin/rules (or section in Admin) with list, create, edit, delete, reorder",
+    "Client: Write page fetches rules from API instead of hardcoded; fallback to bundled defaults if API fails",
+    "Rule validation: pattern must be valid regex; replacement supported; serializable format for server storage"
+  ],
+  "out_of_scope": [
+    "Per-user rule preferences (all rules are site-wide)",
+    "Rule testing/preview UI in admin (future enhancement)",
+    "Import/export rule sets",
+    "Version history or audit log for rule changes"
+  ],
+  "requirements": [
+    "Rules persisted in database; editable by admins only",
+    "Order field for rule execution order (em dash before en dash, etc.)",
+    "Enabled flag to toggle rules without deleting",
+    "Pattern stored as string; replacement as string or template (e.g. $1 for capture group)",
+    "Write page uses API rules; graceful fallback to default rules on fetch failure"
+  ],
+  "acceptance_criteria": [
+    "Admin can create a new typography rule (pattern, replacement, description, order)",
+    "Admin can edit existing rules",
+    "Admin can delete rules",
+    "Admin can reorder rules (drag-and-drop or up/down buttons)",
+    "Admin can enable/disable rules without deleting",
+    "Write page typography suggestions use rules from API when available",
+    "Write page falls back to bundled default rules if API fails or returns empty"
+  ],
+  "dependencies": [
+    "cni-06 autocorrection option A implemented"
+  ],
+  "risks": [
+    "Stored regex patterns can be invalid or cause ReDoS — validate/server-side sanitize",
+    "Malicious replacement templates could inject script — sanitize replacement format"
+  ],
+  "implementation_notes": {
+    "shared": "TypographyRule type/interface; rule schema for API request/response",
+    "server": "Migration for typography_rules table (id, sort_order, enabled, rule_id, description, pattern, replacement, created_at, updated_at). Controller, service, repository. Admin routes under /api/admin/typography-rules. Public read-only route /api/typography-rules for Write page.",
+    "client": "Composable useTypographyRules() fetches from /api/typography-rules. Admin page AdminRules.vue or AdminRules section: list with edit/delete/reorder; create/edit form for pattern, replacement, description. Write.vue passes fetched rules to scanTypography(). Default rules in typography-suggestions.ts as fallback.",
+    "rule_format": "Replacement can use $1, $2 for capture groups. Pattern must include 'g' flag for global. Validate pattern compiles before save."
+  }
+}

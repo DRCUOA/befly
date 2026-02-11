@@ -1,6 +1,6 @@
 # Editor Layer Epic — Progress and Next Steps
 
-**Last updated:** February 11, 2026
+**Last updated:** February 12, 2026
 
 ## Status Overview
 
@@ -9,7 +9,7 @@
 | CNI 01–03 (investigate) | Complete | Audit, strategy, baseline done |
 | Phase 1: Critical Safety | **Complete** | cni-04 done; cni-05 accepted as-is (no confirmation dialogs) |
 | Phase 2: Validation | **Complete** | Undo/redo tests done; see findings below |
-| Phase 3: Auto-correction | Not started | Option A: suggest only, no programmatic apply |
+| Phase 3: Auto-correction | **In progress** | cni-06 implemented; cni-07 drafted |
 
 ---
 
@@ -75,11 +75,31 @@
 | Apply corrections | **Suggest only** — show inline hints or modal; user chooses to accept |
 | Undo wrapper | Not needed |
 
-**Potential deliverables:**
-- Typography suggestions (smart quotes, dashes, ellipsis) on blur or before save
-- Inline hints or tooltip: "Consider: `"hello"` → `"hello"`"
-- User clicks to apply (single change) or accepts all
-- No programmatic text mutation — user action triggers the change, so undo works
+---
+
+### cni-06: Autocorrection Option A — **Complete**
+
+| Criterion | Status |
+|----------|--------|
+| Typography suggestions appear on blur or before save | Yes |
+| User can accept or dismiss each suggestion | Yes |
+| No programmatic text mutation without user action | Yes |
+| Undo/redo behavior unchanged | Yes |
+| Initial rules: smart quotes, en/em dashes, ellipsis | Yes |
+
+**Implementation:**
+- [`client/src/utils/typography-suggestions.ts`](../../../client/src/utils/typography-suggestions.ts) — rule engine, markdown-aware scan, apply helpers
+- [`client/src/pages/Write.vue`](../../../client/src/pages/Write.vue) — suggestion modal before save, blur hint, user-initiated apply
+
+**Delivered:** Modal before publish; Accept/Dismiss per suggestion or Accept all/Dismiss all; blur indicator for suggestion count.
+
+---
+
+### cni-07: Typography Rules Management — **Drafted**
+
+Atomic spec drafted: [cni-07-typography-rules-management.json](./Atomics/cni-07-typography-rules-management.json)
+
+Scope: dedicated module, admin CRUD UI, server persistence, public read API. Not yet implemented.
 
 ---
 
@@ -92,7 +112,5 @@
 
 ## Recommended Next Steps
 
-1. **Implement cni-06** — [cni-06-autocorrection-option-a.json](./Atomics/cni-06-autocorrection-option-a.json) scopes suggest-on-blur/save, no programmatic apply, user-initiated accept.
-2. **Prototype suggestion UI** — Decide: inline underline, tooltip, or modal before save. Minimal implementation to validate UX.
-3. **Define initial suggestion rules** — Start with typography (smart quotes, dashes, ellipsis); document rule format for extensibility.
-4. **Implement when ready** — Phase 1 and 2 complete; no blocking items.
+1. **Implement cni-07** — [cni-07-typography-rules-management.json](./Atomics/cni-07-typography-rules-management.json) scopes admin CRUD for typography rules, dedicated module, server persistence.
+2. **Optional: EDITOR_PERFORMANCE_BASELINE.md** — Add note that critical autosave/draft items are addressed.
