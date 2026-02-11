@@ -10,6 +10,7 @@ import Profile from '../pages/Profile.vue'
 import SignIn from '../pages/SignIn.vue'
 import SignUp from '../pages/SignUp.vue'
 import Admin from '../pages/Admin.vue'
+import BaselineTest from '../pages/BaselineTest.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -82,6 +83,11 @@ const router = createRouter({
       name: 'SignUp',
       component: SignUp,
       meta: { requiresGuest: true }
+    },
+    {
+      path: '/baseline-test',
+      name: 'BaselineTest',
+      component: BaselineTest
     }
   ]
 })

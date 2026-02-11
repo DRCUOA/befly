@@ -1,99 +1,74 @@
-# Performance Baseline Testing Tools
+# Performance Baseline Testing
 
-This directory contains tools and reports for measuring and documenting the baseline performance and safety characteristics of the befly editor.
-
-## Files
-
-### Reports
-- **`EDITOR_PERFORMANCE_BASELINE.md`** - Comprehensive baseline report with all findings and recommendations
-- **`UNDO_REDO_TEST_SCENARIOS.md`** - Manual test scenarios for validating undo/redo behavior
-- **`performance-baseline-results.json`** - Raw measurement data in JSON format
-
-### Tools
-- **`performance-baseline-test.html`** - Interactive browser-based performance testing tool
-- **`measure-performance.js`** - Node.js script for automated performance measurement
-
-## Quick Start
-
-### Run Interactive Test (Browser)
-
-```bash
-# Option 1: Open directly
-open performance-baseline-test.html
-
-# Option 2: Via static server
-npx serve .
-# Then navigate to http://localhost:3000/performance-baseline-test.html
-```
-
-### Run Automated Measurement (Node.js)
-
-```bash
-node measure-performance.js
-# Results saved to performance-baseline-results.json
-```
+Establishes performance and safety baseline for the long-form editor per [cni-03-editor-baseline-performance.json](./Atomics/cni-03-editor-baseline-performance.json).
 
 ## What This Measures
 
-### Performance Metrics
-- Input latency for various document sizes (1KB to 1MB)
-- Memory usage estimates
-- Network upload times at different speeds
-- Vue reactivity overhead
+- **Typing latency** — Real measurement (input → Vue update → next frame) for small, medium, and large documents
+- **Undo/redo behavior** — Observe behavior under programmatic text changes (browser-dependent)
+- **Document size limits** — Document size thresholds and risks
+- **Data loss risks** — Autosave, draft persistence, network failures
 
-### Safety Assessment
-- Data loss risk scenarios
-- Undo/redo behavior
-- Database constraints
-- Document size limits
+## Quick Start
 
-### Known Risks Identified
-- 🔴 **HIGH RISK:** No autosave - browser crash loses all work
-- 🔴 **HIGH RISK:** No draft persistence - no recovery mechanism
-- 🔴 **HIGH RISK:** Undo stack corruption with programmatic changes
-- 🟡 **MEDIUM RISK:** Network failures may not be communicated clearly
-- 🟡 **MEDIUM RISK:** Performance degradation at 500KB+ documents
+### 1. Run the app
 
-## Test Results Summary
+```bash
+npm run dev
+```
 
-| Document Size | Performance | Memory | Upload Time (Fast) |
-|--------------|-------------|--------|-------------------|
-| 1KB | ⭐⭐⭐⭐⭐ Excellent | 3.5 KB | < 1ms |
-| 10KB | ⭐⭐⭐⭐ Good | 35 KB | 2ms |
-| 100KB | ⭐⭐⭐ Acceptable | 350 KB | 25ms |
-| 500KB | ⚠️ Degraded | 1.75 MB | 123ms |
-| 1MB | ❌ Poor | 3.58 MB | 252ms |
+### 2. Open baseline test page
 
-## Recommendations
+Navigate to **http://localhost:5173/baseline-test** (or your dev URL).
 
-### Critical Priority
-1. Implement localStorage autosave (every 30-60s)
-2. Add draft recovery mechanism
-3. Add "unsaved changes" navigation warning
+### 3. Measure latency
 
-### High Priority
-4. Add document size warning at 100KB
-5. Improve save confirmation feedback
+1. Click **Small (1KB)**, **Medium (10KB)**, or **Large (100KB)** to load a document
+2. Type in the editor for 10–30 seconds
+3. Review the measured latency (avg, max, P95, P99, % slow events)
 
-### Medium Priority
-6. Add maximum document size limit (1MB)
-7. Implement performance monitoring
+### 4. Test undo/redo
 
-## Related Documentation
+1. Type some text
+2. Click **Replace "the" → "THE"** or **Insert at cursor**
+3. Press Ctrl+Z (Cmd+Z) and document the behavior
 
-- See existing `EDITOR_STACK_AUDIT.md` for technical details
-- See `EDITOR_STRATEGY_DECISION.md` for architectural decisions
-- See `UNDO_REDO_TEST_SCENARIOS.md` for manual testing procedures
+### 5. Export report
 
-## Status
+- **Export JSON** — Saves `performance-baseline-results-{timestamp}.json`
+- **Export HTML report** — Saves self-contained HTML report
 
-✅ Baseline complete - measurements documented  
-⚠️ Manual undo/redo testing pending  
-⚠️ Cross-browser validation pending  
-📋 Ready for next phase: safety improvements
+### 6. View report (optional)
 
----
+Open `performance-baseline-view.html` in a browser, then drag-and-drop or select the exported JSON file to view it.
 
-**Created:** February 10, 2026  
-**Purpose:** Establish observable baseline before implementing editor enhancements  
-**Status:** Complete - no editor behavior modified
+## Files
+
+| File | Purpose |
+|------|---------|
+| `performance-baseline-view.html` | Standalone viewer for exported JSON (file input) |
+| `EDITOR_PERFORMANCE_BASELINE.md` | Comprehensive baseline report and findings |
+| `UNDO_REDO_TEST_SCENARIOS.md` | Manual undo/redo test procedures |
+
+## Implementation
+
+The baseline test uses **Vue v-model on a textarea** — the same pattern as `Write.vue`. Latency is measured as:
+
+```
+input event → Vue nextTick → requestAnimationFrame → record
+```
+
+This captures the actual time from user input to the next frame (Vue reactivity + DOM update).
+
+## Known Risks
+
+- 🔴 **HIGH:** No autosave — browser crash loses all work
+- 🔴 **HIGH:** No draft persistence — no recovery mechanism
+- 🔴 **HIGH:** Undo stack corruption with programmatic changes
+- 🟡 **MEDIUM:** Performance degradation at 500KB+ documents
+
+## Related
+
+- [cni-03-editor-baseline-performance.json](./Atomics/cni-03-editor-baseline-performance.json) — Atomic spec
+- `EDITOR_STACK_AUDIT.md` — Technical details
+- `EDITOR_STRATEGY_DECISION.md` — Architectural decisions
