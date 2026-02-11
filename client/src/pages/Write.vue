@@ -140,12 +140,26 @@ const error = ref<string | null>(null)
 
 // Track if form has unsaved changes
 const hasUnsavedChanges = computed(() => {
-  return (
-    form.value.title !== initialFormState.value.title ||
-    form.value.body !== initialFormState.value.body ||
-    form.value.visibility !== initialFormState.value.visibility ||
-    JSON.stringify(form.value.themeIds.slice().sort()) !== JSON.stringify(initialFormState.value.themeIds.slice().sort())
-  )
+  // Check simple fields first (most common changes)
+  if (form.value.title !== initialFormState.value.title ||
+      form.value.body !== initialFormState.value.body ||
+      form.value.visibility !== initialFormState.value.visibility) {
+    return true
+  }
+  
+  // Check themeIds array efficiently
+  const currentThemes = form.value.themeIds
+  const initialThemes = initialFormState.value.themeIds
+  
+  if (currentThemes.length !== initialThemes.length) {
+    return true
+  }
+  
+  // Sort and compare element-by-element
+  const sortedCurrent = [...currentThemes].sort()
+  const sortedInitial = [...initialThemes].sort()
+  
+  return sortedCurrent.some((id, index) => id !== sortedInitial[index])
 })
 
 const loadThemes = async () => {
@@ -160,6 +174,18 @@ const loadThemes = async () => {
   }
 }
 
+const setFormState = (writing: Partial<WritingBlock>) => {
+  const formState = {
+    title: writing.title || '',
+    body: writing.body || '',
+    themeIds: writing.themeIds || [],
+    visibility: (writing.visibility || 'private') as 'private' | 'shared' | 'public'
+  }
+  
+  form.value = { ...formState }
+  initialFormState.value = { ...formState, themeIds: [...formState.themeIds] }
+}
+
 const loadWriting = async () => {
   if (!writingId.value) return
 
@@ -167,22 +193,7 @@ const loadWriting = async () => {
     loadingWriting.value = true
     error.value = null
     const response = await api.get<ApiResponse<WritingBlock>>(`/writing/${writingId.value}`)
-    const writing = response.data
-    
-    form.value = {
-      title: writing.title,
-      body: writing.body,
-      themeIds: writing.themeIds || [],
-      visibility: writing.visibility || 'private'
-    }
-    
-    // Save initial state for dirty checking
-    initialFormState.value = {
-      title: writing.title,
-      body: writing.body,
-      themeIds: writing.themeIds || [],
-      visibility: writing.visibility || 'private'
-    }
+    setFormState(response.data)
   } catch (err) {
     error.value = err instanceof Error ? err.message : 'Failed to load writing'
   } finally {
@@ -219,12 +230,7 @@ const handleSubmit = async () => {
     }
     
     // Clear dirty state after successful save
-    initialFormState.value = {
-      title: form.value.title,
-      body: form.value.body,
-      themeIds: [...form.value.themeIds],
-      visibility: form.value.visibility
-    }
+    setFormState(form.value)
     
     router.push('/home')
   } catch (err) {
