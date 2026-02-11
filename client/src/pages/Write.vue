@@ -105,8 +105,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
+import { ref, onMounted, onBeforeUnmount, computed } from 'vue'
+import { useRouter, useRoute, onBeforeRouteLeave } from 'vue-router'
 import { api } from '../api/client'
 import type { Theme } from '../domain/Theme'
 import type { WritingBlock } from '../domain/WritingBlock'
@@ -125,11 +125,28 @@ const form = ref({
   visibility: 'private' as 'private' | 'shared' | 'public'
 })
 
+const initialFormState = ref({
+  title: '',
+  body: '',
+  themeIds: [] as string[],
+  visibility: 'private' as 'private' | 'shared' | 'public'
+})
+
 const availableThemes = ref<Theme[]>([])
 const loadingThemes = ref(true)
 const loadingWriting = ref(false)
 const submitting = ref(false)
 const error = ref<string | null>(null)
+
+// Track if form has unsaved changes
+const hasUnsavedChanges = computed(() => {
+  return (
+    form.value.title !== initialFormState.value.title ||
+    form.value.body !== initialFormState.value.body ||
+    form.value.visibility !== initialFormState.value.visibility ||
+    JSON.stringify(form.value.themeIds.slice().sort()) !== JSON.stringify(initialFormState.value.themeIds.slice().sort())
+  )
+})
 
 const loadThemes = async () => {
   try {
@@ -153,6 +170,14 @@ const loadWriting = async () => {
     const writing = response.data
     
     form.value = {
+      title: writing.title,
+      body: writing.body,
+      themeIds: writing.themeIds || [],
+      visibility: writing.visibility || 'private'
+    }
+    
+    // Save initial state for dirty checking
+    initialFormState.value = {
       title: writing.title,
       body: writing.body,
       themeIds: writing.themeIds || [],
@@ -193,6 +218,14 @@ const handleSubmit = async () => {
       })
     }
     
+    // Clear dirty state after successful save
+    initialFormState.value = {
+      title: form.value.title,
+      body: form.value.body,
+      themeIds: [...form.value.themeIds],
+      visibility: form.value.visibility
+    }
+    
     router.push('/home')
   } catch (err) {
     error.value = err instanceof Error ? err.message : (isEditing.value ? 'Failed to update writing' : 'Failed to publish writing')
@@ -201,10 +234,43 @@ const handleSubmit = async () => {
   }
 }
 
+// beforeunload handler for external navigation (back button, close tab, refresh)
+const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+  if (hasUnsavedChanges.value) {
+    e.preventDefault()
+    // Modern browsers ignore returnValue and show their own message
+    e.returnValue = ''
+  }
+}
+
+// Vue Router guard for in-app navigation
+onBeforeRouteLeave((_to, _from, next) => {
+  if (hasUnsavedChanges.value) {
+    const answer = window.confirm(
+      'You have unsaved changes. Are you sure you want to leave?'
+    )
+    if (answer) {
+      next()
+    } else {
+      next(false)
+    }
+  } else {
+    next()
+  }
+})
+
 onMounted(async () => {
   await loadThemes()
   if (isEditing.value) {
     await loadWriting()
   }
+  
+  // Add beforeunload event listener
+  window.addEventListener('beforeunload', handleBeforeUnload)
+})
+
+onBeforeUnmount(() => {
+  // Clean up beforeunload event listener
+  window.removeEventListener('beforeunload', handleBeforeUnload)
 })
 </script>
