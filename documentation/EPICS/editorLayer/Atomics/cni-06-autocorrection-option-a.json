@@ -1,0 +1,48 @@
+{
+  "meta": {
+    "cohort": "c26",
+    "repo": "befly"
+  },
+  "summary": "Implement suggest-only typography corrections (Option A) on blur/save",
+  "problem_statement": "Phase 2 validation confirmed that programmatic text changes are not reversible with Cmd+Z. The browser undo stack does not integrate with programmatic edits. To preserve writer trust and 100% undo functionality, we must not apply corrections automatically. Instead, we suggest corrections and let the user choose to accept them.",
+  "in_scope": [
+    "Correction rule engine that detects typography issues (smart quotes, en/em dashes, ellipsis)",
+    "Run suggestions on blur or before save — no real-time programmatic mutation",
+    "Suggestion UI: inline hints, tooltip, or modal listing suggested changes",
+    "User-initiated apply: user clicks to accept single suggestion or accept all",
+    "Markdown-aware rules (do not corrupt **bold**, [links](), etc.)"
+  ],
+  "out_of_scope": [
+    "Programmatic text mutation (typing or on input)",
+    "Custom undo stack or undo wrapper",
+    "Grammar or spell checking",
+    "Real-time correction as user types",
+    "Server-side correction or API"
+  ],
+  "requirements": [
+    "Suggestions are detected, not applied automatically",
+    "User must explicitly accept a suggestion for text to change",
+    "Undo (Cmd+Z) works for all user-initiated changes",
+    "Rules are extensible (plugin-style architecture)"
+  ],
+  "acceptance_criteria": [
+    "Typography suggestions appear on blur or before save",
+    "User can accept or dismiss each suggestion",
+    "No programmatic text mutation occurs without user action",
+    "Undo/redo behavior unchanged after implementation",
+    "Initial rules: smart quotes, en/em dashes, ellipsis"
+  ],
+  "dependencies": [
+    "Completed editor stack audit (cni-01)",
+    "Completed strategy decision (cni-02)",
+    "Completed performance baseline (cni-03)",
+    "Phase 2 validation: Option A selected",
+    "Phase 1 critical safety complete"
+  ],
+  "risks": [
+    "Suggestion UI may feel intrusive if too frequent",
+    "Markdown syntax corruption if rules not context-aware",
+    "User may ignore suggestions if UX is friction-heavy"
+  ],
+  "implementation_notes": "Reference EPIC_PROGRESS.md Phase 3 Option A approach. Trigger on textarea blur or form submit (before save). Consider: inline underline with tooltip, or modal before publish listing all suggestions. User applies via click — that triggers DOM mutation from user action, so browser undo works. Start with typography rules only; document rule format for future additions."
+}

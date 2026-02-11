@@ -62,13 +62,15 @@ This captures the actual time from user input to the next frame (Vue reactivity 
 
 ## Known Risks
 
-- 🔴 **HIGH:** No autosave — browser crash loses all work
-- 🔴 **HIGH:** No draft persistence — no recovery mechanism
+- ~~🔴 **HIGH:** No autosave~~ — **Resolved:** localStorage autosave in `useWriteDraft` (3s debounce)
+- ~~🔴 **HIGH:** No draft persistence~~ — **Resolved:** Draft recovery modal on Write page load
 - 🔴 **HIGH:** Undo stack corruption with programmatic changes
 - 🟡 **MEDIUM:** Performance degradation at 500KB+ documents
+- 🟡 **MEDIUM:** Unsaved changes confirmation — draft is saved before leaving but user is not warned (see cni-05)
 
 ## Related
 
+- [EPIC_PROGRESS.md](./EPIC_PROGRESS.md) — Current status and next steps
 - [cni-03-editor-baseline-performance.json](./Atomics/cni-03-editor-baseline-performance.json) — Atomic spec
 - `EDITOR_STACK_AUDIT.md` — Technical details
 - `EDITOR_STRATEGY_DECISION.md` — Architectural decisions
