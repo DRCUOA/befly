@@ -3,7 +3,8 @@
     <!-- Hero Section - Arrival -->
     <div id="arrival-container" class="w-full min-h-screen flex items-center justify-center relative overflow-hidden px-4 sm:px-6 md:px-8">
       <div id="central-content" class="text-center max-w-2xl">
-        <div id="author-mark" class="mb-8 sm:mb-10 md:mb-12">
+        <div id="author-mark" class="mb-8 sm:mb-10 md:mb-12 flex flex-col items-center gap-4 sm:gap-6">
+          <img :src="logoUrl" alt="" class="h-16 w-16 sm:h-20 sm:w-20 md:h-24 md:w-24" />
           <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-light tracking-tight leading-none">
             {{ appConfig.appName }}
           </h1>
@@ -267,6 +268,7 @@
 import { ref, onMounted } from 'vue'
 import { api } from '../api/client'
 import { appConfig } from '../config/app'
+import logoUrl from '../assets/logo2.png'
 import type { Theme } from '../domain/Theme'
 import type { WritingBlock } from '../domain/WritingBlock'
 import type { ApiResponse } from '@shared/ApiResponses'
