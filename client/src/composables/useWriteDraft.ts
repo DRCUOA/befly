@@ -1,4 +1,5 @@
 import { ref, watch, onUnmounted } from 'vue'
+import { formatTime } from '../utils/time'
 
 /**
  * Draft data structure stored in localStorage
@@ -49,6 +50,9 @@ export function useWriteDraft(writingId: string | undefined, formData: {
   const lastSaved = ref<Date | null>(null)
   const hasDraft = ref(false)
   const autosaveEnabled = ref(false)
+  
+  // Store watcher stop functions for cleanup
+  let stopWatchers: (() => void)[] = []
 
   // Generate storage key based on writingId or 'new'
   const getStorageKey = () => {
@@ -160,38 +164,34 @@ export function useWriteDraft(writingId: string | undefined, formData: {
 
     autosaveEnabled.value = true
 
+    // Clean up any existing watchers first
+    stopWatchers.forEach(stop => stop())
+    stopWatchers = []
+
     // Watch for changes to form data and trigger debounced save
-    const stopWatchTitle = watch(() => formData.title, () => {
+    stopWatchers.push(watch(() => formData.title, () => {
       if (autosaveEnabled.value) {
         debouncedSave()
       }
-    })
+    }))
 
-    const stopWatchBody = watch(() => formData.body, () => {
+    stopWatchers.push(watch(() => formData.body, () => {
       if (autosaveEnabled.value) {
         debouncedSave()
       }
-    })
+    }))
 
-    const stopWatchThemeIds = watch(() => formData.themeIds, () => {
+    stopWatchers.push(watch(() => formData.themeIds, () => {
       if (autosaveEnabled.value) {
         debouncedSave()
       }
-    }, { deep: true })
+    }, { deep: true }))
 
-    const stopWatchVisibility = watch(() => formData.visibility, () => {
+    stopWatchers.push(watch(() => formData.visibility, () => {
       if (autosaveEnabled.value) {
         debouncedSave()
       }
-    })
-
-    // Clean up watchers on unmount
-    onUnmounted(() => {
-      stopWatchTitle()
-      stopWatchBody()
-      stopWatchThemeIds()
-      stopWatchVisibility()
-    })
+    }))
   }
 
   /**
@@ -199,17 +199,23 @@ export function useWriteDraft(writingId: string | undefined, formData: {
    */
   const disableAutosave = () => {
     autosaveEnabled.value = false
+    // Clean up watchers when disabling
+    stopWatchers.forEach(stop => stop())
+    stopWatchers = []
   }
+
+  // Clean up watchers on component unmount
+  onUnmounted(() => {
+    stopWatchers.forEach(stop => stop())
+    stopWatchers = []
+  })
 
   /**
    * Get formatted time string for last saved
    */
   const getFormattedSaveTime = (): string | null => {
     if (!lastSaved.value) return null
-    
-    const hours = lastSaved.value.getHours().toString().padStart(2, '0')
-    const minutes = lastSaved.value.getMinutes().toString().padStart(2, '0')
-    return `${hours}:${minutes}`
+    return formatTime(lastSaved.value)
   }
 
   return {

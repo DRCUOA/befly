@@ -103,7 +103,7 @@
     </form>
 
     <!-- Draft Saved Indicator -->
-    <div v-if="!isEditing && draft.lastSaved.value" class="mt-4 text-xs sm:text-sm text-gray-500">
+    <div v-if="!isEditing && draft.lastSaved" class="mt-4 text-xs sm:text-sm text-gray-500">
       Draft saved at {{ draft.getFormattedSaveTime() }}
     </div>
 
@@ -112,7 +112,7 @@
       <div class="bg-white rounded-lg shadow-xl p-6 max-w-md w-full mx-4">
         <h3 class="text-lg font-semibold mb-2">Recover Unsaved Work?</h3>
         <p class="text-gray-700 mb-4">
-          You have an unsaved draft from {{ formatDraftTime(recoveryDraft.timestamp) }}. Would you like to recover it?
+          You have an unsaved draft from {{ formatTime(recoveryDraft.timestamp) }}. Would you like to recover it?
         </p>
         <div class="mb-4 p-3 bg-gray-50 rounded-md text-sm">
           <div class="font-medium text-gray-700 mb-1">Draft Preview:</div>
@@ -156,6 +156,7 @@ import type { Theme } from '../domain/Theme'
 import type { WritingBlock } from '../domain/WritingBlock'
 import type { ApiResponse } from '@shared/ApiResponses'
 import { useWriteDraft } from '../composables/useWriteDraft'
+import { formatTime } from '../utils/time'
 
 const router = useRouter()
 const route = useRoute()
@@ -261,13 +262,6 @@ const dismissRecoveryModal = () => {
   recoveryDraft.value = null
   // Enable autosave for new content
   draft.enableAutosave()
-}
-
-const formatDraftTime = (timestamp: number): string => {
-  const date = new Date(timestamp)
-  const hours = date.getHours().toString().padStart(2, '0')
-  const minutes = date.getMinutes().toString().padStart(2, '0')
-  return `${hours}:${minutes}`
 }
 
 const handleSubmit = async () => {
