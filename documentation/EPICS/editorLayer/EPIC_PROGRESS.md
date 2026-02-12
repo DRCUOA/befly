@@ -9,7 +9,7 @@
 | CNI 01–03 (investigate) | Complete | Audit, strategy, baseline done |
 | Phase 1: Critical Safety | **Complete** | cni-04 done; cni-05 accepted as-is (no confirmation dialogs) |
 | Phase 2: Validation | **Complete** | Undo/redo tests done; see findings below |
-| Phase 3: Auto-correction | **In progress** | cni-06 implemented; cni-07 drafted |
+| Phase 3: Auto-correction | **Complete** | cni-06 and cni-07 implemented |
 
 ---
 
@@ -95,11 +95,33 @@
 
 ---
 
-### cni-07: Typography Rules Management — **Drafted**
+### cni-07: Typography Rules Management — **Complete**
 
-Atomic spec drafted: [cni-07-typography-rules-management.json](./Atomics/cni-07-typography-rules-management.json)
+| Criterion | Status |
+|----------|--------|
+| Admin can create a new typography rule | Yes |
+| Admin can edit existing rules | Yes |
+| Admin can delete rules | Yes |
+| Admin can reorder rules (up/down buttons) | Yes |
+| Admin can enable/disable rules without deleting | Yes |
+| Write page uses rules from API when available | Yes |
+| Write page falls back to bundled defaults if API fails or returns empty | Yes |
 
-Scope: dedicated module, admin CRUD UI, server persistence, public read API. Not yet implemented.
+**Implementation:**
+- [`shared/TypographyRule.ts`](../../../shared/TypographyRule.ts) — shared types
+- [`server/src/db/migrations/012_typography_rules.sql`](../../../server/src/db/migrations/012_typography_rules.sql) — DB table
+- [`server/src/repositories/typography.repo.ts`](../../../server/src/repositories/typography.repo.ts), [`typography.service.ts`](../../../server/src/services/typography.service.ts), [`typography.controller.ts`](../../../server/src/controllers/typography.controller.ts)
+- Public `GET /api/typography-rules` (no auth), Admin CRUD at `/api/admin/typography-rules`
+- [`client/src/composables/useTypographyRules.ts`](../../../client/src/composables/useTypographyRules.ts) — fetches rules with fallback
+- [`client/src/pages/AdminRules.vue`](../../../client/src/pages/AdminRules.vue) — admin CRUD UI
+- [`client/src/pages/Write.vue`](../../../client/src/pages/Write.vue) — uses API rules; fallback to defaults
+
+**Post-delivery enhancements:**
+- Import from JSON — paste single rule or array of rules; same format as schema
+- Download rules — export current rule set as `typography-rules.json`
+- Download JSON schema — [`client/public/typography-rules-schema.json`](../../../client/public/typography-rules-schema.json) for AI/automation
+- Pattern/replacement preservation — no `.trim()` on pattern or replacement; `sanitizePattern` and `sanitizeReplacementInput` in [`server/src/utils/sanitize.ts`](../../../server/src/utils/sanitize.ts)
+- Guardrail tests — [`server/src/typography-rules-guardrail.test.ts`](../../../server/src/typography-rules-guardrail.test.ts) prevents regression if `.trim()` is reintroduced
 
 ---
 
@@ -112,5 +134,6 @@ Scope: dedicated module, admin CRUD UI, server persistence, public read API. Not
 
 ## Recommended Next Steps
 
-1. **Implement cni-07** — [cni-07-typography-rules-management.json](./Atomics/cni-07-typography-rules-management.json) scopes admin CRUD for typography rules, dedicated module, server persistence.
+1. **Editor Layer Epic — Complete.** All Phase 3 atomics (cni-06, cni-07) are delivered. Optional enhancements added (import/export, guardrail tests).
 2. **Optional: EDITOR_PERFORMANCE_BASELINE.md** — Add note that critical autosave/draft items are addressed.
+3. **Future (out of scope):** Rule testing/preview UI in admin (from cni-07 spec); import/export of rule sets; version history or audit log for rule changes.

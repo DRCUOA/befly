@@ -42,6 +42,28 @@ export interface TypographyRule {
   replace: (match: string, ...groups: string[]) => string | null
 }
 
+/** Convert API record to client TypographyRule. Replacement supports $1, $2 for capture groups. */
+export function recordToRule(record: {
+  ruleId: string
+  description: string
+  pattern: string
+  replacement: string
+}): TypographyRule {
+  const regex = new RegExp(record.pattern, 'g')
+  return {
+    id: record.ruleId,
+    description: record.description,
+    pattern: regex,
+    replace: (_match: string, ...groups: string[]) => {
+      let out = record.replacement
+      groups.forEach((g, i) => {
+        out = out.replace(new RegExp(`\\$${i + 1}`, 'g'), g ?? '')
+      })
+      return out
+    }
+  }
+}
+
 /**
  * Ranges that should not be modified (code, URLs).
  * Returns array of [start, end] pairs (exclusive end).
@@ -100,8 +122,8 @@ function overlapsExcludedRange(index: number, end: number, excluded: Array<[numb
   return excluded.some(([s, e]) => index < e && end > s)
 }
 
-/** Default typography rules: smart quotes, en/em dashes, ellipsis. Order matters (em before en). */
-const ACTIVE_RULES: TypographyRule[] = [
+/** Default typography rules: smart quotes, en/em dashes, ellipsis. Order matters (em before en). Fallback when API fails. */
+export const DEFAULT_TYPOGRAPHY_RULES: TypographyRule[] = [
   {
     id: 'ellipsis',
     description: 'Use ellipsis character',
@@ -137,7 +159,7 @@ const ACTIVE_RULES: TypographyRule[] = [
 /**
  * Scan text for typography suggestions. Markdown-aware (skips code, URLs).
  */
-export function scanTypography(text: string, rules: TypographyRule[] = ACTIVE_RULES): TypographySuggestion[] {
+export function scanTypography(text: string, rules: TypographyRule[] = DEFAULT_TYPOGRAPHY_RULES): TypographySuggestion[] {
   const suggestions: TypographySuggestion[] = []
   const excluded = getExcludedRanges(text)
 

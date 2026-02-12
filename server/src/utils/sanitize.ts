@@ -1,5 +1,11 @@
 /**
  * Input sanitization and output escaping utilities
+ *
+ * IMPORTANT: Do NOT use sanitizeString (or .trim()) for typography rule pattern or
+ * replacement fields. Leading/trailing spaces are meaningful:
+ *   - pattern " {2,}" = 2+ spaces; pattern "{2,}" alone is invalid
+ *   - replacement " " = single space for collapse rules
+ * Use sanitizePattern and sanitizeReplacement instead.
  */
 import { ValidationError } from './errors.js'
 
@@ -12,6 +18,29 @@ export function sanitizeString(input: string): string {
   }
   // Remove null bytes and trim
   return input.replace(/\0/g, '').trim()
+}
+
+/**
+ * Sanitize regex pattern string - remove null bytes only.
+ * Do NOT trim: leading/trailing spaces are meaningful in patterns (e.g. " {2,}").
+ */
+export function sanitizePattern(input: string): string {
+  if (typeof input !== 'string') {
+    return String(input)
+  }
+  return input.replace(/\0/g, '')
+}
+
+/**
+ * Sanitize typography replacement string - remove null bytes only.
+ * Do NOT trim: replacement " " (single space) is valid for collapse rules.
+ * Caller may add additional validation (e.g. reject <script>).
+ */
+export function sanitizeReplacementInput(input: string): string {
+  if (typeof input !== 'string') {
+    return ''
+  }
+  return input.replace(/\0/g, '')
 }
 
 /**

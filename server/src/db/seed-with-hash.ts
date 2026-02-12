@@ -81,6 +81,18 @@ async function seed() {
       ['20000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000001']
     )
 
+    // Default typography rules (cni-07)
+    await pool.query(
+      `INSERT INTO typography_rules (rule_id, description, pattern, replacement, sort_order) VALUES
+       ('ellipsis', 'Use ellipsis character', '\\.{3}', '…', 0),
+       ('em_dash', 'Use em dash', '---', '—', 1),
+       ('en_dash', 'Use en dash', '--', '–', 2),
+       ('smart_quotes_double', 'Use smart double quotes', '"([^"]*)"', $1, 3),
+       ('smart_quotes_single', 'Use smart single quotes', '''([^'']*)''', $2, 4)
+       ON CONFLICT (rule_id) DO NOTHING`,
+      ['\u201C$1\u201D', '\u2018$1\u2019']  // Curly double and single quotes
+    )
+
     console.log('Seed data inserted successfully!')
   } catch (error) {
     const at = error instanceof Error ? getOffendingLocation(error) : null

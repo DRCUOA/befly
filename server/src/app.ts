@@ -14,6 +14,7 @@ import appreciationRoutes from './routes/appreciation.routes.js'
 import commentRoutes from './routes/comment.routes.js'
 import activityRoutes from './routes/activity.routes.js'
 import adminRoutes from './routes/admin.routes.js'
+import typographyRulesRoutes from './routes/typography-rules.routes.js'
 import { config } from './config/env.js'
 
 const app = express()
@@ -85,6 +86,7 @@ app.use('/api/appreciations', appreciationRoutes)
 app.use('/api/comments', commentRoutes)
 app.use('/api/activity', activityRoutes)
 app.use('/api/admin', adminRoutes)
+app.use('/api/typography-rules', typographyRulesRoutes)
 
 // Health check
 app.get('/api/health', async (req, res) => {
