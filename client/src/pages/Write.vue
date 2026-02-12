@@ -235,6 +235,7 @@ import {
   applySuggestions,
   type TypographySuggestion
 } from '../utils/typography-suggestions'
+import { useTypographyRules } from '../composables/useTypographyRules'
 
 const router = useRouter()
 const route = useRoute()
@@ -263,6 +264,8 @@ const submitting = ref(false)
 const error = ref<string | null>(null)
 
 // Typography suggestions (Option A: suggest only, on blur/save)
+// Rules from API with fallback to bundled defaults (cni-07)
+const { rules: typographyRules } = useTypographyRules()
 const bodyTextareaRef = ref<HTMLTextAreaElement | null>(null)
 const showTypographyModal = ref(false)
 const typographySuggestions = ref<TypographySuggestion[]>([])
@@ -270,7 +273,7 @@ const pendingSubmit = ref(false)
 const blurSuggestionCount = ref(0)
 
 function onBodyBlur() {
-  blurSuggestionCount.value = scanTypography(form.value.body).length
+  blurSuggestionCount.value = scanTypography(form.value.body, typographyRules.value).length
 }
 
 // Draft management
@@ -460,7 +463,7 @@ const handleSubmit = async () => {
     return
   }
 
-  const suggestions = scanTypography(form.value.body)
+  const suggestions = scanTypography(form.value.body, typographyRules.value)
   if (suggestions.length > 0) {
     typographySuggestions.value = suggestions
     showTypographyModal.value = true
@@ -487,7 +490,7 @@ function acceptTypographySuggestion(idx: number) {
   const suggestion = typographySuggestions.value[idx]
   if (!suggestion) return
   applySuggestionViaTextarea(suggestion)
-  const next = scanTypography(form.value.body)
+  const next = scanTypography(form.value.body, typographyRules.value)
   typographySuggestions.value = next
   if (next.length === 0) {
     showTypographyModal.value = false

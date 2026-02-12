@@ -5,6 +5,24 @@ All notable changes to the Rambulations writing platform are documented in this 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2026-02-12
+
+### Added
+- Typography rules import from JSON — paste single rule or array of rules in Admin Rules UI
+- Download rules — export current rule set as `typography-rules.json`
+- Download JSON schema — `typography-rules-schema.json` for AI/automation compatibility
+- Vitest and guardrail tests (`server/src/typography-rules-guardrail.test.ts`) — prevent regression if `.trim()` is reintroduced on pattern/replacement
+
+### Changed
+- Pattern and replacement preservation — `sanitizePattern` and `sanitizeReplacementInput` no longer trim; patterns like `" {2,}"` and replacement `" "` are preserved
+- EPIC_PROGRESS.md: Phase 3 complete; cni-07 post-delivery enhancements documented
+- Version bump 0.3.3 → 0.4.0 (build number in footer)
+
+### Fixed
+- Pattern `" {2,}"` previously rejected due to `sanitizeString` trimming leading space; now preserved correctly
+
+---
+
 ## [0.3.3] - 2026-02-12
 
 ### Added
@@ -13,7 +31,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Markdown-aware rules: skip inline code, code blocks, and URLs to avoid corrupting syntax
 - Suggestion modal on Write page before publish: Accept/Dismiss per suggestion, Accept all, Continue without changes
 - Blur hint: "X typography suggestions — review before publishing" when body textarea blurs
-- Draft atomic cni-07: typography rules management (admin CRUD, dedicated module) — spec only, not implemented
+- **Typography rules management (cni-07)** — admin CRUD for typography rules:
+  - `typography_rules` table (migration 012) with sort_order, enabled, pattern, replacement
+  - Public `GET /api/typography-rules` (no auth) returns enabled rules for Write page
+  - Admin `GET/POST/PUT/DELETE /api/admin/typography-rules` with reorder (up/down)
+  - Admin Rules page at `/admin/rules` with create, edit, delete, reorder, enable/disable
+  - Write page fetches rules from API; falls back to bundled defaults if API fails or returns empty
 
 ### Changed
 - EPIC_PROGRESS.md: Phase 3 in progress; cni-06 complete; cni-07 drafted
@@ -126,6 +149,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Database migrations (001-008): users, writing_blocks, themes, appreciations, auth/visibility, roles, reaction types, comments
 - Development setup documentation and quick-start guide
 
+[0.4.0]: https://github.com/DRCUOA/befly/compare/v0.3.3...v0.4.0
 [0.3.3]: https://github.com/DRCUOA/befly/compare/v0.3.2...v0.3.3
 [0.3.2]: https://github.com/DRCUOA/befly/compare/v0.3.1...v0.3.2
 [0.3.0]: https://github.com/DRCUOA/befly/compare/v0.2.0...v0.3.0

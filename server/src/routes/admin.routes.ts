@@ -1,5 +1,6 @@
 import { Router } from 'express'
 import { adminController } from '../controllers/admin.controller.js'
+import { typographyController } from '../controllers/typography.controller.js'
 import { authMiddleware } from '../middleware/auth.middleware.js'
 import { requireAdmin } from '../middleware/authorize.middleware.js'
 import { asyncHandler } from '../utils/asyncHandler.js'
@@ -9,6 +10,14 @@ const router = Router()
 // All admin routes require authentication AND admin role
 router.use(authMiddleware)
 router.use(requireAdmin)
+
+// Typography rules (admin CRUD)
+router.get('/typography-rules', asyncHandler(typographyController.getAll))
+router.get('/typography-rules/:id', asyncHandler(typographyController.getById))
+router.post('/typography-rules', asyncHandler(typographyController.create))
+router.put('/typography-rules/:id', asyncHandler(typographyController.update))
+router.delete('/typography-rules/:id', asyncHandler(typographyController.delete))
+router.post('/typography-rules/:id/reorder', asyncHandler(typographyController.reorder))
 
 // Usage analytics
 router.get('/stats', asyncHandler(adminController.getStats))

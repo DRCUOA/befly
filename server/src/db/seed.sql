@@ -25,3 +25,12 @@ ON CONFLICT (id) DO NOTHING;
 INSERT INTO writing_themes (writing_id, theme_id) VALUES
   ('20000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000001')
 ON CONFLICT DO NOTHING;
+
+-- Default typography rules (cni-07)
+INSERT INTO typography_rules (rule_id, description, pattern, replacement, sort_order) VALUES
+  ('ellipsis', 'Use ellipsis character', '\\.{3}', '…', 0),
+  ('em_dash', 'Use em dash', '---', '—', 1),
+  ('en_dash', 'Use en dash', '--', '–', 2),
+  ('smart_quotes_double', 'Use smart double quotes', '"([^"]*)"', E'\u201C$1\u201D', 3),
+  ('smart_quotes_single', 'Use smart single quotes', '''([^'']*)''', E'\u2018$1\u2019', 4)
+ON CONFLICT (rule_id) DO NOTHING;

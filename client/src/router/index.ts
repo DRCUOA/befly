@@ -10,6 +10,7 @@ import Profile from '../pages/Profile.vue'
 import SignIn from '../pages/SignIn.vue'
 import SignUp from '../pages/SignUp.vue'
 import Admin from '../pages/Admin.vue'
+import AdminRules from '../pages/AdminRules.vue'
 import BaselineTest from '../pages/BaselineTest.vue'
 
 const router = createRouter({
@@ -70,6 +71,12 @@ const router = createRouter({
       path: '/admin',
       name: 'Admin',
       component: Admin,
+      meta: { requiresAuth: true, requiresAdmin: true }
+    },
+    {
+      path: '/admin/rules',
+      name: 'AdminRules',
+      component: AdminRules,
       meta: { requiresAuth: true, requiresAdmin: true }
     },
     {

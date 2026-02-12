@@ -3,9 +3,17 @@
     <!-- Header -->
     <div class="w-full px-4 sm:px-6 md:px-8 py-12 sm:py-16 bg-gradient-to-b from-paper to-gray-50">
       <div class="max-w-6xl mx-auto">
-        <p class="text-xs sm:text-sm tracking-widest uppercase font-sans text-ink-lighter mb-4">
-          Administration
-        </p>
+        <div class="flex items-center gap-4 mb-4">
+          <p class="text-xs sm:text-sm tracking-widest uppercase font-sans text-ink-lighter">
+            Administration
+          </p>
+          <router-link
+            to="/admin/rules"
+            class="text-sm text-blue-600 hover:text-blue-800 hover:underline"
+          >
+            Typography rules
+          </router-link>
+        </div>
         <h1 class="text-3xl sm:text-4xl md:text-5xl font-light tracking-tight mb-4">
           User Management
         </h1>

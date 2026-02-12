@@ -1,0 +1,76 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://writing-platform.example/typography-rules.json",
+  "title": "Typography Rules",
+  "description": "Schema for typography suggestion rules. Use this format to import rules via the Admin Rules UI. Supports both a single rule object and an array of rules.",
+  "oneOf": [
+    {
+      "type": "object",
+      "description": "A single typography rule",
+      "$ref": "#/definitions/rule"
+    },
+    {
+      "type": "array",
+      "description": "Multiple typography rules",
+      "items": { "$ref": "#/definitions/rule" },
+      "minItems": 1
+    }
+  ],
+  "definitions": {
+    "rule": {
+      "type": "object",
+      "required": ["ruleId", "description", "pattern", "replacement"],
+      "properties": {
+        "ruleId": {
+          "type": "string",
+          "description": "Unique identifier for the rule. Lowercase alphanumeric and underscores only (e.g. teh_to_the)",
+          "pattern": "^[a-z0-9_]+$"
+        },
+        "description": {
+          "type": "string",
+          "description": "Human-readable description shown in the UI (e.g. 'teh > the')"
+        },
+        "pattern": {
+          "type": "string",
+          "description": "JavaScript regex pattern. Use capture groups (...) for replacement placeholders $1, $2, etc. The 'g' flag is added automatically. Leading/trailing spaces are preserved (e.g. ' {2,}' for 2+ spaces)."
+        },
+        "replacement": {
+          "type": "string",
+          "description": "Replacement string. Use $1, $2 for capture groups from the pattern. Leading/trailing spaces are preserved (e.g. ' ' for single space in collapse rules)."
+        },
+        "sortOrder": {
+          "type": "integer",
+          "description": "Optional sort order (lower = higher priority). Omit to append at end."
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "ruleId": "teh_to_the",
+      "description": "teh > the",
+      "pattern": "teh",
+      "replacement": "the"
+    },
+    {
+      "ruleId": "double_space_cleanup",
+      "description": "Collapse multiple spaces into one",
+      "pattern": " {2,}",
+      "replacement": " "
+    },
+    [
+      {
+        "ruleId": "teh_to_the",
+        "description": "teh > the",
+        "pattern": "teh",
+        "replacement": "the"
+      },
+      {
+        "ruleId": "adn_to_and",
+        "description": "adn > and",
+        "pattern": "adn",
+        "replacement": "and"
+      }
+    ]
+  ]
+}
