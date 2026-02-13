@@ -1,0 +1,35 @@
+{
+  "meta": {
+    "cohort": "c26",
+    "repo": "befly"
+  },
+  "summary": "Expand editor to full viewport width with minimal chrome in default view",
+  "problem_statement": "The current layout constrains the writing surface and keeps metadata, controls, and chrome visible by default. Writers need a thinking environment where the editor dominates the viewport and peripheral UI recedes. A narrow or cluttered default view increases cognitive load and undermines the attention-protecting promise of the platform.",
+  "in_scope": [
+    "Expand editor content area to full viewport width",
+    "Reduce or hide non-essential chrome in the default Write view",
+    "Preserve responsive behavior and accessibility"
+  ],
+  "out_of_scope": [
+    "Slide-out metadata panel (P1-uix-02)",
+    "Typography flow changes (P1-uix-03)",
+    "Visual styling changes beyond layout"
+  ],
+  "requirements": [
+    "Editor uses full viewport width in default Write view",
+    "Visible chrome in default view is minimal (≤5 controls per epic DoD)",
+    "No regression in time to first keystroke or input latency"
+  ],
+  "acceptance_criteria": [
+    "Editor content area spans full viewport width",
+    "Default view shows minimal chrome",
+    "Layout is responsive and accessible",
+    "No measurable regression in typing performance"
+  ],
+  "dependencies": [],
+  "risks": [
+    "Full-width layout may expose responsive edge cases on narrow viewports",
+    "Reducing chrome could hide controls users expect to find"
+  ],
+  "implementation_notes": "P1-uix-01 is the first structural change in the Attention-First UIX epic. Focus on layout and viewport usage; metadata and controls move in P1-uix-02. Reference epic DoD: cognitive load ≤5 visible controls, time to first keystroke <100ms perceived."
+}
