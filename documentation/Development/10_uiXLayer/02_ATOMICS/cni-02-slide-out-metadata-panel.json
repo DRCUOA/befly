@@ -1,0 +1,39 @@
+{
+  "meta": {
+    "cohort": "c26",
+    "repo": "befly"
+  },
+  "summary": "Move metadata (cover, themes, visibility) into slide-out drawer and hide from default view",
+  "problem_statement": "Metadata controls (cover image, themes, visibility) are currently exposed in the default Write view, competing for attention with the writing surface. Every visible control adds cognitive load and decision fatigue. Writers need these options available but not present—a slide-out drawer keeps them reachable without cluttering the default view. Blocking modals or persistent panels undermine the attention-protecting promise.",
+  "in_scope": [
+    "Implement slide-out drawer or panel for metadata (cover, themes, visibility)",
+    "Hide metadata controls from default Write view",
+    "Provide clear affordance to open the panel (e.g. icon, label)",
+    "Preserve responsive behavior and accessibility"
+  ],
+  "out_of_scope": [
+    "Typography flow changes (P1-uix-03)",
+    "Visual styling beyond panel layout (P2 accent, breathing space)",
+    "Command palette (P7-uix-14)"
+  ],
+  "requirements": [
+    "Metadata panel is hidden by default in Write view",
+    "Panel opens via non-blocking interaction (slide, overlay, or drawer)",
+    "Cover, themes, and visibility controls live inside the panel",
+    "Epic DoD: ≤5 visible controls in default view"
+  ],
+  "acceptance_criteria": [
+    "Metadata controls are not visible in default Write view",
+    "Slide-out panel opens and closes without blocking the editor",
+    "Cover, themes, and visibility are accessible from the panel",
+    "Panel interaction is accessible (keyboard, screen reader)"
+  ],
+  "dependencies": [
+    "P1-uix-01 (Full-width editor layout) — panel must work with expanded viewport"
+  ],
+  "risks": [
+    "Users may not discover the panel if affordance is too subtle",
+    "Slide-out animation must feel instant (<200ms) to avoid perceived lag"
+  ],
+  "implementation_notes": "P1-uix-02 follows P1-uix-01. The full-width layout creates space; this atomic moves controls out of it. Prefer a drawer from the right or a collapsible sidebar. Avoid modals. Reference epic DoD: cognitive load ≤5 visible controls."
+}

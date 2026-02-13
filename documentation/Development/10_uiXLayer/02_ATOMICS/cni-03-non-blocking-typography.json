@@ -1,0 +1,40 @@
+{
+  "meta": {
+    "cohort": "c26",
+    "repo": "befly"
+  },
+  "summary": "Typography flow must not block writing; use progressive reveal",
+  "problem_statement": "Typography or formatting flows that block the editor—waiting for confirmation, showing blocking dialogs, or requiring explicit user action before continuing—interrupt the writer's flow. Attention is fragile; any pause to 'deal with' the UI breaks the thinking state. Writers need typography and formatting to feel invisible: changes apply progressively, reveal on demand, or happen in the background. Blocking typography flows violate the epic's core promise.",
+  "in_scope": [
+    "Audit existing typography/formatting flows for blocking behavior",
+    "Refactor blocking flows to non-blocking (progressive reveal, inline, or deferred)",
+    "Ensure no modal or confirm required for typography changes during writing",
+    "Preserve accessibility of formatting options"
+  ],
+  "out_of_scope": [
+    "Visual styling changes (P2 accent, breathing space)",
+    "Word count on pause (P3-uix-07)",
+    "Rich text editor (stay with textarea + Markdown)"
+  ],
+  "requirements": [
+    "Typography flow does not block writing or require modal/confirm",
+    "Formatting changes apply progressively or inline",
+    "No regression in time to first keystroke or input latency",
+    "Epic DoD: typography flow is non-blocking"
+  ],
+  "acceptance_criteria": [
+    "No blocking modals or dialogs for typography/formatting during Write",
+    "Formatting changes are progressive or inline",
+    "Writer can continue typing without interruption from typography UI",
+    "Accessibility of formatting controls is preserved"
+  ],
+  "dependencies": [
+    "P1-uix-01 (Full-width editor layout)",
+    "P1-uix-02 (Slide-out metadata panel) — typography controls may live in or near metadata"
+  ],
+  "risks": [
+    "Progressive reveal may feel 'magical' or confusing if not discoverable",
+    "Deferred application could create expectation mismatch"
+  ],
+  "implementation_notes": "P1-uix-03 completes Phase 1 structural changes. Typography here means font, size, spacing, or any formatting that affects the writing surface. Progressive reveal: show options on hover, apply on blur, or reveal in a non-blocking overlay. Reference epic DoD: typography flow non-blocking."
+}
