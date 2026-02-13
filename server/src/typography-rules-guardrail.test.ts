@@ -112,3 +112,51 @@ describe('Typography rules: pattern/replacement preservation (no .trim() regress
     expect(fetched.replacement).toEqual(original.replacement)
   })
 })
+
+describe('Typography rules: bulk import', () => {
+  const createdIds: string[] = []
+
+  afterEach(async () => {
+    for (const id of createdIds) {
+      try {
+        await typographyService.delete(id)
+      } catch {
+        // ignore
+      }
+    }
+    createdIds.length = 0
+  })
+
+  it('imports multiple valid rules in one request', async () => {
+    const rules = [
+      { ruleId: `bulk_a_${Date.now()}`, description: 'Rule A', pattern: '--', replacement: '—' },
+      { ruleId: `bulk_b_${Date.now()}`, description: 'Rule B', pattern: '\\.\\.\\.', replacement: '…' },
+    ]
+    const result = await typographyService.bulkImport(rules)
+    expect(result.created).toBe(2)
+    expect(result.failed).toBe(0)
+
+    const all = await typographyService.getAllRules()
+    const created = all.filter((r) => rules.some((r0) => r0.ruleId === r.ruleId))
+    created.forEach((r) => createdIds.push(r.id))
+    expect(created).toHaveLength(2)
+  })
+
+  it('skips invalid rules and reports errors', async () => {
+    const rules = [
+      { ruleId: `bulk_valid_${Date.now()}`, description: 'Valid', pattern: '--', replacement: '—' },
+      { ruleId: 'invalid-id!', description: 'Bad id', pattern: 'x', replacement: 'y' },
+      { ruleId: `bulk_valid2_${Date.now()}`, description: 'Valid 2', pattern: '\\.\\.\\.', replacement: '…' },
+    ]
+    const result = await typographyService.bulkImport(rules)
+    expect(result.created).toBe(2)
+    expect(result.failed).toBe(1)
+    expect(result.errors).toHaveLength(1)
+    expect(result.errors![0].ruleId).toBe('invalid-id!')
+
+    const all = await typographyService.getAllRules()
+    const created = all.filter((r) => r.ruleId.startsWith('bulk_valid'))
+    created.forEach((r) => createdIds.push(r.id))
+    expect(created).toHaveLength(2)
+  })
+})

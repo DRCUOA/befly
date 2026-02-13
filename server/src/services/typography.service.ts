@@ -149,5 +149,55 @@ export const typographyService = {
     const result = await typographyRepo.findAll(false)
     if (result.length === 0) return 0
     return Math.max(...result.map((r) => r.sortOrder), 0)
+  },
+
+  async bulkImport(
+    rules: Array<{ ruleId: string; description: string; pattern: string; replacement: string; sortOrder?: number }>
+  ): Promise<{ created: number; failed: number; errors: Array<{ ruleId: string; message: string }> }> {
+    if (!Array.isArray(rules) || rules.length === 0) {
+      throw new ValidationError('rules array is required and must not be empty')
+    }
+    if (rules.length > 500) {
+      throw new ValidationError('Cannot import more than 500 rules at once')
+    }
+
+    const validRules: Array<{ ruleId: string; description: string; pattern: string; replacement: string; sortOrder: number }> = []
+    const errors: Array<{ ruleId: string; message: string }> = []
+
+    let maxOrder = await this.getMaxSortOrder()
+
+    for (let i = 0; i < rules.length; i++) {
+      const r = rules[i]
+      try {
+        const ruleId = sanitizeString(r.ruleId || '')
+        const description = sanitizeString(r.description || '')
+        const pattern = sanitizePattern(r.pattern || '')
+        const replacement = sanitizeReplacement(r.replacement ?? '')
+
+        if (!ruleId) throw new ValidationError('Rule ID is required')
+        if (ruleId.length > 100) throw new ValidationError('Rule ID must be 100 characters or less')
+        if (!/^[a-z0-9_]+$/.test(ruleId)) {
+          throw new ValidationError('Rule ID must be lowercase alphanumeric with underscores only')
+        }
+        if (!description) throw new ValidationError('Description is required')
+        if (description.length > 500) throw new ValidationError('Description must be 500 characters or less')
+
+        validatePattern(pattern)
+
+        const sortOrder = r.sortOrder !== undefined ? Number(r.sortOrder) : ++maxOrder
+        if (!Number.isInteger(sortOrder) || sortOrder < 0) {
+          throw new ValidationError('Sort order must be a non-negative integer')
+        }
+
+        validRules.push({ ruleId, description, pattern, replacement, sortOrder })
+      } catch (err) {
+        errors.push({ ruleId: r.ruleId || `[${i}]`, message: err instanceof ValidationError ? err.message : String(err) })
+      }
+    }
+
+    const { created, errors: dbErrors } = await typographyRepo.createMany(validRules)
+    errors.push(...dbErrors)
+
+    return { created, failed: errors.length, errors }
   }
 }

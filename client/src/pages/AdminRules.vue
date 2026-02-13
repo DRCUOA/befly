@@ -374,29 +374,29 @@ async function importRules() {
       return
     }
 
-    let created = 0
-    let failed = 0
-    for (const r of toImport) {
-      try {
-        await api.post('/admin/typography-rules', {
+    const response = await api.post<{ data: { created: number; failed: number; errors?: Array<{ ruleId: string; message: string }> } }>(
+      '/admin/typography-rules/import',
+      {
+        rules: toImport.map((r) => ({
           ruleId: r.ruleId,
           description: r.description,
           pattern: r.pattern,
           replacement: r.replacement,
           ...(r.sortOrder !== undefined && { sortOrder: r.sortOrder })
-        })
-        created++
-      } catch {
-        failed++
+        }))
       }
-    }
+    )
+
+    const { created, failed, errors } = response.data ?? { created: 0, failed: 0 }
 
     if (created > 0) {
       await loadRules()
       showFeedback(`Imported ${created} rule${created === 1 ? '' : 's'}${failed > 0 ? ` (${failed} failed)` : ''}`)
       importJson.value = ''
     }
-    if (failed > 0 && created === 0) {
+    if (failed > 0 && created === 0 && errors?.length) {
+      importError.value = `All ${failed} rule(s) failed to import. First error: ${errors[0].message}`
+    } else if (failed > 0 && created === 0) {
       importError.value = `All ${failed} rule(s) failed to import. Check ruleId format (lowercase, alphanumeric, underscores).`
     }
   } catch (e) {

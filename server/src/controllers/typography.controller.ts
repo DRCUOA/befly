@@ -56,5 +56,15 @@ export const typographyController = {
     }
     const rules = await typographyService.reorder(id, direction)
     res.json({ data: rules })
+  },
+
+  /** Admin: bulk import rules */
+  async bulkImport(req: Request, res: Response) {
+    const rules = req.body.rules
+    if (!Array.isArray(rules)) {
+      throw new ValidationError('rules array is required')
+    }
+    const result = await typographyService.bulkImport(rules)
+    res.status(201).json({ data: result })
   }
 }

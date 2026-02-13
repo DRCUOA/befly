@@ -13,6 +13,7 @@ router.use(requireAdmin)
 
 // Typography rules (admin CRUD)
 router.get('/typography-rules', asyncHandler(typographyController.getAll))
+router.post('/typography-rules/import', asyncHandler(typographyController.bulkImport))
 router.get('/typography-rules/:id', asyncHandler(typographyController.getById))
 router.post('/typography-rules', asyncHandler(typographyController.create))
 router.put('/typography-rules/:id', asyncHandler(typographyController.update))
