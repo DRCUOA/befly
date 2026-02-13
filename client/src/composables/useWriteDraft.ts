@@ -10,6 +10,8 @@ interface DraftData {
   body: string
   themeIds: string[]
   visibility: 'private' | 'shared' | 'public'
+  coverImageUrl?: string
+  coverImagePosition?: string
   timestamp: number
   writingId?: string
 }
@@ -47,6 +49,8 @@ export function useWriteDraft(writingId: string | undefined, formDataRef: Ref<{
   body: string
   themeIds: string[]
   visibility: 'private' | 'shared' | 'public'
+  coverImageUrl?: string
+  coverImagePosition?: string
 }>) {
   const lastSaved = ref<Date | null>(null)
   const hasDraft = ref(false)
@@ -71,6 +75,8 @@ export function useWriteDraft(writingId: string | undefined, formDataRef: Ref<{
         body: formData.body,
         themeIds: formData.themeIds,
         visibility: formData.visibility,
+        coverImageUrl: formData.coverImageUrl,
+        coverImagePosition: formData.coverImagePosition,
         timestamp: Date.now(),
         writingId: writingId
       }
@@ -188,6 +194,8 @@ export function useWriteDraft(writingId: string | undefined, formDataRef: Ref<{
     stopWatchers.push(watch(() => formDataRef.value.body, triggerSave))
     stopWatchers.push(watch(() => formDataRef.value.themeIds, triggerSave, { deep: true }))
     stopWatchers.push(watch(() => formDataRef.value.visibility, triggerSave))
+    stopWatchers.push(watch(() => formDataRef.value.coverImageUrl, triggerSave))
+    stopWatchers.push(watch(() => formDataRef.value.coverImagePosition, triggerSave))
   }
 
   /**

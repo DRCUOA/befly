@@ -40,7 +40,18 @@
         v-if="showImage"
         class="hidden md:block w-64 h-64 flex-shrink-0 bg-gray-200 overflow-hidden rounded-sm"
       >
-        <div class="w-full h-full bg-gradient-to-br from-line to-ink-lighter opacity-30 group-hover:opacity-40"></div>
+        <img
+          v-if="writing.coverImageUrl && !imageError"
+          :src="writing.coverImageUrl"
+          alt=""
+          class="w-full h-full object-cover"
+          :style="{ objectPosition: writing.coverImagePosition || '50% 50%' }"
+          @error="imageError = true"
+        />
+        <div
+          v-else
+          class="w-full h-full bg-gradient-to-br from-line to-ink-lighter opacity-30 group-hover:opacity-40"
+        ></div>
       </div>
     </router-link>
     <div
@@ -72,7 +83,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { api } from '../../api/client'
 import { useAuth } from '../../stores/auth'
 import { useReadingStore } from '../../stores/reading'
@@ -94,6 +105,7 @@ const props = withDefaults(defineProps<Props>(), {
 const { user, isAdmin } = useAuth()
 const readingStore = useReadingStore()
 const deleting = ref(false)
+const imageError = ref(false)
 
 const isOwner = computed(() => {
   return user.value && props.writing.userId === user.value.id
@@ -136,6 +148,10 @@ const formattedDate = computed(() => {
 const handleClick = () => {
   readingStore.setCurrentReading(props.writing.id)
 }
+
+watch(() => props.writing.id, () => {
+  imageError.value = false
+})
 
 const handleDelete = async () => {
   if (!confirm(`Are you sure you want to delete "${props.writing.title}"? This action cannot be undone.`)) {

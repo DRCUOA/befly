@@ -5,6 +5,8 @@ export interface WritingBlock {
   body: string
   themeIds: string[]
   visibility: 'private' | 'shared' | 'public'
+  coverImageUrl?: string
+  coverImagePosition?: string
   createdAt: string
   updatedAt?: string
 }
