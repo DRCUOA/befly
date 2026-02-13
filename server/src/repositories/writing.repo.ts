@@ -329,7 +329,7 @@ export const writingRepo = {
   /**
    * Update writing block - enforces ownership (admin bypasses)
    */
-  async update(id: string, userId: string, updates: Partial<Pick<WritingBlock, 'title' | 'body' | 'themeIds' | 'visibility' | 'coverImageUrl' | 'coverImagePosition'>>, isAdmin: boolean = false): Promise<WritingBlock> {
+  async update(id: string, userId: string, updates: Partial<Pick<WritingBlock, 'title' | 'body' | 'themeIds' | 'visibility' | 'coverImagePosition'>> & Partial<{ coverImageUrl: string | null }>, isAdmin: boolean = false): Promise<WritingBlock> {
     // First verify ownership (admin can update any)
     const existing = await pool.query(
       'SELECT user_id FROM writing_blocks WHERE id = $1',

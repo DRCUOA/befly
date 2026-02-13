@@ -5,6 +5,17 @@ All notable changes to the Rambulations writing platform are documented in this 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.3] - 2026-02-13
+
+### Fixed
+- Server TypeScript build: add `upload` to `ResourceType` for upload activity logging
+- Server TypeScript build: allow `coverImageUrl: null` in writing update to clear cover image (fix `string | null` vs `string | undefined`)
+
+### Changed
+- Version bump 0.4.2 → 0.4.3 (build number in footer)
+
+---
+
 ## [0.4.2] - 2026-02-13
 
 ### Added
@@ -182,6 +193,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Database migrations (001-008): users, writing_blocks, themes, appreciations, auth/visibility, roles, reaction types, comments
 - Development setup documentation and quick-start guide
 
+[0.4.3]: https://github.com/DRCUOA/befly/compare/v0.4.2...v0.4.3
 [0.4.2]: https://github.com/DRCUOA/befly/compare/v0.4.1...v0.4.2
 [0.4.1]: https://github.com/DRCUOA/befly/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/DRCUOA/befly/compare/v0.3.3...v0.4.0

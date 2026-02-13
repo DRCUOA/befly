@@ -32,6 +32,7 @@ export type ResourceType =
   | 'appreciation'
   | 'comment'
   | 'user'
+  | 'upload'
 
 export interface CreateActivityLogParams {
   userId?: string | null

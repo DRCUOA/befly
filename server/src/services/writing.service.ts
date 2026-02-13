@@ -92,7 +92,7 @@ export const writingService = {
       body: string
       themeIds?: string[]
       visibility?: 'private' | 'shared' | 'public'
-      coverImageUrl?: string
+      coverImageUrl?: string | null
       coverImagePosition?: string
     }> = {}
     if (data.title !== undefined) {
