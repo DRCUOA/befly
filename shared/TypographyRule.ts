@@ -38,3 +38,8 @@ export interface UpdateTypographyRuleRequest {
   sortOrder?: number
   enabled?: boolean
 }
+
+/** Request body for bulk import (array of rules) */
+export interface BulkImportTypographyRequest {
+  rules: CreateTypographyRuleRequest[]
+}

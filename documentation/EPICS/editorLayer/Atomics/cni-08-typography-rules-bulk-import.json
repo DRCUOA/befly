@@ -1,0 +1,48 @@
+{
+  "meta": {
+    "cohort": "c26",
+    "repo": "befly"
+  },
+  "summary": "Bulk import endpoint for typography rules to avoid rate limits",
+  "problem_statement": "Admin Rules import (cni-07) previously created one rule per POST request. Importing large rule sets (~230+ rules) exceeded the general API rate limit (100 requests per 15 minutes), causing 429 errors. A single bulk import endpoint eliminates this bottleneck.",
+  "in_scope": [
+    "Server: POST /api/admin/typography-rules/import accepting { rules: CreateTypographyRuleRequest[] }",
+    "Response: { created, failed, errors } for partial success reporting",
+    "Repository: createMany() with transaction; per-rule failures (e.g. duplicate rule_id) reported, not rolled back",
+    "Service: bulkImport() with same validation/sanitization as single create; invalid rules skipped with errors",
+    "Client: AdminRules.vue importRules() calls bulk endpoint instead of per-rule POSTs",
+    "Cap: 500 rules per request to bound payload and DB load"
+  ],
+  "out_of_scope": [
+    "Bulk update or bulk delete",
+    "Conflict resolution (upsert on duplicate rule_id)",
+    "Async/background import for very large sets",
+    "Rate limit exemption for admin routes"
+  ],
+  "requirements": [
+    "Single HTTP request imports all rules in one transaction",
+    "Partial success: valid rules created; invalid/duplicate rules reported in errors",
+    "Same validation as single create (ruleId format, pattern regex, description length, etc.)",
+    "Admin-only; requires auth + admin role"
+  ],
+  "acceptance_criteria": [
+    "Admin can paste JSON array of rules and import in one action",
+    "230+ rules import without 429 errors",
+    "Invalid rules (bad ruleId, invalid regex) are skipped; created count reflects successes",
+    "Duplicate rule_ids are reported in errors; other rules still created",
+    "Client shows feedback: \"Imported X rules (Y failed)\""
+  ],
+  "dependencies": [
+    "cni-07 typography rules management (admin CRUD, import UI)"
+  ],
+  "risks": [
+    "Large payloads (500 rules) could stress memory; cap mitigates",
+    "Transaction holds connection during full insert; acceptable for 500 rows"
+  ],
+  "implementation_notes": {
+    "shared": "BulkImportTypographyRequest interface: { rules: CreateTypographyRuleRequest[] }",
+    "server": "Route POST /typography-rules/import must be defined before /:id to avoid 'import' matched as id. typography.repo.createMany() uses pool.connect() for transaction; INSERT per rule with try/catch to allow partial success. typography.service.bulkImport() validates each rule, builds valid array, assigns sortOrder when omitted.",
+    "client": "AdminRules.vue importRules(): single api.post('/admin/typography-rules/import', { rules: toImport }) instead of loop. Response data: { created, failed, errors }. Error message uses first error when all fail.",
+    "testing": "typography-rules-guardrail.test.ts: bulk import success case; partial failure with invalid ruleId reports errors"
+  }
+}

@@ -103,5 +103,45 @@ export const typographyRepo = {
     if (result.rowCount === 0) {
       throw new NotFoundError('Typography rule not found')
     }
+  },
+
+  /** Bulk insert rules in a transaction. Returns created count and per-rule errors. */
+  async createMany(
+    rules: Array<{ ruleId: string; description: string; pattern: string; replacement: string; sortOrder: number }>
+  ): Promise<{ created: number; errors: Array<{ ruleId: string; message: string }> }> {
+    const errors: Array<{ ruleId: string; message: string }> = []
+    let created = 0
+
+    const client = await pool.connect()
+    try {
+      await client.query('BEGIN')
+      const insertSql = `INSERT INTO typography_rules (rule_id, description, pattern, replacement, sort_order)
+        VALUES ($1, $2, $3, $4, $5)
+        RETURNING id, sort_order as "sortOrder", enabled, rule_id as "ruleId", description, pattern, replacement, created_at as "createdAt", updated_at as "updatedAt"`
+
+      for (const rule of rules) {
+        try {
+          await client.query(insertSql, [
+            rule.ruleId,
+            rule.description,
+            rule.pattern,
+            rule.replacement,
+            rule.sortOrder
+          ])
+          created++
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : String(err)
+          errors.push({ ruleId: rule.ruleId, message: msg })
+        }
+      }
+      await client.query('COMMIT')
+    } catch (err) {
+      await client.query('ROLLBACK').catch(() => {})
+      throw err
+    } finally {
+      client.release()
+    }
+
+    return { created, errors }
   }
 }

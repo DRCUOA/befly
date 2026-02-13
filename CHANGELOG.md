@@ -5,6 +5,17 @@ All notable changes to the Rambulations writing platform are documented in this 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.1] - 2026-02-13
+
+### Added
+- Bulk import endpoint `POST /api/admin/typography-rules/import` — import many rules in one request (cni-08)
+- Admin Rules import now uses bulk endpoint; avoids 429 rate limits when importing 230+ rules
+
+### Changed
+- Version bump 0.4.0 → 0.4.1 (build number in footer)
+
+---
+
 ## [0.4.0] - 2026-02-12
 
 ### Added
@@ -149,6 +160,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Database migrations (001-008): users, writing_blocks, themes, appreciations, auth/visibility, roles, reaction types, comments
 - Development setup documentation and quick-start guide
 
+[0.4.1]: https://github.com/DRCUOA/befly/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/DRCUOA/befly/compare/v0.3.3...v0.4.0
 [0.3.3]: https://github.com/DRCUOA/befly/compare/v0.3.2...v0.3.3
 [0.3.2]: https://github.com/DRCUOA/befly/compare/v0.3.1...v0.3.2
