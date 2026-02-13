@@ -62,7 +62,7 @@
             :key="writing.id"
             :writing="writing"
             :themes="getThemesForWriting(writing)"
-            :show-image="index < 3"
+            :show-image="index < 3 || !!writing.coverImageUrl"
           />
         </div>
       </div>

@@ -34,6 +34,10 @@ export default defineConfig({
       '/api': {
         target: 'http://localhost:3005',
         changeOrigin: true
+      },
+      '/uploads': {
+        target: 'http://localhost:3005',
+        changeOrigin: true
       }
     }
   },

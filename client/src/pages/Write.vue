@@ -38,6 +38,47 @@
       
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-1">
+          Cover image (optional)
+        </label>
+        <div class="flex items-center gap-3 flex-wrap">
+          <div v-if="form.coverImageUrl" class="w-32 h-32 rounded overflow-hidden border border-gray-200 flex-shrink-0">
+            <DraggableCoverImage
+              :src="form.coverImageUrl"
+              v-model:position="form.coverImagePosition"
+              editable
+              container-class="w-full h-full"
+            />
+          </div>
+          <input
+            ref="coverFileInputRef"
+            type="file"
+            accept="image/jpeg,image/png,image/gif,image/webp"
+            class="hidden"
+            @change="handleCoverFileSelect"
+          />
+          <button
+            type="button"
+            @click="coverFileInputRef?.click()"
+            class="px-3 py-1.5 text-sm rounded border border-blue-300 text-blue-700 hover:bg-blue-50"
+          >
+            Upload image
+          </button>
+          <button
+            v-if="form.coverImageUrl"
+            type="button"
+            @click="form.coverImageUrl = ''"
+            class="px-3 py-1.5 text-sm rounded border border-gray-300 text-gray-700 hover:bg-gray-50"
+          >
+            Clear
+          </button>
+        </div>
+        <p class="mt-1 text-xs sm:text-sm text-gray-500">
+          Upload an image for the essay card thumbnail. Drag to reposition when larger than frame. JPEG, PNG, GIF, WebP up to 5MB.
+        </p>
+      </div>
+      
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">
           Visibility
         </label>
         <select
@@ -236,6 +277,7 @@ import {
   type TypographySuggestion
 } from '../utils/typography-suggestions'
 import { useTypographyRules } from '../composables/useTypographyRules'
+import DraggableCoverImage from '../components/writing/DraggableCoverImage.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -247,14 +289,18 @@ const form = ref({
   title: '',
   body: '',
   themeIds: [] as string[],
-  visibility: 'private' as 'private' | 'shared' | 'public'
+  visibility: 'private' as 'private' | 'shared' | 'public',
+  coverImageUrl: '' as string,
+  coverImagePosition: '50% 50%' as string
 })
 
 const initialFormState = ref({
   title: '',
   body: '',
   themeIds: [] as string[],
-  visibility: 'private' as 'private' | 'shared' | 'public'
+  visibility: 'private' as 'private' | 'shared' | 'public',
+  coverImageUrl: '' as string,
+  coverImagePosition: '50% 50%' as string
 })
 
 const availableThemes = ref<Theme[]>([])
@@ -262,6 +308,7 @@ const loadingThemes = ref(true)
 const loadingWriting = ref(false)
 const submitting = ref(false)
 const error = ref<string | null>(null)
+const coverFileInputRef = ref<HTMLInputElement | null>(null)
 
 // Typography suggestions (Option A: suggest only, on blur/save)
 // Rules from API with fallback to bundled defaults (cni-07)
@@ -279,13 +326,15 @@ function onBodyBlur() {
 // Draft management
 const draft = useWriteDraft(writingId.value, form)
 const showRecoveryModal = ref(false)
-const recoveryDraft = ref<{ title: string; body: string; themeIds: string[]; visibility: 'private' | 'shared' | 'public'; timestamp: number } | null>(null)
+const recoveryDraft = ref<{ title: string; body: string; themeIds: string[]; visibility: 'private' | 'shared' | 'public'; coverImageUrl?: string; coverImagePosition?: string; timestamp: number } | null>(null)
 // Track if form has unsaved changes
 const hasUnsavedChanges = computed(() => {
   // Check simple fields first (most common changes)
   if (form.value.title !== initialFormState.value.title ||
       form.value.body !== initialFormState.value.body ||
-      form.value.visibility !== initialFormState.value.visibility) {
+      form.value.visibility !== initialFormState.value.visibility ||
+      form.value.coverImageUrl !== initialFormState.value.coverImageUrl ||
+      form.value.coverImagePosition !== initialFormState.value.coverImagePosition) {
     return true
   }
   
@@ -322,10 +371,28 @@ watch(() => draft.lastSaved.value, (saved) => {
       title: form.value.title,
       body: form.value.body,
       themeIds: [...form.value.themeIds],
-      visibility: form.value.visibility
+      visibility: form.value.visibility,
+      coverImageUrl: form.value.coverImageUrl,
+      coverImagePosition: form.value.coverImagePosition
     }
   }
 })
+
+const handleCoverFileSelect = async (e: Event) => {
+  const input = e.target as HTMLInputElement
+  const file = input.files?.[0]
+  input.value = ''
+  if (!file) return
+  try {
+    const formData = new FormData()
+    formData.append('file', file)
+    const res = await api.postFormData<{ data: { path: string } }>('/writing/upload', formData)
+    const path = res.data?.path
+    if (path) form.value.coverImageUrl = path
+  } catch (err) {
+    error.value = err instanceof Error ? err.message : 'Failed to upload image'
+  }
+}
 
 const loadThemes = async () => {
   try {
@@ -344,7 +411,9 @@ const setFormState = (writing: Partial<WritingBlock>) => {
     title: writing.title || '',
     body: writing.body || '',
     themeIds: writing.themeIds || [],
-    visibility: (writing.visibility || 'private') as 'private' | 'shared' | 'public'
+    visibility: (writing.visibility || 'private') as 'private' | 'shared' | 'public',
+    coverImageUrl: writing.coverImageUrl || '',
+    coverImagePosition: writing.coverImagePosition || '50% 50%'
   }
   
   form.value = { ...formState }
@@ -391,13 +460,17 @@ const restoreDraft = () => {
       title: data.title,
       body: data.body,
       themeIds: data.themeIds,
-      visibility: data.visibility
+      visibility: data.visibility,
+      coverImageUrl: data.coverImageUrl || '',
+      coverImagePosition: data.coverImagePosition || '50% 50%'
     }
     initialFormState.value = {
       title: data.title,
       body: data.body,
       themeIds: [...data.themeIds],
-      visibility: data.visibility
+      visibility: data.visibility,
+      coverImageUrl: data.coverImageUrl || '',
+      coverImagePosition: data.coverImagePosition || '50% 50%'
     }
     showRecoveryModal.value = false
     recoveryDraft.value = null
@@ -436,14 +509,18 @@ const doSubmit = async () => {
         title: form.value.title,
         body: form.value.body,
         themeIds: form.value.themeIds,
-        visibility: form.value.visibility
+        visibility: form.value.visibility,
+        coverImageUrl: form.value.coverImageUrl || undefined,
+      coverImagePosition: form.value.coverImagePosition || undefined
       })
     } else {
       await api.post<ApiResponse<any>>('/writing', {
         title: form.value.title,
         body: form.value.body,
         themeIds: form.value.themeIds,
-        visibility: form.value.visibility
+        visibility: form.value.visibility,
+        coverImageUrl: form.value.coverImageUrl || undefined,
+      coverImagePosition: form.value.coverImagePosition || undefined
       })
     }
 

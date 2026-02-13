@@ -4,6 +4,20 @@ import { sanitizeString, sanitizeMarkdown } from '../utils/sanitize.js'
 import { ValidationError } from '../utils/errors.js'
 import { logger } from '../utils/logger.js'
 
+/** Validate cover image path: must be internal /uploads/... path. Empty string clears. */
+function validateCoverImagePath(pathOrUrl: string): void {
+  if (typeof pathOrUrl !== 'string') return
+  const trimmed = pathOrUrl.trim()
+  if (!trimmed) return // empty = clear
+  if (!trimmed.startsWith('/uploads/')) {
+    throw new ValidationError('Cover image must be an uploaded file path (e.g. /uploads/cover/xxx.jpg)')
+  }
+  // Prevent path traversal
+  if (trimmed.includes('..')) {
+    throw new ValidationError('Invalid cover image path')
+  }
+}
+
 /**
  * Writing service - business logic layer
  */
@@ -22,6 +36,8 @@ export const writingService = {
     body: string
     themeIds?: string[]
     visibility?: 'private' | 'shared' | 'public'
+    coverImageUrl?: string
+    coverImagePosition?: string
   }): Promise<WritingBlock> {
     const title = sanitizeString(data.title)
     const body = sanitizeMarkdown(data.body)
@@ -45,13 +61,16 @@ export const writingService = {
       logger.warn('Writing creation failed: invalid visibility')
       throw new ValidationError('Visibility must be private, shared, or public')
     }
+    if (data.coverImageUrl) validateCoverImagePath(data.coverImageUrl)
 
     return writingRepo.create({
       userId: data.userId,
       title,
       body,
       themeIds: data.themeIds || [],
-      visibility: data.visibility || 'private'
+      visibility: data.visibility || 'private',
+      coverImageUrl: data.coverImageUrl,
+      coverImagePosition: data.coverImagePosition || '50% 50%'
     })
   },
 
@@ -63,6 +82,8 @@ export const writingService = {
       body: string
       themeIds?: string[]
       visibility?: 'private' | 'shared' | 'public'
+      coverImageUrl?: string
+      coverImagePosition?: string
     }>,
     isAdmin: boolean = false
   ): Promise<WritingBlock> {
@@ -71,6 +92,8 @@ export const writingService = {
       body: string
       themeIds?: string[]
       visibility?: 'private' | 'shared' | 'public'
+      coverImageUrl?: string
+      coverImagePosition?: string
     }> = {}
     if (data.title !== undefined) {
       updates.title = sanitizeString(data.title)
@@ -83,6 +106,13 @@ export const writingService = {
     }
     if (data.visibility !== undefined) {
       updates.visibility = data.visibility
+    }
+    if (data.coverImageUrl !== undefined) {
+      validateCoverImagePath(data.coverImageUrl)
+      updates.coverImageUrl = (typeof data.coverImageUrl === 'string' && data.coverImageUrl.trim()) ? data.coverImageUrl.trim() : null
+    }
+    if (data.coverImagePosition !== undefined) {
+      updates.coverImagePosition = (typeof data.coverImagePosition === 'string' && data.coverImagePosition.trim()) ? data.coverImagePosition.trim() : '50% 50%'
     }
 
     return writingRepo.update(id, userId, updates, isAdmin)

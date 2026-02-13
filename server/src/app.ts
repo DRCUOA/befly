@@ -28,6 +28,7 @@ if (config.nodeEnv === 'production') {
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 const staticDir = path.resolve(__dirname, '../public')
+const uploadsDir = path.resolve(__dirname, '../uploads')
 const hasStaticBuild = fs.existsSync(path.join(staticDir, 'index.html'))
 
 
@@ -65,6 +66,9 @@ app.use('/api', (req, res, next) => {
   }
   generalRateLimit(req, res, next)
 })
+
+// Serve uploaded images as public assets
+app.use('/uploads', express.static(uploadsDir))
 
 // CSRF token generation (must be before CSRF protection)
 // Skip CSRF for auth endpoints - they use their own protection

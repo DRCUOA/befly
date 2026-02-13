@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import { adminController } from '../controllers/admin.controller.js'
 import { typographyController } from '../controllers/typography.controller.js'
+import { uploadsController, uploadSingle } from '../controllers/uploads.controller.js'
 import { authMiddleware } from '../middleware/auth.middleware.js'
 import { requireAdmin } from '../middleware/authorize.middleware.js'
 import { asyncHandler } from '../utils/asyncHandler.js'
@@ -30,8 +31,13 @@ router.get('/users/:id/content', asyncHandler(adminController.getUserContent))
 router.put('/users/:id', asyncHandler(adminController.updateUser))
 router.delete('/users/:id', asyncHandler(adminController.deleteUser))
 
+// Image uploads (admin stock for essay covers)
+router.post('/uploads', uploadSingle, asyncHandler(uploadsController.upload))
+router.get('/uploads', asyncHandler(uploadsController.list))
+
 // Content management (admin CRUD on any content)
 router.put('/writings/:id/visibility', asyncHandler(adminController.updateWritingVisibility))
+router.put('/writings/:id/cover-image', asyncHandler(adminController.updateWritingCoverImage))
 router.delete('/writings/:id', asyncHandler(adminController.deleteWriting))
 router.delete('/comments/:id', asyncHandler(adminController.deleteComment))
 router.delete('/appreciations/:id', asyncHandler(adminController.deleteAppreciation))

@@ -5,6 +5,28 @@ All notable changes to the Rambulations writing platform are documented in this 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.2] - 2026-02-13
+
+### Added
+- **Essay cover images (cni-01)** — replace grey placeholders with admin-uploaded featured images
+- `cover_image_url` and `cover_image_position` on writing_blocks (migrations 013, 014)
+- Admin/author upload: images stored in `server/uploads/`, served at `/uploads/` as public assets
+- Admin stock: `POST /api/admin/uploads`, `GET /api/admin/uploads` for image library
+- Authenticated upload: `POST /api/writing/upload` for authors
+- Browse modal: select from stock with two-step flow — choose image, drag to reposition, confirm
+- Reposition: click-and-drag to adjust visible area when image is larger than 256×256 frame
+- `DraggableCoverImage` component for repositioning in Browse modal, Write page, and Admin Reposition
+- Admin writings table: Upload, Browse, Reposition, Clear for each essay
+- Write page: upload cover image with draggable preview
+- `.gitignore`: exclude `server/uploads/*` (keep `.gitkeep`)
+
+### Changed
+- WritingCard displays cover image with `object-position` when set; grey placeholder otherwise
+- Home page: show image area for first 3 essays or any with `coverImageUrl`
+- Version bump 0.4.1 → 0.4.2 (build number in footer)
+
+---
+
 ## [0.4.1] - 2026-02-13
 
 ### Added
@@ -160,6 +182,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Database migrations (001-008): users, writing_blocks, themes, appreciations, auth/visibility, roles, reaction types, comments
 - Development setup documentation and quick-start guide
 
+[0.4.2]: https://github.com/DRCUOA/befly/compare/v0.4.1...v0.4.2
 [0.4.1]: https://github.com/DRCUOA/befly/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/DRCUOA/befly/compare/v0.3.3...v0.4.0
 [0.3.3]: https://github.com/DRCUOA/befly/compare/v0.3.2...v0.3.3

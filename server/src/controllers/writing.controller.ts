@@ -59,7 +59,9 @@ export const writingController = {
       title: req.body.title,
       body: req.body.body,
       themeIds: req.body.themeIds || [],
-      visibility: req.body.visibility || 'private'
+      visibility: req.body.visibility || 'private',
+      coverImageUrl: req.body.coverImageUrl,
+      coverImagePosition: req.body.coverImagePosition
     })
     
     // Log create activity
@@ -87,7 +89,9 @@ export const writingController = {
       title: req.body.title,
       body: req.body.body,
       themeIds: req.body.themeIds,
-      visibility: req.body.visibility
+      visibility: req.body.visibility,
+      coverImageUrl: req.body.coverImageUrl,
+      coverImagePosition: req.body.coverImagePosition
     }, admin)
     
     // Log update activity

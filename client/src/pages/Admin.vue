@@ -212,6 +212,13 @@
 
                 <!-- ── Writings ── -->
                 <div>
+                  <input
+                    ref="coverFileInputRef"
+                    type="file"
+                    accept="image/jpeg,image/png,image/gif,image/webp"
+                    class="hidden"
+                    @change="handleCoverFileSelect"
+                  />
                   <h3 class="text-sm font-semibold uppercase tracking-wider text-ink-lighter mb-3">
                     Essays ({{ userContent.writings.length }})
                   </h3>
@@ -223,6 +230,7 @@
                       <thead>
                         <tr class="border-b border-gray-100">
                           <th class="text-left px-3 py-2 text-xs font-semibold uppercase text-ink-lighter">Title</th>
+                          <th class="text-left px-3 py-2 text-xs font-semibold uppercase text-ink-lighter">Cover image</th>
                           <th class="text-left px-3 py-2 text-xs font-semibold uppercase text-ink-lighter">Visibility</th>
                           <th class="text-left px-3 py-2 text-xs font-semibold uppercase text-ink-lighter">Created</th>
                           <th class="text-right px-3 py-2 text-xs font-semibold uppercase text-ink-lighter">Actions</th>
@@ -243,6 +251,49 @@
                               {{ w.title }}
                             </router-link>
                             <p class="text-xs text-ink-lighter mt-0.5 line-clamp-1">{{ w.bodyPreview }}</p>
+                          </td>
+                          <td class="px-3 py-2">
+                            <div class="flex items-center gap-1.5 flex-wrap">
+                              <img
+                                v-if="w.coverImageUrl"
+                                :src="w.coverImageUrl"
+                                alt=""
+                                class="w-10 h-10 object-cover rounded border border-gray-200 flex-shrink-0"
+                                :style="{ objectPosition: (w as AdminWriting).coverImagePosition || '50% 50%' }"
+                              />
+                              <div class="flex items-center gap-1">
+                                <button
+                                  @click="triggerCoverUpload(w)"
+                                  :disabled="actionInProgress === w.id"
+                                  class="px-2 py-1 text-xs rounded border border-blue-300 text-blue-700 hover:bg-blue-50 disabled:opacity-50"
+                                >
+                                  Upload
+                                </button>
+                                <button
+                                  @click="openBrowseStockModal(w)"
+                                  :disabled="actionInProgress === w.id"
+                                  class="px-2 py-1 text-xs rounded border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                                >
+                                  Browse
+                                </button>
+                                <button
+                                  v-if="w.coverImageUrl"
+                                  @click="openRepositionModal(w)"
+                                  :disabled="actionInProgress === w.id"
+                                  class="px-2 py-1 text-xs rounded border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                                >
+                                  Reposition
+                                </button>
+                                <button
+                                  v-if="w.coverImageUrl"
+                                  @click="saveCoverImage(w, '')"
+                                  :disabled="actionInProgress === w.id"
+                                  class="px-2 py-1 text-xs rounded border border-red-200 text-red-700 hover:bg-red-50 disabled:opacity-50"
+                                >
+                                  Clear
+                                </button>
+                              </div>
+                            </div>
                           </td>
                           <td class="px-3 py-2">
                             <select
@@ -712,6 +763,97 @@
       {{ feedbackMessage }}
     </div>
 
+        <!-- Browse Stock Images Modal -->
+        <div v-if="browseStockModalWriting" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50" @click.self="closeBrowseStockModal">
+          <div class="bg-white rounded-lg shadow-xl p-6 max-w-2xl w-full mx-4 max-h-[80vh] flex flex-col">
+            <h3 class="text-lg font-semibold mb-4">
+              {{ browseStockSelectedImage ? 'Reposition image (drag to move)' : `Choose cover image for "${browseStockModalWriting.title}"` }}
+            </h3>
+            <!-- Preview step: draggable image -->
+            <div v-if="browseStockSelectedImage" class="flex flex-col flex-1 min-h-0">
+              <div class="w-full max-w-sm mx-auto aspect-square rounded overflow-hidden border border-gray-200 flex-shrink-0">
+                <DraggableCoverImage
+                  :src="browseStockSelectedImage.path"
+                  :position="browseStockPreviewPosition"
+                  editable
+                  container-class="w-full h-full"
+                  @update:position="browseStockPreviewPosition = $event"
+                />
+              </div>
+              <p class="text-xs text-ink-lighter mt-2 text-center">Click and drag the image to reposition it inside the frame</p>
+              <div class="flex justify-end gap-3 mt-4 pt-4 border-t border-gray-100">
+                <button
+                  @click="browseStockSelectedImage = null; browseStockPreviewPosition = '50% 50%'"
+                  class="px-4 py-2 text-sm border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                >
+                  Back
+                </button>
+                <button
+                  @click="confirmCoverFromStock(browseStockModalWriting, browseStockSelectedImage.path, browseStockPreviewPosition)"
+                  class="px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                >
+                  Use this image
+                </button>
+              </div>
+            </div>
+            <!-- Grid step: select image -->
+            <template v-else>
+              <div v-if="stockImagesLoading" class="text-center py-12 text-ink-lighter">Loading...</div>
+              <div v-else-if="stockImages.length === 0" class="text-center py-12 text-ink-lighter">No images yet. Upload first.</div>
+              <div v-else class="grid grid-cols-6 gap-3 overflow-y-auto flex-1">
+                <button
+                  v-for="img in stockImages"
+                  :key="img.path"
+                  type="button"
+                  @click="selectImageForPreview(img)"
+                  class="block w-full aspect-square rounded overflow-hidden border-2 border-transparent hover:border-blue-500 hover:ring-2 hover:ring-blue-200 transition-all focus:outline-none focus:ring-2 focus:ring-blue-400"
+                >
+                  <img :src="img.path" :alt="img.filename" class="w-full h-full object-cover" />
+                </button>
+              </div>
+              <div class="flex justify-end mt-4 pt-4 border-t border-gray-100">
+                <button
+                  @click="closeBrowseStockModal"
+                  class="px-4 py-2 text-sm border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+              </div>
+            </template>
+          </div>
+        </div>
+
+        <!-- Reposition Cover Image Modal -->
+        <div v-if="repositionModalWriting" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50" @click.self="repositionModalWriting = null">
+          <div class="bg-white rounded-lg shadow-xl p-6 max-w-md w-full mx-4">
+            <h3 class="text-lg font-semibold mb-4">Reposition cover for "{{ repositionModalWriting.title }}"</h3>
+            <div class="w-full aspect-square rounded overflow-hidden border border-gray-200">
+              <DraggableCoverImage
+                :src="repositionModalWriting.coverImageUrl!"
+                :position="repositionPreviewPosition"
+                editable
+                container-class="w-full h-full"
+                @update:position="repositionPreviewPosition = $event"
+              />
+            </div>
+            <p class="text-xs text-ink-lighter mt-2">Click and drag to reposition</p>
+            <div class="flex justify-end gap-3 mt-4">
+              <button
+                @click="repositionModalWriting = null"
+                class="px-4 py-2 text-sm border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                @click="saveReposition(repositionModalWriting)"
+                class="px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700"
+              >
+                Save position
+              </button>
+            </div>
+          </div>
+        </div>
+
         <!-- Delete Confirmation Modal -->
         <div v-if="deleteModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div class="bg-white rounded-lg shadow-xl p-6 max-w-md w-full mx-4">
@@ -752,6 +894,7 @@ L.Icon.Default.mergeOptions({ iconUrl: markerIconUrl, iconRetinaUrl: markerIconR
 import { api } from '../api/client'
 import { useAuth } from '../stores/auth'
 import type { User } from '../domain/User'
+import DraggableCoverImage from '../components/writing/DraggableCoverImage.vue'
 
 // ─── Types ───
 
@@ -761,6 +904,8 @@ interface AdminWriting {
   title: string
   bodyPreview: string
   visibility: 'private' | 'shared' | 'public'
+  coverImageUrl?: string | null
+  coverImagePosition?: string
   createdAt: string
   updatedAt: string
 }
@@ -863,6 +1008,17 @@ const mapContainer = ref<HTMLElement | null>(null)
 let mapInstance: L.Map | null = null
 let markerLayer: L.LayerGroup | null = null
 const locationForm = ref({ lat: '', lng: '' })
+
+// Cover image: file input ref, pending writing for upload, stock browser
+const coverFileInputRef = ref<HTMLInputElement | null>(null)
+const coverUploadPendingWriting = ref<AdminWriting | null>(null)
+const browseStockModalWriting = ref<AdminWriting | null>(null)
+const browseStockSelectedImage = ref<{ path: string; filename: string } | null>(null)
+const browseStockPreviewPosition = ref('50% 50%')
+const repositionModalWriting = ref<AdminWriting | null>(null)
+const repositionPreviewPosition = ref('50% 50%')
+const stockImages = ref<{ path: string; filename: string }[]>([])
+const stockImagesLoading = ref(false)
 
 // ─── Computed ───
 
@@ -1177,6 +1333,121 @@ const changeWritingVisibility = async (w: AdminWriting, newVisibility: string) =
   } catch (err) {
     w.visibility = oldVisibility // revert on failure
     showFeedback(err instanceof Error ? err.message : 'Failed to update visibility', 'error')
+  } finally {
+    actionInProgress.value = null
+  }
+}
+
+const triggerCoverUpload = (w: AdminWriting) => {
+  coverUploadPendingWriting.value = w
+  const el = coverFileInputRef.value
+  const input = Array.isArray(el) ? el[0] : el
+  input?.click?.()
+}
+
+const handleCoverFileSelect = async (e: Event) => {
+  const w = coverUploadPendingWriting.value
+  const input = e.target as HTMLInputElement
+  const file = input.files?.[0]
+  input.value = ''
+  coverUploadPendingWriting.value = null
+  if (!w || !file) return
+
+  try {
+    actionInProgress.value = w.id
+    const formData = new FormData()
+    formData.append('file', file)
+    const res = await api.postFormData<{ data: { path: string } }>('/admin/uploads', formData)
+    const path = res.data?.path
+    if (path) {
+      await api.put(`/admin/writings/${w.id}/cover-image`, { coverImageUrl: path })
+      w.coverImageUrl = path
+      showFeedback(`Cover image uploaded for "${w.title}"`)
+    }
+  } catch (err) {
+    showFeedback(err instanceof Error ? err.message : 'Failed to upload cover image', 'error')
+  } finally {
+    actionInProgress.value = null
+  }
+}
+
+const loadStockImages = async () => {
+  try {
+    stockImagesLoading.value = true
+    const res = await api.get<{ data: { path: string; filename: string }[] }>('/admin/uploads')
+    stockImages.value = res.data || []
+  } catch {
+    stockImages.value = []
+  } finally {
+    stockImagesLoading.value = false
+  }
+}
+
+const openBrowseStockModal = (w: AdminWriting) => {
+  browseStockModalWriting.value = w
+  browseStockSelectedImage.value = null
+  browseStockPreviewPosition.value = '50% 50%'
+  loadStockImages()
+}
+
+const closeBrowseStockModal = () => {
+  browseStockModalWriting.value = null
+  browseStockSelectedImage.value = null
+  browseStockPreviewPosition.value = '50% 50%'
+}
+
+const selectImageForPreview = (img: { path: string; filename: string }) => {
+  browseStockSelectedImage.value = img
+  browseStockPreviewPosition.value = '50% 50%'
+}
+
+const confirmCoverFromStock = async (w: AdminWriting, path: string, position: string) => {
+  closeBrowseStockModal()
+  try {
+    actionInProgress.value = w.id
+    await api.put(`/admin/writings/${w.id}/cover-image`, { coverImageUrl: path, coverImagePosition: position })
+    w.coverImageUrl = path
+    ;(w as any).coverImagePosition = position
+    showFeedback(`Cover image set for "${w.title}"`)
+  } catch (err) {
+    showFeedback(err instanceof Error ? err.message : 'Failed to set cover image', 'error')
+  } finally {
+    actionInProgress.value = null
+  }
+}
+
+const openRepositionModal = (w: AdminWriting) => {
+  if (!w.coverImageUrl) return
+  repositionModalWriting.value = w
+  repositionPreviewPosition.value = w.coverImagePosition || '50% 50%'
+}
+
+const saveReposition = async (w: AdminWriting) => {
+  if (!w.coverImageUrl) return
+  try {
+    actionInProgress.value = w.id
+    await api.put(`/admin/writings/${w.id}/cover-image`, {
+      coverImageUrl: w.coverImageUrl,
+      coverImagePosition: repositionPreviewPosition.value
+    })
+    w.coverImagePosition = repositionPreviewPosition.value
+    repositionModalWriting.value = null
+    showFeedback(`Cover position updated for "${w.title}"`)
+  } catch (err) {
+    showFeedback(err instanceof Error ? err.message : 'Failed to update position', 'error')
+  } finally {
+    actionInProgress.value = null
+  }
+}
+
+const saveCoverImage = async (w: AdminWriting, path: string) => {
+  try {
+    actionInProgress.value = w.id
+    await api.put(`/admin/writings/${w.id}/cover-image`, { coverImageUrl: path })
+    w.coverImageUrl = path || null
+    showFeedback(path ? `Cover image updated for "${w.title}"` : `Cover image cleared for "${w.title}"`)
+  } catch (err) {
+    showFeedback(err instanceof Error ? err.message : 'Failed to update cover image', 'error')
   } finally {
     actionInProgress.value = null
   }

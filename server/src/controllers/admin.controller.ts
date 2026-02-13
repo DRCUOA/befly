@@ -56,6 +56,8 @@ export const adminController = {
           wb.title, 
           SUBSTRING(wb.body, 1, 200) as "bodyPreview",
           COALESCE(wb.visibility, 'private') as visibility,
+          wb.cover_image_url as "coverImageUrl",
+          COALESCE(wb.cover_image_position, '50% 50%') as "coverImagePosition",
           wb.created_at as "createdAt", 
           wb.updated_at as "updatedAt"
         FROM writing_blocks wb
@@ -249,6 +251,64 @@ export const adminController = {
     })
 
     res.json({ data: { id, visibility } })
+  },
+
+  /**
+   * Set cover image path and position for a writing (admin-only)
+   * Body: { coverImageUrl: string, coverImagePosition?: string } - position e.g. "50% 50%"
+   */
+  async updateWritingCoverImage(req: Request, res: Response) {
+    const { id } = req.params
+    const adminUserId = (req as any).userId
+    const { coverImageUrl, coverImagePosition } = req.body
+
+    if (typeof coverImageUrl !== 'string') {
+      throw new ValidationError('coverImageUrl must be a string')
+    }
+
+    const trimmed = coverImageUrl.trim()
+    if (trimmed) {
+      if (!trimmed.startsWith('/uploads/')) {
+        throw new ValidationError('Cover image must be an uploaded file path (e.g. /uploads/cover/xxx.jpg)')
+      }
+      if (trimmed.includes('..')) {
+        throw new ValidationError('Invalid cover image path')
+      }
+    }
+
+    const pos = typeof coverImagePosition === 'string' && coverImagePosition.trim()
+      ? coverImagePosition.trim()
+      : '50% 50%'
+
+    const existing = await pool.query(
+      'SELECT id, title, user_id FROM writing_blocks WHERE id = $1',
+      [id]
+    )
+    if (existing.rows.length === 0) {
+      throw new NotFoundError('Writing not found')
+    }
+
+    await pool.query(
+      'UPDATE writing_blocks SET cover_image_url = $1, cover_image_position = $2, updated_at = NOW() WHERE id = $3',
+      [trimmed || null, pos, id]
+    )
+
+    await activityService.logActivity({
+      userId: adminUserId,
+      activityType: 'admin',
+      resourceType: 'writing_block',
+      resourceId: id,
+      action: 'update_cover_image',
+      details: {
+        title: existing.rows[0].title,
+        coverImageUrl: trimmed || null,
+        coverImagePosition: pos
+      },
+      ipAddress: getClientIp(req),
+      userAgent: getUserAgent(req)
+    })
+
+    res.json({ data: { id, coverImageUrl: trimmed || null, coverImagePosition: pos } })
   },
 
   /**

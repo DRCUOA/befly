@@ -41,6 +41,8 @@ export const writingRepo = {
             wb.title, 
             wb.body,
             COALESCE(wb.visibility, 'private') as visibility,
+            wb.cover_image_url as "coverImageUrl",
+            COALESCE(wb.cover_image_position, '50% 50%') as "coverImagePosition",
             wb.created_at as "createdAt", 
             wb.updated_at as "updatedAt",
             COALESCE(
@@ -49,7 +51,7 @@ export const writingRepo = {
             ) as "themeIds"
           FROM writing_blocks wb
           LEFT JOIN writing_themes wt ON wb.id = wt.writing_id
-          GROUP BY wb.id, wb.user_id, wb.title, wb.body, wb.visibility, wb.created_at, wb.updated_at
+          GROUP BY wb.id, wb.user_id, wb.title, wb.body, wb.visibility, wb.cover_image_url, wb.cover_image_position, wb.created_at, wb.updated_at
           ORDER BY wb.created_at DESC
           LIMIT $1 OFFSET $2
         `
@@ -63,6 +65,7 @@ export const writingRepo = {
             wb.title, 
             wb.body,
             COALESCE(wb.visibility, 'private') as visibility,
+            wb.cover_image_url as "coverImageUrl",
             wb.created_at as "createdAt", 
             wb.updated_at as "updatedAt",
             COALESCE(
@@ -72,7 +75,7 @@ export const writingRepo = {
           FROM writing_blocks wb
           LEFT JOIN writing_themes wt ON wb.id = wt.writing_id
           WHERE wb.user_id = $1 OR COALESCE(wb.visibility, 'private') IN ('shared', 'public')
-          GROUP BY wb.id, wb.user_id, wb.title, wb.body, wb.visibility, wb.created_at, wb.updated_at
+          GROUP BY wb.id, wb.user_id, wb.title, wb.body, wb.visibility, wb.cover_image_url, wb.created_at, wb.updated_at
           ORDER BY wb.created_at DESC
           LIMIT $2 OFFSET $3
         `
@@ -86,6 +89,7 @@ export const writingRepo = {
             wb.title, 
             wb.body,
             COALESCE(wb.visibility, 'private') as visibility,
+            wb.cover_image_url as "coverImageUrl",
             wb.created_at as "createdAt", 
             wb.updated_at as "updatedAt",
             COALESCE(
@@ -95,7 +99,7 @@ export const writingRepo = {
           FROM writing_blocks wb
           LEFT JOIN writing_themes wt ON wb.id = wt.writing_id
           WHERE COALESCE(wb.visibility, 'private') = 'public'
-          GROUP BY wb.id, wb.user_id, wb.title, wb.body, wb.visibility, wb.created_at, wb.updated_at
+          GROUP BY wb.id, wb.user_id, wb.title, wb.body, wb.visibility, wb.cover_image_url, wb.created_at, wb.updated_at
           ORDER BY wb.created_at DESC
           LIMIT $1 OFFSET $2
         `
@@ -110,6 +114,8 @@ export const writingRepo = {
           wb.title, 
           wb.body,
           'private' as visibility,
+          wb.cover_image_url as "coverImageUrl",
+          COALESCE(wb.cover_image_position, '50% 50%') as "coverImagePosition",
           wb.created_at as "createdAt", 
           wb.updated_at as "updatedAt",
           COALESCE(
@@ -118,7 +124,7 @@ export const writingRepo = {
           ) as "themeIds"
         FROM writing_blocks wb
         LEFT JOIN writing_themes wt ON wb.id = wt.writing_id
-        GROUP BY wb.id, wb.user_id, wb.title, wb.body, wb.created_at, wb.updated_at
+        GROUP BY wb.id, wb.user_id, wb.title, wb.body, wb.cover_image_url, wb.cover_image_position, wb.created_at, wb.updated_at
         ORDER BY wb.created_at DESC
         LIMIT $1 OFFSET $2
       `
@@ -164,6 +170,7 @@ export const writingRepo = {
             wb.title, 
             wb.body,
             COALESCE(wb.visibility, 'private') as visibility,
+            wb.cover_image_url as "coverImageUrl",
             wb.created_at as "createdAt", 
             wb.updated_at as "updatedAt",
             COALESCE(
@@ -173,7 +180,7 @@ export const writingRepo = {
           FROM writing_blocks wb
           LEFT JOIN writing_themes wt ON wb.id = wt.writing_id
           WHERE wb.id = $1
-          GROUP BY wb.id, wb.user_id, wb.title, wb.body, wb.visibility, wb.created_at, wb.updated_at
+          GROUP BY wb.id, wb.user_id, wb.title, wb.body, wb.visibility, wb.cover_image_url, wb.created_at, wb.updated_at
         `
         params = [id]
       } else if (userId) {
@@ -184,6 +191,7 @@ export const writingRepo = {
             wb.title, 
             wb.body,
             COALESCE(wb.visibility, 'private') as visibility,
+            wb.cover_image_url as "coverImageUrl",
             wb.created_at as "createdAt", 
             wb.updated_at as "updatedAt",
             COALESCE(
@@ -193,7 +201,7 @@ export const writingRepo = {
           FROM writing_blocks wb
           LEFT JOIN writing_themes wt ON wb.id = wt.writing_id
           WHERE wb.id = $1 AND (wb.user_id = $2 OR COALESCE(wb.visibility, 'private') IN ('shared', 'public'))
-          GROUP BY wb.id, wb.user_id, wb.title, wb.body, wb.visibility, wb.created_at, wb.updated_at
+          GROUP BY wb.id, wb.user_id, wb.title, wb.body, wb.visibility, wb.cover_image_url, wb.created_at, wb.updated_at
         `
         params = [id, userId]
       } else {
@@ -204,6 +212,7 @@ export const writingRepo = {
             wb.title, 
             wb.body,
             COALESCE(wb.visibility, 'private') as visibility,
+            wb.cover_image_url as "coverImageUrl",
             wb.created_at as "createdAt", 
             wb.updated_at as "updatedAt",
             COALESCE(
@@ -213,7 +222,7 @@ export const writingRepo = {
           FROM writing_blocks wb
           LEFT JOIN writing_themes wt ON wb.id = wt.writing_id
           WHERE wb.id = $1 AND COALESCE(wb.visibility, 'private') = 'public'
-          GROUP BY wb.id, wb.user_id, wb.title, wb.body, wb.visibility, wb.created_at, wb.updated_at
+          GROUP BY wb.id, wb.user_id, wb.title, wb.body, wb.visibility, wb.cover_image_url, wb.created_at, wb.updated_at
         `
         params = [id]
       }
@@ -226,6 +235,7 @@ export const writingRepo = {
           wb.title, 
           wb.body,
           'private' as visibility,
+          wb.cover_image_url as "coverImageUrl",
           wb.created_at as "createdAt", 
           wb.updated_at as "updatedAt",
           COALESCE(
@@ -235,7 +245,7 @@ export const writingRepo = {
         FROM writing_blocks wb
         LEFT JOIN writing_themes wt ON wb.id = wt.writing_id
         WHERE wb.id = $1
-        GROUP BY wb.id, wb.user_id, wb.title, wb.body, wb.created_at, wb.updated_at
+        GROUP BY wb.id, wb.user_id, wb.title, wb.body, wb.cover_image_url, wb.created_at, wb.updated_at
       `
       params = [id]
     }
@@ -269,21 +279,26 @@ export const writingRepo = {
       
       // Insert writing block with visibility (defaults to 'private')
       const visibility = writing.visibility || 'private'
+      const coverImageUrl = writing.coverImageUrl ?? null
+      const coverImagePosition = writing.coverImagePosition ?? '50% 50%'
       let writingResult
       if (hasVisibilityColumn) {
         writingResult = await client.query(
-          `INSERT INTO writing_blocks (user_id, title, body, visibility)
-           VALUES ($1, $2, $3, $4)
-           RETURNING id, user_id as "userId", title, body, visibility, created_at as "createdAt", updated_at as "updatedAt"`,
-          [writing.userId, writing.title, writing.body, visibility]
+          `INSERT INTO writing_blocks (user_id, title, body, visibility, cover_image_url, cover_image_position)
+           VALUES ($1, $2, $3, $4, $5, $6)
+           RETURNING id, user_id as "userId", title, body, visibility, cover_image_url as "coverImageUrl", COALESCE(cover_image_position, '50% 50%') as "coverImagePosition", created_at as "createdAt", updated_at as "updatedAt"`,
+          [writing.userId, writing.title, writing.body, visibility, coverImageUrl, coverImagePosition]
         )
       } else {
+        // Fallback: pre-visibility schema (no cover_image_url either)
         writingResult = await client.query(
           `INSERT INTO writing_blocks (user_id, title, body)
            VALUES ($1, $2, $3)
            RETURNING id, user_id as "userId", title, body, 'private' as visibility, created_at as "createdAt", updated_at as "updatedAt"`,
           [writing.userId, writing.title, writing.body]
         )
+        writingResult.rows[0].coverImageUrl = null
+        writingResult.rows[0].coverImagePosition = '50% 50%'
       }
       const writingBlock = writingResult.rows[0]
       
@@ -314,7 +329,7 @@ export const writingRepo = {
   /**
    * Update writing block - enforces ownership (admin bypasses)
    */
-  async update(id: string, userId: string, updates: Partial<Pick<WritingBlock, 'title' | 'body' | 'themeIds' | 'visibility'>>, isAdmin: boolean = false): Promise<WritingBlock> {
+  async update(id: string, userId: string, updates: Partial<Pick<WritingBlock, 'title' | 'body' | 'themeIds' | 'visibility' | 'coverImageUrl' | 'coverImagePosition'>>, isAdmin: boolean = false): Promise<WritingBlock> {
     // First verify ownership (admin can update any)
     const existing = await pool.query(
       'SELECT user_id FROM writing_blocks WHERE id = $1',
@@ -358,6 +373,14 @@ export const writingRepo = {
       if (updates.visibility !== undefined && hasVisibilityColumn) {
         fields.push(`visibility = $${paramCount++}`)
         values.push(updates.visibility)
+      }
+      if (updates.coverImageUrl !== undefined) {
+        fields.push(`cover_image_url = $${paramCount++}`)
+        values.push(updates.coverImageUrl)
+      }
+      if (updates.coverImagePosition !== undefined) {
+        fields.push(`cover_image_position = $${paramCount++}`)
+        values.push(updates.coverImagePosition)
       }
 
       if (fields.length > 0) {

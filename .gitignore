@@ -65,6 +65,10 @@ temp/
 *.tmp
 .cache/
 
+# Uploaded images (admin cover image stock)
+server/uploads/*
+!server/uploads/.gitkeep
+
 # Database
 *.sqlite
 *.sqlite3

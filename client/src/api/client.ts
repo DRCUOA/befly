@@ -37,8 +37,11 @@ async function request<T>(
   // Get CSRF token for state-changing operations
   const csrfToken = getCsrfToken()
   const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
     ...(fetchOptions.headers as Record<string, string>)
+  }
+  // Only set Content-Type for JSON (not for FormData)
+  if (!(fetchOptions.body instanceof FormData)) {
+    headers['Content-Type'] = 'application/json'
   }
 
   // Add CSRF token for POST/PUT/DELETE/PATCH
@@ -109,5 +112,12 @@ export const api = {
     }),
 
   delete: <T>(endpoint: string, options?: RequestOptions) =>
-    request<T>(endpoint, { ...options, method: 'DELETE' })
+    request<T>(endpoint, { ...options, method: 'DELETE' }),
+
+  /** POST multipart/form-data (e.g. file upload). Do not set Content-Type - browser sets it with boundary. */
+  postFormData: <T>(endpoint: string, formData: FormData, options?: RequestOptions) => {
+    const headers: Record<string, string> = { ...(options?.headers as Record<string, string>) }
+    delete headers['Content-Type'] // Let browser set multipart boundary
+    return request<T>(endpoint, { ...options, method: 'POST', body: formData, headers })
+  }
 }
