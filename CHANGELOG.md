@@ -5,6 +5,28 @@ All notable changes to the Rambulations writing platform are documented in this 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] - 2026-02-14
+
+### Added
+- **Write layout (P1-uix-01)** — full viewport width, minimal chrome (≤5 controls per epic DoD)
+- `WriteLayout.vue`: dedicated layout for Write/Edit with sticky header, Essays link, user name, Sign out
+- `CoverImageCropModal.vue`: cover image crop with vue-advanced-cropper (1:1 aspect, 512×512 output)
+- `vue-advanced-cropper` dependency for cover crop workflow
+- `generateUUID()` util (`server/src/utils/uuid.ts`) — central UUID generation for app consistency
+
+### Changed
+- Write page: full-width editor, minimal header, typography styling
+- Read page: cover image display in header (32×32 thumbnail when present)
+- App routing: Write/Edit routes use WriteLayout instead of DefaultLayout
+- Write page: upload cover → crop modal → apply crop → save as new upload
+- Cover image upload: allow `.svg` in safe extensions
+- Upload activity logging: use UUID from filename (before extension) for `resource_id`; `generateUUID()` for filenames
+
+### Fixed
+- Upload activity log: `resource_id` was UUID type but received `uuid.jpg`; now extracts UUID from filename
+
+---
+
 ## [0.4.3] - 2026-02-13
 
 ### Fixed
@@ -193,6 +215,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Database migrations (001-008): users, writing_blocks, themes, appreciations, auth/visibility, roles, reaction types, comments
 - Development setup documentation and quick-start guide
 
+[0.5.0]: https://github.com/DRCUOA/befly/compare/v0.4.3...v0.5.0
 [0.4.3]: https://github.com/DRCUOA/befly/compare/v0.4.2...v0.4.3
 [0.4.2]: https://github.com/DRCUOA/befly/compare/v0.4.1...v0.4.2
 [0.4.1]: https://github.com/DRCUOA/befly/compare/v0.4.0...v0.4.1
