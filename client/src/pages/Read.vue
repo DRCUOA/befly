@@ -24,15 +24,24 @@
       <div class="w-full px-4 sm:px-6 md:px-8 pt-8 sm:pt-12 md:pt-16 pb-8 sm:pb-10 md:pb-12 bg-paper">
         <div class="max-w-4xl mx-auto">
           <div class="mb-6 sm:mb-8">
-            <div class="flex items-center gap-2 sm:gap-3 flex-wrap mb-3 sm:mb-4">
-              <ThemeTag
-                v-for="theme in themes"
-                :key="theme.id"
-                :name="theme.name"
-                class="text-xs tracking-widest uppercase font-sans text-ink-lighter"
+            <div class="flex items-center justify-between gap-3 sm:gap-4 flex-wrap mb-3 sm:mb-4">
+              <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
+                <ThemeTag
+                  v-for="theme in themes"
+                  :key="theme.id"
+                  :name="theme.name"
+                  class="text-xs tracking-widest uppercase font-sans text-ink-lighter"
+                />
+                <span class="text-xs text-ink-lighter mx-2 sm:mx-3">·</span>
+                <span class="text-xs font-sans text-ink-lighter">{{ formattedDate }}</span>
+              </div>
+              <img
+                v-if="writing.coverImageUrl"
+                :src="writing.coverImageUrl"
+                :alt="`Cover for ${writing.title}`"
+                class="w-32 h-32 rounded overflow-hidden object-cover flex-shrink-0 border border-line ml-auto"
+                :style="{ objectPosition: writing.coverImagePosition || '50% 50%' }"
               />
-              <span class="text-xs text-ink-lighter mx-2 sm:mx-3">·</span>
-              <span class="text-xs font-sans text-ink-lighter">{{ formattedDate }}</span>
             </div>
           </div>
           

@@ -3,8 +3,8 @@ import path from 'path'
 import fs from 'fs'
 import { fileURLToPath } from 'url'
 import multer from 'multer'
-import { randomUUID } from 'crypto'
 import { ValidationError } from '../utils/errors.js'
+import { generateUUID } from '../utils/uuid.js'
 import { activityService } from '../services/activity.service.js'
 import { getClientIp, getUserAgent } from '../utils/activity-logger.js'
 
@@ -24,8 +24,8 @@ const storage = multer.diskStorage({
   },
   filename: (_req, file, cb) => {
     const ext = path.extname(file.originalname) || '.jpg'
-    const safeExt = ['.jpg', '.jpeg', '.png', '.gif', '.webp'].includes(ext.toLowerCase()) ? ext : '.jpg'
-    cb(null, `${randomUUID()}${safeExt}`)
+    const safeExt = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg'].includes(ext.toLowerCase()) ? ext : '.jpg'
+    cb(null, `${generateUUID()}${safeExt}`)
   }
 })
 
@@ -65,13 +65,14 @@ export const uploadsController = {
 
     const relativePath = `/uploads/${COVER_SUBDIR}/${file.filename}`
 
+    const resourceId = path.parse(file.filename).name // UUID before extension
     await activityService.logActivity({
       userId: adminUserId,
       activityType: 'admin',
       resourceType: 'upload',
-      resourceId: file.filename,
+      resourceId,
       action: 'upload_image',
-      details: { path: relativePath, originalName: file.originalname },
+      details: { path: relativePath, filename: file.filename, originalName: file.originalname },
       ipAddress: getClientIp(req),
       userAgent: getUserAgent(req)
     })
