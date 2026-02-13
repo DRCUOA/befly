@@ -1,47 +1,43 @@
 <template>
-  <div>
-    <h1 class="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6">{{ isEditing ? 'Edit Writing' : 'Write' }}</h1>
-    
-    <form @submit.prevent="handleSubmit" class="space-y-4 sm:space-y-6">
-      <div>
-        <label for="title" class="block text-sm font-medium text-gray-700 mb-1">
-          Title
-        </label>
+  <div class="w-full min-h-[calc(100vh-4rem)]">
+    <!-- Editor: full viewport width, dominates the view -->
+    <form @submit.prevent="handleSubmit" class="flex flex-col w-full">
+      <div class="w-full px-4 sm:px-6 md:px-8 lg:px-12 py-4 sm:py-6">
         <input
           id="title"
           v-model="form.title"
           type="text"
           required
-          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-base sm:text-sm"
-          placeholder="Enter title..."
+          class="block w-full border-0 bg-transparent text-xl sm:text-2xl font-light tracking-tight placeholder:text-ink-whisper focus:ring-0 focus:outline-none py-1"
+          placeholder="Title"
+          aria-label="Title"
         />
       </div>
       
-      <div>
-        <label for="body" class="block text-sm font-medium text-gray-700 mb-1">
-          Body (Markdown supported)
-        </label>
+      <div class="flex-1 w-full px-4 sm:px-6 md:px-8 lg:px-12 pb-4">
         <textarea
           id="body"
           ref="bodyTextareaRef"
           v-model="form.body"
-          rows="12"
           required
-          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 font-mono text-sm"
+          class="block w-full min-h-[calc(100vh-12rem)] border-0 bg-transparent font-mono text-sm sm:text-base text-ink placeholder:text-ink-whisper focus:ring-0 focus:outline-none resize-none py-2"
           placeholder="Write your thoughts in Markdown..."
+          aria-label="Body"
           @blur="onBodyBlur"
         />
-        <p v-if="blurSuggestionCount > 0 && !showTypographyModal" class="mt-1 text-xs text-amber-600">
+        <p v-if="blurSuggestionCount > 0 && !showTypographyModal" class="mt-2 text-xs text-amber-600">
           {{ blurSuggestionCount }} typography suggestion{{ blurSuggestionCount === 1 ? '' : 's' }} — review before publishing
         </p>
       </div>
       
+      <!-- Metadata: compact section below editor -->
+      <div class="w-full border-t border-line bg-paper px-4 sm:px-6 md:px-8 lg:px-12 py-4 sm:py-6 space-y-4 sm:space-y-6">
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">
+        <label class="block text-sm font-medium text-ink-lighter mb-1">
           Cover image (optional)
         </label>
         <div class="flex items-center gap-3 flex-wrap">
-          <div v-if="form.coverImageUrl" class="w-32 h-32 rounded overflow-hidden border border-gray-200 flex-shrink-0">
+          <div v-if="form.coverImageUrl" class="w-32 h-32 rounded overflow-hidden border border-line flex-shrink-0">
             <DraggableCoverImage
               :src="form.coverImageUrl"
               v-model:position="form.coverImagePosition"
@@ -59,46 +55,60 @@
           <button
             type="button"
             @click="coverFileInputRef?.click()"
-            class="px-3 py-1.5 text-sm rounded border border-blue-300 text-blue-700 hover:bg-blue-50"
+            class="px-3 py-1.5 text-sm rounded border border-line text-ink hover:bg-[#E5E5E5] font-sans"
           >
             Upload image
           </button>
           <button
             v-if="form.coverImageUrl"
             type="button"
+            @click="showCropModal = true"
+            class="px-3 py-1.5 text-sm rounded border border-line text-ink hover:bg-[#E5E5E5] font-sans"
+          >
+            Crop
+          </button>
+          <button
+            v-if="form.coverImageUrl"
+            type="button"
             @click="form.coverImageUrl = ''"
-            class="px-3 py-1.5 text-sm rounded border border-gray-300 text-gray-700 hover:bg-gray-50"
+            class="px-3 py-1.5 text-sm rounded border border-line text-ink-lighter hover:bg-[#E5E5E5] font-sans"
           >
             Clear
           </button>
         </div>
-        <p class="mt-1 text-xs sm:text-sm text-gray-500">
-          Upload an image for the essay card thumbnail. Drag to reposition when larger than frame. JPEG, PNG, GIF, WebP up to 5MB.
+        <CoverImageCropModal
+          v-if="showCropModal && form.coverImageUrl"
+          :image-url="form.coverImageUrl"
+          @cropped="onCoverCropped"
+          @cancel="showCropModal = false"
+        />
+        <p class="mt-1 text-xs sm:text-sm text-ink-lighter">
+          Upload an image for the essay card thumbnail. Crop for best framing, or drag to reposition when larger than frame. JPEG, PNG, GIF, WebP up to 5MB.
         </p>
       </div>
       
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">
+        <label class="block text-sm font-medium text-ink-lighter mb-1">
           Visibility
         </label>
         <select
           v-model="form.visibility"
-          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-base sm:text-sm"
+          class="mt-1 block w-full rounded-md border-line shadow-sm focus:border-ink focus:ring-ink text-base sm:text-sm bg-paper"
         >
           <option value="private">Private (only you can see)</option>
           <option value="shared">Shared (others can see but not edit)</option>
           <option value="public">Public (everyone can see)</option>
         </select>
-        <p class="mt-1 text-xs sm:text-sm text-gray-500">
+        <p class="mt-1 text-xs sm:text-sm text-ink-lighter">
           Choose who can see this writing block
         </p>
       </div>
       
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-2">
+        <label class="block text-sm font-medium text-ink-lighter mb-2">
           Themes (optional)
         </label>
-    <div v-if="loadingThemes || loadingWriting" class="text-xs sm:text-sm text-gray-500">
+    <div v-if="loadingThemes || loadingWriting" class="text-xs sm:text-sm text-ink-lighter">
       {{ loadingWriting ? 'Loading writing...' : 'Loading themes...' }}
     </div>
         <div v-else class="space-y-2">
@@ -112,16 +122,16 @@
               v-model="form.themeIds"
               type="checkbox"
               :value="theme.id"
-              class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              class="h-4 w-4 text-ink focus:ring-ink border-line rounded"
             />
             <label
               :for="`theme-${theme.id}`"
-              class="ml-2 text-sm text-gray-700"
+              class="ml-2 text-sm text-ink font-sans"
             >
               {{ theme.name }}
             </label>
           </div>
-          <p v-if="availableThemes.length === 0" class="text-xs sm:text-sm text-gray-500">
+          <p v-if="availableThemes.length === 0" class="text-xs sm:text-sm text-ink-lighter">
             No themes available. Create themes on the Themes page.
           </p>
         </div>
@@ -131,31 +141,31 @@
         <p class="text-red-800 text-xs sm:text-sm">{{ error }}</p>
       </div>
       
-      <div class="flex flex-col sm:flex-row gap-3 sm:space-x-4">
+      <div class="flex flex-col sm:flex-row gap-3 sm:gap-4">
         <button
           type="submit"
           :disabled="submitting || loadingWriting"
-          class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
+          class="px-6 py-2 bg-ink text-paper rounded-md hover:bg-ink-light disabled:opacity-50 disabled:cursor-not-allowed text-sm font-sans"
         >
           {{ submitting ? (isEditing ? 'Updating...' : 'Publishing...') : (isEditing ? 'Update' : 'Publish') }}
         </button>
         <router-link
-          to="/"
-          class="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 text-center text-sm sm:text-base"
+          to="/home"
+          class="px-6 py-2 border border-line rounded-md text-ink-lighter hover:text-ink hover:bg-[#E5E5E5] text-center text-sm font-sans"
         >
           Cancel
         </router-link>
       </div>
+      <!-- Draft Saved Indicator -->
+      <div
+        v-if="showDraftIndicator"
+        class="mt-4 px-3 py-2 rounded-md text-xs sm:text-sm font-sans"
+        :class="hasUnsavedChanges ? 'bg-red-50 text-red-800' : 'bg-green-50 text-green-800'"
+      >
+        Draft saved at {{ draftSavedAt ?? '—' }}
+      </div>
+      </div>
     </form>
-
-    <!-- Draft Saved Indicator -->
-    <div
-      v-if="showDraftIndicator"
-      class="mt-4 px-3 py-2 rounded-md text-xs sm:text-sm"
-      :class="hasUnsavedChanges ? 'bg-red-50 text-red-800' : 'bg-green-50 text-green-800'"
-    >
-      Draft saved at {{ draftSavedAt ?? '—' }}
-    </div>
 
     <!-- Typography Suggestions Modal (before save) -->
     <div v-if="showTypographyModal && typographySuggestions.length > 0" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
@@ -278,6 +288,7 @@ import {
 } from '../utils/typography-suggestions'
 import { useTypographyRules } from '../composables/useTypographyRules'
 import DraggableCoverImage from '../components/writing/DraggableCoverImage.vue'
+import CoverImageCropModal from '../components/writing/CoverImageCropModal.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -309,6 +320,7 @@ const loadingWriting = ref(false)
 const submitting = ref(false)
 const error = ref<string | null>(null)
 const coverFileInputRef = ref<HTMLInputElement | null>(null)
+const showCropModal = ref(false)
 
 // Typography suggestions (Option A: suggest only, on blur/save)
 // Rules from API with fallback to bundled defaults (cni-07)
@@ -377,6 +389,12 @@ watch(() => draft.lastSaved.value, (saved) => {
     }
   }
 })
+
+function onCoverCropped(newUrl: string) {
+  form.value.coverImageUrl = newUrl
+  form.value.coverImagePosition = '50% 50%'
+  showCropModal.value = false
+}
 
 const handleCoverFileSelect = async (e: Event) => {
   const input = e.target as HTMLInputElement
