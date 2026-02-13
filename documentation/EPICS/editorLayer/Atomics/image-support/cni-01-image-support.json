@@ -1,0 +1,45 @@
+{
+  "meta": {
+    "cohort": "c26",
+    "repo": "befly"
+  },
+  "summary": "Replace grey essay card placeholders with admin-uploaded featured images",
+  "problem_statement": "Essay cards on the Home page display a grey rectangular placeholder (bg-gray-200) alongside each essay. These grey squares are generic and do not showcase content. Admins need the ability to load and assign featured images per essay so cards display meaningful visuals instead of placeholders.",
+  "in_scope": [
+    "Database: add cover_image_url column to writing_blocks (nullable VARCHAR/TEXT)",
+    "Shared: extend WritingBlock interface with coverImageUrl?: string",
+    "Server: migration for cover_image_url; include in writing repo select/insert/update",
+    "Server: admin API to set cover image — PUT /api/admin/writings/:id/cover-image accepting { coverImageUrl: string } or multipart upload",
+    "Image storage: support URL (admin pastes) and/or file upload to storage (S3, local uploads) — scope to URL-only for MVP; upload as enhancement",
+    "Client: WritingCard.vue — when writing.coverImageUrl exists, render img with object-cover; else grey placeholder",
+    "Client: Admin UI for setting cover image per writing (in Admin content view or Write page) — URL input or file picker"
+  ],
+  "out_of_scope": [
+    "Image cropping or editing in-app",
+    "Multiple images per essay",
+    "Automatic image extraction from body",
+    "CDN or image optimization pipeline"
+  ],
+  "requirements": [
+    "cover_image_url stored per writing; nullable for backwards compatibility",
+    "Admin (or author for own writing) can set cover image",
+    "WritingCard displays image when available; grey placeholder when not",
+    "URL validation: allow https URLs only; reject data URIs and invalid formats"
+  ],
+  "acceptance_criteria": [
+    "Admin can set a cover image URL for any essay",
+    "Essay cards with coverImageUrl display the image instead of the grey square",
+    "Essay cards without coverImageUrl show grey placeholder (current behavior)",
+    "Invalid or broken image URLs fall back to grey placeholder"
+  ],
+  "dependencies": [],
+  "risks": [
+    "External image URLs may break or change; consider caching or validation",
+    "File upload adds storage and security complexity — URL-only MVP reduces risk"
+  ],
+  "implementation_notes": {
+    "shared": "WritingBlock: add coverImageUrl?: string. ApiResponses unchanged if field included in WritingBlock.",
+    "server": "Migration: ALTER TABLE writing_blocks ADD COLUMN cover_image_url TEXT. writing.repo: include in SELECT; update() accepts coverImageUrl. Admin route PUT /admin/writings/:id/cover-image with body { coverImageUrl: string }. Validate URL format (https only).",
+    "client": "WritingCard.vue: when writing.coverImageUrl, render <img :src=\"writing.coverImageUrl\" class=\"w-full h-full object-cover\" /> inside the existing div; @error fallback to grey placeholder. Admin.vue expanded content panel or Write.vue: add cover image URL input; call admin API on save. Home.vue: remove showImage prop logic — always show image area when coverImageUrl exists, or always show for first N (configurable)."
+  }
+}
