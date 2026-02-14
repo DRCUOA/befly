@@ -5,6 +5,19 @@ All notable changes to the Rambulations writing platform are documented in this 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.1] - 2026-02-14
+
+### Added
+- **Slide-out metadata panel (cni-02)** — cover, themes, visibility moved into drawer; hidden from default Write view
+- `MetadataPanel.vue`: slide-out drawer with cover image, themes, and visibility controls
+- Vitest unit tests for MetadataPanel and Write page
+
+### Changed
+- Write page: metadata controls (cover, themes, visibility) moved into slide-out panel; ≤5 visible controls in default view
+- Metadata panel opens via non-blocking interaction; accessible (keyboard, screen reader)
+
+---
+
 ## [0.5.0] - 2026-02-14
 
 ### Added
@@ -215,6 +228,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Database migrations (001-008): users, writing_blocks, themes, appreciations, auth/visibility, roles, reaction types, comments
 - Development setup documentation and quick-start guide
 
+[0.5.1]: https://github.com/DRCUOA/befly/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/DRCUOA/befly/compare/v0.4.3...v0.5.0
 [0.4.3]: https://github.com/DRCUOA/befly/compare/v0.4.2...v0.4.3
 [0.4.2]: https://github.com/DRCUOA/befly/compare/v0.4.1...v0.4.2
