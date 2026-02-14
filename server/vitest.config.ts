@@ -8,6 +8,8 @@ export default defineConfig({
   test: {
     environment: 'node',
     include: ['src/**/*.test.ts'],
+    setupFiles: ['./vitest.setup.ts'],
+    reporters: ['basic'],
     alias: {
       '@shared': path.resolve(__dirname, '../shared'),
     },

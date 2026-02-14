@@ -30,118 +30,25 @@
         </p>
       </div>
       
-      <!-- Metadata: compact section below editor -->
-      <div class="w-full border-t border-line bg-paper px-4 sm:px-6 md:px-8 lg:px-12 py-4 sm:py-6 space-y-4 sm:space-y-6">
-      <div>
-        <label class="block text-sm font-medium text-ink-lighter mb-1">
-          Cover image (optional)
-        </label>
-        <div class="flex items-center gap-3 flex-wrap">
-          <div v-if="form.coverImageUrl" class="w-32 h-32 rounded overflow-hidden border border-line flex-shrink-0">
-            <DraggableCoverImage
-              :src="form.coverImageUrl"
-              v-model:position="form.coverImagePosition"
-              editable
-              container-class="w-full h-full"
-            />
-          </div>
-          <input
-            ref="coverFileInputRef"
-            type="file"
-            accept="image/jpeg,image/png,image/gif,image/webp"
-            class="hidden"
-            @change="handleCoverFileSelect"
-          />
-          <button
-            type="button"
-            @click="coverFileInputRef?.click()"
-            class="px-3 py-1.5 text-sm rounded border border-line text-ink hover:bg-[#E5E5E5] font-sans"
-          >
-            Upload image
-          </button>
-          <button
-            v-if="form.coverImageUrl"
-            type="button"
-            @click="showCropModal = true"
-            class="px-3 py-1.5 text-sm rounded border border-line text-ink hover:bg-[#E5E5E5] font-sans"
-          >
-            Crop
-          </button>
-          <button
-            v-if="form.coverImageUrl"
-            type="button"
-            @click="form.coverImageUrl = ''"
-            class="px-3 py-1.5 text-sm rounded border border-line text-ink-lighter hover:bg-[#E5E5E5] font-sans"
-          >
-            Clear
-          </button>
-        </div>
-        <CoverImageCropModal
-          v-if="showCropModal && form.coverImageUrl"
-          :image-url="form.coverImageUrl"
-          @cropped="onCoverCropped"
-          @cancel="showCropModal = false"
-        />
-        <p class="mt-1 text-xs sm:text-sm text-ink-lighter">
-          Upload an image for the essay card thumbnail. Crop for best framing, or drag to reposition when larger than frame. JPEG, PNG, GIF, WebP up to 5MB.
-        </p>
-      </div>
-      
-      <div>
-        <label class="block text-sm font-medium text-ink-lighter mb-1">
-          Visibility
-        </label>
-        <select
-          v-model="form.visibility"
-          class="mt-1 block w-full rounded-md border-line shadow-sm focus:border-ink focus:ring-ink text-base sm:text-sm bg-paper"
-        >
-          <option value="private">Private (only you can see)</option>
-          <option value="shared">Shared (others can see but not edit)</option>
-          <option value="public">Public (everyone can see)</option>
-        </select>
-        <p class="mt-1 text-xs sm:text-sm text-ink-lighter">
-          Choose who can see this writing block
-        </p>
-      </div>
-      
-      <div>
-        <label class="block text-sm font-medium text-ink-lighter mb-2">
-          Themes (optional)
-        </label>
-    <div v-if="loadingThemes || loadingWriting" class="text-xs sm:text-sm text-ink-lighter">
-      {{ loadingWriting ? 'Loading writing...' : 'Loading themes...' }}
-    </div>
-        <div v-else class="space-y-2">
-          <div
-            v-for="theme in availableThemes"
-            :key="theme.id"
-            class="flex items-center"
-          >
-            <input
-              :id="`theme-${theme.id}`"
-              v-model="form.themeIds"
-              type="checkbox"
-              :value="theme.id"
-              class="h-4 w-4 text-ink focus:ring-ink border-line rounded"
-            />
-            <label
-              :for="`theme-${theme.id}`"
-              class="ml-2 text-sm text-ink font-sans"
-            >
-              {{ theme.name }}
-            </label>
-          </div>
-          <p v-if="availableThemes.length === 0" class="text-xs sm:text-sm text-ink-lighter">
-            No themes available. Create themes on the Themes page.
-          </p>
-        </div>
-      </div>
-      
-      <div v-if="error" class="bg-red-50 border border-red-200 rounded-md p-3 sm:p-4">
+      <!-- Footer: metadata trigger, publish, cancel (≤5 visible controls per epic DoD) -->
+      <div class="w-full border-t border-line bg-paper px-4 sm:px-6 md:px-8 lg:px-12 py-4 sm:py-6">
+      <div v-if="error" class="mb-4 bg-red-50 border border-red-200 rounded-md p-3 sm:p-4">
         <p class="text-red-800 text-xs sm:text-sm">{{ error }}</p>
       </div>
       
-      <div class="flex flex-col sm:flex-row gap-3 sm:gap-4">
+      <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 items-center sm:items-center">
+        <button
+          type="button"
+          class="inline-flex items-center gap-2 px-4 py-2 border border-line rounded-md text-ink-lighter hover:text-ink hover:bg-[#E5E5E5] text-sm font-sans"
+          aria-label="Open metadata settings (cover, themes, visibility)"
+          :aria-expanded="metadataPanelOpen"
+          @click="metadataPanelOpen = true"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+          </svg>
+          Metadata
+        </button>
         <button
           type="submit"
           :disabled="submitting || loadingWriting"
@@ -166,6 +73,30 @@
       </div>
       </div>
     </form>
+
+    <!-- Slide-out metadata panel (cover, themes, visibility) - P1-uix-02 -->
+    <div
+      v-if="metadataPanelOpen"
+      class="fixed inset-0 z-30 bg-black/20 transition-opacity duration-150"
+      aria-hidden="true"
+      @click="metadataPanelOpen = false"
+    />
+    <MetadataPanel
+      v-model="metadataPanelOpen"
+      :form="form"
+      :available-themes="availableThemes"
+      :loading-themes="loadingThemes"
+      :loading-writing="loadingWriting"
+      :error="error"
+      @cover-file-select="handleCoverFileSelect"
+      @open-crop="showCropModal = true"
+    />
+    <CoverImageCropModal
+      v-if="showCropModal && form.coverImageUrl"
+      :image-url="form.coverImageUrl"
+      @cropped="onCoverCropped"
+      @cancel="showCropModal = false"
+    />
 
     <!-- Typography Suggestions Modal (before save) -->
     <div v-if="showTypographyModal && typographySuggestions.length > 0" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
@@ -287,7 +218,7 @@ import {
   type TypographySuggestion
 } from '../utils/typography-suggestions'
 import { useTypographyRules } from '../composables/useTypographyRules'
-import DraggableCoverImage from '../components/writing/DraggableCoverImage.vue'
+import MetadataPanel from '../components/writing/MetadataPanel.vue'
 import CoverImageCropModal from '../components/writing/CoverImageCropModal.vue'
 
 const router = useRouter()
@@ -319,8 +250,8 @@ const loadingThemes = ref(true)
 const loadingWriting = ref(false)
 const submitting = ref(false)
 const error = ref<string | null>(null)
-const coverFileInputRef = ref<HTMLInputElement | null>(null)
 const showCropModal = ref(false)
+const metadataPanelOpen = ref(false)
 
 // Typography suggestions (Option A: suggest only, on blur/save)
 // Rules from API with fallback to bundled defaults (cni-07)

@@ -7,7 +7,7 @@
     "build": "rm -rf dist && tsc && cp -R dist/server/src/. dist/",
     "start": "node dist/index.js",
     "type-check": "tsc --noEmit",
-    "test": "vitest run",
+    "test": "vitest run 2>&1 | tee test-results.log",
     "test:watch": "vitest"
   },
   "dependencies": {
