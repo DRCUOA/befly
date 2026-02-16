@@ -13,6 +13,82 @@
           aria-label="Title"
         />
       </div>
+
+      <!-- Non-blocking inline typography suggestions (P1-uix-03: progressive reveal)
+           Positioned between title and body so writers see them without scrolling past text. -->
+      <div v-if="typographySuggestions.length > 0" class="w-full px-4 sm:px-6 md:px-8 lg:px-12 pb-3" role="region" aria-label="Typography suggestions">
+        <div class="border border-line bg-accent-muted rounded-md overflow-hidden">
+          <!-- Summary bar — visually interactive: hover shifts to line, chevron signals expand -->
+          <button
+            type="button"
+            class="w-full flex items-center justify-between px-4 py-2.5 text-sm text-accent-hover hover:bg-line transition-colors"
+            @click="suggestionsPanelExpanded = !suggestionsPanelExpanded"
+            :aria-expanded="suggestionsPanelExpanded"
+            aria-controls="typography-suggestions-panel"
+          >
+            <span class="flex items-center gap-2">
+              <svg class="w-4 h-4 text-accent shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              {{ typographySuggestions.length }} typography suggestion{{ typographySuggestions.length === 1 ? '' : 's' }}
+            </span>
+            <span class="flex items-center gap-3">
+              <span
+                role="button"
+                tabindex="0"
+                class="text-xs font-medium text-accent-hover hover:text-ink underline underline-offset-2"
+                @click.stop="acceptAllTypographySuggestions"
+                @keydown.enter.stop="acceptAllTypographySuggestions"
+              >Accept all</span>
+              <span
+                role="button"
+                tabindex="0"
+                class="text-xs text-ink-lighter hover:text-ink-light underline underline-offset-2"
+                @click.stop="dismissAllTypographySuggestions"
+                @keydown.enter.stop="dismissAllTypographySuggestions"
+              >Dismiss</span>
+              <svg
+                class="w-4 h-4 text-ink-lighter transition-transform duration-200"
+                :class="{ 'rotate-180': suggestionsPanelExpanded }"
+                fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"
+              >
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </span>
+          </button>
+          <!-- Expanded suggestion list — generous height so users can review all detail -->
+          <div
+            v-if="suggestionsPanelExpanded"
+            id="typography-suggestions-panel"
+            class="border-t border-line px-4 pb-3 pt-2 space-y-2 max-h-[50vh] overflow-y-auto"
+          >
+            <div
+              v-for="(suggestion, idx) in typographySuggestions"
+              :key="`${suggestion.start}-${suggestion.ruleId}`"
+              class="flex items-center justify-between gap-3 px-3 py-2 bg-white/70 rounded text-sm"
+            >
+              <div class="flex-1 min-w-0 truncate">
+                <span class="text-ink-lighter">{{ suggestion.description }}:</span>
+                <span class="ml-1 font-mono text-ink">"{{ suggestion.original }}"</span>
+                <span class="mx-1 text-ink-whisper">→</span>
+                <span class="font-mono font-medium text-accent-hover">"{{ suggestion.replacement }}"</span>
+              </div>
+              <div class="flex gap-2 shrink-0">
+                <button
+                  type="button"
+                  @click="acceptTypographySuggestion(idx)"
+                  class="px-2 py-1 text-xs bg-accent text-paper rounded hover:bg-accent-hover transition-colors"
+                >Accept</button>
+                <button
+                  type="button"
+                  @click="dismissTypographySuggestion(idx)"
+                  class="px-2 py-1 text-xs border border-line rounded text-ink-lighter hover:bg-line transition-colors"
+                >Dismiss</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
       
       <div class="flex-1 w-full px-4 sm:px-6 md:px-8 lg:px-12 pb-4">
         <textarea
@@ -27,91 +103,16 @@
         />
       </div>
 
-      <!-- Non-blocking inline typography suggestions (P1-uix-03: progressive reveal) -->
-      <div v-if="typographySuggestions.length > 0" class="w-full px-4 sm:px-6 md:px-8 lg:px-12 pb-2" role="region" aria-label="Typography suggestions">
-        <div class="border border-amber-200 bg-amber-50/80 rounded-md overflow-hidden">
-          <!-- Summary bar -->
-          <button
-            type="button"
-            class="w-full flex items-center justify-between px-4 py-2.5 text-sm text-amber-800 hover:bg-amber-100/50 transition-colors"
-            @click="suggestionsPanelExpanded = !suggestionsPanelExpanded"
-            :aria-expanded="suggestionsPanelExpanded"
-            aria-controls="typography-suggestions-panel"
-          >
-            <span class="flex items-center gap-2">
-              <svg class="w-4 h-4 text-amber-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              {{ typographySuggestions.length }} typography suggestion{{ typographySuggestions.length === 1 ? '' : 's' }}
-            </span>
-            <span class="flex items-center gap-3">
-              <span
-                role="button"
-                tabindex="0"
-                class="text-xs text-amber-700 hover:text-amber-900 underline underline-offset-2"
-                @click.stop="acceptAllTypographySuggestions"
-                @keydown.enter.stop="acceptAllTypographySuggestions"
-              >Accept all</span>
-              <span
-                role="button"
-                tabindex="0"
-                class="text-xs text-amber-600 hover:text-amber-800 underline underline-offset-2"
-                @click.stop="dismissAllTypographySuggestions"
-                @keydown.enter.stop="dismissAllTypographySuggestions"
-              >Dismiss</span>
-              <svg
-                class="w-4 h-4 text-amber-500 transition-transform duration-200"
-                :class="{ 'rotate-180': suggestionsPanelExpanded }"
-                fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"
-              >
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-              </svg>
-            </span>
-          </button>
-          <!-- Expanded suggestion list -->
-          <div
-            v-if="suggestionsPanelExpanded"
-            id="typography-suggestions-panel"
-            class="border-t border-amber-200 px-4 pb-3 pt-2 space-y-2 max-h-48 overflow-y-auto"
-          >
-            <div
-              v-for="(suggestion, idx) in typographySuggestions"
-              :key="`${suggestion.start}-${suggestion.ruleId}`"
-              class="flex items-center justify-between gap-3 px-3 py-2 bg-white/70 rounded text-sm"
-            >
-              <div class="flex-1 min-w-0 truncate">
-                <span class="text-gray-500">{{ suggestion.description }}:</span>
-                <span class="ml-1 font-mono text-gray-800">"{{ suggestion.original }}"</span>
-                <span class="mx-1 text-gray-400">→</span>
-                <span class="font-mono text-green-700">"{{ suggestion.replacement }}"</span>
-              </div>
-              <div class="flex gap-2 shrink-0">
-                <button
-                  type="button"
-                  @click="acceptTypographySuggestion(idx)"
-                  class="px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
-                >Accept</button>
-                <button
-                  type="button"
-                  @click="dismissTypographySuggestion(idx)"
-                  class="px-2 py-1 text-xs border border-gray-300 rounded text-gray-600 hover:bg-gray-100 transition-colors"
-                >Dismiss</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <!-- Footer: metadata trigger, publish, cancel (≤5 visible controls per epic DoD) -->
       <div class="w-full border-t border-line bg-paper px-4 sm:px-6 md:px-8 lg:px-12 py-4 sm:py-6 sticky bottom-0 z-10">
-      <div v-if="error" class="mb-4 bg-red-50 border border-red-200 rounded-md p-3 sm:p-4">
-        <p class="text-red-800 text-xs sm:text-sm">{{ error }}</p>
+      <div v-if="error" class="mb-4 bg-accent-muted border border-line rounded-md p-3 sm:p-4">
+        <p class="text-ink text-xs sm:text-sm">{{ error }}</p>
       </div>
       
       <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 items-center sm:items-center">
         <button
           type="button"
-          class="inline-flex items-center gap-2 px-4 py-2 border border-line rounded-md text-ink-lighter hover:text-ink hover:bg-[#E5E5E5] text-sm font-sans"
+          class="inline-flex items-center gap-2 px-4 py-2 border border-line rounded-md text-ink-lighter hover:text-ink hover:bg-line text-sm font-sans"
           aria-label="Open metadata settings (cover, themes, visibility)"
           :aria-expanded="metadataPanelOpen"
           @click="metadataPanelOpen = true"
@@ -130,7 +131,7 @@
         </button>
         <router-link
           to="/home"
-          class="px-6 py-2 border border-line rounded-md text-ink-lighter hover:text-ink hover:bg-[#E5E5E5] text-center text-sm font-sans"
+          class="px-6 py-2 border border-line rounded-md text-ink-lighter hover:text-ink hover:bg-line text-center text-sm font-sans"
         >
           Cancel
         </router-link>
@@ -139,7 +140,7 @@
       <div
         v-if="showDraftIndicator"
         class="mt-4 px-3 py-2 rounded-md text-xs sm:text-sm font-sans"
-        :class="hasUnsavedChanges ? 'bg-red-50 text-red-800' : 'bg-green-50 text-green-800'"
+        :class="hasUnsavedChanges ? 'bg-accent-muted text-ink' : 'bg-accent-muted text-ink-lighter'"
       >
         Draft saved at {{ draftSavedAt ?? '—' }}
       </div>
@@ -174,34 +175,34 @@
     <div v-if="showRecoveryModal && recoveryDraft" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <div class="bg-white rounded-lg shadow-xl p-6 max-w-md w-full mx-4">
         <h3 class="text-lg font-semibold mb-2">Recover Unsaved Work?</h3>
-        <p class="text-gray-700 mb-4">
+        <p class="text-ink-light mb-4">
           You have an unsaved draft from {{ formatTime(recoveryDraft.timestamp) }}. Would you like to recover it?
         </p>
-        <div class="mb-4 p-3 bg-gray-50 rounded-md text-sm">
-          <div class="font-medium text-gray-700 mb-1">Draft Preview:</div>
-          <div class="text-gray-600">
+        <div class="mb-4 p-3 bg-accent-muted rounded-md text-sm">
+          <div class="font-medium text-ink-light mb-1">Draft Preview:</div>
+          <div class="text-ink-lighter">
             <strong>Title:</strong> {{ recoveryDraft.title || '(empty)' }}
           </div>
-          <div class="text-gray-600 mt-1">
+          <div class="text-ink-lighter mt-1">
             <strong>Body:</strong> {{ recoveryDraft.body.substring(0, 100) }}{{ recoveryDraft.body.length > 100 ? '...' : '' }}
           </div>
         </div>
-        <div class="flex justify-end gap-3">
+        <div class="flex flex-wrap justify-end gap-3">
           <button
             @click="dismissRecoveryModal"
-            class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 text-sm"
+            class="px-4 py-2 rounded-md text-ink-lighter hover:text-ink-light text-sm"
           >
             Dismiss
           </button>
           <button
             @click="discardDraft"
-            class="px-4 py-2 border border-red-300 rounded-md text-red-700 hover:bg-red-50 text-sm"
+            class="px-4 py-2 border border-line rounded-md text-ink-light hover:text-ink hover:bg-line text-sm"
           >
             Discard
           </button>
           <button
             @click="restoreDraft"
-            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm"
+            class="px-4 py-2 bg-accent text-paper rounded-md hover:bg-accent-hover text-sm"
           >
             Restore
           </button>

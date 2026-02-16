@@ -5,6 +5,33 @@ All notable changes to the Rambulations writing platform are documented in this 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.3] - 2026-02-16
+
+### Added
+- **Single accent colour (cni-04)** — reduce colour palette to one accent; remove visual noise; opens Phase 2 (Sensory)
+- CSS custom properties: `--color-accent` (#7C6F64), `--color-accent-hover` (#5C524A), `--color-accent-muted` (#F3EFEB) — warm stone derived from existing paper/ink palette
+- Tailwind design tokens `accent`, `accent-hover`, `accent-muted` referencing CSS variables so downstream atomics inherit the palette automatically
+
+### Changed
+- Write view: consolidated 5 accent hues (amber, green, blue, red, gray) into single accent colour with lightness/weight shifts for interactive states
+- Typography suggestions panel: moved above textarea (between title and body) so writers see suggestions without scrolling past text
+- Typography suggestions detail: expanded max height from `max-h-48` (192px) to `max-h-[50vh]` so users can review all suggestions
+- Typography suggestions summary bar: differentiated "Accept all" (font-medium, accent-hover) from "Dismiss" (ink-lighter) and chevron affordance (ink-lighter) for clear visual hierarchy
+- MetadataPanel: focus rings, checkboxes, and select use `accent`/`accent-hover` instead of `ink`; button hovers use `line` token instead of hardcoded `#E5E5E5`
+- ThemeTag: `bg-blue-100 text-blue-800` → `bg-accent-muted text-accent`
+- CoverImageCropModal: cropper background uses `line` token; error text uses `ink` instead of `red-600`
+- DraggableCoverImage: placeholder background uses `line` token instead of `gray-200`
+- Draft saved indicator: uses accent-muted tint with ink weight shift instead of red/green semantic colours
+- Recovery modal: restore button uses accent; dismiss/discard use neutral line/ink-light; preview area uses accent-muted
+- Error displays (Write, MetadataPanel): use `bg-accent-muted border-line text-ink` instead of red palette
+- Version bump 0.5.2 → 0.5.3 (build number in footer)
+
+### Removed
+- All secondary accent colours from Write view: amber (typography), green (accept/success), blue (restore/tags), red (errors/discard)
+- Hardcoded hex colour values (`#E5E5E5`) from interactive hover states in Write view components
+
+---
+
 ## [0.5.2] - 2026-02-16
 
 ### Added
@@ -249,6 +276,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Database migrations (001-008): users, writing_blocks, themes, appreciations, auth/visibility, roles, reaction types, comments
 - Development setup documentation and quick-start guide
 
+[0.5.3]: https://github.com/DRCUOA/befly/compare/v0.5.2...v0.5.3
 [0.5.2]: https://github.com/DRCUOA/befly/compare/v0.5.1...v0.5.2
 [0.5.1]: https://github.com/DRCUOA/befly/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/DRCUOA/befly/compare/v0.4.3...v0.5.0
