@@ -15,7 +15,7 @@
       <h2 class="text-lg font-sans font-medium text-ink">Metadata</h2>
       <button
         type="button"
-        class="p-2 -m-2 text-ink-lighter hover:text-ink rounded focus:outline-none focus:ring-2 focus:ring-ink focus:ring-offset-2"
+        class="p-2 -m-2 text-ink-lighter hover:text-ink rounded focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2"
         aria-label="Close metadata panel"
         @click="close"
       >
@@ -50,7 +50,7 @@
           />
           <button
             type="button"
-            class="px-3 py-1.5 text-sm rounded border border-line text-ink hover:bg-[#E5E5E5] font-sans"
+            class="px-3 py-1.5 text-sm rounded border border-line text-ink hover:bg-line font-sans"
             @click="coverFileInputRef?.click()"
           >
             Upload image
@@ -58,7 +58,7 @@
           <button
             v-if="form.coverImageUrl"
             type="button"
-            class="px-3 py-1.5 text-sm rounded border border-line text-ink hover:bg-[#E5E5E5] font-sans"
+            class="px-3 py-1.5 text-sm rounded border border-line text-ink hover:bg-line font-sans"
             @click="$emit('open-crop')"
           >
             Crop
@@ -66,7 +66,7 @@
           <button
             v-if="form.coverImageUrl"
             type="button"
-            class="px-3 py-1.5 text-sm rounded border border-line text-ink-lighter hover:bg-[#E5E5E5] font-sans"
+            class="px-3 py-1.5 text-sm rounded border border-line text-ink-lighter hover:bg-line font-sans"
             @click="form.coverImageUrl = ''"
           >
             Clear
@@ -84,7 +84,7 @@
         </label>
         <select
           v-model="form.visibility"
-          class="mt-1 block w-full rounded-md border-line shadow-sm focus:border-ink focus:ring-ink text-base sm:text-sm bg-paper"
+          class="mt-1 block w-full rounded-md border-line shadow-sm focus:border-accent focus:ring-accent text-base sm:text-sm bg-paper"
           aria-label="Choose who can see this writing block"
         >
           <option value="private">Private (only you can see)</option>
@@ -115,7 +115,7 @@
               v-model="form.themeIds"
               type="checkbox"
               :value="theme.id"
-              class="h-4 w-4 text-ink focus:ring-ink border-line rounded"
+              class="h-4 w-4 text-accent focus:ring-accent border-line rounded"
               :aria-label="`Assign theme: ${theme.name}`"
             />
             <label
@@ -132,8 +132,8 @@
       </div>
 
       <!-- Error -->
-      <div v-if="error" class="bg-red-50 border border-red-200 rounded-md p-3 sm:p-4">
-        <p class="text-red-800 text-xs sm:text-sm">{{ error }}</p>
+      <div v-if="error" class="bg-accent-muted border border-line rounded-md p-3 sm:p-4">
+        <p class="text-ink text-xs sm:text-sm">{{ error }}</p>
       </div>
     </div>
   </div>

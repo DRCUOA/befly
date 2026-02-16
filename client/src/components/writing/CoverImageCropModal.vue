@@ -10,7 +10,7 @@
       <div class="flex-1 min-h-0 p-4 overflow-hidden">
         <Cropper
           ref="cropperRef"
-          class="cropper h-[min(60vh,400px)] bg-[#E5E5E5] rounded"
+          class="cropper h-[min(60vh,400px)] bg-line rounded"
           :src="imageSrc"
           :stencil-props="{ aspectRatio: 1 }"
           :canvas="canvasOptions"
@@ -18,7 +18,7 @@
           @error="onError"
         />
       </div>
-      <div v-if="cropError" class="px-6 py-2 text-sm text-red-600">{{ cropError }}</div>
+      <div v-if="cropError" class="px-6 py-2 text-sm text-ink">{{ cropError }}</div>
       <div class="px-6 py-4 border-t border-line flex justify-end gap-3">
         <button
           type="button"

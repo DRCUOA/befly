@@ -17,6 +17,9 @@ export default {
         'ink-lighter': '#8A8A8A',
         'ink-whisper': '#B8B8B8',
         'line': '#E8E6E3',
+        'accent': 'var(--color-accent)',
+        'accent-hover': 'var(--color-accent-hover)',
+        'accent-muted': 'var(--color-accent-muted)',
       },
       spacing: {
         '18': '4.5rem',

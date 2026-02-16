@@ -1,7 +1,7 @@
 <template>
   <div
     ref="containerRef"
-    class="relative overflow-hidden bg-gray-200 select-none"
+    class="relative overflow-hidden bg-line select-none"
     :class="[containerClass, editable && 'cursor-grab active:cursor-grabbing']"
     @mousedown="onMouseDown"
   >

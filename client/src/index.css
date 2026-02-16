@@ -11,6 +11,13 @@
   --color-ink-lighter: #8A8A8A;
   --color-ink-whisper: #B8B8B8;
   --color-line: #E8E6E3;
+
+  /* Single accent colour — P2-uix-04
+     Warm stone derived from the paper/ink palette.
+     Hover/focus states shift lightness; no additional hues. */
+  --color-accent: #7C6F64;
+  --color-accent-hover: #5C524A;
+  --color-accent-muted: #F3EFEB;
 }
 
 * {
