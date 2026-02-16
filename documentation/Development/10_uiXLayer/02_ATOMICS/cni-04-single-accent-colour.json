@@ -1,0 +1,46 @@
+{
+  "meta": {
+    "cohort": "c26",
+    "repo": "befly"
+  },
+  "summary": "Reduce colour palette to one accent colour; remove visual noise",
+  "problem_statement": "The current UI uses multiple accent colours, borders, and tonal variations that compete for attention and add visual noise. Every distinct colour is a micro-decision the writer's eye must process. A single, intentional accent colour creates a quieter visual field where the only 'loud' element is the writer's own text. Reducing the palette is a prerequisite for the breathing-space and caret work that follows—without tonal calm, whitespace and animation refinements have diminished impact.",
+  "in_scope": [
+    "Audit existing colour usage across the Write view for accent and highlight colours",
+    "Consolidate to a single primary accent colour for interactive elements",
+    "Remove or neutralise secondary accent colours, decorative borders, and tonal noise",
+    "Ensure sufficient contrast ratios (WCAG AA) with the single accent",
+    "Update CSS custom properties / design tokens to reflect the reduced palette"
+  ],
+  "out_of_scope": [
+    "Dark mode or theme switching",
+    "Breathing space / whitespace changes (P2-uix-05)",
+    "Caret animation (P2-uix-06)",
+    "Typography changes (handled in P1-uix-03)",
+    "Metadata panel styling (handled in P1-uix-02)"
+  ],
+  "requirements": [
+    "Write view uses at most one accent colour for interactive and highlight elements",
+    "Neutral palette (greys, background) remains available for structure but carries no semantic weight",
+    "All interactive elements using accent meet WCAG AA contrast (≥4.5:1 text, ≥3:1 non-text)",
+    "No regression in readability or discoverability of controls"
+  ],
+  "acceptance_criteria": [
+    "Only one accent colour is used across the Write view",
+    "No secondary accent colours remain in the default Write view",
+    "Contrast ratios for accent-coloured elements pass WCAG AA",
+    "Design tokens / CSS custom properties are consolidated to a single accent variable",
+    "Visual regression: Write view feels calmer without losing affordance clarity"
+  ],
+  "dependencies": [
+    "P1-uix-01 (Full-width editor layout) — accent applies within the expanded viewport",
+    "P1-uix-02 (Slide-out metadata panel) — panel controls adopt the single accent",
+    "P1-uix-03 (Non-blocking typography) — formatting affordances use the accent"
+  ],
+  "risks": [
+    "A single accent may not provide enough differentiation for distinct interactive states (hover, active, focus)",
+    "Consolidating colours could inadvertently reduce accessibility if contrast is not re-verified",
+    "Designers or stakeholders may push back on perceived 'blandness'"
+  ],
+  "implementation_notes": "P2-uix-04 opens Phase 2 (Sensory). All Phase 1 structural work must be complete. Derive hover/active/focus states from the single accent via opacity or lightness shifts rather than introducing new hues. Prefer CSS custom properties (e.g. --accent, --accent-hover, --accent-muted) so downstream atomics (breathing space, caret) inherit the palette automatically. Reference epic DoD: platform feels still, not busy."
+}

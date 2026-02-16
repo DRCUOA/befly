@@ -1,0 +1,48 @@
+{
+  "meta": {
+    "cohort": "c26",
+    "repo": "befly"
+  },
+  "summary": "Replace harsh blinking caret with smooth breathing animation to aid focus",
+  "problem_statement": "The default browser caret blinks with a hard on/off flash—a small but persistent source of visual tension. For writers spending sustained time in the editor, the harsh blink is a micro-distraction that accumulates. A smooth, breathing caret (gradual fade in/out) is perceptually calmer, signals that the environment is alive without demanding attention, and reinforces the sensory calm established by the accent colour and breathing space work. This is a small surface-area change with outsized impact on perceived polish and focus.",
+  "in_scope": [
+    "Override or replace the default browser caret with a custom animated caret",
+    "Implement a smooth breathing animation (fade or opacity pulse) instead of hard blink",
+    "Ensure caret colour inherits the single accent or a harmonious neutral",
+    "Caret animation respects prefers-reduced-motion media query",
+    "Caret remains visible and functional during typing, selection, and navigation"
+  ],
+  "out_of_scope": [
+    "Editor content area layout (P1-uix-01)",
+    "Colour palette beyond caret colour (P2-uix-04)",
+    "Whitespace and spacing (P2-uix-05)",
+    "Word count, milestones, or feedback overlays (P3)",
+    "Rich text or cursor-based collaborative features"
+  ],
+  "requirements": [
+    "Caret uses a smooth fade/pulse animation instead of hard on/off blink",
+    "Animation cycle is ≥800ms to feel calm (not frantic)",
+    "Caret respects prefers-reduced-motion: falls back to static or native blink",
+    "Caret is visible on all background colours used in the Write view",
+    "No measurable impact on input latency or typing performance"
+  ],
+  "acceptance_criteria": [
+    "Caret animates with a smooth breathing rhythm (no hard on/off)",
+    "Animation duration is ≥800ms per cycle",
+    "With prefers-reduced-motion enabled, caret falls back gracefully",
+    "Caret contrast is sufficient against editor background (≥3:1)",
+    "Typing, arrow-key navigation, and text selection work without visual glitch",
+    "No regression in input latency benchmarks"
+  ],
+  "dependencies": [
+    "P1-uix-01 (Full-width editor layout) — caret renders within the expanded viewport",
+    "P2-uix-04 (Single accent colour) — caret colour may derive from accent palette",
+    "P2-uix-05 (Breathing space) — spacing context affects caret visual weight"
+  ],
+  "risks": [
+    "Custom caret may not be supported in all browsers or input modes (IME, mobile keyboards)",
+    "Overriding native caret can break accessibility tooling or screen magnifiers",
+    "Animation that is too slow may feel laggy; too fast undermines the calm intent"
+  ],
+  "implementation_notes": "P2-uix-06 closes Phase 2 (Sensory). Approach: use CSS caret-color plus a custom overlay element, or leverage the contenteditable caret if the editor supports it. For textarea-based editors, a thin absolutely-positioned div synced to cursor position may be needed—measure perf impact carefully. Animation: CSS @keyframes with opacity (e.g. 1 → 0.2 → 1 over ~1200ms ease-in-out). Always gate behind prefers-reduced-motion. Reference epic DoD: platform feels still, not busy."
+}
