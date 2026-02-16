@@ -5,6 +5,27 @@ All notable changes to the Rambulations writing platform are documented in this 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.2] - 2026-02-16
+
+### Added
+- **Non-blocking typography (cni-03)** — typography suggestions no longer block writing or publishing; completes Phase 1 structural changes
+- Inline collapsible suggestion panel: progressive reveal below textarea with Accept/Dismiss per suggestion, Accept all, Dismiss actions
+- Debounced typography scanning: suggestions appear after 1.5 s typing pause or on blur — never interrupts keystrokes
+- Dismissed-suggestion tracking: dismissed suggestions don't reappear on re-scan
+- 5 new Vitest tests for cni-03 acceptance criteria (no blocking modal, direct submit, inline layout, accessible controls, unblocked textarea)
+
+### Changed
+- Write page: publish/update submits immediately — no modal gate, no scanning before submit
+- Typography suggestion flow refactored from blocking modal (fixed overlay, z-50) to non-blocking inline panel (progressive reveal, role="region")
+- Footer (Metadata, Publish, Cancel, draft indicator) is now sticky at viewport bottom (`sticky bottom-0`)
+- Version bump 0.5.1 → 0.5.2 (build number in footer)
+
+### Removed
+- Blocking typography suggestions modal (`fixed inset-0 z-50` overlay before publish)
+- `pendingSubmit` / `showTypographyModal` / `blurSuggestionCount` refs and `closeTypographyModalAndSubmit` function
+
+---
+
 ## [0.5.1] - 2026-02-14
 
 ### Added
@@ -228,6 +249,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Database migrations (001-008): users, writing_blocks, themes, appreciations, auth/visibility, roles, reaction types, comments
 - Development setup documentation and quick-start guide
 
+[0.5.2]: https://github.com/DRCUOA/befly/compare/v0.5.1...v0.5.2
 [0.5.1]: https://github.com/DRCUOA/befly/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/DRCUOA/befly/compare/v0.4.3...v0.5.0
 [0.4.3]: https://github.com/DRCUOA/befly/compare/v0.4.2...v0.4.3

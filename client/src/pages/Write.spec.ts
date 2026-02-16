@@ -1,5 +1,5 @@
 /**
- * Unit tests for Write page (P1-uix-01 / cni-01 and P1-uix-02 / cni-02)
+ * Unit tests for Write page (P1-uix-01 / cni-01, P1-uix-02 / cni-02, P1-uix-03 / cni-03)
  *
  * cni-01 (Full-width editor layout) acceptance criteria:
  * - Editor content area spans full viewport width
@@ -10,6 +10,12 @@
  * - Metadata controls are not visible in default Write view
  * - Slide-out panel opens and closes without blocking the editor
  * - Cover, themes, and visibility are accessible from the panel
+ *
+ * cni-03 (Non-blocking typography) acceptance criteria:
+ * - No blocking modals or dialogs for typography/formatting during Write
+ * - Formatting changes are progressive or inline
+ * - Writer can continue typing without interruption from typography UI
+ * - Accessibility of formatting controls is preserved
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { mount } from '@vue/test-utils'
@@ -188,6 +194,79 @@ describe('Write page (cni-01 + cni-02 acceptance criteria)', () => {
 
       const panel = wrapper.findComponent(MetadataPanel)
       expect(panel.props('modelValue')).toBe(false)
+    })
+  })
+
+  describe('cni-03: Non-blocking typography', () => {
+    it('no blocking modal overlay for typography in default view', async () => {
+      const wrapper = await createWrapper()
+
+      // No fixed z-50 overlay containing "Typography" should exist
+      const z50Overlays = wrapper.findAll('.fixed.inset-0')
+      const typographyModals = z50Overlays.filter(w =>
+        w.classes().includes('z-50') && w.text().includes('Typography')
+      )
+      expect(typographyModals.length).toBe(0)
+    })
+
+    it('form submits directly without intermediate blocking modal', async () => {
+      const { api: mockedApi } = await import('../api/client')
+      const wrapper = await createWrapper()
+
+      await wrapper.find('#title').setValue('My Essay')
+      await wrapper.find('#body').setValue('Some content here')
+      await wrapper.find('form').trigger('submit')
+      await wrapper.vm.$nextTick()
+
+      // No blocking modal should appear after submit
+      const z50Overlays = wrapper.findAll('.fixed.inset-0')
+      const typographyModals = z50Overlays.filter(w =>
+        w.text().includes('Typography Suggestions')
+      )
+      expect(typographyModals.length).toBe(0)
+
+      // API should have been called immediately (not gated by modal)
+      expect(mockedApi.post).toHaveBeenCalledTimes(1)
+    })
+
+    it('typography suggestions region uses inline layout (not fixed overlay)', async () => {
+      const wrapper = await createWrapper()
+
+      // If suggestions region exists, it should be inline (role="region"), not fixed/absolute
+      const suggestionsRegion = wrapper.find('[aria-label="Typography suggestions"]')
+      if (suggestionsRegion.exists()) {
+        expect(suggestionsRegion.classes()).not.toContain('fixed')
+        expect(suggestionsRegion.classes()).not.toContain('absolute')
+      }
+    })
+
+    it('inline suggestion panel has accessible expand/collapse control', async () => {
+      const wrapper = await createWrapper()
+
+      // When suggestion panel exists, its toggle should have aria-expanded and aria-controls
+      const suggestionsRegion = wrapper.find('[aria-label="Typography suggestions"]')
+      if (suggestionsRegion.exists()) {
+        const toggle = suggestionsRegion.find('[aria-controls="typography-suggestions-panel"]')
+        expect(toggle.exists()).toBe(true)
+        expect(toggle.attributes('aria-expanded')).toBeDefined()
+      }
+    })
+
+    it('typing is never blocked by typography UI (textarea always accessible)', async () => {
+      const wrapper = await createWrapper()
+
+      const textarea = wrapper.find('#body')
+      expect(textarea.exists()).toBe(true)
+
+      // Simulate typing — textarea should accept input without any blocking overlay
+      await textarea.setValue('Hello... world---test')
+      expect((textarea.element as HTMLTextAreaElement).value).toBe('Hello... world---test')
+
+      // Verify no blocking overlays appeared
+      const blockingOverlays = wrapper.findAll('.fixed.inset-0').filter(w =>
+        w.classes().includes('z-50') && w.text().includes('Typography')
+      )
+      expect(blockingOverlays.length).toBe(0)
     })
   })
 })

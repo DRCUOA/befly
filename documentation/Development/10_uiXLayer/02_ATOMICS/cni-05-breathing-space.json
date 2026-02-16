@@ -1,0 +1,48 @@
+{
+  "meta": {
+    "cohort": "c26",
+    "repo": "befly"
+  },
+  "summary": "Add whitespace and reduce density for visual calm in the Write view",
+  "problem_statement": "Dense layouts with tight margins, packed controls, and minimal spacing create a feeling of visual pressure. The eye has nowhere to rest, and the writing surface feels crowded even after Phase 1 removed chrome and Phase 2-04 reduced colour noise. Generous whitespace—breathing space—signals to the writer that the environment is unhurried. Without intentional spacing, the UI feels functional but not calm, undermining the 'still, not busy' promise of the epic.",
+  "in_scope": [
+    "Increase margins and padding around the editor content area",
+    "Add vertical rhythm and line-height adjustments for the writing surface",
+    "Increase spacing between remaining controls and affordances",
+    "Reduce visual density of any persistent UI elements (toolbar, status indicators)",
+    "Ensure spacing scales appropriately across breakpoints"
+  ],
+  "out_of_scope": [
+    "Typography or font changes (handled in P1-uix-03)",
+    "Colour palette changes (handled in P2-uix-04)",
+    "Caret animation (P2-uix-06)",
+    "Word count or milestone UI (P3)",
+    "Content layout within the metadata panel"
+  ],
+  "requirements": [
+    "Editor content area has increased top, bottom, and side margins compared to current",
+    "Line-height and paragraph spacing in the writing surface promote comfortable reading/writing",
+    "Remaining visible controls have increased inter-element spacing",
+    "Spacing values use a consistent scale (e.g. 4px / 8px / 16px / 32px grid)",
+    "Layout remains responsive: spacing adapts on narrow viewports without causing overflow"
+  ],
+  "acceptance_criteria": [
+    "Editor content area margins are visibly more generous than pre-Phase-2 baseline",
+    "Line-height in the editor is ≥1.6 for body text",
+    "No control or affordance feels 'packed' or touch-target cramped (min 44px tap targets)",
+    "Spacing follows a documented scale (design tokens or CSS custom properties)",
+    "Responsive: no horizontal overflow or content clipping on viewports ≥320px",
+    "Visual regression: Write view feels unhurried and calm"
+  ],
+  "dependencies": [
+    "P1-uix-01 (Full-width editor layout) — breathing space builds on expanded viewport",
+    "P1-uix-02 (Slide-out metadata panel) — fewer controls to space out",
+    "P2-uix-04 (Single accent colour) — tonal calm must be in place for spacing to have full effect"
+  ],
+  "risks": [
+    "Too much whitespace on large screens may make the UI feel empty rather than calm",
+    "Increased spacing on narrow viewports could push content below the fold",
+    "Writers accustomed to dense UIs may initially perceive the change as 'wasted space'"
+  ],
+  "implementation_notes": "P2-uix-05 is the second Sensory atomic. Use CSS custom properties for spacing tokens (e.g. --space-xs through --space-xl) so values are tuneable. Vertical rhythm: align spacing to a baseline grid. Consider max-width on the content area (e.g. 65–75ch) even within the full-width viewport so line lengths remain comfortable. Reference epic DoD: platform feels still, not busy."
+}
