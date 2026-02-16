@@ -25,13 +25,85 @@
           aria-label="Body"
           @blur="onBodyBlur"
         />
-        <p v-if="blurSuggestionCount > 0 && !showTypographyModal" class="mt-2 text-xs text-amber-600">
-          {{ blurSuggestionCount }} typography suggestion{{ blurSuggestionCount === 1 ? '' : 's' }} — review before publishing
-        </p>
       </div>
-      
+
+      <!-- Non-blocking inline typography suggestions (P1-uix-03: progressive reveal) -->
+      <div v-if="typographySuggestions.length > 0" class="w-full px-4 sm:px-6 md:px-8 lg:px-12 pb-2" role="region" aria-label="Typography suggestions">
+        <div class="border border-amber-200 bg-amber-50/80 rounded-md overflow-hidden">
+          <!-- Summary bar -->
+          <button
+            type="button"
+            class="w-full flex items-center justify-between px-4 py-2.5 text-sm text-amber-800 hover:bg-amber-100/50 transition-colors"
+            @click="suggestionsPanelExpanded = !suggestionsPanelExpanded"
+            :aria-expanded="suggestionsPanelExpanded"
+            aria-controls="typography-suggestions-panel"
+          >
+            <span class="flex items-center gap-2">
+              <svg class="w-4 h-4 text-amber-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              {{ typographySuggestions.length }} typography suggestion{{ typographySuggestions.length === 1 ? '' : 's' }}
+            </span>
+            <span class="flex items-center gap-3">
+              <span
+                role="button"
+                tabindex="0"
+                class="text-xs text-amber-700 hover:text-amber-900 underline underline-offset-2"
+                @click.stop="acceptAllTypographySuggestions"
+                @keydown.enter.stop="acceptAllTypographySuggestions"
+              >Accept all</span>
+              <span
+                role="button"
+                tabindex="0"
+                class="text-xs text-amber-600 hover:text-amber-800 underline underline-offset-2"
+                @click.stop="dismissAllTypographySuggestions"
+                @keydown.enter.stop="dismissAllTypographySuggestions"
+              >Dismiss</span>
+              <svg
+                class="w-4 h-4 text-amber-500 transition-transform duration-200"
+                :class="{ 'rotate-180': suggestionsPanelExpanded }"
+                fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"
+              >
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </span>
+          </button>
+          <!-- Expanded suggestion list -->
+          <div
+            v-if="suggestionsPanelExpanded"
+            id="typography-suggestions-panel"
+            class="border-t border-amber-200 px-4 pb-3 pt-2 space-y-2 max-h-48 overflow-y-auto"
+          >
+            <div
+              v-for="(suggestion, idx) in typographySuggestions"
+              :key="`${suggestion.start}-${suggestion.ruleId}`"
+              class="flex items-center justify-between gap-3 px-3 py-2 bg-white/70 rounded text-sm"
+            >
+              <div class="flex-1 min-w-0 truncate">
+                <span class="text-gray-500">{{ suggestion.description }}:</span>
+                <span class="ml-1 font-mono text-gray-800">"{{ suggestion.original }}"</span>
+                <span class="mx-1 text-gray-400">→</span>
+                <span class="font-mono text-green-700">"{{ suggestion.replacement }}"</span>
+              </div>
+              <div class="flex gap-2 shrink-0">
+                <button
+                  type="button"
+                  @click="acceptTypographySuggestion(idx)"
+                  class="px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
+                >Accept</button>
+                <button
+                  type="button"
+                  @click="dismissTypographySuggestion(idx)"
+                  class="px-2 py-1 text-xs border border-gray-300 rounded text-gray-600 hover:bg-gray-100 transition-colors"
+                >Dismiss</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Footer: metadata trigger, publish, cancel (≤5 visible controls per epic DoD) -->
-      <div class="w-full border-t border-line bg-paper px-4 sm:px-6 md:px-8 lg:px-12 py-4 sm:py-6">
+      <div class="w-full border-t border-line bg-paper px-4 sm:px-6 md:px-8 lg:px-12 py-4 sm:py-6 sticky bottom-0 z-10">
       <div v-if="error" class="mb-4 bg-red-50 border border-red-200 rounded-md p-3 sm:p-4">
         <p class="text-red-800 text-xs sm:text-sm">{{ error }}</p>
       </div>
@@ -97,69 +169,6 @@
       @cropped="onCoverCropped"
       @cancel="showCropModal = false"
     />
-
-    <!-- Typography Suggestions Modal (before save) -->
-    <div v-if="showTypographyModal && typographySuggestions.length > 0" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div class="bg-white rounded-lg shadow-xl p-6 max-w-lg w-full mx-4 max-h-[80vh] flex flex-col">
-        <h3 class="text-lg font-semibold mb-2">Typography Suggestions</h3>
-        <p class="text-gray-600 text-sm mb-4">
-          Review these typography suggestions before publishing. Accept or dismiss each one.
-        </p>
-        <div class="overflow-y-auto flex-1 space-y-3 mb-4">
-          <div
-            v-for="(suggestion, idx) in typographySuggestions"
-            :key="`${suggestion.start}-${suggestion.original}`"
-            class="flex items-center justify-between gap-3 p-3 bg-gray-50 rounded-md text-sm"
-          >
-            <div class="flex-1 min-w-0">
-              <span class="text-gray-500">{{ suggestion.description }}:</span>
-              <span class="ml-1 font-mono text-gray-800">"{{ suggestion.original }}"</span>
-              <span class="mx-1 text-gray-400">→</span>
-              <span class="font-mono text-green-700">"{{ suggestion.replacement }}"</span>
-            </div>
-            <div class="flex gap-2 shrink-0">
-              <button
-                type="button"
-                @click="acceptTypographySuggestion(idx)"
-                class="px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700"
-              >
-                Accept
-              </button>
-              <button
-                type="button"
-                @click="dismissTypographySuggestion(idx)"
-                class="px-2 py-1 text-xs border border-gray-300 rounded text-gray-700 hover:bg-gray-50"
-              >
-                Dismiss
-              </button>
-            </div>
-          </div>
-        </div>
-        <div class="flex justify-end gap-3 pt-2 border-t">
-          <button
-            type="button"
-            @click="dismissAllTypographySuggestions"
-            class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 text-sm"
-          >
-            Dismiss all
-          </button>
-          <button
-            type="button"
-            @click="acceptAllTypographySuggestions"
-            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm"
-          >
-            Accept all
-          </button>
-          <button
-            type="button"
-            @click="closeTypographyModalAndSubmit"
-            class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 text-sm"
-          >
-            Continue without changes
-          </button>
-        </div>
-      </div>
-    </div>
 
     <!-- Draft Recovery Modal -->
     <div v-if="showRecoveryModal && recoveryDraft" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
@@ -253,17 +262,37 @@ const error = ref<string | null>(null)
 const showCropModal = ref(false)
 const metadataPanelOpen = ref(false)
 
-// Typography suggestions (Option A: suggest only, on blur/save)
+// Non-blocking typography suggestions (P1-uix-03: progressive reveal on pause/blur)
 // Rules from API with fallback to bundled defaults (cni-07)
 const { rules: typographyRules } = useTypographyRules()
 const bodyTextareaRef = ref<HTMLTextAreaElement | null>(null)
-const showTypographyModal = ref(false)
 const typographySuggestions = ref<TypographySuggestion[]>([])
-const pendingSubmit = ref(false)
-const blurSuggestionCount = ref(0)
+const suggestionsPanelExpanded = ref(false)
+const dismissedSuggestionKeys = ref(new Set<string>())
+let scanTimer: ReturnType<typeof setTimeout> | null = null
+const SCAN_DEBOUNCE_MS = 1500
+
+function suggestionKey(s: TypographySuggestion): string {
+  return `${s.ruleId}:${s.original}`
+}
+
+function refreshSuggestions() {
+  const all = scanTypography(form.value.body, typographyRules.value)
+  typographySuggestions.value = all.filter(
+    s => !dismissedSuggestionKeys.value.has(suggestionKey(s))
+  )
+}
+
+watch(() => form.value.body, () => {
+  if (scanTimer) clearTimeout(scanTimer)
+  scanTimer = setTimeout(() => {
+    refreshSuggestions()
+  }, SCAN_DEBOUNCE_MS)
+})
 
 function onBodyBlur() {
-  blurSuggestionCount.value = scanTypography(form.value.body, typographyRules.value).length
+  if (scanTimer) clearTimeout(scanTimer)
+  refreshSuggestions()
 }
 
 // Draft management
@@ -442,7 +471,7 @@ const dismissRecoveryModal = () => {
   draft.enableAutosave()
 }
 
-/** Perform the actual API call. Called after typography modal or when no suggestions. */
+/** Perform the actual API call. */
 const doSubmit = async () => {
   if (!form.value.title.trim() || !form.value.body.trim()) {
     error.value = 'Title and body are required'
@@ -489,14 +518,6 @@ const handleSubmit = async () => {
     return
   }
 
-  const suggestions = scanTypography(form.value.body, typographyRules.value)
-  if (suggestions.length > 0) {
-    typographySuggestions.value = suggestions
-    showTypographyModal.value = true
-    pendingSubmit.value = true
-    return
-  }
-
   await doSubmit()
 }
 
@@ -516,26 +537,15 @@ function acceptTypographySuggestion(idx: number) {
   const suggestion = typographySuggestions.value[idx]
   if (!suggestion) return
   applySuggestionViaTextarea(suggestion)
-  const next = scanTypography(form.value.body, typographyRules.value)
-  typographySuggestions.value = next
-  if (next.length === 0) {
-    showTypographyModal.value = false
-    if (pendingSubmit.value) {
-      pendingSubmit.value = false
-      doSubmit()
-    }
-  }
+  refreshSuggestions()
 }
 
 function dismissTypographySuggestion(idx: number) {
-  typographySuggestions.value = typographySuggestions.value.filter((_, i) => i !== idx)
-  if (typographySuggestions.value.length === 0) {
-    showTypographyModal.value = false
-    if (pendingSubmit.value) {
-      pendingSubmit.value = false
-      doSubmit()
-    }
+  const suggestion = typographySuggestions.value[idx]
+  if (suggestion) {
+    dismissedSuggestionKeys.value.add(suggestionKey(suggestion))
   }
+  typographySuggestions.value = typographySuggestions.value.filter((_, i) => i !== idx)
 }
 
 function acceptAllTypographySuggestions() {
@@ -543,25 +553,15 @@ function acceptAllTypographySuggestions() {
   if (suggestions.length === 0) return
   form.value.body = applySuggestions(form.value.body, suggestions)
   typographySuggestions.value = []
-  showTypographyModal.value = false
-  pendingSubmit.value = false
-  doSubmit()
+  suggestionsPanelExpanded.value = false
 }
 
 function dismissAllTypographySuggestions() {
-  typographySuggestions.value = []
-  showTypographyModal.value = false
-  if (pendingSubmit.value) {
-    pendingSubmit.value = false
-    doSubmit()
+  for (const s of typographySuggestions.value) {
+    dismissedSuggestionKeys.value.add(suggestionKey(s))
   }
-}
-
-function closeTypographyModalAndSubmit() {
   typographySuggestions.value = []
-  showTypographyModal.value = false
-  pendingSubmit.value = false
-  doSubmit()
+  suggestionsPanelExpanded.value = false
 }
 
 // Persist draft to localStorage before leaving (no confirmation dialog)
@@ -598,6 +598,7 @@ onMounted(async () => {
 })
 
 onBeforeUnmount(() => {
+  if (scanTimer) clearTimeout(scanTimer)
   draft.disableAutosave()
   window.removeEventListener('beforeunload', handleBeforeUnload)
 })
