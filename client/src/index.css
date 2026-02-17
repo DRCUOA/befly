@@ -18,6 +18,18 @@
   --color-accent: #7C6F64;
   --color-accent-hover: #5C524A;
   --color-accent-muted: #F3EFEB;
+
+  /* Breathing space — P2-uix-05 / cni-05
+     Spacing scale: 4px grid for consistent vertical rhythm.
+     Use these tokens for margins, padding, gaps. */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
+  --space-4xl: 80px;
 }
 
 * {

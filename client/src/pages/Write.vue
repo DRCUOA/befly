@@ -1,8 +1,9 @@
 <template>
   <div class="w-full min-h-[calc(100vh-4rem)]">
-    <!-- Editor: full viewport width, dominates the view -->
+    <!-- Editor: full viewport width, breathing space (P2-uix-05 / cni-05) -->
     <form @submit.prevent="handleSubmit" class="flex flex-col w-full">
-      <div class="w-full px-4 sm:px-6 md:px-8 lg:px-12 py-4 sm:py-6">
+      <!-- Content area: max-width for comfortable line length (65–75ch), generous margins (cni-05). -->
+      <div class="w-full max-w-[70ch] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 py-6 sm:py-8 md:py-12 lg:py-16">
         <input
           id="title"
           v-model="form.title"
@@ -16,12 +17,12 @@
 
       <!-- Non-blocking inline typography suggestions (P1-uix-03: progressive reveal)
            Positioned between title and body so writers see them without scrolling past text. -->
-      <div v-if="typographySuggestions.length > 0" class="w-full px-4 sm:px-6 md:px-8 lg:px-12 pb-3" role="region" aria-label="Typography suggestions">
+      <div v-if="typographySuggestions.length > 0" class="w-full max-w-[70ch] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 pb-6" role="region" aria-label="Typography suggestions">
         <div class="border border-line bg-accent-muted rounded-md overflow-hidden">
           <!-- Summary bar — visually interactive: hover shifts to line, chevron signals expand -->
           <button
             type="button"
-            class="w-full flex items-center justify-between px-4 py-2.5 text-sm text-accent-hover hover:bg-line transition-colors"
+            class="w-full flex items-center justify-between min-h-[44px] px-4 py-4 text-sm text-accent-hover hover:bg-line transition-colors"
             @click="suggestionsPanelExpanded = !suggestionsPanelExpanded"
             :aria-expanded="suggestionsPanelExpanded"
             aria-controls="typography-suggestions-panel"
@@ -60,12 +61,12 @@
           <div
             v-if="suggestionsPanelExpanded"
             id="typography-suggestions-panel"
-            class="border-t border-line px-4 pb-3 pt-2 space-y-2 max-h-[50vh] overflow-y-auto"
+            class="border-t border-line px-4 pb-4 pt-2 space-y-2 max-h-[50vh] overflow-y-auto"
           >
             <div
               v-for="(suggestion, idx) in typographySuggestions"
               :key="`${suggestion.start}-${suggestion.ruleId}`"
-              class="flex items-center justify-between gap-3 px-3 py-2 bg-white/70 rounded text-sm"
+              class="flex items-center justify-between gap-4 px-4 py-2 bg-white/70 rounded text-sm"
             >
               <div class="flex-1 min-w-0 truncate">
                 <span class="text-ink-lighter">{{ suggestion.description }}:</span>
@@ -77,12 +78,12 @@
                 <button
                   type="button"
                   @click="acceptTypographySuggestion(idx)"
-                  class="px-2 py-1 text-xs bg-accent text-paper rounded hover:bg-accent-hover transition-colors"
+                  class="min-h-[44px] px-4 py-2 text-xs bg-accent text-paper rounded hover:bg-accent-hover transition-colors"
                 >Accept</button>
                 <button
                   type="button"
                   @click="dismissTypographySuggestion(idx)"
-                  class="px-2 py-1 text-xs border border-line rounded text-ink-lighter hover:bg-line transition-colors"
+                  class="min-h-[44px] px-4 py-2 text-xs border border-line rounded text-ink-lighter hover:bg-line transition-colors"
                 >Dismiss</button>
               </div>
             </div>
@@ -90,29 +91,31 @@
         </div>
       </div>
       
-      <div class="flex-1 w-full px-4 sm:px-6 md:px-8 lg:px-12 pb-4">
+      <!-- Body: line-height ≥1.6 for comfortable reading (cni-05), generous padding -->
+      <div class="flex-1 w-full max-w-[70ch] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 pb-8 sm:pb-12">
         <textarea
           id="body"
           ref="bodyTextareaRef"
           v-model="form.body"
           required
-          class="block w-full min-h-[calc(100vh-12rem)] border-0 bg-transparent font-mono text-sm sm:text-base text-ink placeholder:text-ink-whisper focus:ring-0 focus:outline-none resize-none py-2"
+          class="block w-full min-h-[calc(100vh-14rem)] border-0 bg-transparent font-mono text-sm sm:text-base text-ink placeholder:text-ink-whisper focus:ring-0 focus:outline-none resize-none py-2 leading-[1.6]"
           placeholder="Write your thoughts in Markdown..."
           aria-label="Body"
           @blur="onBodyBlur"
         />
       </div>
 
-      <!-- Footer: metadata trigger, publish, cancel (≤5 visible controls per epic DoD) -->
-      <div class="w-full border-t border-line bg-paper px-4 sm:px-6 md:px-8 lg:px-12 py-4 sm:py-6 sticky bottom-0 z-10">
-      <div v-if="error" class="mb-4 bg-accent-muted border border-line rounded-md p-3 sm:p-4">
+      <!-- Footer: metadata trigger, publish, cancel (≤5 visible controls per epic DoD)
+           Increased inter-element spacing, min 44px tap targets (cni-05) -->
+      <div class="w-full border-t border-line bg-paper px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 py-6 sm:py-8 md:py-12 sticky bottom-0 z-10">
+      <div v-if="error" class="mb-6 bg-accent-muted border border-line rounded-md p-4 sm:p-6">
         <p class="text-ink text-xs sm:text-sm">{{ error }}</p>
       </div>
       
-      <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 items-center sm:items-center">
+      <div class="flex flex-col sm:flex-row gap-6 sm:gap-8 items-stretch sm:items-center">
         <button
           type="button"
-          class="inline-flex items-center gap-2 px-4 py-2 border border-line rounded-md text-ink-lighter hover:text-ink hover:bg-line text-sm font-sans"
+          class="inline-flex items-center justify-center gap-2 min-h-[44px] px-6 py-4 border border-line rounded-md text-ink-lighter hover:text-ink hover:bg-line text-sm font-sans"
           aria-label="Open metadata settings (cover, themes, visibility)"
           :aria-expanded="metadataPanelOpen"
           @click="metadataPanelOpen = true"
@@ -125,13 +128,13 @@
         <button
           type="submit"
           :disabled="submitting || loadingWriting"
-          class="px-6 py-2 bg-ink text-paper rounded-md hover:bg-ink-light disabled:opacity-50 disabled:cursor-not-allowed text-sm font-sans"
+          class="min-h-[44px] px-8 py-4 bg-ink text-paper rounded-md hover:bg-ink-light disabled:opacity-50 disabled:cursor-not-allowed text-sm font-sans"
         >
           {{ submitting ? (isEditing ? 'Updating...' : 'Publishing...') : (isEditing ? 'Update' : 'Publish') }}
         </button>
         <router-link
           to="/home"
-          class="px-6 py-2 border border-line rounded-md text-ink-lighter hover:text-ink hover:bg-line text-center text-sm font-sans"
+          class="min-h-[44px] inline-flex items-center justify-center px-8 py-4 border border-line rounded-md text-ink-lighter hover:text-ink hover:bg-line text-center text-sm font-sans"
         >
           Cancel
         </router-link>
@@ -139,7 +142,7 @@
       <!-- Draft Saved Indicator -->
       <div
         v-if="showDraftIndicator"
-        class="mt-4 px-3 py-2 rounded-md text-xs sm:text-sm font-sans"
+        class="mt-6 px-4 py-2 rounded-md text-xs sm:text-sm font-sans"
         :class="hasUnsavedChanges ? 'bg-accent-muted text-ink' : 'bg-accent-muted text-ink-lighter'"
       >
         Draft saved at {{ draftSavedAt ?? '—' }}

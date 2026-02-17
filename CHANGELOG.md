@@ -5,6 +5,31 @@ All notable changes to the Rambulations writing platform are documented in this 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.4] - 2026-02-17
+
+### Added
+- **Breathing space (cni-05)** — add whitespace and reduce density for visual calm in the Write view; second Sensory atomic in Phase 2
+- CSS custom properties spacing scale: `--space-xs` (4px) through `--space-4xl` (80px) on a 4px grid for consistent vertical rhythm
+- Tailwind `breath-*` spacing tokens (`breath-xs` through `breath-4xl`) with CSS variable references and pixel fallbacks
+- Content area `max-w-[70ch]` for comfortable line length (65–75ch) within the full-width viewport
+- Body textarea `leading-[1.6]` line-height for comfortable reading/writing
+- `min-h-[44px]` tap targets on all interactive controls (Metadata, Publish, Cancel, Accept, Dismiss)
+- **MetadataPanel Done button** — visible full-width close button at all viewport widths; solves the UX problem where narrow viewports (<600px) left no backdrop area to tap for dismissal
+- **MetadataPanel swipe-to-dismiss** — touch swipe right (>80px threshold) closes the panel with finger-tracking feedback
+- **WriteLayout hamburger menu** — nav collapses into hamburger toggle below 640px (`sm` breakpoint) with animated slide-down/up dropdown (200ms open, 150ms close) and 90-degree icon rotation transition
+- Mobile dropdown menu items have 44px min-height touch targets
+
+### Changed
+- Write view: editor content, typography suggestions, body, and footer sections use `max-w-[70ch]` centred layout with responsive padding (px-4 → px-16 across breakpoints)
+- Write view: footer controls use increased inter-element spacing (`gap-6` / `gap-8`) and `items-stretch` on mobile for full-width buttons
+- Write view: error container, draft indicator use increased margins and padding
+- Typography suggestions: summary bar, suggestion rows, Accept/Dismiss buttons have increased padding and 44px tap targets
+- WriteLayout header: responsive padding scales with breakpoints; 44px min-height for touch accessibility
+- WriteLayout: profile display name visually distinguished from nav links — smaller text (`text-xs`), lighter colour (`text-ink-whisper`), italic, wide letter-spacing, left border separator
+- Version bump 0.5.3 → 0.5.4 (build number in footer)
+
+---
+
 ## [0.5.3] - 2026-02-16
 
 ### Added
@@ -276,6 +301,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Database migrations (001-008): users, writing_blocks, themes, appreciations, auth/visibility, roles, reaction types, comments
 - Development setup documentation and quick-start guide
 
+[0.5.4]: https://github.com/DRCUOA/befly/compare/v0.5.3...v0.5.4
 [0.5.3]: https://github.com/DRCUOA/befly/compare/v0.5.2...v0.5.3
 [0.5.2]: https://github.com/DRCUOA/befly/compare/v0.5.1...v0.5.2
 [0.5.1]: https://github.com/DRCUOA/befly/compare/v0.5.0...v0.5.1

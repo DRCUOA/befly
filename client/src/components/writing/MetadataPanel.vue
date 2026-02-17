@@ -9,6 +9,9 @@
     :class="modelValue ? 'translate-x-0' : 'translate-x-full'"
     tabindex="-1"
     @keydown.escape="close"
+    @touchstart.passive="onTouchStart"
+    @touchmove.passive="onTouchMove"
+    @touchend.passive="onTouchEnd"
   >
     <!-- Header -->
     <div class="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-line shrink-0">
@@ -136,6 +139,18 @@
         <p class="text-ink text-xs sm:text-sm">{{ error }}</p>
       </div>
     </div>
+
+    <!-- Footer: visible Done button at all widths (touch-friendly close affordance) -->
+    <div class="shrink-0 border-t border-line px-4 sm:px-6 py-4">
+      <button
+        type="button"
+        class="w-full min-h-[44px] px-6 py-3 bg-ink text-paper rounded-md hover:bg-ink-light text-sm font-sans active:scale-[0.98] transition-all"
+        aria-label="Close metadata panel"
+        @click="close"
+      >
+        Done
+      </button>
+    </div>
   </div>
 </template>
 
@@ -169,6 +184,41 @@ const coverFileInputRef = ref<HTMLInputElement | null>(null)
 
 function close() {
   emit('update:modelValue', false)
+}
+
+// Touch swipe-to-dismiss: swipe right to close
+let touchStartX = 0
+let touchCurrentX = 0
+let isSwiping = false
+
+function onTouchStart(e: TouchEvent) {
+  touchStartX = e.touches[0].clientX
+  touchCurrentX = touchStartX
+  isSwiping = false
+}
+
+function onTouchMove(e: TouchEvent) {
+  touchCurrentX = e.touches[0].clientX
+  const deltaX = touchCurrentX - touchStartX
+  if (deltaX > 20) {
+    isSwiping = true
+    if (panelRef.value) {
+      panelRef.value.style.transform = `translateX(${deltaX}px)`
+      panelRef.value.style.transition = 'none'
+    }
+  }
+}
+
+function onTouchEnd() {
+  const deltaX = touchCurrentX - touchStartX
+  if (panelRef.value) {
+    panelRef.value.style.transition = ''
+    panelRef.value.style.transform = ''
+  }
+  if (isSwiping && deltaX > 80) {
+    close()
+  }
+  isSwiping = false
 }
 
 // Focus panel when opened for keyboard accessibility

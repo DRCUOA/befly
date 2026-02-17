@@ -26,6 +26,15 @@ export default {
         '22': '5.5rem',
         '26': '6.5rem',
         '30': '7.5rem',
+        /* Breathing space tokens — P2-uix-05 / cni-05 (4px grid). Fallbacks ensure padding works if vars fail to resolve. */
+        'breath-xs': 'var(--space-xs, 4px)',
+        'breath-sm': 'var(--space-sm, 8px)',
+        'breath-md': 'var(--space-md, 16px)',
+        'breath-lg': 'var(--space-lg, 24px)',
+        'breath-xl': 'var(--space-xl, 32px)',
+        'breath-2xl': 'var(--space-2xl, 48px)',
+        'breath-3xl': 'var(--space-3xl, 64px)',
+        'breath-4xl': 'var(--space-4xl, 80px)',
       },
       lineHeight: {
         'relaxed': '1.8',
