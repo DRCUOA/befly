@@ -8,67 +8,72 @@ import { initDb, closeDb } from './config/db.js'
 import { getOffendingLocation } from './utils/logger.js'
 import type { Server } from 'http'
 
+// Fires on every normal exit (not SIGKILL / OOM kills)
+process.on('exit', (code) => {
+  console.log(`[exit] code=${code}`)
+})
+
 const PORT = Number(process.env.PORT) || 3005
 let server: Server | null = null
+let shuttingDown = false
 
 function formatErrorForLog(err: Error): string {
   const at = getOffendingLocation(err)
   return at ? `${err.message} at ${at}` : err.message
 }
 
-// Handle uncaught exceptions
-process.on('uncaughtException', (error) => {
-  process.stdout.write(`\n[FATAL] Uncaught exception:\n`)
-  process.stdout.write(`==========================================\n`)
-  process.stdout.write(`${error instanceof Error ? formatErrorForLog(error) : String(error)}\n`)
-  process.stdout.write(`==========================================\n\n`)
-  gracefulShutdown('uncaughtException')
-})
+// ── Graceful shutdown ────────────────────────────────────────────────
+async function gracefulShutdown(reason: string, exitCode: number) {
+  if (shuttingDown) return
+  shuttingDown = true
 
-// Handle unhandled promise rejections
-process.on('unhandledRejection', (reason, promise) => {
-  process.stdout.write(`\n[FATAL] Unhandled promise rejection:\n`)
-  process.stdout.write(`==========================================\n`)
-  if (reason instanceof Error) {
-    process.stdout.write(`${formatErrorForLog(reason)}\n`)
-  } else {
-    process.stdout.write(`${String(reason)}\n`)
-  }
-  process.stdout.write(`==========================================\n\n`)
-  gracefulShutdown('unhandledRejection')
-})
+  console.log(`[shutdown] triggered by ${reason} exitCode=${exitCode}`)
 
-// Graceful shutdown handler
-async function gracefulShutdown(signal: string) {
-  if (server) {
-    return new Promise<void>((resolve) => {
-      server!.close(() => resolve())
-      setTimeout(() => resolve(), 10000)
-    }).then(async () => {
-      try {
-        await closeDb()
-      } catch (error) {
-        const at = error instanceof Error ? getOffendingLocation(error) : null
-        const msg = error instanceof Error ? `${error.message}${at ? ` at ${at}` : ''}` : String(error)
-        console.error('Error closing database:', msg)
-      }
-      process.exit(0)
-    })
-  } else {
-    try {
-      await closeDb()
-    } catch (error) {
-      const at = error instanceof Error ? getOffendingLocation(error) : null
-      const msg = error instanceof Error ? `${error.message}${at ? ` at ${at}` : ''}` : String(error)
-      console.error('Error closing database:', msg)
+  // Hard guard: don't hang forever (e.g. stuck connections)
+  setTimeout(() => {
+    console.error('[shutdown] forced exit after timeout')
+    process.exit(1)
+  }, 10_000).unref()
+
+  try {
+    if (server) {
+      await new Promise<void>((resolve, reject) => {
+        server!.close((err?: Error) => (err ? reject(err) : resolve()))
+      })
+      console.log('[shutdown] server closed')
     }
-    process.exit(0)
+  } catch (err) {
+    console.error('[shutdown] error closing server', err)
+    exitCode = 1
   }
+
+  try {
+    await closeDb()
+    console.log('[shutdown] database closed')
+  } catch (error) {
+    const at = error instanceof Error ? getOffendingLocation(error) : null
+    const msg = error instanceof Error ? `${error.message}${at ? ` at ${at}` : ''}` : String(error)
+    console.error('[shutdown] error closing database:', msg)
+    exitCode = 1
+  }
+
+  process.exit(exitCode)
 }
 
-// Handle termination signals
-process.on('SIGTERM', () => gracefulShutdown('SIGTERM'))
-process.on('SIGINT', () => gracefulShutdown('SIGINT'))
+// ── Normal shutdown signals (exit 0) ─────────────────────────────────
+process.on('SIGTERM', () => void gracefulShutdown('SIGTERM', 0))
+process.on('SIGINT', () => void gracefulShutdown('SIGINT', 0))
+
+// ── Fatal errors (exit 1) ────────────────────────────────────────────
+process.on('uncaughtException', (error) => {
+  console.error('[FATAL] uncaughtException', error instanceof Error ? formatErrorForLog(error) : String(error))
+  void gracefulShutdown('uncaughtException', 1)
+})
+
+process.on('unhandledRejection', (reason) => {
+  console.error('[FATAL] unhandledRejection', reason instanceof Error ? formatErrorForLog(reason) : String(reason))
+  void gracefulShutdown('unhandledRejection', 1)
+})
 
 async function start() {
   try {
