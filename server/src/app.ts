@@ -15,6 +15,8 @@ import commentRoutes from './routes/comment.routes.js'
 import activityRoutes from './routes/activity.routes.js'
 import adminRoutes from './routes/admin.routes.js'
 import typographyRulesRoutes from './routes/typography-rules.routes.js'
+import { uploadsController } from './controllers/uploads.controller.js'
+import { asyncHandler } from './utils/asyncHandler.js'
 import { config } from './config/env.js'
 
 const app = express()
@@ -28,7 +30,6 @@ if (config.nodeEnv === 'production') {
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 const staticDir = path.resolve(__dirname, '../public')
-const uploadsDir = path.resolve(__dirname, '../uploads')
 const hasStaticBuild = fs.existsSync(path.join(staticDir, 'index.html'))
 
 
@@ -67,8 +68,8 @@ app.use('/api', (req, res, next) => {
   generalRateLimit(req, res, next)
 })
 
-// Serve uploaded images as public assets
-app.use('/uploads', express.static(uploadsDir))
+// Serve uploaded images from PostgreSQL (filesystem is ephemeral on Heroku)
+app.get('/uploads/cover/:filename', asyncHandler(uploadsController.serve))
 
 // CSRF token generation (must be before CSRF protection)
 // Skip CSRF for auth endpoints - they use their own protection

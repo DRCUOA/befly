@@ -7,6 +7,7 @@ import { ValidationError } from '../utils/errors.js'
 import { generateUUID } from '../utils/uuid.js'
 import { activityService } from '../services/activity.service.js'
 import { getClientIp, getUserAgent } from '../utils/activity-logger.js'
+import { uploadsRepo } from '../repositories/uploads.repo.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -15,6 +16,13 @@ const COVER_SUBDIR = 'cover'
 
 const ALLOWED_MIMES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
 const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
+
+const MIME_TO_EXT: Record<string, string> = {
+  'image/jpeg': '.jpg',
+  'image/png': '.png',
+  'image/gif': '.gif',
+  'image/webp': '.webp',
+}
 
 const storage = multer.diskStorage({
   destination: (_req, _file, cb) => {
@@ -49,14 +57,18 @@ export const uploadSingle = upload.single('file')
 /**
  * Upload controller - image stock for essay covers
  * Admin: full access. Authenticated users: can upload for own writings.
+ *
+ * Images are persisted in PostgreSQL (not the filesystem) so they survive
+ * Heroku dyno restarts and ephemeral-FS environments.
  */
 export const uploadsController = {
   /**
-   * POST /api/admin/uploads - upload an image to the stock
-   * Returns { path: "/uploads/cover/xxx.jpg" }
+   * POST /api/admin/uploads or /api/writing/upload
+   * Multer writes to disk temporarily; we read into a buffer, persist to
+   * PostgreSQL, then delete the temp file.
    */
   async upload(req: Request, res: Response) {
-    const adminUserId = (req as any).userId
+    const userId = (req as any).userId
     const file = req.file
 
     if (!file) {
@@ -65,9 +77,16 @@ export const uploadsController = {
 
     const relativePath = `/uploads/${COVER_SUBDIR}/${file.filename}`
 
-    const resourceId = path.parse(file.filename).name // UUID before extension
+    try {
+      const fileData = fs.readFileSync(file.path)
+      await uploadsRepo.save(file.filename, file.mimetype, fileData, userId)
+    } finally {
+      fs.unlink(file.path, () => {})
+    }
+
+    const resourceId = path.parse(file.filename).name
     await activityService.logActivity({
-      userId: adminUserId,
+      userId,
       activityType: 'admin',
       resourceType: 'upload',
       resourceId,
@@ -82,24 +101,41 @@ export const uploadsController = {
 
   /**
    * GET /api/admin/uploads - list all images in the stock
-   * Returns { data: [{ path, filename }] }
+   * Now reads from PostgreSQL instead of the filesystem.
    */
-  async list(req: Request, res: Response) {
-    const coverDir = path.join(UPLOADS_DIR, COVER_SUBDIR)
-    if (!fs.existsSync(coverDir)) {
-      res.json({ data: [] })
+  async list(_req: Request, res: Response) {
+    const files = await uploadsRepo.listMetadata()
+    const images = files.map(f => ({
+      path: `/uploads/${COVER_SUBDIR}/${f.filename}`,
+      filename: f.filename
+    }))
+    res.json({ data: images })
+  },
+
+  /**
+   * GET /uploads/cover/:filename - serve an image from PostgreSQL.
+   * Aggressive caching (immutable filenames with UUID) avoids repeated DB reads.
+   */
+  async serve(req: Request, res: Response) {
+    const { filename } = req.params
+    const file = await uploadsRepo.findByFilename(filename)
+
+    if (!file) {
+      res.status(404).send('Not found')
       return
     }
 
-    const files = fs.readdirSync(coverDir)
-    const images = files
-      .filter(f => /\.(jpg|jpeg|png|gif|webp)$/i.test(f))
-      .map(filename => ({
-        path: `/uploads/${COVER_SUBDIR}/${filename}`,
-        filename
-      }))
-      .sort((a, b) => b.filename.localeCompare(a.filename))
+    const ext = path.extname(filename).toLowerCase()
+    const contentType = file.content_type ||
+      Object.entries(MIME_TO_EXT).find(([, e]) => e === ext)?.[0] ||
+      'application/octet-stream'
 
-    res.json({ data: images })
+    res.set({
+      'Content-Type': contentType,
+      'Content-Length': String(file.size_bytes),
+      'Cache-Control': 'public, max-age=31536000, immutable',
+      'ETag': `"${file.id}"`,
+    })
+    res.send(file.data)
   }
 }

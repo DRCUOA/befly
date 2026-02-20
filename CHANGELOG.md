@@ -5,6 +5,20 @@ All notable changes to the Rambulations writing platform are documented in this 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.5] - 2026-02-20
+
+### Fixed
+- **Cover image persistence** — uploaded cover images were lost after Heroku dyno restarts because files were stored on the ephemeral filesystem; images are now persisted in PostgreSQL and served from the database with aggressive caching headers (`Cache-Control: immutable`, `ETag`)
+- New `uploaded_files` table (migration 015) stores image binary data, content type, and metadata
+- New `uploads.repo.ts` repository for database-backed file CRUD
+- Upload controller reads multer temp files into PostgreSQL, then cleans up disk; `GET /uploads/cover/:filename` serves images from DB
+- One-time backfill script (`scripts/backfill-uploads.sh`) to import existing filesystem images into PostgreSQL before next dyno cycle
+
+### Changed
+- Version bump 0.5.4 → 0.5.5
+
+---
+
 ## [0.5.4] - 2026-02-17
 
 ### Added
