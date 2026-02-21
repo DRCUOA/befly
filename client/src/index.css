@@ -61,3 +61,31 @@ body {
   cursor: default;
 }
 
+/* Breathing caret — P2-uix-06 / cni-06
+   Smooth opacity pulse replaces the harsh native blink.
+   1200ms cycle keeps the rhythm calm (spec ≥800ms).
+   Caret resets to full opacity on every keystroke so it feels
+   solid during active input and breathes only when idle. */
+@keyframes caret-breathe {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.2; }
+}
+
+.breathing-caret {
+  position: absolute;
+  width: 2px;
+  background-color: var(--color-accent);
+  pointer-events: none;
+  z-index: 1;
+  border-radius: 1px;
+  will-change: opacity;
+  animation: caret-breathe 1200ms ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .breathing-caret {
+    animation: none;
+    opacity: 1;
+  }
+}
+
