@@ -53,15 +53,26 @@ async function request<T>(
   }
 
   // Include credentials for cookies (httpOnly auth token)
-  const response = await fetch(url, {
-    ...fetchOptions,
-    credentials: 'include', // Important for httpOnly cookies
-    headers
-  })
+  let response: Response
+  try {
+    response = await fetch(url, {
+      ...fetchOptions,
+      credentials: 'include', // Important for httpOnly cookies
+      headers
+    })
+  } catch (networkErr) {
+    throw new Error(`Network error: unable to reach server (${networkErr instanceof Error ? networkErr.message : 'unknown'})`)
+  }
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: 'Unknown error' }))
-    throw new Error(error.error || `HTTP ${response.status}`)
+    let serverMessage: string | undefined
+    try {
+      const body = await response.json()
+      serverMessage = body?.error
+    } catch {
+      // Response body was not valid JSON (e.g. proxy HTML error page)
+    }
+    throw new Error(serverMessage || `Request failed (${response.status} ${response.statusText})`)
   }
 
   // Handle empty responses (204 No Content, etc.)

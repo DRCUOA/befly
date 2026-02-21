@@ -1,6 +1,6 @@
 import pg from 'pg'
 import { config } from './env.js'
-import { getOffendingLocation } from '../utils/logger.js'
+import { getOffendingLocation, logger } from '../utils/logger.js'
 
 const { Pool } = pg
 
@@ -52,9 +52,11 @@ export async function initDb() {
   try {
     await pool.query('SELECT NOW()')
   } catch (error) {
-    const at = error instanceof Error ? getOffendingLocation(error) : null
-    const msg = error instanceof Error ? `${error.message}${at ? ` at ${at}` : ''}` : String(error)
-    console.error('Database connection error:', msg)
+    const err = error as Error & { code?: string; detail?: string }
+    const msg = err?.message || String(error)
+    const code = err?.code
+    const detail = err?.detail
+    logger.error('Database connection error', { message: msg, code, detail, at: getOffendingLocation(err) })
     throw error
   }
 }

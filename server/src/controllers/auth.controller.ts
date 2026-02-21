@@ -28,32 +28,36 @@ export const authController = {
       maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
     })
 
-    // Log signup activity
-    await activityService.logAuth(
-      'signup',
-      user.id,
-      getClientIp(req),
-      getUserAgent(req),
-      { email, displayName }
-    )
-
-    // Set user location from request IP
-    const ip = getClientIp(req)
-    const location = await getLocationFromIp(ip)
+    // Post-auth side-effects must not fail the signup response.
     let userToReturn = user
-    if (location) {
-      try {
+
+    try {
+      await activityService.logAuth(
+        'signup',
+        user.id,
+        getClientIp(req),
+        getUserAgent(req),
+        { email, displayName }
+      )
+    } catch (err) {
+      logger.warn('[auth] Failed to log signup activity', { userId: user.id, error: err instanceof Error ? err.message : String(err) })
+    }
+
+    try {
+      const ip = getClientIp(req)
+      const location = await getLocationFromIp(ip)
+      if (location) {
         userToReturn = await userRepo.update(user.id, { latitude: location.latitude, longitude: location.longitude })
         logger.debug('[auth] Set user location from IP (signup)', { userId: user.id, ip, ...location })
-      } catch {
-        // Ignore; user already created, location is optional
       }
+    } catch (err) {
+      logger.warn('[auth] Failed to update location on signup', { userId: user.id, error: err instanceof Error ? err.message : String(err) })
     }
 
     res.status(201).json({
       data: {
         user: userToReturn,
-        token // Also return in body for clients that prefer it
+        token
       }
     })
   },
@@ -71,32 +75,36 @@ export const authController = {
       maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
     })
 
-    // Log login activity
-    await activityService.logAuth(
-      'login',
-      user.id,
-      getClientIp(req),
-      getUserAgent(req),
-      { email }
-    )
-
-    // Update user location from request IP so admin map reflects current location
-    const ip = getClientIp(req)
-    const location = await getLocationFromIp(ip)
+    // Post-auth side-effects must not fail the login response.
     let userToReturn = user
-    if (location) {
-      try {
+
+    try {
+      await activityService.logAuth(
+        'login',
+        user.id,
+        getClientIp(req),
+        getUserAgent(req),
+        { email }
+      )
+    } catch (err) {
+      logger.warn('[auth] Failed to log login activity', { userId: user.id, error: err instanceof Error ? err.message : String(err) })
+    }
+
+    try {
+      const ip = getClientIp(req)
+      const location = await getLocationFromIp(ip)
+      if (location) {
         userToReturn = await userRepo.update(user.id, { latitude: location.latitude, longitude: location.longitude })
         logger.debug('[auth] Set user location from IP (login)', { userId: user.id, ip, ...location })
-      } catch {
-        // Ignore; location is optional
       }
+    } catch (err) {
+      logger.warn('[auth] Failed to update location on login', { userId: user.id, error: err instanceof Error ? err.message : String(err) })
     }
 
     res.json({
       data: {
         user: userToReturn,
-        token // Also return in body for clients that prefer it
+        token
       }
     })
   },
