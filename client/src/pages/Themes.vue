@@ -51,9 +51,9 @@
           <div
             v-for="theme in filteredThemes"
             :key="theme.id"
-            class="theme-card w-full max-w-md md:max-w-none bg-paper border border-line p-6 sm:p-8 md:p-10 group cursor-pointer hover:border-ink-lighter transition-all duration-500"
+            class="theme-card w-full max-w-md md:max-w-none bg-paper border border-line p-6 sm:p-8 md:p-10 group cursor-pointer hover:border-ink-lighter transition-all duration-500 text-center md:text-left"
           >
-            <div class="flex items-start justify-between mb-4 sm:mb-6">
+            <div class="flex flex-col md:flex-row items-center md:items-start justify-center md:justify-between mb-4 sm:mb-6">
               <div class="flex-1">
                 <h2 class="text-xl sm:text-2xl font-light mb-2 sm:mb-3 tracking-tight group-hover:text-ink-light transition-colors duration-500">
                   {{ theme.name }}
@@ -90,7 +90,7 @@
               Essays exploring {{ theme.name.toLowerCase() }}
             </p>
             
-            <div class="flex items-center justify-between">
+            <div class="flex flex-col sm:flex-row items-center justify-center md:justify-between gap-2">
               <ThemeTag :name="theme.name" />
               <span
                 v-if="theme.visibility !== 'private'"

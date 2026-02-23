@@ -1,9 +1,9 @@
 <template>
   <router-link
     :to="route"
-    class="collection-card group bg-paper border border-line hover:border-ink-lighter p-6 sm:p-8 md:p-12 cursor-pointer block"
+    class="collection-card group bg-paper border border-line hover:border-ink-lighter p-6 sm:p-8 md:p-12 cursor-pointer block text-center md:text-left"
   >
-    <div class="flex items-start justify-between mb-4 sm:mb-6">
+    <div class="flex flex-col md:flex-row items-center md:items-start justify-center md:justify-between mb-4 sm:mb-6">
       <div>
         <h3 class="text-2xl sm:text-3xl font-light mb-2 sm:mb-3 tracking-tight">{{ title }}</h3>
         <p class="text-xs sm:text-sm tracking-widest uppercase font-sans text-ink-lighter">
@@ -28,7 +28,7 @@
     <p class="text-base sm:text-lg font-light text-ink-light leading-relaxed mb-4 sm:mb-6">
       {{ description }}
     </p>
-    <div class="flex gap-3 flex-wrap">
+    <div class="flex justify-center md:justify-start gap-3 flex-wrap">
       <span
         v-for="tag in tags"
         :key="tag"

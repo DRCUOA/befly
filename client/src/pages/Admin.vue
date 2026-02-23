@@ -28,19 +28,19 @@
       <div class="max-w-6xl mx-auto">
         <!-- Stats -->
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-8 justify-items-center sm:justify-items-stretch">
-          <div class="w-full max-w-xs sm:max-w-none bg-white rounded-lg shadow-sm border border-gray-100 p-4">
+          <div class="w-full max-w-xs sm:max-w-none bg-white rounded-lg shadow-sm border border-gray-100 p-4 text-center sm:text-left">
             <p class="text-sm text-ink-lighter uppercase tracking-wider">Total Users</p>
             <p class="text-2xl font-semibold mt-1">{{ totalUsers }}</p>
           </div>
-          <div class="w-full max-w-xs sm:max-w-none bg-white rounded-lg shadow-sm border border-gray-100 p-4">
+          <div class="w-full max-w-xs sm:max-w-none bg-white rounded-lg shadow-sm border border-gray-100 p-4 text-center sm:text-left">
             <p class="text-sm text-ink-lighter uppercase tracking-wider">Admins</p>
             <p class="text-2xl font-semibold mt-1">{{ adminCount }}</p>
           </div>
-          <div class="w-full max-w-xs sm:max-w-none bg-white rounded-lg shadow-sm border border-gray-100 p-4">
+          <div class="w-full max-w-xs sm:max-w-none bg-white rounded-lg shadow-sm border border-gray-100 p-4 text-center sm:text-left">
             <p class="text-sm text-ink-lighter uppercase tracking-wider">Active</p>
             <p class="text-2xl font-semibold mt-1 text-green-600">{{ activeCount }}</p>
           </div>
-          <div class="w-full max-w-xs sm:max-w-none bg-white rounded-lg shadow-sm border border-gray-100 p-4">
+          <div class="w-full max-w-xs sm:max-w-none bg-white rounded-lg shadow-sm border border-gray-100 p-4 text-center sm:text-left">
             <p class="text-sm text-ink-lighter uppercase tracking-wider">Suspended</p>
             <p class="text-2xl font-semibold mt-1 text-red-600">{{ suspendedCount }}</p>
           </div>
@@ -466,19 +466,19 @@
         <template v-else-if="stats">
           <!-- ── Overview cards ── -->
           <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-10 justify-items-center sm:justify-items-stretch">
-            <div class="w-full max-w-xs sm:max-w-none bg-white rounded-lg shadow-sm border border-gray-100 p-4 text-center">
+            <div class="w-full max-w-xs sm:max-w-none bg-white rounded-lg shadow-sm border border-gray-100 p-4 text-center sm:text-left">
               <p class="text-xs text-ink-lighter uppercase tracking-wider mb-1">Total Events</p>
               <p class="text-3xl font-semibold">{{ stats.total.toLocaleString() }}</p>
             </div>
-            <div class="w-full max-w-xs sm:max-w-none bg-white rounded-lg shadow-sm border border-gray-100 p-4 text-center">
+            <div class="w-full max-w-xs sm:max-w-none bg-white rounded-lg shadow-sm border border-gray-100 p-4 text-center sm:text-left">
               <p class="text-xs text-ink-lighter uppercase tracking-wider mb-1">Unique Users</p>
               <p class="text-3xl font-semibold text-blue-600">{{ stats.anonVsAuth.uniqueUsers }}</p>
             </div>
-            <div class="w-full max-w-xs sm:max-w-none bg-white rounded-lg shadow-sm border border-gray-100 p-4 text-center">
+            <div class="w-full max-w-xs sm:max-w-none bg-white rounded-lg shadow-sm border border-gray-100 p-4 text-center sm:text-left">
               <p class="text-xs text-ink-lighter uppercase tracking-wider mb-1">Authenticated</p>
               <p class="text-3xl font-semibold text-green-600">{{ stats.anonVsAuth.authenticated.toLocaleString() }}</p>
             </div>
-            <div class="w-full max-w-xs sm:max-w-none bg-white rounded-lg shadow-sm border border-gray-100 p-4 text-center">
+            <div class="w-full max-w-xs sm:max-w-none bg-white rounded-lg shadow-sm border border-gray-100 p-4 text-center sm:text-left">
               <p class="text-xs text-ink-lighter uppercase tracking-wider mb-1">Anonymous</p>
               <p class="text-3xl font-semibold text-amber-500">{{ stats.anonVsAuth.anonymous.toLocaleString() }}</p>
             </div>
@@ -486,7 +486,7 @@
 
           <!-- ── Auth vs Anonymous donut ── -->
           <div class="flex flex-col md:grid md:grid-cols-2 items-center md:items-stretch gap-6 mb-10">
-            <div class="w-full max-w-md md:max-w-none bg-white rounded-lg shadow-sm border border-gray-100 p-5">
+            <div class="w-full max-w-md md:max-w-none bg-white rounded-lg shadow-sm border border-gray-100 p-5 text-center md:text-left">
               <h3 class="text-sm font-semibold uppercase tracking-wider text-ink-lighter mb-4">Authenticated vs Anonymous</h3>
               <div class="flex items-center justify-center">
                 <div class="donut-chart">
@@ -531,7 +531,7 @@
 
             <!-- ── Activity type breakdown (horizontal bars) ── -->
             <div class="w-full max-w-md md:max-w-none bg-white rounded-lg shadow-sm border border-gray-100 p-5">
-              <h3 class="text-sm font-semibold uppercase tracking-wider text-ink-lighter mb-4">Activity by Type</h3>
+              <h3 class="text-sm font-semibold uppercase tracking-wider text-ink-lighter mb-4 text-center md:text-left">Activity by Type</h3>
               <div class="space-y-3">
                 <div v-for="item in stats.byType" :key="item.activityType" class="space-y-1">
                   <div class="flex justify-between text-xs">
@@ -646,7 +646,7 @@
           <div class="flex flex-col md:grid md:grid-cols-2 items-center md:items-stretch gap-6 mb-10">
             <!-- Top active users -->
             <div class="w-full max-w-md md:max-w-none bg-white rounded-lg shadow-sm border border-gray-100 p-5">
-              <h3 class="text-sm font-semibold uppercase tracking-wider text-ink-lighter mb-4">Most Active Users</h3>
+              <h3 class="text-sm font-semibold uppercase tracking-wider text-ink-lighter mb-4 text-center md:text-left">Most Active Users</h3>
               <div v-if="stats.topUsers.length === 0" class="text-sm text-ink-lighter italic py-4">No data</div>
               <div v-else class="space-y-2.5">
                 <div v-for="(u, idx) in stats.topUsers" :key="u.userId" class="flex items-center gap-3">
@@ -669,7 +669,7 @@
 
             <!-- Top writings -->
             <div class="w-full max-w-md md:max-w-none bg-white rounded-lg shadow-sm border border-gray-100 p-5">
-              <h3 class="text-sm font-semibold uppercase tracking-wider text-ink-lighter mb-4">Most Interacted Writings</h3>
+              <h3 class="text-sm font-semibold uppercase tracking-wider text-ink-lighter mb-4 text-center md:text-left">Most Interacted Writings</h3>
               <div v-if="stats.topWritings.length === 0" class="text-sm text-ink-lighter italic py-4">No data</div>
               <div v-else class="space-y-2.5">
                 <div v-for="(w, idx) in stats.topWritings" :key="w.resourceId" class="flex items-center gap-3">
