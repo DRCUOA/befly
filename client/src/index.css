@@ -89,3 +89,23 @@ body {
   }
 }
 
+/* Word count on pause — P3-uix-07 / cni-07
+   Fade in ≥200ms, fade out within 300ms. No animation with prefers-reduced-motion. */
+.word-count-fade-enter-active {
+  transition: opacity 200ms ease-out;
+}
+.word-count-fade-leave-active {
+  transition: opacity 250ms ease-out;
+}
+.word-count-fade-enter-from,
+.word-count-fade-leave-to {
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .word-count-fade-enter-active,
+  .word-count-fade-leave-active {
+    transition: none;
+  }
+}
+
