@@ -269,4 +269,36 @@ describe('Write page (cni-01 + cni-02 acceptance criteria)', () => {
       expect(blockingOverlays.length).toBe(0)
     })
   })
+
+  describe('cni-07: Word count on pause', () => {
+    it('word count is not visible while user is actively typing (default view)', async () => {
+      const wrapper = await createWrapper()
+
+      const wordCount = wrapper.find('.word-count-on-pause')
+      expect(wordCount.exists()).toBe(false)
+    })
+
+    it('word count element exists in body editor area when shown', async () => {
+      const wrapper = await createWrapper()
+      await wrapper.find('#body').setValue('one two three')
+      await wrapper.find('#body').trigger('blur')
+      await wrapper.vm.$nextTick()
+
+      const wordCount = wrapper.find('.word-count-on-pause')
+      expect(wordCount.exists()).toBe(true)
+      expect(wordCount.text()).toContain('3 words')
+    })
+
+    it('word count excludes markdown syntax (accurate count)', async () => {
+      const wrapper = await createWrapper()
+      await wrapper.find('#body').setValue('# Title\n\nSome **bold** text with [a link](url.com).')
+      await wrapper.find('#body').trigger('blur')
+      await wrapper.vm.$nextTick()
+
+      const wordCount = wrapper.find('.word-count-on-pause')
+      expect(wordCount.exists()).toBe(true)
+      // Title, Some, bold, text, with, a, link = 7 words (syntax stripped)
+      expect(wordCount.text()).toContain('7 words')
+    })
+  })
 })

@@ -5,6 +5,22 @@ All notable changes to the Rambulations writing platform are documented in this 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.6] - 2026-02-23
+
+### Added
+- **Word count on pause (cni-07)** — show word count only when the writer pauses typing, not continuously; opens Phase 3 (Engagement)
+- Word count appears after ≥1.5s typing pause or on blur; fades out within 300ms when typing resumes
+- Positioned 2 line spaces below the text in the textarea; mirror div measures text height for accurate placement
+- Markdown-aware count: strips syntax (headings, links, images, code fences) for accurate visible-text word count
+- `stripMarkdownForWordCount` and `countWordsInMarkdown` utilities in `client/src/utils/markdown.ts`
+- Opacity transition (200ms in, 250ms out); respects `prefers-reduced-motion` (no animation)
+- Unit tests for markdown word count and Write page word count behaviour
+
+### Changed
+- Version bump 0.5.5 → 0.5.6
+
+---
+
 ## [0.5.5] - 2026-02-20
 
 ### Fixed
@@ -315,6 +331,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Database migrations (001-008): users, writing_blocks, themes, appreciations, auth/visibility, roles, reaction types, comments
 - Development setup documentation and quick-start guide
 
+[0.5.6]: https://github.com/DRCUOA/befly/compare/v0.5.5...v0.5.6
+[0.5.5]: https://github.com/DRCUOA/befly/compare/v0.5.4...v0.5.5
 [0.5.4]: https://github.com/DRCUOA/befly/compare/v0.5.3...v0.5.4
 [0.5.3]: https://github.com/DRCUOA/befly/compare/v0.5.2...v0.5.3
 [0.5.2]: https://github.com/DRCUOA/befly/compare/v0.5.1...v0.5.2

@@ -93,7 +93,7 @@
       </div>
       
       <!-- Body: line-height ≥1.6 for comfortable reading (cni-05), generous padding -->
-      <div class="flex-1 w-full max-w-[70ch] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 pb-8 sm:pb-12">
+      <div class="flex-1 relative w-full max-w-[70ch] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 pb-8 sm:pb-12">
         <textarea
           id="body"
           ref="bodyTextareaRef"
@@ -104,6 +104,26 @@
           aria-label="Body"
           @blur="onBodyBlur"
         />
+        <!-- Mirror div to measure text height (matches textarea styles) -->
+        <div
+          ref="bodyMirrorRef"
+          class="absolute top-0 left-0 right-0 invisible font-mono text-sm sm:text-base py-2 leading-[1.6] whitespace-pre-wrap break-words pointer-events-none"
+          :class="bodyMirrorClasses"
+          aria-hidden="true"
+        >{{ form.body || ' ' }}</div>
+        <!-- Word count on pause (P3-uix-07 / cni-07): 2 line spaces below text, no layout shift -->
+        <Transition name="word-count-fade">
+          <div
+            v-if="showWordCount"
+            class="word-count-on-pause absolute right-4 sm:right-6 md:right-8 lg:right-12 xl:right-16 text-xs text-ink-whisper font-sans pointer-events-none select-none"
+            :style="wordCountStyle"
+            role="status"
+            aria-live="polite"
+            :aria-label="`${bodyWordCount} words`"
+          >
+            {{ bodyWordCount }} {{ bodyWordCount === 1 ? 'word' : 'words' }}
+          </div>
+        </Transition>
       </div>
 
       <!-- Footer: metadata trigger, publish, cancel (≤5 visible controls per epic DoD)
@@ -235,6 +255,7 @@ import { useTypographyRules } from '../composables/useTypographyRules'
 import MetadataPanel from '../components/writing/MetadataPanel.vue'
 import CoverImageCropModal from '../components/writing/CoverImageCropModal.vue'
 import { useBreathingCaret } from '../composables/useBreathingCaret'
+import { countWordsInMarkdown } from '../utils/markdown'
 
 const router = useRouter()
 const route = useRoute()
@@ -284,6 +305,36 @@ watch(() => form.value.title, () => nextTick(refreshCaret))
 let scanTimer: ReturnType<typeof setTimeout> | null = null
 const SCAN_DEBOUNCE_MS = 1500
 
+// Word count on pause (P3-uix-07 / cni-07): visible only after typing pause, 2 lines below text
+const showWordCount = ref(false)
+const bodyWordCount = computed(() => countWordsInMarkdown(form.value.body))
+const bodyMirrorRef = ref<HTMLDivElement | null>(null)
+const wordCountStyle = ref<{ top: string }>({ top: '0.5rem' })
+
+const bodyMirrorClasses = 'w-full'
+
+function updateWordCountPosition() {
+  const mirror = bodyMirrorRef.value
+  if (!mirror) return
+  const computed = getComputedStyle(mirror)
+  const lineHeight = parseFloat(computed.lineHeight) || parseFloat(computed.fontSize) * 1.6
+  const textHeight = mirror.offsetHeight
+  const twoLines = 2 * lineHeight
+  wordCountStyle.value = { top: `${textHeight + twoLines}px` }
+}
+
+watch(showWordCount, (visible) => {
+  if (visible) {
+    nextTick(() => updateWordCountPosition())
+  }
+})
+
+watch(() => form.value.body, () => {
+  if (showWordCount.value) {
+    nextTick(() => updateWordCountPosition())
+  }
+})
+
 function suggestionKey(s: TypographySuggestion): string {
   return `${s.ruleId}:${s.original}`
 }
@@ -296,15 +347,18 @@ function refreshSuggestions() {
 }
 
 watch(() => form.value.body, () => {
+  showWordCount.value = false
   if (scanTimer) clearTimeout(scanTimer)
   scanTimer = setTimeout(() => {
     refreshSuggestions()
+    showWordCount.value = true
   }, SCAN_DEBOUNCE_MS)
 })
 
 function onBodyBlur() {
   if (scanTimer) clearTimeout(scanTimer)
   refreshSuggestions()
+  showWordCount.value = true
 }
 
 // Draft management
