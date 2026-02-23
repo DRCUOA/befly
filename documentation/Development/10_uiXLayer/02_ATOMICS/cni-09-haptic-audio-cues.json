@@ -1,0 +1,56 @@
+{
+  "meta": {
+    "cohort": "c26",
+    "repo": "befly"
+  },
+  "summary": "Add subtle paper-sound and haptic feedback on milestones to reinforce Reflect mode",
+  "problem_statement": "Visual milestone celebrations (P3-uix-08) engage only one sense. Multi-sensory feedback—a quiet paper-shuffle sound or a gentle haptic pulse—deepens the sense of accomplishment and grounds the writer in a physical metaphor: writing on paper, reaching a new page. These cues are dopamine-loop reinforcers that the epic identifies as a core functional requirement, not polish. They strengthen the Reflect mode (P5-uix-12) by making the environment feel tangible and responsive. The cues must be opt-in and near-silent to avoid becoming a distraction themselves.",
+  "in_scope": [
+    "Play a short, quiet audio cue when a milestone is reached (500/1000 words)",
+    "Trigger a subtle haptic pulse on milestone for devices that support the Vibration API",
+    "Audio cue: a soft paper-turn or pen-set-down sound (≤1 second, low volume)",
+    "Provide a user preference to enable/disable audio and haptic cues independently",
+    "Cues respect the device mute/silent state and prefers-reduced-motion"
+  ],
+  "out_of_scope": [
+    "Ambient background sounds or continuous audio",
+    "Keystroke sounds (typing sounds)",
+    "Audio cues on non-milestone events (save, publish, navigation)",
+    "Custom sound uploads or sound pack selection",
+    "Haptic feedback for typing or scrolling"
+  ],
+  "requirements": [
+    "Audio cue plays via Web Audio API or HTMLAudioElement on milestone events",
+    "Audio file is small (≤50KB), bundled as a static asset, preloaded on component mount",
+    "Audio volume defaults to low (≤0.3 gain) and does not override system volume",
+    "Haptic pulse uses navigator.vibrate() with a short pattern (e.g. 50ms) on supported devices",
+    "Both audio and haptic are gated behind a user preference stored in localStorage",
+    "Default state: audio OFF, haptic OFF (opt-in, not opt-out)",
+    "With prefers-reduced-motion, haptic is disabled; audio follows user preference",
+    "No audio/haptic when the page is not visible (document.hidden check)",
+    "Cues fire only in conjunction with milestone events from P3-uix-08 (not independently)"
+  ],
+  "acceptance_criteria": [
+    "Reaching 500 words plays the audio cue (when preference is enabled)",
+    "Reaching 1000 words plays the audio cue (when preference is enabled)",
+    "Haptic pulse fires on milestone (when preference is enabled and device supports it)",
+    "No sound or vibration when preferences are disabled (default state)",
+    "Audio does not play when the browser tab is not visible",
+    "Audio file loads without blocking editor initialisation (preload or lazy load)",
+    "With prefers-reduced-motion, haptic is suppressed regardless of preference",
+    "Preference toggle is accessible from the MetadataPanel or a future settings area",
+    "No error or console warning on devices that do not support Vibration API"
+  ],
+  "dependencies": [
+    "P3-uix-08 (Milestone moments) — cues fire in response to milestone events; no independent trigger",
+    "P1-uix-02 (Slide-out metadata panel) — preference toggle may live in the metadata panel or a settings section",
+    "P2-uix-04 (Single accent colour) — preference UI uses the accent palette"
+  ],
+  "risks": [
+    "Autoplay audio policies in browsers may block playback without prior user interaction—ensure the first user gesture (typing) unlocks the AudioContext",
+    "Haptic support is limited to Android Chrome and some mobile browsers; must degrade silently on desktop and iOS Safari",
+    "Audio that is too loud or too frequent will annoy users and undermine the calm intent",
+    "Bundling audio assets increases the client build size—keep files small and lazy-load"
+  ],
+  "implementation_notes": "P3-uix-09 closes Phase 3 (Engagement). Create a useAudioHaptic composable that accepts milestone events from P3-uix-08. On mount, preload the audio asset (new Audio() with src pointing to a bundled .mp3/.ogg in assets/sounds/). On milestone event: check preferences in localStorage, check document.hidden, then play audio (cloneNode for overlapping safety) and/or call navigator.vibrate([50]). AudioContext approach preferred over HTMLAudioElement for volume control and low-latency playback. Gate haptic behind typeof navigator.vibrate === 'function'. Store preferences under a localStorage key like 'befly-prefs-cues' as JSON {audio: boolean, haptic: boolean}."
+}

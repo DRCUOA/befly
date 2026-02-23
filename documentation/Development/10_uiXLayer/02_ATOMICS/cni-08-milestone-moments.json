@@ -1,0 +1,51 @@
+{
+  "meta": {
+    "cohort": "c26",
+    "repo": "befly"
+  },
+  "summary": "Celebrate 500 and 1000-word milestones with subtle, non-blocking feedback",
+  "problem_statement": "Long-form writing is a marathon with no visible finish line. Writers lose momentum because there is no sense of progress—the page just gets longer. Small milestone celebrations at meaningful thresholds (500 words, 1000 words) create positive reinforcement loops that sustain motivation without interrupting flow. The feedback must be subtle enough to feel like a warm acknowledgement, not a notification demanding action. This is a core functional requirement of the attention-first philosophy: dopamine loops that serve the writer, not the platform.",
+  "in_scope": [
+    "Detect when word count crosses 500-word and 1000-word thresholds during active writing",
+    "Display a brief, non-blocking visual celebration (e.g. subtle glow, confetti-free badge, or text flash)",
+    "Celebration auto-dismisses after a short duration (2–4 seconds)",
+    "Milestone triggers only on upward crossing (not when deleting back below threshold)",
+    "Each milestone fires at most once per writing session (no repeat on re-crossing)"
+  ],
+  "out_of_scope": [
+    "Configurable milestone thresholds (hardcode 500 and 1000 for now)",
+    "Persistent milestone history or achievement tracking",
+    "Haptic or audio feedback (P3-uix-09)",
+    "Gamification, points, streaks, or badges beyond the session",
+    "Milestones on the Read page or for readers"
+  ],
+  "requirements": [
+    "Milestones trigger at 500 and 1000 words (crossing upward only)",
+    "Celebration is visual-only, non-blocking, and does not steal focus from the textarea",
+    "Celebration appears near the writing area (not a modal, not a system notification)",
+    "Celebration auto-dismisses in 2–4 seconds with a fade-out transition",
+    "Each milestone fires at most once per mount of the Write component (session-scoped)",
+    "Celebration respects prefers-reduced-motion (simpler or static variant)",
+    "Word count computation reuses the same logic as P3-uix-07"
+  ],
+  "acceptance_criteria": [
+    "Writing past 500 words triggers a visible celebration near the editor",
+    "Writing past 1000 words triggers a distinct visible celebration",
+    "Celebrations auto-dismiss within 4 seconds without user action",
+    "Deleting below 500/1000 and retyping past the threshold does not re-trigger in the same session",
+    "Celebration does not block typing or shift layout",
+    "Textarea retains focus throughout the celebration",
+    "With prefers-reduced-motion, celebration is still shown but without animated transitions"
+  ],
+  "dependencies": [
+    "P3-uix-07 (Word count on pause) — reuses the word count computation; milestone detection piggybacks on the same reactive word count",
+    "P2-uix-04 (Single accent colour) — celebration visual uses the accent palette",
+    "P2-uix-05 (Breathing space) — celebration placement respects breathing margins"
+  ],
+  "risks": [
+    "Celebration too prominent may feel patronising to experienced writers",
+    "Celebration too subtle may go unnoticed and fail to provide reinforcement",
+    "Re-mount of Write component (e.g. route change and return) resets session tracking—edge case if user navigates away mid-draft"
+  ],
+  "implementation_notes": "P3-uix-08 continues Phase 3 (Engagement). Watch the reactive word count from cni-07. Track a Set<number> of fired milestones (session-scoped ref, reset on mount). When count crosses a threshold upward, push a milestone event. Render a small absolute-position element (e.g. 'You've written 500 words' in accent-muted with a border-accent-hover left border) that fades in, holds for 3s, fades out. Use setTimeout + reactive boolean. Consider extracting a useMilestones composable that takes a word count ref and returns a reactive milestone message."
+}

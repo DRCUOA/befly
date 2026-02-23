@@ -1,0 +1,50 @@
+{
+  "meta": {
+    "cohort": "c26",
+    "repo": "befly"
+  },
+  "summary": "Show word count only when the user pauses typing, not continuously",
+  "problem_statement": "A permanently visible word count is a low-grade distraction: it turns writing into counting. The number ticks up with every keystroke, pulling peripheral attention away from the sentence being formed. For an attention-first editor, metrics should surface only when the writer naturally pauses—when they look up from the page, not while they are in flow. Showing the count on pause respects the writing rhythm: present when useful, invisible when intrusive.",
+  "in_scope": [
+    "Detect typing pause in the Write view (idle threshold after last keystroke)",
+    "Display word count in the Write view only during pause (fade in, fade out on resume)",
+    "Position word count unobtrusively—e.g. bottom-right of the editor area or near the footer",
+    "Animate appearance/disappearance with a calm transition (opacity or slide)",
+    "Ensure word count is accurate for Markdown content (strip syntax tokens from count)"
+  ],
+  "out_of_scope": [
+    "Word count on Read page or WritingCard (existing always-visible display is acceptable for published content)",
+    "Character count, sentence count, or readability scores",
+    "Milestone celebrations (P3-uix-08)",
+    "Focus modes toggling count visibility (P5-uix-12)",
+    "Persistent word-count history or analytics"
+  ],
+  "requirements": [
+    "Word count appears after a typing pause of ≥1.5s (configurable, matches typography scan debounce)",
+    "Word count disappears within 300ms of the next keystroke",
+    "Display uses a calm transition (opacity fade ≥200ms)",
+    "Count excludes Markdown syntax (headings, links, images, code fences) for accuracy",
+    "Word count is visually subordinate—smaller text, muted colour (ink-whisper or ink-lighter)",
+    "No layout shift when count appears or disappears"
+  ],
+  "acceptance_criteria": [
+    "Word count is not visible while the user is actively typing",
+    "Word count fades in after ≥1.5s of no keystrokes",
+    "Word count fades out within 300ms when typing resumes",
+    "Count is accurate: matches manual word count of the visible text (not Markdown source tokens)",
+    "No layout shift or content jump when the count appears/disappears",
+    "Appearance uses opacity transition ≥200ms",
+    "With prefers-reduced-motion, count still appears/disappears but without animation"
+  ],
+  "dependencies": [
+    "P1-uix-01 (Full-width editor layout) — count must position within the expanded viewport",
+    "P2-uix-05 (Breathing space) — count placement must not encroach on the breathing margins",
+    "P2-uix-04 (Single accent colour) — count text uses the muted end of the ink palette, not accent"
+  ],
+  "risks": [
+    "Pause threshold too short may cause the count to flash during normal thinking pauses between words",
+    "Pause threshold too long may make the count feel unresponsive or invisible",
+    "Markdown stripping may produce inaccurate counts for edge cases (nested code, HTML entities)"
+  ],
+  "implementation_notes": "P3-uix-07 opens Phase 3 (Engagement). Reuse the same debounce pattern as the typography scan (watch form.body, setTimeout at PAUSE_MS, clear on keystroke). Compute word count by stripping Markdown syntax then splitting on whitespace. Render a small absolute/fixed-position element at the bottom of the editor content area with opacity transition. Use v-show or a reactive boolean toggled by the debounce timer. The count in Read.vue and WritingCard.vue is out of scope—leave those always-visible."
+}
