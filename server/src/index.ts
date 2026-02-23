@@ -5,7 +5,7 @@ import './config/env-loader.js'
 
 import app from './app.js'
 import { initDb, closeDb } from './config/db.js'
-import { getOffendingLocation } from './utils/logger.js'
+import { getOffendingLocation, logger } from './utils/logger.js'
 import type { Server } from 'http'
 
 // Fires on every normal exit (not SIGKILL / OOM kills)
@@ -79,7 +79,7 @@ async function start() {
   try {
     await initDb()
     server = app.listen(PORT, '0.0.0.0', () => {
-      console.log(`Server running on http://0.0.0.0:${PORT}`)
+      logger.info(`Server running on http://0.0.0.0:${PORT}`)
     })
   } catch (error) {
     process.stdout.write(`\n[FATAL] Failed to start server:\n`)

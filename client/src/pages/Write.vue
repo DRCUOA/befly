@@ -6,6 +6,7 @@
       <div class="w-full max-w-[70ch] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 py-6 sm:py-8 md:py-12 lg:py-16">
         <input
           id="title"
+          ref="titleInputRef"
           v-model="form.title"
           type="text"
           required
@@ -216,7 +217,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, computed, watch } from 'vue'
+import { ref, onMounted, onBeforeUnmount, computed, watch, nextTick } from 'vue'
 import { useRouter, useRoute, onBeforeRouteLeave } from 'vue-router'
 import { api } from '../api/client'
 import type { Theme } from '../domain/Theme'
@@ -233,6 +234,7 @@ import {
 import { useTypographyRules } from '../composables/useTypographyRules'
 import MetadataPanel from '../components/writing/MetadataPanel.vue'
 import CoverImageCropModal from '../components/writing/CoverImageCropModal.vue'
+import { useBreathingCaret } from '../composables/useBreathingCaret'
 
 const router = useRouter()
 const route = useRoute()
@@ -269,10 +271,16 @@ const metadataPanelOpen = ref(false)
 // Non-blocking typography suggestions (P1-uix-03: progressive reveal on pause/blur)
 // Rules from API with fallback to bundled defaults (cni-07)
 const { rules: typographyRules } = useTypographyRules()
+const titleInputRef = ref<HTMLInputElement | null>(null)
 const bodyTextareaRef = ref<HTMLTextAreaElement | null>(null)
 const typographySuggestions = ref<TypographySuggestion[]>([])
 const suggestionsPanelExpanded = ref(false)
 const dismissedSuggestionKeys = ref(new Set<string>())
+// Breathing caret — P2-uix-06 / cni-06
+const { refresh: refreshCaret } = useBreathingCaret(titleInputRef, bodyTextareaRef)
+watch(() => form.value.body, () => nextTick(refreshCaret))
+watch(() => form.value.title, () => nextTick(refreshCaret))
+
 let scanTimer: ReturnType<typeof setTimeout> | null = null
 const SCAN_DEBOUNCE_MS = 1500
 

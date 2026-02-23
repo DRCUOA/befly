@@ -3,7 +3,7 @@
   "version": "0.5.5",
   "type": "module",
   "scripts": {
-    "dev": "nodemon src/index.ts",
+    "dev": "nodemon",
     "build": "rm -rf dist && tsc && cp -R dist/server/src/. dist/",
     "start": "node dist/index.js",
     "type-check": "tsc --noEmit",

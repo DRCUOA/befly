@@ -18,8 +18,15 @@ import typographyRulesRoutes from './routes/typography-rules.routes.js'
 import { uploadsController } from './controllers/uploads.controller.js'
 import { asyncHandler } from './utils/asyncHandler.js'
 import { config } from './config/env.js'
+import { logger } from './utils/logger.js'
 
 const app = express()
+
+// Log every incoming request first (before any middleware that could fail)
+app.use((req, _res, next) => {
+  logger.info('Request', { method: req.method, path: req.path })
+  next()
+})
 
 // Heroku sits behind a router/proxy and forwards client IP via X-Forwarded-For.
 // Trust the first proxy hop so express-rate-limit can derive client IP correctly.
