@@ -47,11 +47,11 @@
           </router-link>
         </div>
         
-        <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+        <div v-else class="flex flex-col md:grid md:grid-cols-2 lg:grid-cols-3 items-center md:items-stretch gap-6 sm:gap-8">
           <div
             v-for="theme in filteredThemes"
             :key="theme.id"
-            class="theme-card bg-paper border border-line p-6 sm:p-8 md:p-10 group cursor-pointer hover:border-ink-lighter transition-all duration-500"
+            class="theme-card w-full max-w-md md:max-w-none bg-paper border border-line p-6 sm:p-8 md:p-10 group cursor-pointer hover:border-ink-lighter transition-all duration-500"
           >
             <div class="flex items-start justify-between mb-4 sm:mb-6">
               <div class="flex-1">

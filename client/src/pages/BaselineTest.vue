@@ -53,7 +53,7 @@
         <p class="text-sm text-gray-600 mb-2">
           Input → Vue update → next frame. Good: &lt;16ms (60fps). Poor: &gt;50ms.
         </p>
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 text-sm justify-items-center sm:justify-items-stretch">
           <div><span class="text-gray-500">Inputs:</span> {{ metrics.inputCount }}</div>
           <div><span class="text-gray-500">Avg:</span> {{ metrics.avgMs }}</div>
           <div><span class="text-gray-500">Max:</span> {{ metrics.maxMs }}</div>

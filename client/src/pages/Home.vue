@@ -96,16 +96,20 @@
           </p>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
-          <CollectionCard
+        <div class="flex flex-col md:grid md:grid-cols-3 items-center md:items-stretch gap-6 sm:gap-8">
+          <div
             v-for="theme in featuredThemes"
             :key="theme.id"
-            :title="theme.name"
-            :description="getThemeDescription(theme)"
-            :count="getThemeCount(theme.id)"
-            :tags="[]"
-            :route="`/themes?filter=${theme.id}`"
-          />
+            class="w-full max-w-md md:max-w-none"
+          >
+            <CollectionCard
+              :title="theme.name"
+              :description="getThemeDescription(theme)"
+              :count="getThemeCount(theme.id)"
+              :tags="[]"
+              :route="`/themes?filter=${theme.id}`"
+            />
+          </div>
         </div>
       </div>
     </div>

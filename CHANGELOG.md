@@ -5,6 +5,15 @@ All notable changes to the Rambulations writing platform are documented in this 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.7] - 2026-02-23
+
+### Changed
+- **Mobile/small viewport layouts** — container arrangements now stack in 1×N order and are centered on mobile and small viewports
+- Home collection cards, Themes grid, Admin stats and charts, BaselineTest metrics: single-column layout with `max-w-md`/`max-w-xs` centering below breakpoints
+- Version bump 0.5.6 → 0.5.7
+
+---
+
 ## [0.5.6] - 2026-02-23
 
 ### Added

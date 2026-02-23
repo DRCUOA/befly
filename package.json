@@ -1,6 +1,6 @@
 {
   "name": "writing-platform",
-  "version": "0.5.6",
+  "version": "0.5.7",
   "description": "Personal Writing Platform (Vendor-Neutral, Self-Hosted)",
   "private": true,
   "scripts": {
