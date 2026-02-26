@@ -11,6 +11,7 @@ import SignIn from '../pages/SignIn.vue'
 import SignUp from '../pages/SignUp.vue'
 import Admin from '../pages/Admin.vue'
 import AdminRules from '../pages/AdminRules.vue'
+import CvEnrichment from '../pages/CvEnrichment.vue'
 import BaselineTest from '../pages/BaselineTest.vue'
 
 const router = createRouter({
@@ -77,6 +78,12 @@ const router = createRouter({
       path: '/admin/rules',
       name: 'AdminRules',
       component: AdminRules,
+      meta: { requiresAuth: true, requiresAdmin: true }
+    },
+    {
+      path: '/cv-enrichment',
+      name: 'CvEnrichment',
+      component: CvEnrichment,
       meta: { requiresAuth: true, requiresAdmin: true }
     },
     {
