@@ -40,6 +40,13 @@
             >
               Admin
             </router-link>
+            <router-link
+              v-if="isAdmin"
+              to="/cv-enrichment"
+              class="text-purple-600 hover:text-purple-800"
+            >
+              CV Form
+            </router-link>
           </nav>
         </div>
         <div class="flex items-center gap-2 md:gap-4">
@@ -167,6 +174,14 @@
               class="block text-sm tracking-wide font-sans text-purple-600 hover:text-purple-800"
             >
               Admin
+            </router-link>
+            <router-link
+              v-if="isAdmin"
+              to="/cv-enrichment"
+              @click="menuOpen = false"
+              class="block text-sm tracking-wide font-sans text-purple-600 hover:text-purple-800"
+            >
+              CV Form
             </router-link>
             <button
               @click="handleSignOut"
