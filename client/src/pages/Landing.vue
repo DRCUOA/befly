@@ -1,50 +1,61 @@
 <template>
   <div class="landing-page">
     <!-- Hero Section - Arrival -->
-    <div id="arrival-container" class="w-full min-h-screen flex items-center justify-center relative overflow-hidden px-4 sm:px-6 md:px-8">
-      <div id="central-content" class="text-center max-w-2xl">
-        <div id="author-mark" class="mb-8 sm:mb-10 md:mb-12 flex flex-col items-center gap-4 sm:gap-6">
-          <img :src="logoUrl" alt="" class="h-16 w-16 sm:h-20 sm:w-20 md:h-24 md:w-24" />
-          <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-light tracking-tight leading-none">
-            {{ appConfig.appName }}
-          </h1>
-        </div>
-        
-        <div id="context-line" class="mb-8 sm:mb-12 md:mb-16">
-          <p class="text-base sm:text-lg md:text-xl font-light text-ink-light tracking-wide px-4">
-            A place for slow reading and thoughtful writing
-          </p>
-        </div>
-        
-        <div id="entry-action" class="mb-12 sm:mb-16 md:mb-24">
-          <router-link
-            to="/home"
-            class="group relative inline-block"
-          >
-            <span class="text-lg tracking-widest uppercase font-sans font-light text-ink-lighter group-hover:text-ink">
-              Enter
-            </span>
-            <span class="absolute bottom-0 left-0 w-full h-px bg-ink"></span>
-          </router-link>
-        </div>
-        
-        <div id="scroll-indicator">
-          <div class="flex flex-col items-center text-ink-lighter">
-            <span class="text-xs tracking-widest uppercase font-sans mb-3">or scroll</span>
-            <svg
-              class="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+    <div id="arrival-container" class="w-full min-h-screen flex flex-col relative overflow-hidden px-4 sm:px-6 md:px-8">
+      <div class="absolute inset-0 bg-gradient-to-b from-paper via-paper to-surface/40 pointer-events-none" aria-hidden="true"></div>
+
+      <div id="corner-mark" class="absolute top-4 left-4 sm:top-6 sm:left-6 md:top-8 md:left-8 z-10">
+        <span class="text-xs tracking-widest uppercase font-sans text-ink-whisper">2026</span>
+      </div>
+
+      <div class="flex-1 flex items-center justify-center relative">
+        <div id="central-content" class="text-center max-w-2xl">
+          <div id="author-mark" class="mb-8 sm:mb-10 md:mb-12 flex flex-col items-center gap-4 sm:gap-6">
+            <img :src="logoUrl" alt="" class="h-16 w-16 sm:h-20 sm:w-20 md:h-24 md:w-24" />
+            <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-light tracking-tight leading-none">
+              {{ appConfig.appName }}
+            </h1>
+          </div>
+
+          <div id="context-line" class="mb-10 sm:mb-14 md:mb-16">
+            <p class="text-base sm:text-lg md:text-xl font-light text-ink-light tracking-wide px-4">
+              A place for slow reading and thoughtful writing
+            </p>
+          </div>
+
+          <div id="entry-action" class="flex flex-col items-center gap-4 sm:gap-5">
+            <router-link
+              to="/home"
+              class="inline-block px-8 py-3 text-sm tracking-widest uppercase font-sans font-light border border-ink text-ink hover:bg-ink hover:text-paper transition-colors duration-slow"
             >
+              Start Reading
+            </router-link>
+            <router-link
+              v-if="latestWriting"
+              :to="`/read/${latestWriting.id}`"
+              class="group inline-flex items-center gap-2 text-sm tracking-wide font-sans font-light text-ink-lighter hover:text-ink transition-colors duration-slow"
+            >
+              <span>Read the latest essay</span>
+              <svg class="w-3.5 h-3.5 transition-transform duration-slow group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </router-link>
+          </div>
+        </div>
+      </div>
+
+      <div v-if="latestWriting" class="pb-8 sm:pb-12 text-center relative">
+        <div class="max-w-sm mx-auto">
+          <div class="border-t border-line pt-6">
+            <span class="text-xs tracking-widest uppercase font-sans text-ink-whisper block mb-3">Latest</span>
+            <p class="text-lg sm:text-xl font-light text-ink-light leading-snug italic mb-4">
+              &ldquo;{{ latestWriting.title }}&rdquo;
+            </p>
+            <svg class="w-4 h-4 mx-auto text-ink-whisper animate-gentle-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
             </svg>
           </div>
         </div>
-      </div>
-      
-      <div id="corner-mark" class="absolute top-4 left-4 sm:top-6 sm:left-6 md:top-8 md:left-8">
-        <span class="text-xs tracking-widest uppercase font-sans text-ink-lighter">2026</span>
       </div>
     </div>
 
@@ -81,7 +92,7 @@
     </div>
 
     <!-- Collection Preview -->
-    <div id="navigation-emergence" class="w-full min-h-screen bg-gradient-to-b from-paper to-gray-50 px-4 sm:px-6 md:px-8 py-16 sm:py-24 md:py-32">
+    <div id="navigation-emergence" class="w-full min-h-screen bg-gradient-to-b from-paper to-surface px-4 sm:px-6 md:px-8 py-16 sm:py-24 md:py-32">
       <div class="max-w-4xl mx-auto">
         <div id="nav-introduction" class="text-center mb-12 sm:mb-16 md:mb-20">
           <h2 class="text-2xl sm:text-3xl md:text-4xl font-light mb-4 sm:mb-6 tracking-tight">What You'll Find Here</h2>
@@ -265,7 +276,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { api } from '../api/client'
 import { appConfig } from '../config/app'
 import logoUrl from '../assets/logo2.png'
@@ -294,6 +305,10 @@ const loadWritings = async () => {
   }
 }
 
+const latestWriting = computed(() => {
+  return writings.value.length > 0 ? writings.value[0] : null
+})
+
 onMounted(() => {
   loadThemes()
   loadWritings()
@@ -303,5 +318,14 @@ onMounted(() => {
 <style scoped>
 .landing-page {
   min-height: 100vh;
+}
+
+@keyframes gentle-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(4px); }
+}
+
+.animate-gentle-bounce {
+  animation: gentle-bounce 2s ease-in-out infinite;
 }
 </style>

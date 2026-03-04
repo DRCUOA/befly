@@ -1,7 +1,7 @@
 <template>
   <div class="themes-page">
     <!-- Hero Section -->
-    <div class="w-full px-4 sm:px-6 md:px-8 py-12 sm:py-16 md:py-24 bg-gradient-to-b from-paper to-gray-50">
+    <div class="w-full px-4 sm:px-6 md:px-8 py-12 sm:py-16 md:py-24 bg-gradient-to-b from-paper to-surface">
       <div class="max-w-4xl mx-auto text-center">
         <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-light tracking-tight mb-6 sm:mb-8 leading-tight">
           Themes
@@ -51,6 +51,10 @@
           <div
             v-for="theme in filteredThemes"
             :key="theme.id"
+            @click="$router.push(`/themes/${theme.id}`)"
+            @keydown.enter="$router.push(`/themes/${theme.id}`)"
+            role="link"
+            tabindex="0"
             class="theme-card w-full max-w-md md:max-w-none bg-paper border border-line p-6 sm:p-8 md:p-10 group cursor-pointer hover:border-ink-lighter transition-all duration-500 text-center md:text-left"
           >
             <div class="flex flex-col md:flex-row items-center md:items-start justify-center md:justify-between mb-4 sm:mb-6">
@@ -62,7 +66,7 @@
                   {{ getThemeCount(theme.id) }} {{ getThemeCount(theme.id) === 1 ? 'essay' : 'essays' }}
                 </p>
               </div>
-              <div v-if="canModify(theme)" class="flex items-center gap-2">
+              <div v-if="canModify(theme)" class="flex items-center gap-2" @click.stop>
                 <router-link
                   :to="`/themes/edit/${theme.id}`"
                   class="p-2 text-ink-lighter hover:text-ink transition-colors"
@@ -96,8 +100,8 @@
                 v-if="theme.visibility !== 'private'"
                 class="text-xs px-3 py-1 rounded"
                 :class="{
-                  'bg-green-100 text-green-800': theme.visibility === 'public',
-                  'bg-blue-100 text-blue-800': theme.visibility === 'shared'
+                  'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300': theme.visibility === 'public',
+                  'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300': theme.visibility === 'shared'
                 }"
               >
                 {{ theme.visibility === 'public' ? 'Public' : 'Shared' }}
@@ -109,7 +113,7 @@
     </div>
 
     <!-- Create Theme CTA -->
-    <div v-if="isAuthenticated && filteredThemes.length > 0" class="w-full px-4 sm:px-6 md:px-8 py-12 sm:py-16 md:py-24 bg-gradient-to-b from-paper to-gray-50">
+    <div v-if="isAuthenticated && filteredThemes.length > 0" class="w-full px-4 sm:px-6 md:px-8 py-12 sm:py-16 md:py-24 bg-gradient-to-b from-paper to-surface">
       <div class="max-w-4xl mx-auto text-center">
         <p class="text-base sm:text-lg font-light text-ink-light mb-6 sm:mb-8">
           Want to organize your writing differently?

@@ -1,5 +1,13 @@
 /** @type {import('tailwindcss').Config} */
+function cv(name) {
+  return ({ opacityValue }) =>
+    opacityValue !== undefined
+      ? `rgb(var(${name}) / ${opacityValue})`
+      : `rgb(var(${name}))`
+}
+
 export default {
+  darkMode: 'class',
   content: [
     "./index.html",
     "./src/**/*.{vue,js,ts,jsx,tsx}",
@@ -11,15 +19,16 @@ export default {
         'sans': ['Inter', 'sans-serif'],
       },
       colors: {
-        'paper': '#FDFCFA',
-        'ink': '#1A1A1A',
-        'ink-light': '#4A4A4A',
-        'ink-lighter': '#8A8A8A',
-        'ink-whisper': '#B8B8B8',
-        'line': '#E8E6E3',
-        'accent': 'var(--color-accent)',
-        'accent-hover': 'var(--color-accent-hover)',
-        'accent-muted': 'var(--color-accent-muted)',
+        'paper': cv('--color-paper'),
+        'surface': cv('--color-surface'),
+        'ink': cv('--color-ink'),
+        'ink-light': cv('--color-ink-light'),
+        'ink-lighter': cv('--color-ink-lighter'),
+        'ink-whisper': cv('--color-ink-whisper'),
+        'line': cv('--color-line'),
+        'accent': cv('--color-accent'),
+        'accent-hover': cv('--color-accent-hover'),
+        'accent-muted': cv('--color-accent-muted'),
       },
       spacing: {
         '18': '4.5rem',

@@ -1,17 +1,41 @@
 <template>
   <div class="browse-page">
     <!-- Hero Section -->
-    <div class="w-full px-4 sm:px-6 md:px-8 py-12 sm:py-16 md:py-24 bg-gradient-to-b from-paper to-gray-50">
-      <div class="max-w-4xl mx-auto text-center">
-        <p class="text-xs sm:text-sm tracking-widest uppercase font-sans text-ink-lighter mb-4 sm:mb-6">
-          Browse at your pace
-        </p>
-        <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-light tracking-tight mb-6 sm:mb-8 leading-tight">
-          Recent Essays
-        </h1>
-        <p class="text-base sm:text-lg md:text-xl font-light text-ink-light leading-relaxed max-w-2xl mx-auto px-4">
-          Titles that read like thoughts, not headlines. No urgency, no pressure—just ideas waiting to be explored.
-        </p>
+    <div class="w-full px-4 sm:px-6 md:px-8 py-12 sm:py-16 md:py-20 bg-gradient-to-b from-paper to-surface">
+      <div class="max-w-6xl mx-auto">
+        <div class="flex flex-col lg:flex-row gap-8 lg:gap-16 items-start">
+          <div class="flex-1 text-center lg:text-left">
+            <p class="text-xs sm:text-sm tracking-widest uppercase font-sans text-ink-lighter mb-4 sm:mb-6">
+              Browse at your pace
+            </p>
+            <h1 class="text-3xl sm:text-4xl md:text-5xl font-light tracking-tight mb-6 sm:mb-8 leading-tight">
+              Recent Essays
+            </h1>
+            <p class="text-base sm:text-lg font-light text-ink-light leading-relaxed max-w-xl mx-auto lg:mx-0">
+              Titles that read like thoughts, not headlines. No urgency, no pressure—just ideas waiting to be explored.
+            </p>
+          </div>
+          <div v-if="featuredWriting" class="w-full lg:w-96 lg:flex-shrink-0">
+            <router-link
+              :to="`/read/${featuredWriting.id}`"
+              class="block border border-line bg-paper p-6 sm:p-8 hover:border-ink-lighter transition-colors duration-slow group"
+            >
+              <span class="text-xs tracking-widest uppercase font-sans text-accent block mb-4">Latest Essay</span>
+              <h3 class="text-xl sm:text-2xl font-light tracking-tight mb-3 leading-snug group-hover:text-ink-light transition-colors duration-slow">
+                {{ featuredWriting.title }}
+              </h3>
+              <p class="text-sm font-light text-ink-light leading-relaxed mb-4 line-clamp-2">
+                {{ featuredPreview }}
+              </p>
+              <span class="inline-flex items-center gap-2 text-sm font-sans text-ink-lighter group-hover:text-ink transition-colors duration-slow">
+                Read essay
+                <svg class="w-3.5 h-3.5 transition-transform duration-slow group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+              </span>
+            </router-link>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -20,7 +44,9 @@
       :filters="filters"
       :current-filter="filter"
       :count="filteredWritings.length"
+      :current-sort="sort"
       @filter-change="handleFilterChange"
+      @sort-change="handleSortChange"
     />
 
     <!-- Essay List -->
@@ -30,8 +56,8 @@
           <p class="text-lg font-light text-ink-light">Loading...</p>
         </div>
         
-        <div v-else-if="error" class="bg-red-50 border border-red-200 rounded-md p-8 mb-6">
-          <p class="text-red-800">{{ error }}</p>
+        <div v-else-if="error" class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md p-8 mb-6">
+          <p class="text-red-800 dark:text-red-300">{{ error }}</p>
         </div>
         
         <div v-else-if="filteredWritings.length === 0" class="text-center py-16">
@@ -69,7 +95,7 @@
     </div>
 
     <!-- Load More Section -->
-    <div v-if="!loading && filteredWritings.length > 0 && filteredWritings.length < writings.length" class="w-full px-4 sm:px-6 md:px-8 py-12 sm:py-16 md:py-20 bg-gradient-to-b from-paper to-gray-50">
+    <div v-if="!loading && filteredWritings.length > 0 && filteredWritings.length < writings.length" class="w-full px-4 sm:px-6 md:px-8 py-12 sm:py-16 md:py-20 bg-gradient-to-b from-paper to-surface">
       <div class="max-w-4xl mx-auto text-center">
         <p class="text-sm sm:text-base font-light text-ink-lighter mb-6 sm:mb-8">
           Showing {{ filteredWritings.length }} of {{ writings.length }} essays
@@ -87,7 +113,7 @@
     </div>
 
     <!-- Collection Navigation -->
-    <div v-if="themes.length > 0" class="w-full px-4 sm:px-6 md:px-8 py-12 sm:py-16 md:py-24 bg-gradient-to-b from-paper to-gray-50">
+    <div v-if="themes.length > 0" class="w-full px-4 sm:px-6 md:px-8 py-12 sm:py-16 md:py-24 bg-gradient-to-b from-paper to-surface">
       <div class="max-w-6xl mx-auto">
         <div class="text-center mb-8 sm:mb-12 md:mb-16">
           <h2 class="text-2xl sm:text-3xl md:text-4xl font-light mb-4 sm:mb-6 tracking-tight">Or browse by theme</h2>
@@ -107,7 +133,7 @@
               :description="getThemeDescription(theme)"
               :count="getThemeCount(theme.id)"
               :tags="[]"
-              :route="`/themes?filter=${theme.id}`"
+              :route="`/themes/${theme.id}`"
             />
           </div>
         </div>
@@ -125,6 +151,7 @@ import type { Theme } from '../domain/Theme'
 import WritingCard from '../components/writing/WritingCard.vue'
 import FilterNavigation from '../components/browse/FilterNavigation.vue'
 import CollectionCard from '../components/browse/CollectionCard.vue'
+import { markdownToText } from '../utils/markdown'
 import type { ApiResponse } from '@shared/ApiResponses'
 
 const { user, isAuthenticated } = useAuth()
@@ -134,6 +161,7 @@ const themes = ref<Theme[]>([])
 const loading = ref(true)
 const error = ref<string | null>(null)
 const filter = ref<'all' | 'mine' | 'shared'>('all')
+const sort = ref<string>('newest')
 const displayedCount = ref(6)
 
 const filters = [
@@ -151,11 +179,32 @@ const filteredWritings = computed(() => {
     filtered = filtered.filter(w => w.visibility === 'shared' || w.visibility === 'public')
   }
 
+  filtered = [...filtered].sort((a, b) => {
+    switch (sort.value) {
+      case 'oldest':
+        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+      case 'updated':
+        return new Date(b.updatedAt || b.createdAt).getTime() - new Date(a.updatedAt || a.createdAt).getTime()
+      default:
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    }
+  })
+
   return filtered.slice(0, displayedCount.value)
 })
 
 const featuredThemes = computed(() => {
   return themes.value.slice(0, 3)
+})
+
+const featuredWriting = computed(() => {
+  return writings.value.length > 0 ? writings.value[0] : null
+})
+
+const featuredPreview = computed(() => {
+  if (!featuredWriting.value) return ''
+  const text = markdownToText(featuredWriting.value.body)
+  return text.substring(0, 120) + (text.length > 120 ? '...' : '')
 })
 
 const getThemesForWriting = (writing: WritingBlock): Theme[] => {
@@ -173,7 +222,11 @@ const getThemeDescription = (theme: Theme): string => {
 
 const handleFilterChange = (value: string) => {
   filter.value = value as 'all' | 'mine' | 'shared'
-  displayedCount.value = 6 // Reset display count on filter change
+  displayedCount.value = 6
+}
+
+const handleSortChange = (value: string) => {
+  sort.value = value
 }
 
 const loadMore = () => {
