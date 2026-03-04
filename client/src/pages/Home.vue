@@ -89,6 +89,7 @@
             :writing="writing"
             :themes="getThemesForWriting(writing)"
             :show-image="index < 3 || !!writing.coverImageUrl"
+            @deleted="handleWritingDeleted"
           />
         </div>
       </div>
@@ -231,6 +232,10 @@ const handleSortChange = (value: string) => {
 
 const loadMore = () => {
   displayedCount.value += 6
+}
+
+const handleWritingDeleted = (writingId: string) => {
+  writings.value = writings.value.filter(w => w.id !== writingId)
 }
 
 const loadWritings = async () => {

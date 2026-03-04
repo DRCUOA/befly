@@ -9,12 +9,12 @@ import rateLimit from 'express-rate-limit'
 // More lenient limits to allow legitimate retries while still preventing brute force attacks
 const authRateLimit = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 20, // Limit each IP to 20 requests per 15 minutes (allows for retries and multiple attempts)
+  max: 100, // Limit each IP to 100 requests per 15 minutes
   message: 'Too many authentication attempts, please try again later.',
   standardHeaders: true,
   legacyHeaders: false,
-  skipSuccessfulRequests: false, // Count all requests, including successful ones
-  skipFailedRequests: false // Count failed requests too
+  skipSuccessfulRequests: false,
+  skipFailedRequests: false
 })
 
 const router = Router()

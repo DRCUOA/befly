@@ -154,7 +154,7 @@
           {{ submitting ? (isEditing ? 'Updating...' : 'Publishing...') : (isEditing ? 'Update' : 'Publish') }}
         </button>
         <router-link
-          to="/home"
+          :to="navOrigin"
           class="min-h-[44px] inline-flex items-center justify-center px-8 py-4 border border-line rounded-md text-ink-lighter hover:text-ink hover:bg-line text-center text-sm font-sans"
         >
           Cancel
@@ -238,7 +238,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount, computed, watch, nextTick } from 'vue'
-import { useRouter, useRoute, onBeforeRouteLeave } from 'vue-router'
+import { useRoute, onBeforeRouteLeave } from 'vue-router'
 import { api } from '../api/client'
 import type { Theme } from '../domain/Theme'
 import type { WritingBlock } from '../domain/WritingBlock'
@@ -256,9 +256,11 @@ import MetadataPanel from '../components/writing/MetadataPanel.vue'
 import CoverImageCropModal from '../components/writing/CoverImageCropModal.vue'
 import { useBreathingCaret } from '../composables/useBreathingCaret'
 import { countWordsInMarkdown } from '../utils/markdown'
+import { useNavigationOrigin } from '../stores/navigation'
 
-const router = useRouter()
 const route = useRoute()
+
+const { origin: navOrigin, navigateBack } = useNavigationOrigin('/home')
 
 const writingId = computed(() => route.params.id as string | undefined)
 const isEditing = computed(() => !!writingId.value)
@@ -570,7 +572,7 @@ const doSubmit = async () => {
 
     draft.clearDraft()
     setFormState(form.value)
-    router.push('/home')
+    navigateBack()
   } catch (err) {
     error.value = err instanceof Error ? err.message : (isEditing.value ? 'Failed to update writing' : 'Failed to publish writing')
   } finally {

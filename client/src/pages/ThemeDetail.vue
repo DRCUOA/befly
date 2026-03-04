@@ -50,6 +50,7 @@
             :writing="writing"
             :themes="getThemesForWriting(writing)"
             :show-image="index < 3 || !!writing.coverImageUrl"
+            @deleted="handleWritingDeleted"
           />
         </div>
       </div>
@@ -86,6 +87,10 @@ const themeEssays = computed(() => {
 
 const getThemesForWriting = (writing: WritingBlock): Theme[] => {
   return themes.value.filter(t => writing.themeIds.includes(t.id))
+}
+
+const handleWritingDeleted = (writingId: string) => {
+  writings.value = writings.value.filter(w => w.id !== writingId)
 }
 
 const loadData = async () => {

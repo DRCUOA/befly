@@ -98,6 +98,10 @@ interface Props {
   showImage?: boolean
 }
 
+const emit = defineEmits<{
+  deleted: [writingId: string]
+}>()
+
 const props = withDefaults(defineProps<Props>(), {
   showImage: false,
 })
@@ -161,8 +165,7 @@ const handleDelete = async () => {
   try {
     deleting.value = true
     await api.delete(`/writing/${props.writing.id}`)
-    // Emit event to parent to refresh list
-    window.location.reload()
+    emit('deleted', props.writing.id)
   } catch (err) {
     alert(err instanceof Error ? err.message : 'Failed to delete writing')
   } finally {

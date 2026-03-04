@@ -1,7 +1,7 @@
 <template>
   <ReadingLayout
-    back-route="/home"
-    back-label="Back to essays"
+    :back-route="navOrigin"
+    :back-label="originLabel"
   >
     <div v-if="loading" class="text-center py-32">
       <p class="text-lg font-light text-ink-light">Loading...</p>
@@ -11,10 +11,10 @@
       <div class="bg-red-50 border border-red-200 rounded-md p-8 mb-6">
         <p class="text-red-800 mb-4">{{ error }}</p>
           <router-link
-            to="/home"
+            :to="navOrigin"
             class="text-sm text-ink hover:text-ink-light"
           >
-            ← Back to Essays
+            ← {{ originLabel }}
           </router-link>
       </div>
     </div>
@@ -116,6 +116,7 @@ import { useRoute } from 'vue-router'
 import { api } from '../api/client'
 import { useAuth } from '../stores/auth'
 import { useReadingStore } from '../stores/reading'
+import { useNavigationOrigin } from '../stores/navigation'
 import ReadingLayout from '../layouts/ReadingLayout.vue'
 import MarkdownRenderer from '../components/writing/MarkdownRenderer.vue'
 import ThemeTag from '../components/writing/ThemeTag.vue'
@@ -130,6 +131,7 @@ import { markdownToText } from '../utils/markdown'
 const route = useRoute()
 const { isAuthenticated } = useAuth()
 const readingStore = useReadingStore()
+const { origin: navOrigin, originLabel } = useNavigationOrigin('/home')
 
 const writing = ref<WritingBlock | null>(null)
 const themes = ref<Theme[]>([])
