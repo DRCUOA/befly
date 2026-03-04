@@ -6,6 +6,7 @@ import Read from '../pages/Read.vue'
 import Write from '../pages/Write.vue'
 import Themes from '../pages/Themes.vue'
 import ThemeForm from '../pages/ThemeForm.vue'
+import ThemeDetail from '../pages/ThemeDetail.vue'
 import Profile from '../pages/Profile.vue'
 import SignIn from '../pages/SignIn.vue'
 import SignUp from '../pages/SignUp.vue'
@@ -60,6 +61,11 @@ const router = createRouter({
       name: 'EditTheme',
       component: ThemeForm,
       meta: { requiresAuth: true }
+    },
+    {
+      path: '/themes/:id',
+      name: 'ThemeDetail',
+      component: ThemeDetail
     },
     {
       path: '/profile',

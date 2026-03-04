@@ -7,7 +7,9 @@
     <title>Rambulations</title>
   </head>
   <body>
-    
+    <script>
+      (function(){var s=localStorage.getItem('rambulations-theme');if(s==='dark'||(s!=='light'&&window.matchMedia('(prefers-color-scheme:dark)').matches))document.documentElement.classList.add('dark')})()
+    </script>
     <div id="app"></div>
     <script type="module" src="/src/main.ts"></script>
   </body>

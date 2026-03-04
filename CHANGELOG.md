@@ -5,6 +5,28 @@ All notable changes to the Rambulations writing platform are documented in this 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.8] - 2026-03-04
+
+### Added
+- **Dark mode** — class-based dark mode with warm literary palette; respects system `prefers-color-scheme`; toggle in nav; preference persisted in `localStorage`; FOUC prevention via inline script in `index.html`
+- **Theme detail page** (`/themes/:id`) — click a theme card to view all essays associated with that theme
+- **`useTheme` composable** (`client/src/composables/useTheme.ts`) — centralized theme state management with system preference detection and manual override
+- **Landing page CTAs** — replaced minimal "ENTER" link with clear primary/secondary call-to-action buttons ("Start Reading", "Read Latest") and a latest-essay teaser below the fold
+- **Essays index hero** — featured/continue-reading card in the hero section with purpose-driven layout
+- **Essay cards** — enhanced with title, excerpt, date/reading time, theme pills, and hover affordance (left accent border + subtle lift)
+- **Filter toolbar** — compact toolbar with inline essay count, sort dropdown (Newest/Oldest), and tab filters
+- **Accessibility** — global `focus-visible` ring, `prefers-reduced-motion` nuclear override, keyboard-navigable theme cards (`role="link"`, `tabindex="0"`)
+
+### Changed
+- Navigation active states improved with `route.name`-based dynamic class binding; Admin link de-emphasized (`text-xs`, `text-ink-whisper`)
+- CSS color system converted to space-separated RGB channels for Tailwind opacity modifier compatibility
+- Tailwind config uses function-based `cv()` helper for custom color definitions
+- All `to-gray-50` gradient stops replaced with semantic `to-surface` token
+- Signup button colors replaced with semantic `hover:bg-line text-ink-lighter`
+- Version bump 0.5.7 → 0.5.8
+
+---
+
 ## [0.5.7] - 2026-02-23
 
 ### Changed
@@ -340,6 +362,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Database migrations (001-008): users, writing_blocks, themes, appreciations, auth/visibility, roles, reaction types, comments
 - Development setup documentation and quick-start guide
 
+[0.5.8]: https://github.com/DRCUOA/befly/compare/v0.5.7...v0.5.8
+[0.5.7]: https://github.com/DRCUOA/befly/compare/v0.5.6...v0.5.7
 [0.5.6]: https://github.com/DRCUOA/befly/compare/v0.5.5...v0.5.6
 [0.5.5]: https://github.com/DRCUOA/befly/compare/v0.5.4...v0.5.5
 [0.5.4]: https://github.com/DRCUOA/befly/compare/v0.5.3...v0.5.4

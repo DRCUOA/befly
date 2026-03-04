@@ -172,8 +172,15 @@ const handleDelete = async () => {
 </script>
 
 <style scoped>
-.essay-card:hover {
-  transform: translateY(-4px);
+.essay-card {
+  border-left: 3px solid transparent;
+  transition: transform 300ms ease, border-left-color 300ms ease;
+}
+
+.essay-card:hover,
+.essay-card:focus-within {
+  transform: translateY(-2px);
+  border-left-color: rgb(var(--color-accent));
 }
 
 .essay-card.read-marker {
@@ -190,11 +197,21 @@ const handleDelete = async () => {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #B8B8B8;
+  background: rgb(var(--color-ink-whisper));
   opacity: 0;
 }
 
 .essay-card.read-marker:hover::before {
   opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .essay-card {
+    transition: none;
+  }
+  .essay-card:hover,
+  .essay-card:focus-within {
+    transform: none;
+  }
 }
 </style>

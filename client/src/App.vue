@@ -7,12 +7,14 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
+import { useTheme } from './composables/useTheme'
 import DefaultLayout from './layouts/DefaultLayout.vue'
 import MinimalLayout from './layouts/MinimalLayout.vue'
 import PassThroughLayout from './layouts/PassThroughLayout.vue'
 import WriteLayout from './layouts/WriteLayout.vue'
 
 const route = useRoute()
+useTheme()
 
 const layout = computed(() => {
   // Reading pages handle their own layout (ReadingLayout is included in Read.vue)
