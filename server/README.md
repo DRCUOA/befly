@@ -37,6 +37,11 @@ Run migrations using the scripts in the root `scripts/` directory:
 npm run migrate
 ```
 
+## Configuration
+
+- **Rate limits**: General API 1000 req/15 min per IP; auth endpoints 100 req/15 min
+- **Image upload**: Max 10MB (JPEG, PNG, GIF, WebP)
+
 ## Architecture
 
 - **Routes** → **Controllers** → **Services** → **Repositories** → **PostgreSQL**

@@ -94,10 +94,11 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { useAuth } from '../stores/auth'
 
 const router = useRouter()
+const route = useRoute()
 const { signup, isLoading, error: authError } = useAuth()
 
 const form = ref({
@@ -146,7 +147,8 @@ const handleSubmit = async () => {
   try {
     submitting.value = true
     await signup(form.value.email, form.value.password, form.value.displayName)
-    router.push('/home')
+    const redirect = (route.query.redirect as string) || '/home'
+    router.push(redirect)
   } catch (err) {
     // Error handled by auth store
   } finally {

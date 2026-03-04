@@ -50,7 +50,7 @@
           {{ submitting ? (isEditing ? 'Updating...' : 'Creating...') : (isEditing ? 'Update' : 'Create') }}
         </button>
         <router-link
-          to="/themes"
+          :to="navOrigin"
           class="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
         >
           Cancel
@@ -62,13 +62,14 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
+import { useRoute } from 'vue-router'
 import { api } from '../api/client'
 import type { Theme } from '../domain/Theme'
 import type { ApiResponse } from '@shared/ApiResponses'
+import { useNavigationOrigin } from '../stores/navigation'
 
-const router = useRouter()
 const route = useRoute()
+const { origin: navOrigin, navigateBack } = useNavigationOrigin('/themes')
 
 const themeId = computed(() => route.params.id as string | undefined)
 const isEditing = computed(() => !!themeId.value)
@@ -126,7 +127,7 @@ const handleSubmit = async () => {
       })
     }
     
-    router.push('/themes')
+    navigateBack()
   } catch (err) {
     error.value = err instanceof Error ? err.message : (isEditing.value ? 'Failed to update theme' : 'Failed to create theme')
   } finally {

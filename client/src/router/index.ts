@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuth } from '../stores/auth'
+import { isTrackedRoute, setOriginForRoute } from '../stores/navigation'
 import Home from '../pages/Home.vue'
 import Landing from '../pages/Landing.vue'
 import Read from '../pages/Read.vue'
@@ -106,7 +107,14 @@ const router = createRouter({
 })
 
 // Route guards
-router.beforeEach(async (to, _from, next) => {
+router.beforeEach(async (to, from, next) => {
+  // Track navigation origin: when entering a tracked route from a different
+  // route, remember where the user came from so we can return them there later.
+  // Skips page refreshes (from.name is undefined) to preserve existing origin.
+  if (from.name && to.name !== from.name && isTrackedRoute(to.name as string)) {
+    setOriginForRoute(to.name as string, from.fullPath)
+  }
+
   const { isAuthenticated, isAdmin, fetchCurrentUser } = useAuth()
   
   // Fetch current user if not already loaded

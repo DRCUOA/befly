@@ -44,7 +44,7 @@ const hasStaticBuild = fs.existsSync(path.join(staticDir, 'index.html'))
 // More lenient than auth endpoints to allow normal usage
 const generalRateLimit = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per 15 minutes
+  max: 1000, // Limit each IP to 1000 requests per 15 minutes
   message: 'Too many requests from this IP, please try again later.',
   standardHeaders: true,
   legacyHeaders: false,

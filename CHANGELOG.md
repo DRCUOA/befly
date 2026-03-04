@@ -5,6 +5,20 @@ All notable changes to the Rambulations writing platform are documented in this 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.9] - 2026-03-04
+
+### Added
+- **Session-based navigation origin** — `useNavigationOrigin` composable tracks where users came from; after publish/edit essay, create/edit theme, or sign in, users are returned to their origin (e.g. theme detail, read page, home)
+- Router guard records origin in `sessionStorage` when entering Read, Write, ThemeForm, ThemeDetail; SignIn/SignUp honor `?redirect=` query param
+
+### Changed
+- **Rate limits** — general API: 100 → 1000 req/15 min; auth: 20 → 100 req/15 min
+- **Image upload limit** — 5MB → 10MB (multer + MetadataPanel copy)
+- WritingCard delete emits `deleted` event instead of full page reload; Home and ThemeDetail remove item in-place
+- Version bump 0.5.8 → 0.5.9
+
+---
+
 ## [0.5.8] - 2026-03-04
 
 ### Added
@@ -362,6 +376,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Database migrations (001-008): users, writing_blocks, themes, appreciations, auth/visibility, roles, reaction types, comments
 - Development setup documentation and quick-start guide
 
+[0.5.9]: https://github.com/DRCUOA/befly/compare/v0.5.8...v0.5.9
 [0.5.8]: https://github.com/DRCUOA/befly/compare/v0.5.7...v0.5.8
 [0.5.7]: https://github.com/DRCUOA/befly/compare/v0.5.6...v0.5.7
 [0.5.6]: https://github.com/DRCUOA/befly/compare/v0.5.5...v0.5.6
