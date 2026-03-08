@@ -8,3 +8,14 @@ export interface Appreciation {
   reactionType: ReactionType // Type of reaction/emotion
   createdAt: string
 }
+
+export interface ReactionCount {
+  type: ReactionType
+  count: number
+}
+
+export interface WritingReactionSummary {
+  writingId: string
+  total: number
+  reactions: ReactionCount[]
+}

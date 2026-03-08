@@ -14,6 +14,17 @@ export const appreciationController = {
     res.json({ data: appreciations })
   },
 
+  async getSummaries(req: Request, res: Response) {
+    const { writingIds } = req.body
+    if (!Array.isArray(writingIds) || writingIds.length === 0) {
+      res.json({ data: [] })
+      return
+    }
+    const capped = writingIds.slice(0, 100)
+    const summaries = await appreciationService.getSummaries(capped)
+    res.json({ data: summaries })
+  },
+
   async create(req: Request, res: Response) {
     const userId = (req as any).userId
     if (!userId) {

@@ -89,6 +89,7 @@
             :writing="writing"
             :themes="getThemesForWriting(writing)"
             :show-image="index < 3 || !!writing.coverImageUrl"
+            :reaction-summary="getReactionSummary(writing.id)"
             @deleted="handleWritingDeleted"
           />
         </div>
@@ -149,6 +150,7 @@ import { api } from '../api/client'
 import { useAuth } from '../stores/auth'
 import type { WritingBlock } from '../domain/WritingBlock'
 import type { Theme } from '../domain/Theme'
+import type { WritingReactionSummary } from '../domain/Appreciation'
 import WritingCard from '../components/writing/WritingCard.vue'
 import FilterNavigation from '../components/browse/FilterNavigation.vue'
 import CollectionCard from '../components/browse/CollectionCard.vue'
@@ -159,6 +161,7 @@ const { user, isAuthenticated } = useAuth()
 
 const writings = ref<WritingBlock[]>([])
 const themes = ref<Theme[]>([])
+const reactionSummaries = ref<Map<string, WritingReactionSummary>>(new Map())
 const loading = ref(true)
 const error = ref<string | null>(null)
 const filter = ref<'all' | 'mine' | 'shared'>('all')
@@ -212,6 +215,8 @@ const getThemesForWriting = (writing: WritingBlock): Theme[] => {
   return themes.value.filter(theme => writing.themeIds.includes(theme.id))
 }
 
+const getReactionSummary = (writingId: string) => reactionSummaries.value.get(writingId)
+
 const getThemeCount = (themeId: string): number => {
   return writings.value.filter(w => w.themeIds.includes(themeId)).length
 }
@@ -260,10 +265,27 @@ const loadThemes = async () => {
   }
 }
 
+const loadReactionSummaries = async () => {
+  if (writings.value.length === 0) return
+  try {
+    const writingIds = writings.value.map(w => w.id)
+    const response = await api.post<ApiResponse<WritingReactionSummary[]>>(
+      '/appreciations/summaries',
+      { writingIds }
+    )
+    const map = new Map<string, WritingReactionSummary>()
+    for (const s of response.data) {
+      map.set(s.writingId, s)
+    }
+    reactionSummaries.value = map
+  } catch (err) {
+    console.error('Failed to load reaction summaries:', err)
+  }
+}
 
 onMounted(async () => {
-  // Load content - it will be visible immediately
   await Promise.all([loadWritings(), loadThemes()])
+  loadReactionSummaries()
 })
 </script>
 
