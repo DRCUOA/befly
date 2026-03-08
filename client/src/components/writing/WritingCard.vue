@@ -34,6 +34,10 @@
           <span>{{ wordCount }} words</span>
           <span>·</span>
           <span>{{ readTime }} min read</span>
+          <template v-if="reactionSummary && reactionSummary.total > 0">
+            <span>·</span>
+            <ReactionSummary :summary="reactionSummary" />
+          </template>
         </div>
       </div>
       <div
@@ -89,13 +93,16 @@ import { useAuth } from '../../stores/auth'
 import { useReadingStore } from '../../stores/reading'
 import type { WritingBlock } from '../../domain/WritingBlock'
 import type { Theme } from '../../domain/Theme'
+import type { WritingReactionSummary } from '../../domain/Appreciation'
 import ThemeTag from './ThemeTag.vue'
+import ReactionSummary from './ReactionSummary.vue'
 import { markdownToText } from '../../utils/markdown'
 
 interface Props {
   writing: WritingBlock
   themes: Theme[]
   showImage?: boolean
+  reactionSummary?: WritingReactionSummary
 }
 
 const emit = defineEmits<{

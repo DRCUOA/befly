@@ -50,6 +50,7 @@
             :writing="writing"
             :themes="getThemesForWriting(writing)"
             :show-image="index < 3 || !!writing.coverImageUrl"
+            :reaction-summary="getReactionSummary(writing.id)"
             @deleted="handleWritingDeleted"
           />
         </div>
@@ -64,6 +65,7 @@ import { useRoute } from 'vue-router'
 import { api } from '../api/client'
 import type { WritingBlock } from '../domain/WritingBlock'
 import type { Theme } from '../domain/Theme'
+import type { WritingReactionSummary } from '../domain/Appreciation'
 import WritingCard from '../components/writing/WritingCard.vue'
 import type { ApiResponse } from '@shared/ApiResponses'
 
@@ -71,6 +73,7 @@ const route = useRoute()
 
 const themes = ref<Theme[]>([])
 const writings = ref<WritingBlock[]>([])
+const reactionSummaries = ref<Map<string, WritingReactionSummary>>(new Map())
 const loading = ref(true)
 
 const theme = computed(() => {
@@ -89,8 +92,28 @@ const getThemesForWriting = (writing: WritingBlock): Theme[] => {
   return themes.value.filter(t => writing.themeIds.includes(t.id))
 }
 
+const getReactionSummary = (writingId: string) => reactionSummaries.value.get(writingId)
+
 const handleWritingDeleted = (writingId: string) => {
   writings.value = writings.value.filter(w => w.id !== writingId)
+}
+
+const loadReactionSummaries = async () => {
+  if (writings.value.length === 0) return
+  try {
+    const writingIds = writings.value.map(w => w.id)
+    const response = await api.post<ApiResponse<WritingReactionSummary[]>>(
+      '/appreciations/summaries',
+      { writingIds }
+    )
+    const map = new Map<string, WritingReactionSummary>()
+    for (const s of response.data) {
+      map.set(s.writingId, s)
+    }
+    reactionSummaries.value = map
+  } catch (err) {
+    console.error('Failed to load reaction summaries:', err)
+  }
 }
 
 const loadData = async () => {
@@ -102,6 +125,7 @@ const loadData = async () => {
     ])
     themes.value = themesRes.data
     writings.value = writingsRes.data
+    loadReactionSummaries()
   } catch (err) {
     console.error('Failed to load theme data:', err)
   } finally {

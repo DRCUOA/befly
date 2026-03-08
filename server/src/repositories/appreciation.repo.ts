@@ -1,5 +1,5 @@
 import { pool } from '../config/db.js'
-import { Appreciation } from '../models/Appreciation.js'
+import { Appreciation, WritingReactionSummary } from '../models/Appreciation.js'
 import { NotFoundError, ValidationError } from '../utils/errors.js'
 import { getOffendingLocation, logger } from '../utils/logger.js'
 
@@ -307,6 +307,57 @@ export const appreciationRepo = {
       reactionType: hasReactionType ? (result.rows[0].reactionType || 'like') : 'like',
       userDisplayName: userResult.rows[0]?.userDisplayName || null
     }
+  },
+
+  async getSummariesForWritings(writingIds: string[]): Promise<WritingReactionSummary[]> {
+    if (writingIds.length === 0) return []
+
+    let hasReactionType = true
+    try {
+      await pool.query('SELECT reaction_type FROM appreciations LIMIT 1')
+    } catch (error: any) {
+      if (error.code === '42703') hasReactionType = false
+      else throw error
+    }
+
+    const placeholders = writingIds.map((_, i) => `$${i + 1}`).join(', ')
+
+    let query: string
+    if (hasReactionType) {
+      query = `
+        SELECT writing_id as "writingId",
+               COALESCE(reaction_type, 'like') as "reactionType",
+               COUNT(*)::int as count
+        FROM appreciations
+        WHERE writing_id IN (${placeholders})
+        GROUP BY writing_id, COALESCE(reaction_type, 'like')
+        ORDER BY count DESC
+      `
+    } else {
+      query = `
+        SELECT writing_id as "writingId",
+               'like' as "reactionType",
+               COUNT(*)::int as count
+        FROM appreciations
+        WHERE writing_id IN (${placeholders})
+        GROUP BY writing_id
+      `
+    }
+
+    const result = await pool.query(query, writingIds)
+
+    const summaryMap = new Map<string, WritingReactionSummary>()
+    for (const id of writingIds) {
+      summaryMap.set(id, { writingId: id, total: 0, reactions: [] })
+    }
+
+    for (const row of result.rows) {
+      const summary = summaryMap.get(row.writingId)!
+      summary.reactions.push({ type: row.reactionType, count: row.count })
+      summary.total += row.count
+    }
+
+    return Array.from(summaryMap.values())
   },
 
   async delete(writingId: string, userId: string, reactionType?: string): Promise<void> {

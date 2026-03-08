@@ -5,8 +5,9 @@ import { asyncHandler } from '../utils/asyncHandler.js'
 
 const router = Router()
 
-// Public route (anyone can see appreciations)
+// Public routes
 router.get('/writing/:writingId', optionalAuthMiddleware, asyncHandler(appreciationController.getByWritingId))
+router.post('/summaries', asyncHandler(appreciationController.getSummaries))
 
 // Protected routes require authentication
 router.post('/writing/:writingId', authMiddleware, asyncHandler(appreciationController.create))
