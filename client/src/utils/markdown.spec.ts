@@ -7,6 +7,8 @@ import {
   countWordsInMarkdown,
   markdownToText,
   bodyMarkdownAfterExcerptPrefix,
+  excerptPlainCutLength,
+  readingExcerptPlainCutLength,
   READING_EXCERPT_PLAIN_LENGTH
 } from './markdown'
 
