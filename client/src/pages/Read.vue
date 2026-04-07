@@ -65,8 +65,11 @@
         </div>
       </div>
 
-      <!-- Essay Content -->
-      <div class="w-full px-4 sm:px-6 md:px-8 py-8 sm:py-12 md:py-16 bg-paper">
+      <!-- Essay Content (continues after the excerpt; no duplicate of the opening lines) -->
+      <div
+        v-if="paragraphs.length > 0"
+        class="w-full px-4 sm:px-6 md:px-8 py-8 sm:py-12 md:py-16 bg-paper"
+      >
         <div class="max-w-3xl mx-auto essay-content text-base sm:text-lg md:text-xl leading-relaxed">
           <div
             v-for="(paragraph, index) in paragraphs"
@@ -126,7 +129,11 @@ import type { WritingBlock } from '../domain/WritingBlock'
 import type { Theme } from '../domain/Theme'
 import type { Appreciation } from '../domain/Appreciation'
 import type { ApiResponse } from '@shared/ApiResponses'
-import { markdownToText } from '../utils/markdown'
+import {
+  markdownToText,
+  bodyMarkdownAfterExcerptPrefix,
+  READING_EXCERPT_PLAIN_LENGTH
+} from '../utils/markdown'
 
 const route = useRoute()
 const { isAuthenticated } = useAuth()
@@ -139,12 +146,11 @@ const appreciations = ref<Appreciation[]>([])
 const loading = ref(true)
 const error = ref<string | null>(null)
 
-// Split content into paragraphs for progressive reveal
+// Split content into paragraphs for progressive reveal (body only — excerpt covers the opening)
 const paragraphs = computed(() => {
   if (!writing.value) return []
-  const text = writing.value.body
-  // Split by double newlines (paragraph breaks)
-  return text.split(/\n\n+/).filter(p => p.trim().length > 0)
+  const afterExcerpt = bodyMarkdownAfterExcerptPrefix(writing.value.body)
+  return afterExcerpt.split(/\n\n+/).filter(p => p.trim().length > 0)
 })
 
 const wordCount = computed(() => {
@@ -161,7 +167,8 @@ const readTime = computed(() => {
 const excerpt = computed(() => {
   if (!writing.value) return ''
   const text = markdownToText(writing.value.body)
-  return text.substring(0, 200) + '...'
+  if (text.length <= READING_EXCERPT_PLAIN_LENGTH) return text
+  return text.substring(0, READING_EXCERPT_PLAIN_LENGTH) + '...'
 })
 
 const formattedDate = computed(() => {
