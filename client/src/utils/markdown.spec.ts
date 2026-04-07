@@ -7,6 +7,8 @@ import {
   countWordsInMarkdown,
   markdownToText,
   bodyMarkdownAfterExcerptPrefix,
+  excerptPlainCutLength,
+  readingExcerptPlainCutLength,
   READING_EXCERPT_PLAIN_LENGTH
 } from './markdown'
 
@@ -75,25 +77,45 @@ describe('countWordsInMarkdown', () => {
   })
 })
 
+describe('excerptPlainCutLength', () => {
+  it('snaps to the nearer sentence boundary when the hint falls mid-sentence', () => {
+    const plain =
+      'First sentence is short. Second is short. ' + 'word '.repeat(200)
+    const hint = 40
+    const cut = excerptPlainCutLength(plain, hint)
+    expect(cut).toBeGreaterThan(hint)
+    expect(plain.substring(0, cut).trimEnd().endsWith('short.')).toBe(true)
+  })
+
+  it('uses the last sentence end at or before the hint when it is closer than the next', () => {
+    const plain = 'One. Two. Three. ' + 'x'.repeat(300)
+    const cut = excerptPlainCutLength(plain, READING_EXCERPT_PLAIN_LENGTH)
+    expect(plain.substring(0, cut).trimEnd().endsWith('Three.')).toBe(true)
+  })
+})
+
 describe('bodyMarkdownAfterExcerptPrefix', () => {
   it('returns empty when plain text fits in excerpt length', () => {
     const md = 'Short piece.'
-    expect(bodyMarkdownAfterExcerptPrefix(md, READING_EXCERPT_PLAIN_LENGTH)).toBe('')
+    expect(bodyMarkdownAfterExcerptPrefix(md)).toBe('')
   })
 
   it('continues body after excerpt without repeating opening lines', () => {
     const opening = 'A family.\n\nA group.\n\nA circle of friends.\n\n'
     const rest = 'A rabbit warren.\n\nA nest.\n\nA hive.'
     const md = opening + rest
-    const excerptPlain = markdownToText(md).substring(0, READING_EXCERPT_PLAIN_LENGTH)
+    const fullPlain = markdownToText(md)
+    const cut = readingExcerptPlainCutLength(md)
+    const excerptPlain = fullPlain.substring(0, cut)
     const bodyPlain = markdownToText(bodyMarkdownAfterExcerptPrefix(md) ?? '')
-    expect(markdownToText(md)).toBe(excerptPlain + bodyPlain)
+    expect(fullPlain).toBe(excerptPlain + bodyPlain)
   })
 
   it('handles markdown syntax before the split', () => {
     const md = '**Hello** ' + 'word '.repeat(120)
     const full = markdownToText(md)
+    const cut = excerptPlainCutLength(full)
     const after = bodyMarkdownAfterExcerptPrefix(md)
-    expect(full.substring(READING_EXCERPT_PLAIN_LENGTH).trimStart()).toBe(markdownToText(after).trimStart())
+    expect(full.substring(cut).trimStart()).toBe(markdownToText(after).trimStart())
   })
 })
