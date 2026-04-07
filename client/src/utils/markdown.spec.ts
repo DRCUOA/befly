@@ -2,7 +2,13 @@
  * Tests for markdown utilities, including word count (P3-uix-07 / cni-07)
  */
 import { describe, it, expect } from 'vitest'
-import { stripMarkdownForWordCount, countWordsInMarkdown } from './markdown'
+import {
+  stripMarkdownForWordCount,
+  countWordsInMarkdown,
+  markdownToText,
+  bodyMarkdownAfterExcerptPrefix,
+  READING_EXCERPT_PLAIN_LENGTH
+} from './markdown'
 
 describe('stripMarkdownForWordCount', () => {
   it('strips headers and keeps content', () => {
@@ -66,5 +72,28 @@ describe('countWordsInMarkdown', () => {
   it('handles mixed markdown', () => {
     const md = '# Title\n\nSome **bold** and *italic* with [a link](x.com).'
     expect(countWordsInMarkdown(md)).toBe(8) // Title Some bold and italic with a link
+  })
+})
+
+describe('bodyMarkdownAfterExcerptPrefix', () => {
+  it('returns empty when plain text fits in excerpt length', () => {
+    const md = 'Short piece.'
+    expect(bodyMarkdownAfterExcerptPrefix(md, READING_EXCERPT_PLAIN_LENGTH)).toBe('')
+  })
+
+  it('continues body after excerpt without repeating opening lines', () => {
+    const opening = 'A family.\n\nA group.\n\nA circle of friends.\n\n'
+    const rest = 'A rabbit warren.\n\nA nest.\n\nA hive.'
+    const md = opening + rest
+    const excerptPlain = markdownToText(md).substring(0, READING_EXCERPT_PLAIN_LENGTH)
+    const bodyPlain = markdownToText(bodyMarkdownAfterExcerptPrefix(md) ?? '')
+    expect(markdownToText(md)).toBe(excerptPlain + bodyPlain)
+  })
+
+  it('handles markdown syntax before the split', () => {
+    const md = '**Hello** ' + 'word '.repeat(120)
+    const full = markdownToText(md)
+    const after = bodyMarkdownAfterExcerptPrefix(md)
+    expect(full.substring(READING_EXCERPT_PLAIN_LENGTH).trimStart()).toBe(markdownToText(after).trimStart())
   })
 })

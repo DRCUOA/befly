@@ -25,6 +25,39 @@ export function markdownToText(markdown: string): string {
     .trim()
 }
 
+/** Plain-text length used for the reading-page excerpt (Read.vue); body starts after this prefix. */
+export const READING_EXCERPT_PLAIN_LENGTH = 200
+
+/**
+ * Returns the markdown that follows the first `excerptPlainLength` characters of plain text
+ * (same rules as {@link markdownToText}), so the essay body does not repeat the italic excerpt.
+ */
+export function bodyMarkdownAfterExcerptPrefix(
+  markdown: string,
+  excerptPlainLength: number = READING_EXCERPT_PLAIN_LENGTH
+): string {
+  if (!markdown.trim()) return ''
+  const fullPlain = markdownToText(markdown)
+  if (fullPlain.length <= excerptPlainLength) return ''
+  const target = fullPlain.substring(0, excerptPlainLength)
+
+  for (let i = 0; i <= markdown.length; i++) {
+    const p = markdownToText(markdown.slice(0, i))
+    if (p === target) {
+      return markdown.slice(i).trimStart()
+    }
+  }
+
+  for (let i = 0; i <= markdown.length; i++) {
+    const p = markdownToText(markdown.slice(0, i))
+    if (p.length >= excerptPlainLength && p.substring(0, excerptPlainLength) === target) {
+      return markdown.slice(i).trimStart()
+    }
+  }
+
+  return ''
+}
+
 /**
  * Strip Markdown syntax to get plain text for word counting.
  * Excludes headings, links, images, code fences, and other syntax tokens
