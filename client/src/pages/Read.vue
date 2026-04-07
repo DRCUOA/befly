@@ -132,7 +132,7 @@ import type { ApiResponse } from '@shared/ApiResponses'
 import {
   markdownToText,
   bodyMarkdownAfterExcerptPrefix,
-  excerptPlainCutLength
+  READING_EXCERPT_PLAIN_LENGTH
 } from '../utils/markdown'
 
 const route = useRoute()
@@ -167,9 +167,8 @@ const readTime = computed(() => {
 const excerpt = computed(() => {
   if (!writing.value) return ''
   const text = markdownToText(writing.value.body)
-  const cut = excerptPlainCutLength(text)
-  if (cut >= text.length) return text
-  return text.substring(0, cut) + '...'
+  if (text.length <= READING_EXCERPT_PLAIN_LENGTH) return text
+  return text.substring(0, READING_EXCERPT_PLAIN_LENGTH) + '...'
 })
 
 const formattedDate = computed(() => {
