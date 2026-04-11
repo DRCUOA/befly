@@ -47,14 +47,15 @@ export const adminController = {
   async getUserContent(req: Request, res: Response) {
     const { id } = req.params
 
-    // Fetch all three in parallel
-    const [writings, comments, appreciations] = await Promise.all([
+    // Fetch all four in parallel
+    const [writings, comments, appreciations, essayEngagement] = await Promise.all([
       pool.query(
         `SELECT 
           wb.id, 
           wb.user_id as "userId", 
           wb.title, 
           SUBSTRING(wb.body, 1, 200) as "bodyPreview",
+          LENGTH(wb.body) as "bodyLength",
           COALESCE(wb.visibility, 'private') as visibility,
           wb.cover_image_url as "coverImageUrl",
           COALESCE(wb.cover_image_position, '50% 50%') as "coverImagePosition",
@@ -94,12 +95,84 @@ export const adminController = {
         WHERE a.user_id = $1
         ORDER BY a.created_at DESC`,
         [id]
+      ),
+      pool.query(
+        `SELECT
+          wb.id as "writingId",
+          COALESCE(v.view_count, 0)::int as "viewCount",
+          COALESCE(v.unique_viewers, 0)::int as "uniqueViewers",
+          v.last_viewed_at as "lastViewedAt",
+          v.first_viewed_at as "firstViewedAt",
+          COALESCE(cc.comment_count, 0)::int as "commentCount",
+          COALESCE(ac.appreciation_count, 0)::int as "appreciationCount",
+          COALESCE(ac.reaction_types, '{}') as "reactionTypes"
+        FROM writing_blocks wb
+        LEFT JOIN LATERAL (
+          SELECT
+            COUNT(*) as view_count,
+            COUNT(DISTINCT ual.user_id) as unique_viewers,
+            MAX(ual.created_at) as last_viewed_at,
+            MIN(ual.created_at) as first_viewed_at
+          FROM user_activity_logs ual
+          WHERE ual.resource_type = 'writing_block'
+            AND ual.resource_id = wb.id
+            AND ual.action = 'view'
+        ) v ON true
+        LEFT JOIN LATERAL (
+          SELECT COUNT(*) as comment_count
+          FROM comments c
+          WHERE c.writing_id = wb.id
+        ) cc ON true
+        LEFT JOIN LATERAL (
+          SELECT
+            COUNT(*) as appreciation_count,
+            jsonb_object_agg(
+              COALESCE(sub.reaction_type, 'like'),
+              sub.cnt
+            ) as reaction_types
+          FROM (
+            SELECT COALESCE(a.reaction_type, 'like') as reaction_type, COUNT(*) as cnt
+            FROM appreciations a
+            WHERE a.writing_id = wb.id
+            GROUP BY COALESCE(a.reaction_type, 'like')
+          ) sub
+        ) ac ON true
+        WHERE wb.user_id = $1`,
+        [id]
       )
     ])
 
+    // Build engagement map keyed by writingId
+    const engagementMap: Record<string, any> = {}
+    for (const row of essayEngagement.rows) {
+      engagementMap[row.writingId] = {
+        viewCount: row.viewCount,
+        uniqueViewers: row.uniqueViewers,
+        lastViewedAt: row.lastViewedAt,
+        firstViewedAt: row.firstViewedAt,
+        commentCount: row.commentCount,
+        appreciationCount: row.appreciationCount,
+        reactionTypes: row.reactionTypes
+      }
+    }
+
+    // Merge engagement into each writing row
+    const writingsWithEngagement = writings.rows.map((w: any) => ({
+      ...w,
+      engagement: engagementMap[w.id] || {
+        viewCount: 0,
+        uniqueViewers: 0,
+        lastViewedAt: null,
+        firstViewedAt: null,
+        commentCount: 0,
+        appreciationCount: 0,
+        reactionTypes: {}
+      }
+    }))
+
     res.json({
       data: {
-        writings: writings.rows,
+        writings: writingsWithEngagement,
         comments: comments.rows,
         appreciations: appreciations.rows
       }
