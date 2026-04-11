@@ -225,102 +225,136 @@
                   <div v-if="userContent.writings.length === 0" class="text-sm text-ink-lighter italic py-2">
                     No essays
                   </div>
-                  <div v-else class="overflow-x-auto">
-                    <table class="w-full text-sm">
-                      <thead>
-                        <tr class="border-b border-gray-100">
-                          <th class="text-left px-3 py-2 text-xs font-semibold uppercase text-ink-lighter">Title</th>
-                          <th class="text-left px-3 py-2 text-xs font-semibold uppercase text-ink-lighter">Cover image</th>
-                          <th class="text-left px-3 py-2 text-xs font-semibold uppercase text-ink-lighter">Visibility</th>
-                          <th class="text-left px-3 py-2 text-xs font-semibold uppercase text-ink-lighter">Created</th>
-                          <th class="text-right px-3 py-2 text-xs font-semibold uppercase text-ink-lighter">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr
-                          v-for="w in userContent.writings"
-                          :key="w.id"
-                          class="border-b border-gray-50 hover:bg-gray-50/50"
-                        >
-                          <td class="px-3 py-2">
+                  <div v-else class="space-y-3">
+                    <div
+                      v-for="w in userContent.writings"
+                      :key="w.id"
+                      class="border border-gray-100 rounded-lg bg-gray-50/50 overflow-hidden"
+                    >
+                      <!-- Essay header row -->
+                      <div class="flex flex-col sm:flex-row sm:items-center justify-between px-4 py-3 gap-2 bg-white">
+                        <div class="flex items-center gap-3 flex-1 min-w-0">
+                          <img
+                            v-if="w.coverImageUrl"
+                            :src="w.coverImageUrl"
+                            alt=""
+                            class="w-10 h-10 object-cover rounded border border-gray-200 flex-shrink-0"
+                            :style="{ objectPosition: (w as AdminWriting).coverImagePosition || '50% 50%' }"
+                          />
+                          <div class="min-w-0 flex-1">
                             <router-link
                               :to="`/read/${w.id}`"
-                              class="text-ink hover:text-blue-600 font-medium"
+                              class="text-sm text-ink hover:text-blue-600 font-medium"
                               target="_blank"
                             >
                               {{ w.title }}
                             </router-link>
                             <p class="text-xs text-ink-lighter mt-0.5 line-clamp-1">{{ w.bodyPreview }}</p>
-                          </td>
-                          <td class="px-3 py-2">
-                            <div class="flex items-center gap-1.5 flex-wrap">
-                              <img
-                                v-if="w.coverImageUrl"
-                                :src="w.coverImageUrl"
-                                alt=""
-                                class="w-10 h-10 object-cover rounded border border-gray-200 flex-shrink-0"
-                                :style="{ objectPosition: (w as AdminWriting).coverImagePosition || '50% 50%' }"
-                              />
-                              <div class="flex items-center gap-1">
-                                <button
-                                  @click="triggerCoverUpload(w)"
-                                  :disabled="actionInProgress === w.id"
-                                  class="px-2 py-1 text-xs rounded border border-blue-300 text-blue-700 hover:bg-blue-50 disabled:opacity-50"
-                                >
-                                  Upload
-                                </button>
-                                <button
-                                  @click="openBrowseStockModal(w)"
-                                  :disabled="actionInProgress === w.id"
-                                  class="px-2 py-1 text-xs rounded border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50"
-                                >
-                                  Browse
-                                </button>
-                                <button
-                                  v-if="w.coverImageUrl"
-                                  @click="openRepositionModal(w)"
-                                  :disabled="actionInProgress === w.id"
-                                  class="px-2 py-1 text-xs rounded border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50"
-                                >
-                                  Reposition
-                                </button>
-                                <button
-                                  v-if="w.coverImageUrl"
-                                  @click="saveCoverImage(w, '')"
-                                  :disabled="actionInProgress === w.id"
-                                  class="px-2 py-1 text-xs rounded border border-red-200 text-red-700 hover:bg-red-50 disabled:opacity-50"
-                                >
-                                  Clear
-                                </button>
-                              </div>
-                            </div>
-                          </td>
-                          <td class="px-3 py-2">
-                            <select
-                              :value="w.visibility"
-                              @change="changeWritingVisibility(w, ($event.target as HTMLSelectElement).value)"
-                              class="text-xs border border-gray-200 rounded px-1.5 py-1 bg-white focus:outline-none focus:ring-1 focus:ring-blue-400"
-                            >
-                              <option value="private">private</option>
-                              <option value="shared">shared</option>
-                              <option value="public">public</option>
-                            </select>
-                          </td>
-                          <td class="px-3 py-2 text-ink-lighter text-xs whitespace-nowrap">
-                            {{ formatDate(w.createdAt) }}
-                          </td>
-                          <td class="px-3 py-2 text-right">
-                            <button
-                              @click="confirmDeleteWriting(w)"
-                              :disabled="actionInProgress === w.id"
-                              class="text-xs text-red-600 hover:text-red-800 disabled:opacity-50"
-                            >
-                              Delete
-                            </button>
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
+                          </div>
+                        </div>
+                        <div class="flex items-center gap-2 flex-wrap flex-shrink-0">
+                          <select
+                            :value="w.visibility"
+                            @change="changeWritingVisibility(w, ($event.target as HTMLSelectElement).value)"
+                            class="text-xs border border-gray-200 rounded px-1.5 py-1 bg-white focus:outline-none focus:ring-1 focus:ring-blue-400"
+                          >
+                            <option value="private">private</option>
+                            <option value="shared">shared</option>
+                            <option value="public">public</option>
+                          </select>
+                          <button
+                            @click="triggerCoverUpload(w)"
+                            :disabled="actionInProgress === w.id"
+                            class="px-2 py-1 text-xs rounded border border-blue-300 text-blue-700 hover:bg-blue-50 disabled:opacity-50"
+                          >
+                            Upload
+                          </button>
+                          <button
+                            @click="openBrowseStockModal(w)"
+                            :disabled="actionInProgress === w.id"
+                            class="px-2 py-1 text-xs rounded border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                          >
+                            Browse
+                          </button>
+                          <button
+                            v-if="w.coverImageUrl"
+                            @click="openRepositionModal(w)"
+                            :disabled="actionInProgress === w.id"
+                            class="px-2 py-1 text-xs rounded border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                          >
+                            Reposition
+                          </button>
+                          <button
+                            v-if="w.coverImageUrl"
+                            @click="saveCoverImage(w, '')"
+                            :disabled="actionInProgress === w.id"
+                            class="px-2 py-1 text-xs rounded border border-red-200 text-red-700 hover:bg-red-50 disabled:opacity-50"
+                          >
+                            Clear
+                          </button>
+                          <button
+                            @click="confirmDeleteWriting(w)"
+                            :disabled="actionInProgress === w.id"
+                            class="text-xs text-red-600 hover:text-red-800 disabled:opacity-50"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+
+                      <!-- Engagement metrics row -->
+                      <div class="px-4 py-2.5 flex flex-wrap items-center gap-x-5 gap-y-1.5 border-t border-gray-100 text-xs">
+                        <!-- Views -->
+                        <div class="flex items-center gap-1.5">
+                          <svg class="w-3.5 h-3.5 text-sky-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                          <span class="font-medium text-ink">{{ w.engagement.viewCount }}</span>
+                          <span class="text-ink-lighter">{{ w.engagement.viewCount === 1 ? 'view' : 'views' }}</span>
+                          <span v-if="w.engagement.uniqueViewers > 0" class="text-ink-lighter">({{ w.engagement.uniqueViewers }} unique)</span>
+                        </div>
+
+                        <!-- Comments -->
+                        <div class="flex items-center gap-1.5">
+                          <svg class="w-3.5 h-3.5 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+                          <span class="font-medium text-ink">{{ w.engagement.commentCount }}</span>
+                          <span class="text-ink-lighter">{{ w.engagement.commentCount === 1 ? 'comment' : 'comments' }}</span>
+                        </div>
+
+                        <!-- Appreciations -->
+                        <div class="flex items-center gap-1.5">
+                          <svg class="w-3.5 h-3.5 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
+                          <span class="font-medium text-ink">{{ w.engagement.appreciationCount }}</span>
+                          <span class="text-ink-lighter">{{ w.engagement.appreciationCount === 1 ? 'appreciation' : 'appreciations' }}</span>
+                          <span v-if="Object.keys(w.engagement.reactionTypes).length > 0" class="text-ink-lighter">
+                            <span v-for="(count, type) in w.engagement.reactionTypes" :key="String(type)" class="ml-0.5">
+                              {{ reactionEmoji(String(type)) }}{{ count }}
+                            </span>
+                          </span>
+                        </div>
+
+                        <!-- Word count -->
+                        <div class="flex items-center gap-1.5">
+                          <svg class="w-3.5 h-3.5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                          <span class="font-medium text-ink">{{ formatWordCount(w.bodyLength) }}</span>
+                          <span class="text-ink-lighter">{{ estimateReadTime(w.bodyLength) }}</span>
+                        </div>
+
+                        <!-- Dates -->
+                        <div class="flex items-center gap-1.5 text-ink-lighter">
+                          <span>Created {{ formatDate(w.createdAt) }}</span>
+                          <span v-if="w.updatedAt !== w.createdAt" class="border-l border-gray-200 pl-2">
+                            Edited {{ formatDate(w.updatedAt) }}
+                          </span>
+                        </div>
+
+                        <!-- Last viewed -->
+                        <div v-if="w.engagement.lastViewedAt" class="flex items-center gap-1.5 text-ink-lighter">
+                          <span class="border-l border-gray-200 pl-2">Last viewed {{ formatRelativeTime(w.engagement.lastViewedAt) }}</span>
+                        </div>
+                        <div v-else class="flex items-center gap-1.5 text-ink-lighter italic">
+                          <span>Never viewed</span>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
@@ -898,14 +932,26 @@ import DraggableCoverImage from '../components/writing/DraggableCoverImage.vue'
 
 // ─── Types ───
 
+interface EssayEngagement {
+  viewCount: number
+  uniqueViewers: number
+  lastViewedAt: string | null
+  firstViewedAt: string | null
+  commentCount: number
+  appreciationCount: number
+  reactionTypes: Record<string, number>
+}
+
 interface AdminWriting {
   id: string
   userId: string
   title: string
   bodyPreview: string
+  bodyLength: number
   visibility: 'private' | 'shared' | 'public'
   coverImageUrl?: string | null
   coverImagePosition?: string
+  engagement: EssayEngagement
   createdAt: string
   updatedAt: string
 }
@@ -1161,6 +1207,18 @@ const formatRelativeTime = (dateStr: string): string => {
   const days = Math.floor(hrs / 24)
   if (days < 7) return `${days}d ago`
   return formatShortDate(dateStr)
+}
+
+const formatWordCount = (charCount: number): string => {
+  const words = Math.round(charCount / 5)
+  if (words >= 1000) return `${(words / 1000).toFixed(1)}k chars`
+  return `${charCount.toLocaleString()} chars`
+}
+
+const estimateReadTime = (charCount: number): string => {
+  const words = Math.round(charCount / 5)
+  const mins = Math.max(1, Math.round(words / 230))
+  return `~${mins} min read`
 }
 
 const actionPillClass = (action: string): string => {
