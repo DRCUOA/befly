@@ -10,6 +10,7 @@ import { csrfTokenMiddleware, csrfMiddleware } from './middleware/csrf.middlewar
 import authRoutes from './routes/auth.routes.js'
 import writingRoutes from './routes/writing.routes.js'
 import themeRoutes from './routes/theme.routes.js'
+import manuscriptRoutes from './routes/manuscript.routes.js'
 import appreciationRoutes from './routes/appreciation.routes.js'
 import commentRoutes from './routes/comment.routes.js'
 import activityRoutes from './routes/activity.routes.js'
@@ -94,6 +95,7 @@ app.use(csrfMiddleware)
 app.use('/api/auth', authRoutes)
 app.use('/api/writing', writingRoutes)
 app.use('/api/themes', themeRoutes)
+app.use('/api/manuscripts', manuscriptRoutes)
 app.use('/api/appreciations', appreciationRoutes)
 app.use('/api/comments', commentRoutes)
 app.use('/api/activity', activityRoutes)

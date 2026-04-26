@@ -8,6 +8,9 @@ import Write from '../pages/Write.vue'
 import Themes from '../pages/Themes.vue'
 import ThemeForm from '../pages/ThemeForm.vue'
 import ThemeDetail from '../pages/ThemeDetail.vue'
+import Manuscripts from '../pages/Manuscripts.vue'
+import ManuscriptForm from '../pages/ManuscriptForm.vue'
+import ManuscriptDetail from '../pages/ManuscriptDetail.vue'
 import Profile from '../pages/Profile.vue'
 import SignIn from '../pages/SignIn.vue'
 import SignUp from '../pages/SignUp.vue'
@@ -67,6 +70,28 @@ const router = createRouter({
       path: '/themes/:id',
       name: 'ThemeDetail',
       component: ThemeDetail
+    },
+    {
+      path: '/manuscripts',
+      name: 'Manuscripts',
+      component: Manuscripts
+    },
+    {
+      path: '/manuscripts/create',
+      name: 'CreateManuscript',
+      component: ManuscriptForm,
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/manuscripts/edit/:id',
+      name: 'EditManuscript',
+      component: ManuscriptForm,
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/manuscripts/:id',
+      name: 'ManuscriptDetail',
+      component: ManuscriptDetail
     },
     {
       path: '/profile',

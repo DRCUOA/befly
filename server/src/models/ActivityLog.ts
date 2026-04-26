@@ -20,6 +20,7 @@ export type ActivityType =
   | 'auth'
   | 'writing'
   | 'theme'
+  | 'manuscript'
   | 'appreciation'
   | 'comment'
   | 'view'
@@ -29,6 +30,7 @@ export type ActivityType =
 export type ResourceType =
   | 'writing_block'
   | 'theme'
+  | 'manuscript'
   | 'appreciation'
   | 'comment'
   | 'user'

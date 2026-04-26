@@ -30,6 +30,14 @@
               Themes
             </router-link>
             <router-link
+              v-if="isAuthenticated"
+              to="/manuscripts"
+              class="pb-0.5 hover:text-ink transition-colors duration-300"
+              :class="['Manuscripts', 'CreateManuscript', 'EditManuscript', 'ManuscriptDetail'].includes(String(route.name)) ? 'text-ink border-b border-ink' : 'text-ink-lighter'"
+            >
+              Manuscripts
+            </router-link>
+            <router-link
               to="/"
               class="pb-0.5 hover:text-ink transition-colors duration-300"
               :class="route.name === 'Landing' ? 'text-ink border-b border-ink' : 'text-ink-lighter'"
@@ -156,6 +164,15 @@
             Themes
           </router-link>
           <router-link
+            v-if="isAuthenticated"
+            to="/manuscripts"
+            @click="menuOpen = false"
+            class="block text-sm tracking-wide font-sans hover:text-ink transition-colors duration-300"
+            :class="['Manuscripts', 'CreateManuscript', 'EditManuscript', 'ManuscriptDetail'].includes(String(route.name)) ? 'text-ink' : 'text-ink-lighter'"
+          >
+            Manuscripts
+          </router-link>
+          <router-link
             to="/"
             @click="menuOpen = false"
             class="block text-sm tracking-wide font-sans hover:text-ink transition-colors duration-300"
@@ -266,8 +283,11 @@ onUnmounted(() => {
 
 // For Home and Themes pages, remove padding to allow full-width sections
 const mainClasses = computed(() => {
-  const isBrowsePage = route.name === 'Home' || route.name === 'Themes' || route.name === 'ThemeDetail'
-  return isBrowsePage ? '' : 'max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-6 md:py-8'
+  const fullBleedRoutes = new Set([
+    'Home', 'Themes', 'ThemeDetail',
+    'Manuscripts', 'ManuscriptDetail',
+  ])
+  return fullBleedRoutes.has(String(route.name)) ? '' : 'max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-6 md:py-8'
 })
 
 const handleSignOut = async () => {

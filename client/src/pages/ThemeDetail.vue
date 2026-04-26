@@ -19,6 +19,15 @@
           <p class="text-base sm:text-lg font-light text-ink-light leading-relaxed">
             {{ themeEssays.length }} {{ themeEssays.length === 1 ? 'essay' : 'essays' }} exploring this theme
           </p>
+
+          <div v-if="canStartManuscript" class="mt-6">
+            <router-link
+              :to="`/manuscripts/create?theme=${theme.id}`"
+              class="inline-block px-4 py-2 text-sm tracking-wide font-sans border border-line text-ink-light hover:text-ink hover:border-ink-lighter transition-colors"
+            >
+              Start a manuscript from this theme &rarr;
+            </router-link>
+          </div>
         </div>
       </div>
     </div>
@@ -63,6 +72,7 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { api } from '../api/client'
+import { useAuth } from '../stores/auth'
 import type { WritingBlock } from '../domain/WritingBlock'
 import type { Theme } from '../domain/Theme'
 import type { WritingReactionSummary } from '../domain/Appreciation'
@@ -70,6 +80,12 @@ import WritingCard from '../components/writing/WritingCard.vue'
 import type { ApiResponse } from '@shared/ApiResponses'
 
 const route = useRoute()
+const { user, isAuthenticated } = useAuth()
+
+// Show the "Start a manuscript" CTA only when the user is signed in. We don't
+// gate by ownership of the theme - a reader is welcome to build a manuscript
+// drawing from someone else's shared theme too.
+const canStartManuscript = computed(() => isAuthenticated.value && !!user.value)
 
 const themes = ref<Theme[]>([])
 const writings = ref<WritingBlock[]>([])

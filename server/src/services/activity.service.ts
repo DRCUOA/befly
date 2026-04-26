@@ -90,6 +90,29 @@ export const activityService = {
   },
 
   /**
+   * Log manuscript activity (project, section, or item).
+   */
+  async logManuscript(
+    action: string,
+    resourceId: string,
+    userId: string | null,
+    ipAddress?: string | null,
+    userAgent?: string | null,
+    details?: Record<string, unknown>
+  ): Promise<void> {
+    await this.logActivity({
+      userId,
+      activityType: 'manuscript',
+      resourceType: 'manuscript',
+      resourceId,
+      action,
+      details: details || null,
+      ipAddress: ipAddress || null,
+      userAgent: userAgent || null
+    })
+  },
+
+  /**
    * Log appreciation activity
    */
   async logAppreciation(
