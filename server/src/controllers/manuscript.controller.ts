@@ -6,6 +6,13 @@ import {
   suggestFilename,
   MarkdownExportOptions,
 } from '../services/manuscript-export.service.js'
+import { manuscriptAssistService } from '../services/manuscript-assist.service.js'
+import { manuscriptArtifactRepo } from '../repositories/manuscript-artifact.repo.js'
+import { LlmConfigurationError } from '../services/llm/llm-client.js'
+import {
+  ManuscriptArtifactType,
+  ManuscriptArtifactStatus,
+} from '../models/Manuscript.js'
 import { UnauthorizedError, ValidationError } from '../utils/errors.js'
 import { activityService } from '../services/activity.service.js'
 import { getClientIp, getUserAgent } from '../utils/activity-logger.js'
@@ -224,6 +231,106 @@ export const manuscriptController = {
     res.setHeader('Content-Type', 'text/markdown; charset=utf-8')
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`)
     res.send(markdown)
+  },
+
+  /* ----- Assist & Artifacts ----- */
+
+  /**
+   * POST /api/manuscripts/:id/assist
+   * Body: { mode: 'gaps', junction?: { fromItemId, toItemId }, dryRun?: boolean }
+   *
+   * Owner-only. Returns the generated artifacts.
+   */
+  async runAssist(req: Request, res: Response) {
+    const { id } = req.params
+    const userId = (req as any).userId
+    if (!userId) throw new UnauthorizedError('Authentication required')
+    const admin = isAdminRequest(req)
+
+    const mode = String(req.body?.mode ?? '')
+    if (mode !== 'gaps') {
+      throw new ValidationError(`Unsupported assist mode: ${mode}. Supported: gaps`)
+    }
+
+    let junction: { fromItemId: string; toItemId: string } | undefined
+    if (req.body?.junction) {
+      const j = req.body.junction
+      if (typeof j !== 'object' || typeof j.fromItemId !== 'string' || typeof j.toItemId !== 'string') {
+        throw new ValidationError('junction must be { fromItemId, toItemId }')
+      }
+      junction = { fromItemId: j.fromItemId, toItemId: j.toItemId }
+    }
+
+    const dryRun = req.body?.dryRun === true
+
+    try {
+      const result = await manuscriptAssistService.run(
+        { manuscriptId: id, mode: 'gaps', junction, dryRun },
+        userId,
+        admin
+      )
+      await activityService.logManuscript('assist_run', id, userId, getClientIp(req), getUserAgent(req), {
+        mode,
+        junctions: result.analyzedJunctions.length,
+        skipped: result.skipped,
+        artifacts: result.artifacts.length,
+        model: result.model,
+      })
+      res.json({ data: result })
+    } catch (err) {
+      if (err instanceof LlmConfigurationError) {
+        // Surface as 503 Service Unavailable so clients can show "AI not configured"
+        // instead of a generic 500.
+        res.status(503).json({ error: err.message })
+        return
+      }
+      throw err
+    }
+  },
+
+  /**
+   * GET /api/manuscripts/:id/artifacts?type=...&status=...
+   */
+  async listArtifacts(req: Request, res: Response) {
+    const { id } = req.params
+    const userId = (req as any).userId || null
+    const admin = isAdminRequest(req)
+    const filter: { type?: ManuscriptArtifactType; status?: ManuscriptArtifactStatus } = {}
+    if (typeof req.query.type === 'string') filter.type = req.query.type as ManuscriptArtifactType
+    if (typeof req.query.status === 'string') filter.status = req.query.status as ManuscriptArtifactStatus
+    const artifacts = await manuscriptArtifactRepo.list(id, userId, admin, filter)
+    res.json({ data: artifacts })
+  },
+
+  /** PUT /api/manuscripts/artifacts/:artifactId  Body: { status } */
+  async updateArtifactStatus(req: Request, res: Response) {
+    const { artifactId } = req.params
+    const userId = (req as any).userId
+    if (!userId) throw new UnauthorizedError('Authentication required')
+    const admin = isAdminRequest(req)
+
+    const status = req.body?.status
+    if (typeof status !== 'string' || !['draft','accepted','rejected','archived'].includes(status)) {
+      throw new ValidationError('status must be one of: draft, accepted, rejected, archived')
+    }
+    const updated = await manuscriptArtifactRepo.updateStatus(
+      artifactId, userId, status as ManuscriptArtifactStatus, admin
+    )
+    await activityService.logManuscript('artifact_status', updated.manuscriptId, userId, getClientIp(req), getUserAgent(req), {
+      artifactId, status,
+    })
+    res.json({ data: updated })
+  },
+
+  /** DELETE /api/manuscripts/artifacts/:artifactId */
+  async deleteArtifact(req: Request, res: Response) {
+    const { artifactId } = req.params
+    const userId = (req as any).userId
+    if (!userId) throw new UnauthorizedError('Authentication required')
+    const admin = isAdminRequest(req)
+    await manuscriptArtifactRepo.delete(artifactId, userId, admin)
+    await activityService.logManuscript('artifact_delete', artifactId, userId, getClientIp(req), getUserAgent(req))
+    res.status(204).send()
   },
 
   /** PUT /api/manuscripts/:id/items/reorder - bulk reorder for drag-and-drop. */

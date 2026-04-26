@@ -17,6 +17,14 @@ router.get('/:id/spine', optionalAuthMiddleware, asyncHandler(manuscriptControll
 // Currently Markdown only; format query param is forward-looking.
 router.get('/:id/export', optionalAuthMiddleware, asyncHandler(manuscriptController.exportFile))
 
+/* ----- Assist & Artifacts ----- */
+// Run an AI assist mode (currently: gaps). Owner-only.
+router.post('/:id/assist', authMiddleware, asyncHandler(manuscriptController.runAssist))
+// List, update, delete persisted artifacts (durable AI suggestions).
+router.get('/:id/artifacts', optionalAuthMiddleware, asyncHandler(manuscriptController.listArtifacts))
+router.put('/artifacts/:artifactId', authMiddleware, asyncHandler(manuscriptController.updateArtifactStatus))
+router.delete('/artifacts/:artifactId', authMiddleware, asyncHandler(manuscriptController.deleteArtifact))
+
 router.post('/', authMiddleware, validateBody(['title']), asyncHandler(manuscriptController.create))
 router.put('/:id', authMiddleware, asyncHandler(manuscriptController.update))
 router.delete('/:id', authMiddleware, asyncHandler(manuscriptController.delete))

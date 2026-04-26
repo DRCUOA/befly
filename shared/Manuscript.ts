@@ -120,3 +120,77 @@ export interface ManuscriptWithSpine {
   sections: ManuscriptSection[]
   items: ManuscriptItem[]
 }
+
+/* ----- Manuscript artifacts (durable AI assist output) ----- */
+
+export type ManuscriptArtifactType =
+  | 'spine_suggestion'
+  | 'through_line'
+  | 'gap_analysis'
+  | 'bridge'
+  | 'voice_audit'
+  | 'motif_map'
+  | 'reader_journey'
+
+export type ManuscriptArtifactStatus =
+  | 'draft'
+  | 'accepted'
+  | 'rejected'
+  | 'archived'
+
+/**
+ * One AI-grounded suggestion that lives inside an artifact's `content`.
+ * Mirrors the response shape from spec section 6.
+ */
+export interface AssistSuggestion {
+  title: string
+  body: string
+  confidence: 'low' | 'medium' | 'high'
+  /** Items the suggestion was grounded in (provenance). */
+  groundedIn: { writingBlockId: string | null; itemId: string | null; title: string; excerpt: string }[]
+  actionType:
+    | 'reorder'
+    | 'add_bridge'
+    | 'revise'
+    | 'cut'
+    | 'expand'
+    | 'question'
+    | 'note'
+}
+
+/**
+ * Per-type content shapes. Stored as JSONB; keys are stable.
+ * gap_analysis content includes the gap type and the suggested fix.
+ */
+export interface GapAnalysisContent {
+  /** Brief framing of the junction in the writer's own structure. */
+  summary: string
+  suggestions: (AssistSuggestion & {
+    gapType:
+      | 'context'
+      | 'emotional'
+      | 'logical'
+      | 'time'
+      | 'character'
+      | 'motif'
+      | 'repetition'
+      | 'other'
+  })[]
+}
+
+export interface ManuscriptArtifact {
+  id: string
+  manuscriptId: string
+  type: ManuscriptArtifactType
+  title: string
+  /** Type-specific structured payload. Cast to the right shape based on `type`. */
+  content: Record<string, unknown> | GapAnalysisContent
+  status: ManuscriptArtifactStatus
+  relatedWritingBlockIds: string[]
+  fromItemId?: string | null
+  toItemId?: string | null
+  sourceModel?: string | null
+  createdBy?: string | null
+  createdAt: string
+  updatedAt: string
+}

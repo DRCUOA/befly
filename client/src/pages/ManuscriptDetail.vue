@@ -32,6 +32,14 @@
             </div>
             <div class="flex items-center gap-2 shrink-0">
               <button
+                v-if="canModify"
+                type="button"
+                @click="openGapsPanel"
+                class="px-4 py-2 text-sm tracking-wide font-sans bg-ink text-paper hover:bg-ink-light transition-colors duration-300"
+              >
+                Find gaps
+              </button>
+              <button
                 type="button"
                 @click="openExportDialog"
                 class="px-4 py-2 text-sm tracking-wide font-sans border border-line text-ink-light hover:text-ink hover:border-ink-lighter transition-colors duration-300"
@@ -81,27 +89,46 @@
           <aside class="lg:col-span-1 space-y-8">
             <section>
               <h2 class="text-xs uppercase tracking-widest text-ink-lighter font-sans mb-2">Central question</h2>
-              <p v-if="manuscript.centralQuestion" class="text-base font-light text-ink leading-relaxed">
-                {{ manuscript.centralQuestion }}
-              </p>
-              <p v-else class="text-sm font-light italic text-ink-lighter">
-                Not set. The Book Room works best once you have one.
-              </p>
+              <EditableProse
+                :model-value="manuscript.centralQuestion"
+                :readonly="!canModify"
+                placeholder="Add a central question — what does this body of work keep circling?"
+                :rows="3"
+                :on-save="(v) => saveField('centralQuestion', v)"
+              />
             </section>
 
-            <section v-if="manuscript.throughLine">
+            <section>
               <h2 class="text-xs uppercase tracking-widest text-ink-lighter font-sans mb-2">Through-line</h2>
-              <p class="text-sm font-light text-ink-light leading-relaxed">{{ manuscript.throughLine }}</p>
+              <EditableProse
+                :model-value="manuscript.throughLine"
+                :readonly="!canModify"
+                placeholder="Add a through-line — what holds the essays together?"
+                :rows="4"
+                :on-save="(v) => saveField('throughLine', v)"
+              />
             </section>
 
-            <section v-if="manuscript.emotionalArc">
+            <section v-if="manuscript.emotionalArc || canModify">
               <h2 class="text-xs uppercase tracking-widest text-ink-lighter font-sans mb-2">Emotional arc</h2>
-              <p class="text-sm font-light text-ink-light leading-relaxed">{{ manuscript.emotionalArc }}</p>
+              <EditableProse
+                :model-value="manuscript.emotionalArc"
+                :readonly="!canModify"
+                placeholder="How should the reader feel the journey changing?"
+                :rows="3"
+                :on-save="(v) => saveField('emotionalArc', v)"
+              />
             </section>
 
-            <section v-if="manuscript.narrativePromise">
+            <section v-if="manuscript.narrativePromise || canModify">
               <h2 class="text-xs uppercase tracking-widest text-ink-lighter font-sans mb-2">Narrative promise</h2>
-              <p class="text-sm font-light text-ink-light leading-relaxed">{{ manuscript.narrativePromise }}</p>
+              <EditableProse
+                :model-value="manuscript.narrativePromise"
+                :readonly="!canModify"
+                placeholder="What does the opening imply the book will deliver?"
+                :rows="3"
+                :on-save="(v) => saveField('narrativePromise', v)"
+              />
             </section>
 
             <section>
@@ -290,6 +317,148 @@
               </div>
             </div>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Gaps panel (slide-over) -->
+    <div
+      v-if="showGaps && manuscript"
+      class="fixed inset-0 bg-black/30 flex justify-end z-40"
+      @click.self="showGaps = false"
+    >
+      <div class="bg-paper w-full sm:max-w-2xl h-full overflow-y-auto shadow-lg flex flex-col">
+        <header class="px-6 py-4 border-b border-line flex items-center justify-between sticky top-0 bg-paper z-10">
+          <div>
+            <h3 class="text-lg font-light tracking-tight">Gap analysis</h3>
+            <p class="text-xs text-ink-lighter mt-1">
+              Walks adjacent items in the spine and identifies where a reader may need more support.
+            </p>
+          </div>
+          <button
+            type="button"
+            @click="showGaps = false"
+            class="p-2 text-ink-lighter hover:text-ink"
+            aria-label="Close"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </header>
+
+        <div class="px-6 py-4 border-b border-line bg-surface/40">
+          <div class="flex items-center justify-between gap-4">
+            <p class="text-sm text-ink-light">
+              {{ existingGapArtifacts.length === 0
+                ? 'No gap analysis has been run yet for this manuscript.'
+                : `${existingGapArtifacts.length} previous ${existingGapArtifacts.length === 1 ? 'analysis' : 'analyses'} on file.`
+              }}
+            </p>
+            <button
+              type="button"
+              :disabled="runningGaps"
+              @click="runGapAnalysis"
+              class="px-4 py-2 text-sm tracking-wide font-sans bg-ink text-paper hover:bg-ink-light disabled:opacity-50 transition-colors"
+            >
+              {{ runningGaps ? 'Analysing…' : (existingGapArtifacts.length === 0 ? 'Run analysis' : 'Run again') }}
+            </button>
+          </div>
+          <div v-if="gapsError" class="mt-3 text-sm text-red-700">
+            {{ gapsError }}
+          </div>
+          <div v-if="lastRunSummary" class="mt-3 text-xs text-ink-lighter">
+            Last run analysed {{ lastRunSummary.junctions }} {{ lastRunSummary.junctions === 1 ? 'junction' : 'junctions' }}<span v-if="lastRunSummary.skipped > 0">, skipped {{ lastRunSummary.skipped }} where both items were empty</span>.
+            <span v-if="lastRunSummary.model"> Model: {{ lastRunSummary.model }}.</span>
+          </div>
+        </div>
+
+        <div class="flex-1 px-6 py-4 space-y-6">
+          <div v-if="existingGapArtifacts.length === 0 && !runningGaps" class="text-center py-12">
+            <p class="text-sm font-light italic text-ink-lighter">
+              Run an analysis to see suggestions here.
+            </p>
+          </div>
+
+          <article
+            v-for="artifact in existingGapArtifacts"
+            :key="artifact.id"
+            class="border border-line bg-paper"
+            :class="{ 'opacity-60': artifact.status === 'rejected' || artifact.status === 'archived' }"
+          >
+            <header class="px-5 py-3 border-b border-line flex items-start justify-between gap-3">
+              <div class="flex-1 min-w-0">
+                <p class="text-xs uppercase tracking-widest text-ink-lighter font-sans mb-1">
+                  Junction · {{ formatStatus(artifact.status) }}
+                </p>
+                <h4 class="text-base font-light tracking-tight">{{ artifact.title.replace(/^Gap:\s*/, '') }}</h4>
+                <p v-if="getGapSummary(artifact)" class="text-sm text-ink-light italic mt-1">
+                  {{ getGapSummary(artifact) }}
+                </p>
+              </div>
+              <div class="flex items-center gap-1 shrink-0">
+                <button
+                  v-if="artifact.status !== 'accepted'"
+                  type="button"
+                  :disabled="updatingArtifactId === artifact.id"
+                  @click="setArtifactStatus(artifact, 'accepted')"
+                  class="px-2 py-1 text-xs font-sans border border-line text-ink-light hover:text-ink hover:border-ink-lighter disabled:opacity-50"
+                  title="Accept (keeps it in front of you)"
+                >
+                  Accept
+                </button>
+                <button
+                  v-if="artifact.status !== 'rejected'"
+                  type="button"
+                  :disabled="updatingArtifactId === artifact.id"
+                  @click="setArtifactStatus(artifact, 'rejected')"
+                  class="px-2 py-1 text-xs font-sans border border-line text-ink-light hover:text-red-600 hover:border-red-300 disabled:opacity-50"
+                  title="Reject (still visible, dimmed)"
+                >
+                  Reject
+                </button>
+                <button
+                  type="button"
+                  :disabled="updatingArtifactId === artifact.id"
+                  @click="deleteArtifact(artifact)"
+                  class="p-1 text-ink-lighter hover:text-red-600 disabled:opacity-50"
+                  title="Delete"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                </button>
+              </div>
+            </header>
+
+            <div class="px-5 py-4 space-y-5">
+              <div
+                v-for="(s, sIdx) in getSuggestions(artifact)"
+                :key="sIdx"
+                class="space-y-2"
+              >
+                <div class="flex flex-wrap items-baseline gap-2">
+                  <span class="text-xs uppercase tracking-widest font-sans text-ink-lighter">
+                    {{ formatGapType(s.gapType) }} gap
+                  </span>
+                  <span class="text-xs italic text-ink-lighter">· {{ formatActionType(s.actionType) }}</span>
+                  <span class="text-xs italic text-ink-lighter">· {{ s.confidence }} confidence</span>
+                </div>
+                <p class="text-base font-light text-ink leading-relaxed whitespace-pre-wrap">{{ s.body }}</p>
+                <details v-if="s.groundedIn?.length">
+                  <summary class="text-xs text-ink-lighter cursor-pointer hover:text-ink">
+                    Grounded in
+                  </summary>
+                  <ul class="mt-2 space-y-2 pl-4 border-l border-line">
+                    <li v-for="(g, gIdx) in s.groundedIn" :key="gIdx" class="text-sm">
+                      <span class="font-medium text-ink">{{ g.title || 'Untitled' }}</span>
+                      <p v-if="g.excerpt" class="text-ink-light italic mt-0.5">"{{ g.excerpt }}"</p>
+                    </li>
+                  </ul>
+                </details>
+              </div>
+
+              <p v-if="getSuggestions(artifact).length === 0" class="text-sm italic text-ink-lighter">
+                No significant gap detected at this junction.
+              </p>
+            </div>
+          </article>
         </div>
       </div>
     </div>
@@ -485,6 +654,7 @@ import { useRoute } from 'vue-router'
 import { manuscriptsApi } from '../api/manuscripts'
 import { api } from '../api/client'
 import { useAuth } from '../stores/auth'
+import EditableProse from '../components/manuscripts/EditableProse.vue'
 import type { ApiResponse } from '@shared/ApiResponses'
 import type { Theme } from '../domain/Theme'
 import type { WritingBlock } from '../domain/WritingBlock'
@@ -497,6 +667,9 @@ import type {
   ManuscriptItemType,
   ManuscriptSectionPurpose,
   ManuscriptStructuralRole,
+  ManuscriptArtifact,
+  ManuscriptArtifactStatus,
+  GapAnalysisContent,
 } from '@shared/Manuscript'
 
 const route = useRoute()
@@ -672,27 +845,153 @@ const availableWritingBlocks = computed(() => {
   return [...writingBlocks.value].sort((a, b) => a.title.localeCompare(b.title))
 })
 
+/**
+ * Inline-edit a single literary-direction field on the manuscript. Optimistic
+ * update locally, revert on failure. Used by the EditableProse instances in
+ * the left panel.
+ *
+ * Throws on failure so EditableProse stays in edit mode and can display the
+ * error to the user.
+ */
+async function saveField<K extends 'centralQuestion' | 'throughLine' | 'emotionalArc' | 'narrativePromise'>(
+  field: K,
+  value: string | null,
+): Promise<void> {
+  if (!manuscript.value) return
+  const before = manuscript.value[field]
+  // Optimistic update so the display refreshes the moment the user clicks Save.
+  manuscript.value = { ...manuscript.value, [field]: value }
+  try {
+    const updated = await manuscriptsApi.update(manuscript.value.id, { [field]: value } as any)
+    manuscript.value = updated
+  } catch (err) {
+    // Revert and surface the error to EditableProse via throw.
+    if (manuscript.value) {
+      manuscript.value = { ...manuscript.value, [field]: before }
+    }
+    throw err
+  }
+}
+
 async function loadAll() {
   const id = route.params.id as string
   if (!id) return
   try {
     loading.value = true
-    const [spine, themesRes, blocksRes] = await Promise.all([
+    const [spine, themesRes, blocksRes, artifactsRes] = await Promise.all([
       manuscriptsApi.getSpine(id),
       api.get<ApiResponse<Theme[]>>('/themes').catch(() => ({ data: [] as Theme[] })),
       api.get<ApiResponse<WritingBlock[]>>('/writing').catch(() => ({ data: [] as WritingBlock[] })),
+      manuscriptsApi.listArtifacts(id, { type: 'gap_analysis' }).catch(() => [] as ManuscriptArtifact[]),
     ])
     manuscript.value = spine.manuscript
     sections.value = spine.sections
     items.value = spine.items
     themes.value = themesRes.data
     writingBlocks.value = blocksRes.data
+    gapArtifacts.value = artifactsRes
   } catch (err) {
     console.error('Failed to load manuscript:', err)
     manuscript.value = null
   } finally {
     loading.value = false
   }
+}
+
+/* ---- gap analysis ---- */
+const showGaps = ref(false)
+const runningGaps = ref(false)
+const gapsError = ref<string | null>(null)
+const gapArtifacts = ref<ManuscriptArtifact[]>([])
+const updatingArtifactId = ref<string | null>(null)
+const lastRunSummary = ref<{ junctions: number; skipped: number; model?: string } | null>(null)
+
+const existingGapArtifacts = computed(() =>
+  [...gapArtifacts.value].sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+)
+
+function openGapsPanel() {
+  showGaps.value = true
+  gapsError.value = null
+}
+
+async function runGapAnalysis() {
+  if (!manuscript.value) return
+  runningGaps.value = true
+  gapsError.value = null
+  try {
+    const result = await manuscriptsApi.runAssist(manuscript.value.id, { mode: 'gaps' })
+    // Prepend new artifacts to the existing list so the user sees them at top.
+    const existingIds = new Set(gapArtifacts.value.map(a => a.id))
+    const fresh = result.artifacts.filter(a => !existingIds.has(a.id))
+    gapArtifacts.value = [...fresh, ...gapArtifacts.value]
+    lastRunSummary.value = {
+      junctions: result.analyzedJunctions.length,
+      skipped: result.skipped,
+      model: result.model,
+    }
+  } catch (err) {
+    // Surface "AI not configured" specifically because it's the most common
+    // first-run error and the fix is operational, not the user's fault.
+    const msg = err instanceof Error ? err.message : 'Failed to run analysis'
+    gapsError.value = /OPENAI_API_KEY/i.test(msg)
+      ? 'AI assist is not configured on this server. Set OPENAI_API_KEY and restart.'
+      : msg
+  } finally {
+    runningGaps.value = false
+  }
+}
+
+async function setArtifactStatus(artifact: ManuscriptArtifact, status: ManuscriptArtifactStatus) {
+  updatingArtifactId.value = artifact.id
+  try {
+    const updated = await manuscriptsApi.updateArtifactStatus(artifact.id, status)
+    const i = gapArtifacts.value.findIndex(a => a.id === artifact.id)
+    if (i >= 0) gapArtifacts.value[i] = updated
+  } catch (err) {
+    alert(err instanceof Error ? err.message : 'Failed to update artifact')
+  } finally {
+    updatingArtifactId.value = null
+  }
+}
+
+async function deleteArtifact(artifact: ManuscriptArtifact) {
+  if (!confirm('Delete this gap analysis? This cannot be undone.')) return
+  updatingArtifactId.value = artifact.id
+  try {
+    await manuscriptsApi.deleteArtifact(artifact.id)
+    gapArtifacts.value = gapArtifacts.value.filter(a => a.id !== artifact.id)
+  } catch (err) {
+    alert(err instanceof Error ? err.message : 'Failed to delete artifact')
+  } finally {
+    updatingArtifactId.value = null
+  }
+}
+
+function getGapContent(artifact: ManuscriptArtifact): GapAnalysisContent | null {
+  const c = artifact.content as unknown
+  if (!c || typeof c !== 'object') return null
+  return c as GapAnalysisContent
+}
+
+function getGapSummary(artifact: ManuscriptArtifact): string {
+  return getGapContent(artifact)?.summary ?? ''
+}
+
+function getSuggestions(artifact: ManuscriptArtifact): GapAnalysisContent['suggestions'] {
+  return getGapContent(artifact)?.suggestions ?? []
+}
+
+function formatStatus(s: ManuscriptArtifactStatus): string {
+  return { draft: 'Draft', accepted: 'Accepted', rejected: 'Rejected', archived: 'Archived' }[s] ?? s
+}
+
+function formatGapType(t: string): string {
+  return t.charAt(0).toUpperCase() + t.slice(1)
+}
+
+function formatActionType(t: string): string {
+  return t.replace(/_/g, ' ')
 }
 
 // ---- section actions ----

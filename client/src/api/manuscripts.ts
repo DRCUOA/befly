@@ -18,7 +18,18 @@ import type {
   ManuscriptSection,
   ManuscriptItem,
   ManuscriptWithSpine,
+  ManuscriptArtifact,
+  ManuscriptArtifactStatus,
+  ManuscriptArtifactType,
 } from '@shared/Manuscript'
+
+export interface AssistRunResult {
+  mode: string
+  artifacts: ManuscriptArtifact[]
+  analyzedJunctions: { fromItemId: string; toItemId: string }[]
+  skipped: number
+  model?: string
+}
 
 export const manuscriptsApi = {
   list: () => api.get<ApiResponse<ManuscriptProject[]>>('/manuscripts').then(r => r.data),
@@ -62,4 +73,30 @@ export const manuscriptsApi = {
     api
       .put<ApiResponse<ManuscriptItem[]>>(`/manuscripts/${manuscriptId}/items/reorder`, { moves })
       .then(r => r.data),
+
+  // Assist & artifacts
+  runAssist: (
+    manuscriptId: string,
+    body: { mode: 'gaps'; junction?: { fromItemId: string; toItemId: string }; dryRun?: boolean }
+  ) =>
+    api.post<ApiResponse<AssistRunResult>>(`/manuscripts/${manuscriptId}/assist`, body).then(r => r.data),
+
+  listArtifacts: (
+    manuscriptId: string,
+    filter?: { type?: ManuscriptArtifactType; status?: ManuscriptArtifactStatus }
+  ) => {
+    const params: Record<string, string> = {}
+    if (filter?.type) params.type = filter.type
+    if (filter?.status) params.status = filter.status
+    return api
+      .get<ApiResponse<ManuscriptArtifact[]>>(`/manuscripts/${manuscriptId}/artifacts`, { params })
+      .then(r => r.data)
+  },
+
+  updateArtifactStatus: (artifactId: string, status: ManuscriptArtifactStatus) =>
+    api
+      .put<ApiResponse<ManuscriptArtifact>>(`/manuscripts/artifacts/${artifactId}`, { status })
+      .then(r => r.data),
+
+  deleteArtifact: (artifactId: string) => api.delete(`/manuscripts/artifacts/${artifactId}`),
 }
