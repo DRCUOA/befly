@@ -42,4 +42,9 @@ router.delete('/writings/:id', asyncHandler(adminController.deleteWriting))
 router.delete('/comments/:id', asyncHandler(adminController.deleteComment))
 router.delete('/appreciations/:id', asyncHandler(adminController.deleteAppreciation))
 
+// Essay import / export (JSON envelope; downloadable template provided)
+router.get('/essays/template', asyncHandler(adminController.exportEssaysTemplate))
+router.get('/essays/export', asyncHandler(adminController.exportEssays))
+router.post('/essays/import', asyncHandler(adminController.importEssays))
+
 export default router

@@ -4,6 +4,14 @@ import { userRepo } from '../repositories/user.repo.js'
 import { ValidationError, NotFoundError, ForbiddenError } from '../utils/errors.js'
 import { activityService } from '../services/activity.service.js'
 import { getClientIp, getUserAgent } from '../utils/activity-logger.js'
+import {
+  buildEssayExport,
+  envelopeToJson,
+  buildEssayTemplate,
+  ExportScope,
+} from '../services/essay-export.service.js'
+import { runEssayImport } from '../services/essay-import.service.js'
+import { EssayImportOptions } from '../models/EssayExport.js'
 
 /**
  * Admin controller - handles admin-only operations
@@ -499,6 +507,108 @@ export const adminController = {
     })
 
     res.status(204).send()
+  },
+
+  // ─── Essay import / export (admin-only) ──────────────────────────
+
+  /**
+   * GET /api/admin/essays/export?userId=...&ids=uuid1,uuid2,...
+   *
+   * Returns a JSON file containing the matching essays plus the themes they
+   * reference. With no query params, exports every essay from every user -
+   * use carefully on large datasets.
+   */
+  async exportEssays(req: Request, res: Response) {
+    const adminUserId = (req as any).userId
+    const scope: ExportScope = {}
+    if (typeof req.query.userId === 'string' && req.query.userId.trim()) {
+      scope.userId = req.query.userId.trim()
+    }
+    if (typeof req.query.ids === 'string' && req.query.ids.trim()) {
+      scope.writingIds = req.query.ids.split(',').map(s => s.trim()).filter(Boolean)
+    }
+
+    const envelope = await buildEssayExport(scope)
+    const json = envelopeToJson(envelope)
+
+    await activityService.logActivity({
+      userId: adminUserId,
+      activityType: 'admin',
+      resourceType: 'writing_block',
+      resourceId: null,
+      action: 'export_essays',
+      details: {
+        scope,
+        essays: envelope.essays.length,
+        themes: envelope.themes.length,
+        bytes: Buffer.byteLength(json, 'utf8'),
+      },
+      ipAddress: getClientIp(req),
+      userAgent: getUserAgent(req),
+    })
+
+    const stamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19)
+    const suffix = scope.userId
+      ? (scope.writingIds ? 'subset' : `user-${scope.userId.slice(0, 8)}`)
+      : (scope.writingIds ? 'subset' : 'all')
+    const filename = `essays-export-${suffix}-${stamp}.json`
+
+    res.setHeader('Content-Type', 'application/json; charset=utf-8')
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`)
+    res.send(json)
+  },
+
+  /**
+   * GET /api/admin/essays/template
+   * Returns a downloadable template envelope showing the import format with
+   * example data and inline _documentation.
+   */
+  async exportEssaysTemplate(_req: Request, res: Response) {
+    const template = buildEssayTemplate()
+    const json = JSON.stringify(template, null, 2) + '\n'
+    res.setHeader('Content-Type', 'application/json; charset=utf-8')
+    res.setHeader('Content-Disposition', `attachment; filename="essays-import-template.json"`)
+    res.send(json)
+  },
+
+  /**
+   * POST /api/admin/essays/import
+   *
+   * Body: {
+   *   envelope: EssayExportEnvelope,
+   *   options: { ownership: 'self' | 'target', targetUserId?, onlyEssayIds? }
+   * }
+   *
+   * Returns a per-essay result so the UI can show a partial-success report.
+   */
+  async importEssays(req: Request, res: Response) {
+    const adminUserId = (req as any).userId
+    const body = req.body || {}
+    const envelope = body.envelope
+    const options: EssayImportOptions = body.options || { ownership: 'self' }
+    if (!envelope) throw new ValidationError('Request body must contain an "envelope" field')
+
+    const result = await runEssayImport(envelope, adminUserId, options)
+
+    await activityService.logActivity({
+      userId: adminUserId,
+      activityType: 'admin',
+      resourceType: 'writing_block',
+      resourceId: null,
+      action: 'import_essays',
+      details: {
+        ownership: options.ownership,
+        targetUserId: options.targetUserId ?? null,
+        total: result.total,
+        created: result.created.length,
+        themesCreated: result.themes.filter(t => t.created).length,
+        errors: result.errors.length,
+      },
+      ipAddress: getClientIp(req),
+      userAgent: getUserAgent(req),
+    })
+
+    res.json({ data: result })
   },
 
   // ─── Usage analytics ─────────────────────────────────────────────

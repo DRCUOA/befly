@@ -3,7 +3,7 @@
     <!-- Header -->
     <div class="w-full px-4 sm:px-6 md:px-8 py-12 sm:py-16 bg-gradient-to-b from-paper to-gray-50">
       <div class="max-w-6xl mx-auto">
-        <div class="flex items-center gap-4 mb-4">
+        <div class="flex items-center gap-4 mb-4 flex-wrap">
           <p class="text-xs sm:text-sm tracking-widest uppercase font-sans text-ink-lighter">
             Administration
           </p>
@@ -13,6 +13,13 @@
           >
             Typography rules
           </router-link>
+          <button
+            type="button"
+            @click="showImportExport = true"
+            class="text-sm text-blue-600 hover:text-blue-800 hover:underline"
+          >
+            Import / Export essays
+          </button>
         </div>
         <h1 class="text-3xl sm:text-4xl md:text-5xl font-light tracking-tight mb-4">
           User Management
@@ -913,6 +920,8 @@
             </div>
           </div>
         </div>
+
+    <ImportExportModal v-if="showImportExport" @close="showImportExport = false" />
   </div>
 </template>
 
@@ -929,6 +938,11 @@ import { api } from '../api/client'
 import { useAuth } from '../stores/auth'
 import type { User } from '../domain/User'
 import DraggableCoverImage from '../components/writing/DraggableCoverImage.vue'
+import ImportExportModal from '../components/admin/ImportExportModal.vue'
+
+// State for the Import / Export essays modal. Lives at the top of <script>
+// so the button in the header can toggle it without re-binding.
+const showImportExport = ref(false)
 
 // ─── Types ───
 
