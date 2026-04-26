@@ -21,7 +21,15 @@
  *     (you'll get duplicates, not collisions).
  */
 
-export const ESSAY_EXPORT_VERSION = '1.0' as const
+/**
+ * Envelope version literal type. The runtime constant lives on the server
+ * (server/src/models/EssayExport.ts) rather than here, because the shared
+ * workspace ships .ts files that the server's tsx-based dev runtime doesn't
+ * resolve as easily as relative imports. Keeping the value-export server-side
+ * avoids the cross-workspace ESM resolution problem; the type still lives
+ * here so client and server agree at compile time.
+ */
+export type EssayExportVersion = '1.0'
 
 export interface EssayExportTheme {
   /** Original id at export time. Not used by the importer. */
@@ -59,7 +67,7 @@ export interface EssayExportUser {
 }
 
 export interface EssayExportEnvelope {
-  version: typeof ESSAY_EXPORT_VERSION
+  version: EssayExportVersion
   /** ISO 8601 timestamp the export was created. */
   exportedAt: string
   /**
