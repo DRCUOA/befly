@@ -13,7 +13,7 @@
           type="email"
           required
           autocomplete="email"
-          class="mt-1 block w-full rounded-md border-line bg-paper text-ink focus:border-[#717171] focus:ring-[#717171] focus:outline-none text-base sm:text-sm px-3 sm:px-4 py-2"
+          class="mt-1 block w-full rounded-md border-line bg-paper text-ink focus:border-accent focus:ring-accent focus:outline-none text-base sm:text-sm px-3 sm:px-4 py-2"
           placeholder="your@email.com"
         />
         <p v-if="errors.email" class="mt-1 text-xs sm:text-sm text-red-600">{{ errors.email }}</p>
@@ -29,7 +29,7 @@
           type="text"
           required
           autocomplete="name"
-          class="mt-1 block w-full rounded-md border-line bg-paper text-ink focus:border-[#717171] focus:ring-[#717171] focus:outline-none text-base sm:text-sm px-3 sm:px-4 py-2"
+          class="mt-1 block w-full rounded-md border-line bg-paper text-ink focus:border-accent focus:ring-accent focus:outline-none text-base sm:text-sm px-3 sm:px-4 py-2"
           placeholder="Your Name"
         />
         <p v-if="errors.displayName" class="mt-1 text-xs sm:text-sm text-red-600">{{ errors.displayName }}</p>
@@ -46,7 +46,7 @@
           required
           autocomplete="new-password"
           minlength="8"
-          class="mt-1 block w-full rounded-md border-line bg-paper text-ink focus:border-[#717171] focus:ring-[#717171] focus:outline-none text-base sm:text-sm px-3 sm:px-4 py-2"
+          class="mt-1 block w-full rounded-md border-line bg-paper text-ink focus:border-accent focus:ring-accent focus:outline-none text-base sm:text-sm px-3 sm:px-4 py-2"
           placeholder="At least 8 characters"
         />
         <p v-if="errors.password" class="mt-1 text-xs sm:text-sm text-red-600">{{ errors.password }}</p>
@@ -63,7 +63,7 @@
           type="password"
           required
           autocomplete="new-password"
-          class="mt-1 block w-full rounded-md border-line bg-paper text-ink focus:border-[#717171] focus:ring-[#717171] focus:outline-none text-base sm:text-sm px-3 sm:px-4 py-2"
+          class="mt-1 block w-full rounded-md border-line bg-paper text-ink focus:border-accent focus:ring-accent focus:outline-none text-base sm:text-sm px-3 sm:px-4 py-2"
           placeholder="Confirm your password"
         />
         <p v-if="errors.confirmPassword" class="mt-1 text-xs sm:text-sm text-red-600">{{ errors.confirmPassword }}</p>
@@ -77,13 +77,13 @@
         <button
           type="submit"
           :disabled="submitting || isLoading"
-          class="flex-1 px-6 py-2 border border-line bg-paper hover:bg-[#E5E5E5] text-[#717171] rounded-md disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
+          class="flex-1 px-6 py-2 border border-line bg-paper hover:bg-accent-muted text-ink-light rounded-md disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
         >
           {{ submitting ? 'Creating Account...' : 'Sign Up' }}
         </button>
         <router-link
           to="/signin"
-          class="px-6 py-2 border border-line bg-paper hover:bg-[#E5E5E5] text-[#717171] rounded-md text-center text-sm sm:text-base"
+          class="px-6 py-2 border border-line bg-paper hover:bg-accent-muted text-ink-light rounded-md text-center text-sm sm:text-base"
         >
           Sign In
         </router-link>

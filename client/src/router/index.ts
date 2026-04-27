@@ -11,6 +11,10 @@ import ThemeDetail from '../pages/ThemeDetail.vue'
 import Manuscripts from '../pages/Manuscripts.vue'
 import ManuscriptForm from '../pages/ManuscriptForm.vue'
 import ManuscriptDetail from '../pages/ManuscriptDetail.vue'
+import Help from '../pages/Help.vue'
+import HelpManuscripts from '../pages/help/HelpManuscripts.vue'
+import HelpAiAssist from '../pages/help/HelpAiAssist.vue'
+import HelpImportExport from '../pages/help/HelpImportExport.vue'
 import Profile from '../pages/Profile.vue'
 import SignIn from '../pages/SignIn.vue'
 import SignUp from '../pages/SignUp.vue'
@@ -98,6 +102,26 @@ const router = createRouter({
       name: 'Profile',
       component: Profile,
       meta: { requiresAuth: true }
+    },
+    {
+      path: '/help',
+      name: 'Help',
+      component: Help
+    },
+    {
+      path: '/help/manuscripts',
+      name: 'HelpManuscripts',
+      component: HelpManuscripts
+    },
+    {
+      path: '/help/ai-assist',
+      name: 'HelpAiAssist',
+      component: HelpAiAssist
+    },
+    {
+      path: '/help/import-export',
+      name: 'HelpImportExport',
+      component: HelpImportExport
     },
     {
       path: '/admin',

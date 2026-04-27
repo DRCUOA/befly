@@ -6,7 +6,14 @@
     <div class="bg-paper w-full sm:max-w-3xl sm:rounded-lg shadow-lg max-h-[92vh] flex flex-col overflow-hidden">
       <header class="px-6 py-4 border-b border-line flex items-center justify-between">
         <div>
-          <h2 class="text-lg font-light tracking-tight">Import &middot; Export Essays</h2>
+          <span class="inline-flex items-center">
+            <h2 class="text-lg font-light tracking-tight">Import &middot; Export Essays</h2>
+            <HelpTooltip link="/help/import-export" aria-label="About import/export">
+              JSON envelope format. Themes travel inline; the importer remaps theme
+              IDs by name to the target account. Cover image files are not embedded
+              &mdash; copy <code>/uploads/cover/</code> separately.
+            </HelpTooltip>
+          </span>
           <p class="text-xs text-ink-lighter mt-1">
             JSON envelope format. Downloadable template included.
           </p>
@@ -150,7 +157,14 @@
             </div>
 
             <div>
-              <h3 class="text-base font-medium mb-2">Who should own these essays?</h3>
+              <h3 class="text-base font-medium mb-2 inline-flex items-center">
+                Who should own these essays?
+                <HelpTooltip link="/help/import-export#ownership" aria-label="About ownership">
+                  Imported essays are always assigned to a user that exists in the
+                  destination database. The original userId in the envelope is used
+                  only to label the export, never to assign ownership.
+                </HelpTooltip>
+              </h3>
               <div class="space-y-2">
                 <label class="flex items-start gap-3 cursor-pointer">
                   <input v-model="importOwnership" type="radio" value="self" class="mt-1" />
@@ -260,8 +274,16 @@
         <!-- ─── TEMPLATE TAB ─── -->
         <section v-if="activeTab === 'template'" class="space-y-4">
           <div class="prose prose-sm">
+            <p class="inline-flex items-center">
+              The export and import use a single JSON envelope.
+              <HelpTooltip link="/help/import-export#envelope" aria-label="About the envelope">
+                The envelope is versioned (currently 1.0). Themes are inline; essay
+                IDs are advisory and re-generated on import. Importing the same file
+                twice produces duplicates, not collisions.
+              </HelpTooltip>
+            </p>
             <p>
-              The export and import use a single JSON envelope. Download the template to see
+              Download the template to see
               the exact shape the importer expects, with realistic example data and an inline
               <code>_documentation</code> block that explains every field.
             </p>
@@ -295,6 +317,7 @@ import { ref, computed, watch, onMounted } from 'vue'
 import { api } from '../../api/client'
 import { adminApi } from '../../api/admin'
 import { useAuth } from '../../stores/auth'
+import HelpTooltip from '../ui/HelpTooltip.vue'
 import type { User } from '../../domain/User'
 import type {
   EssayExportEnvelope,

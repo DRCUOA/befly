@@ -36,14 +36,27 @@
       <!-- Form + status + visibility -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div>
-          <label class="block text-sm font-medium mb-1">Form</label>
+          <label class="block text-sm font-medium mb-1 inline-flex items-center">
+            Form
+            <HelpTooltip link="/help/manuscripts#form" aria-label="About form">
+              What kind of book this wants to be. Shapes how the AI treats it &mdash; an
+              essay collection allows variation between pieces; a long-form essay
+              expects a single sustained argument.
+            </HelpTooltip>
+          </label>
           <select v-model="form.form" class="block w-full rounded-md border-line bg-paper text-ink shadow-sm focus:border-ink focus:ring-ink">
             <option v-for="opt in FORM_OPTIONS" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
           </select>
           <p class="mt-1 text-xs text-ink-lighter">Shapes how the AI assistant later treats the work.</p>
         </div>
         <div>
-          <label class="block text-sm font-medium mb-1">Status</label>
+          <label class="block text-sm font-medium mb-1 inline-flex items-center">
+            Status
+            <HelpTooltip link="/help/manuscripts#status" aria-label="About status">
+              Where the manuscript is in its life: gathering, structuring, drafting,
+              bridging, revising, finalising. Just a label &mdash; not enforced by the app.
+            </HelpTooltip>
+          </label>
           <select v-model="form.status" class="block w-full rounded-md border-line bg-paper text-ink shadow-sm focus:border-ink focus:ring-ink">
             <option v-for="opt in STATUS_OPTIONS" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
           </select>
@@ -60,7 +73,14 @@
 
       <!-- Source themes -->
       <div>
-        <label class="block text-sm font-medium mb-2">Source themes</label>
+        <label class="block text-sm font-medium mb-2 inline-flex items-center">
+          Source themes
+          <HelpTooltip link="/help/manuscripts#source-themes" aria-label="About source themes">
+            Themes whose essays seed this manuscript. A manuscript can draw from many
+            themes. Linking a theme doesn&rsquo;t auto-add its essays &mdash; you still
+            choose what goes on the spine.
+          </HelpTooltip>
+        </label>
         <p class="mt-1 mb-2 text-xs text-ink-lighter">
           Themes whose essays seed this manuscript. A manuscript can draw from many themes.
         </p>
@@ -90,7 +110,14 @@
         <h2 class="text-sm uppercase tracking-widest text-ink-lighter">Literary direction</h2>
 
         <div>
-          <label for="centralQuestion" class="block text-sm font-medium mb-1">Central question</label>
+          <label for="centralQuestion" class="block text-sm font-medium mb-1 inline-flex items-center">
+            Central question
+            <HelpTooltip link="/help/manuscripts#central-question" aria-label="About central question">
+              The single question your work keeps circling. Not a topic
+              (&ldquo;grief&rdquo;) but an interrogation of it. Used by the AI to weigh
+              which gaps matter.
+            </HelpTooltip>
+          </label>
           <p class="mb-2 text-xs text-ink-lighter">What question does this body of work keep circling?</p>
           <textarea
             id="centralQuestion"
@@ -102,7 +129,13 @@
         </div>
 
         <div>
-          <label for="throughLine" class="block text-sm font-medium mb-1">Through-line</label>
+          <label for="throughLine" class="block text-sm font-medium mb-1 inline-flex items-center">
+            Through-line
+            <HelpTooltip link="/help/manuscripts#through-line" aria-label="About through-line">
+              The thread that holds the essays together as one work. Often discovered
+              rather than declared. Leave blank if you can&rsquo;t name it yet.
+            </HelpTooltip>
+          </label>
           <p class="mb-2 text-xs text-ink-lighter">What holds the essays together? (Leave blank if not yet clear.)</p>
           <textarea
             id="throughLine"
@@ -114,7 +147,13 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label for="emotionalArc" class="block text-sm font-medium mb-1">Emotional arc</label>
+            <label for="emotionalArc" class="block text-sm font-medium mb-1 inline-flex items-center">
+              Emotional arc
+              <HelpTooltip link="/help/manuscripts#emotional-arc" aria-label="About emotional arc">
+                The shape of feeling across the book. Not the plot &mdash; the change
+                in how the reader feels (refusal to acceptance, certainty to doubt).
+              </HelpTooltip>
+            </label>
             <p class="mb-2 text-xs text-ink-lighter">How should the reader feel the journey changing over time?</p>
             <textarea
               id="emotionalArc"
@@ -124,7 +163,14 @@
             />
           </div>
           <div>
-            <label for="narrativePromise" class="block text-sm font-medium mb-1">Narrative promise</label>
+            <label for="narrativePromise" class="block text-sm font-medium mb-1 inline-flex items-center">
+              Narrative promise
+              <HelpTooltip link="/help/manuscripts#narrative-promise" aria-label="About narrative promise">
+                The contract the opening implies. What the first few pages tell the
+                reader to expect. If you can&rsquo;t name it, the opening probably
+                isn&rsquo;t doing its work yet.
+              </HelpTooltip>
+            </label>
             <p class="mb-2 text-xs text-ink-lighter">What does the opening imply the book will deliver?</p>
             <textarea
               id="narrativePromise"
@@ -175,6 +221,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { manuscriptsApi } from '../api/manuscripts'
 import { api } from '../api/client'
+import HelpTooltip from '../components/ui/HelpTooltip.vue'
 import type { ApiResponse } from '@shared/ApiResponses'
 import type { Theme } from '../domain/Theme'
 import type { ManuscriptForm, ManuscriptStatus, ManuscriptVisibility } from '@shared/Manuscript'

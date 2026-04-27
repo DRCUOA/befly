@@ -1,4 +1,4 @@
-import { Router } from 'express'
+import { Router, json as expressJson } from 'express'
 import { adminController } from '../controllers/admin.controller.js'
 import { typographyController } from '../controllers/typography.controller.js'
 import { uploadsController, uploadSingle } from '../controllers/uploads.controller.js'
@@ -42,9 +42,17 @@ router.delete('/writings/:id', asyncHandler(adminController.deleteWriting))
 router.delete('/comments/:id', asyncHandler(adminController.deleteComment))
 router.delete('/appreciations/:id', asyncHandler(adminController.deleteAppreciation))
 
-// Essay import / export (JSON envelope; downloadable template provided)
+// Essay import / export (JSON envelope; downloadable template provided).
+// Import gets its own much larger body-parser limit because batch envelopes
+// can comfortably exceed the 2mb global cap. Admin-only + requireAdmin already
+// gates abuse, and reading 50mb of JSON is cheap compared to actually
+// inserting thousands of rows.
 router.get('/essays/template', asyncHandler(adminController.exportEssaysTemplate))
 router.get('/essays/export', asyncHandler(adminController.exportEssays))
-router.post('/essays/import', asyncHandler(adminController.importEssays))
+router.post(
+  '/essays/import',
+  expressJson({ limit: '50mb' }),
+  asyncHandler(adminController.importEssays)
+)
 
 export default router

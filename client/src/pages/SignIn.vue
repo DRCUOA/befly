@@ -13,7 +13,7 @@
           type="email"
           required
           autocomplete="email"
-          class="mt-1 block w-full rounded-md border-line bg-paper text-ink focus:border-[#717171] focus:ring-[#717171] focus:outline-none text-base sm:text-sm px-3 sm:px-4 py-2"
+          class="mt-1 block w-full rounded-md border-line bg-paper text-ink focus:border-accent focus:ring-accent focus:outline-none text-base sm:text-sm px-3 sm:px-4 py-2"
           placeholder="your@email.com"
         />
       </div>
@@ -28,7 +28,7 @@
           type="password"
           required
           autocomplete="current-password"
-          class="mt-1 block w-full rounded-md border-line bg-paper text-ink focus:border-[#717171] focus:ring-[#717171] focus:outline-none text-base sm:text-sm px-3 sm:px-4 py-2"
+          class="mt-1 block w-full rounded-md border-line bg-paper text-ink focus:border-accent focus:ring-accent focus:outline-none text-base sm:text-sm px-3 sm:px-4 py-2"
           placeholder="Enter your password"
         />
       </div>
@@ -41,13 +41,13 @@
         <button
           type="submit"
           :disabled="submitting || isLoading"
-          class="flex-1 px-6 py-2 border border-line bg-paper hover:bg-[#E5E5E5] text-[#717171] rounded-md disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
+          class="flex-1 px-6 py-2 border border-line bg-paper hover:bg-accent-muted text-ink-light rounded-md disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
         >
           {{ submitting ? 'Signing In...' : 'Sign In' }}
         </button>
         <router-link
           to="/signup"
-          class="px-6 py-2 border border-line bg-paper hover:bg-[#E5E5E5] text-[#717171] rounded-md text-center text-sm sm:text-base"
+          class="px-6 py-2 border border-line bg-paper hover:bg-accent-muted text-ink-light rounded-md text-center text-sm sm:text-base"
         >
           Sign Up
         </router-link>

@@ -45,9 +45,34 @@
             </div>
           </div>
           
-          <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-light tracking-tight leading-tight mb-8 sm:mb-10 md:mb-12">
-            {{ writing.title }}
-          </h1>
+          <div class="flex items-start justify-between gap-4 mb-8 sm:mb-10 md:mb-12">
+            <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-light tracking-tight leading-tight">
+              {{ writing.title }}
+            </h1>
+            <router-link
+              v-if="canEdit"
+              :to="`/write/${writing.id}`"
+              class="flex-shrink-0 mt-2 sm:mt-3 inline-flex items-center justify-center w-10 h-10 rounded text-ink-lighter hover:text-ink hover:bg-line transition-colors"
+              :aria-label="`Edit ${writing.title}`"
+              title="Edit essay"
+            >
+              <svg
+                class="w-5 h-5"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.6"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <!-- Heroicons "pencil-square" -->
+                <path d="M16.862 4.487 18.549 2.799a2.121 2.121 0 1 1 3 3L19.862 7.487M16.862 4.487 7.5 13.85l-1.5 4.5 4.5-1.5 9.362-9.363M16.862 4.487l3 3" />
+                <path d="M21 12v7.5A2.25 2.25 0 0 1 18.75 21.75H6A2.25 2.25 0 0 1 3.75 19.5V6.75A2.25 2.25 0 0 1 6 4.5h6" />
+              </svg>
+            </router-link>
+          </div>
           
           <div class="flex flex-wrap items-center gap-4 sm:gap-6 md:gap-8 text-xs sm:text-sm font-sans text-ink-lighter mb-8 sm:mb-12 md:mb-16">
             <span>{{ wordCount }} words</span>
@@ -136,7 +161,7 @@ import {
 } from '../utils/markdown'
 
 const route = useRoute()
-const { isAuthenticated } = useAuth()
+const { isAuthenticated, user, isAdmin } = useAuth()
 const readingStore = useReadingStore()
 const { origin: navOrigin, originLabel } = useNavigationOrigin('/home')
 
@@ -170,6 +195,13 @@ const excerpt = computed(() => {
   const cut = excerptPlainCutLength(text)
   if (cut >= text.length) return text
   return text.substring(0, cut) + '...'
+})
+
+// Show the edit affordance only to the author or to admins. Falls back to
+// false when no writing is loaded or the viewer is not signed in.
+const canEdit = computed(() => {
+  if (!writing.value || !isAuthenticated.value || !user.value) return false
+  return isAdmin.value || writing.value.userId === user.value.id
 })
 
 const formattedDate = computed(() => {

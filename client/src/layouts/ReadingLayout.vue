@@ -1,5 +1,5 @@
 <template>
-  <div class="reading-layout min-h-screen bg-paper">
+  <div class="reading-layout min-h-screen page-canvas">
     <header
       id="header"
       class="w-full bg-paper fixed top-0 z-50 border-b border-line"
@@ -10,7 +10,7 @@
             to="/home"
             class="flex items-center gap-2 text-xl sm:text-2xl font-light tracking-tight hover:text-ink-light"
           >
-            <img :src="logoUrl" alt="" class="h-8 w-8 sm:h-9 sm:w-9" />
+            <AppLogo size-class="h-8 w-8 sm:h-9 sm:w-9" />
             {{ siteName }}
           </router-link>
         </div>
@@ -103,7 +103,7 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import BackNavigation from '../components/reading/BackNavigation.vue'
 import { appConfig } from '../config/app'
 import AppFooter from '../components/ui/AppFooter.vue'
-import logoUrl from '../assets/logo2.png'
+import AppLogo from '../components/ui/AppLogo.vue'
 
 interface Props {
   backRoute?: string

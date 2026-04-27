@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-paper flex flex-col">
+  <div class="min-h-screen page-canvas flex flex-col">
     <!-- Minimal layout for landing page - full width sections -->
     <div class="flex-1">
       <slot />

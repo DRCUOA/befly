@@ -31,14 +31,21 @@
               </div>
             </div>
             <div class="flex items-center gap-2 shrink-0">
-              <button
-                v-if="canModify"
-                type="button"
-                @click="openGapsPanel"
-                class="px-4 py-2 text-sm tracking-wide font-sans bg-ink text-paper hover:bg-ink-light transition-colors duration-300"
-              >
-                Find gaps
-              </button>
+              <span v-if="canModify" class="inline-flex items-center">
+                <button
+                  type="button"
+                  @click="openGapsPanel"
+                  class="px-4 py-2 text-sm tracking-wide font-sans bg-ink text-paper hover:bg-ink-light transition-colors duration-300"
+                >
+                  Find gaps
+                </button>
+                <HelpTooltip link="/help/ai-assist#gap-analysis" placement="left" aria-label="About Find gaps">
+                  Walks every adjacent pair of items in the spine and asks the AI
+                  whether the reader will move smoothly from one to the next. Each
+                  junction is one OpenAI call; for a 20-item manuscript that&rsquo;s
+                  ~19 calls, costing roughly a few cents on the default model.
+                </HelpTooltip>
+              </span>
               <button
                 type="button"
                 @click="openExportDialog"
@@ -146,7 +153,14 @@
           <!-- RIGHT: the spine -->
           <div class="lg:col-span-2">
             <div class="flex items-center justify-between mb-6">
-              <h2 class="text-2xl font-light tracking-tight">The Spine</h2>
+              <span class="inline-flex items-center">
+                <h2 class="text-2xl font-light tracking-tight">The Spine</h2>
+                <HelpTooltip link="/help/manuscripts#the-spine" aria-label="About the spine">
+                  The ordered structure of the manuscript: sections containing items.
+                  This is what the AI walks during gap analysis &mdash; adjacent items
+                  here are what the reader will experience back-to-back.
+                </HelpTooltip>
+              </span>
               <div v-if="canModify" class="flex items-center gap-2">
                 <button
                   type="button"
@@ -330,7 +344,15 @@
       <div class="bg-paper w-full sm:max-w-2xl h-full overflow-y-auto shadow-lg flex flex-col">
         <header class="px-6 py-4 border-b border-line flex items-center justify-between sticky top-0 bg-paper z-10">
           <div>
-            <h3 class="text-lg font-light tracking-tight">Gap analysis</h3>
+            <span class="inline-flex items-center">
+              <h3 class="text-lg font-light tracking-tight">Gap analysis</h3>
+              <HelpTooltip link="/help/ai-assist" aria-label="About gap analysis">
+                The AI looks at adjacent items in the spine and reports gaps that
+                might lose a reader. Each suggestion lists the gap type,
+                confidence, and a &ldquo;Grounded in&rdquo; section showing the
+                excerpts it was anchored in. Always check grounding before acting.
+              </HelpTooltip>
+            </span>
             <p class="text-xs text-ink-lighter mt-1">
               Walks adjacent items in the spine and identifies where a reader may need more support.
             </p>
@@ -401,7 +423,7 @@
                   :disabled="updatingArtifactId === artifact.id"
                   @click="setArtifactStatus(artifact, 'accepted')"
                   class="px-2 py-1 text-xs font-sans border border-line text-ink-light hover:text-ink hover:border-ink-lighter disabled:opacity-50"
-                  title="Accept (keeps it in front of you)"
+                  title="Accept: stays at full opacity and is passed to future runs so the AI doesn't re-suggest it"
                 >
                   Accept
                 </button>
@@ -411,7 +433,7 @@
                   :disabled="updatingArtifactId === artifact.id"
                   @click="setArtifactStatus(artifact, 'rejected')"
                   class="px-2 py-1 text-xs font-sans border border-line text-ink-light hover:text-red-600 hover:border-red-300 disabled:opacity-50"
-                  title="Reject (still visible, dimmed)"
+                  title="Reject: stays visible (dimmed) so you have a record of what's been considered. Not passed to future runs."
                 >
                   Reject
                 </button>
@@ -587,7 +609,16 @@
         <h3 class="text-lg font-light tracking-tight">Add to spine</h3>
 
         <div>
-          <label class="block text-sm font-medium mb-1">Type</label>
+          <label class="block text-sm font-medium mb-1 inline-flex items-center">
+            Type
+            <HelpTooltip link="/help/manuscripts#item-types" aria-label="About item types">
+              <strong>Essay</strong> links to a real piece in your library.
+              <strong>Placeholder</strong> represents an essay not yet written.
+              <strong>Bridge</strong> is connective tissue you write inline.
+              <strong>Note</strong> and <strong>Fragment</strong> are working artefacts &mdash;
+              excluded from the export by default.
+            </HelpTooltip>
+          </label>
           <select v-model="newItem.itemType" class="block w-full rounded-md border-line bg-paper text-ink shadow-sm focus:border-ink focus:ring-ink">
             <option value="essay">Essay (link to one in your library)</option>
             <option value="placeholder">Placeholder (essay not written yet)</option>
@@ -655,6 +686,7 @@ import { manuscriptsApi } from '../api/manuscripts'
 import { api } from '../api/client'
 import { useAuth } from '../stores/auth'
 import EditableProse from '../components/manuscripts/EditableProse.vue'
+import HelpTooltip from '../components/ui/HelpTooltip.vue'
 import type { ApiResponse } from '@shared/ApiResponses'
 import type { Theme } from '../domain/Theme'
 import type { WritingBlock } from '../domain/WritingBlock'

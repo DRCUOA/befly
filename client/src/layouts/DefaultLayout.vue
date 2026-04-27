@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-paper">
+  <div class="min-h-screen page-canvas">
     <header
       class="w-full border-b border-line bg-paper sticky top-0 z-50"
     >
@@ -9,7 +9,7 @@
             :to="isAuthenticated ? '/home' : '/'"
             class="flex items-center gap-2 text-xl sm:text-2xl font-light tracking-tight hover:text-ink-light"
           >
-            <img :src="logoUrl" alt="" class="h-8 w-8 sm:h-9 sm:w-9" />
+            <AppLogo size-class="h-8 w-8 sm:h-9 sm:w-9" />
             {{ appConfig.appName }}
           </router-link>
           <nav class="hidden md:flex gap-8 text-sm tracking-wide font-sans items-center">
@@ -43,6 +43,13 @@
               :class="route.name === 'Landing' ? 'text-ink border-b border-ink' : 'text-ink-lighter'"
             >
               About
+            </router-link>
+            <router-link
+              to="/help"
+              class="pb-0.5 hover:text-ink transition-colors duration-300"
+              :class="String(route.name).startsWith('Help') ? 'text-ink border-b border-ink' : 'text-ink-lighter'"
+            >
+              Help
             </router-link>
             <router-link
               v-if="isAdmin"
@@ -180,6 +187,14 @@
           >
             About
           </router-link>
+          <router-link
+            to="/help"
+            @click="menuOpen = false"
+            class="block text-sm tracking-wide font-sans hover:text-ink transition-colors duration-300"
+            :class="String(route.name).startsWith('Help') ? 'text-ink' : 'text-ink-lighter'"
+          >
+            Help
+          </router-link>
           <template v-if="isAuthenticated">
             <router-link
               to="/write"
@@ -256,8 +271,8 @@ import { useRouter, useRoute } from 'vue-router'
 import { useAuth } from '../stores/auth'
 import { appConfig } from '../config/app'
 import AppFooter from '../components/ui/AppFooter.vue'
+import AppLogo from '../components/ui/AppLogo.vue'
 import { useTheme } from '../composables/useTheme'
-import logoUrl from '../assets/logo2.png'
 
 const router = useRouter()
 const route = useRoute()

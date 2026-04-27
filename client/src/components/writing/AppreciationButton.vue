@@ -12,11 +12,11 @@
           <button
             @click.stop="showPickerForType(group.type)"
             :disabled="loading"
-            class="inline-flex items-center px-2 py-1 rounded-md text-sm border border-line bg-paper hover:bg-gray-50 disabled:opacity-50"
-            :class="{ 'bg-[#E5E5E5] border-[#717171]': userReaction === group.type }"
+            class="inline-flex items-center px-2 py-1 rounded-md text-sm border border-line bg-paper text-ink-light hover:bg-accent-muted disabled:opacity-50"
+            :class="{ 'bg-accent-muted border-accent': userReaction === group.type }"
           >
             <span v-html="getReactionIcon(group.type)"></span>
-            <span class="ml-1 text-xs text-[#717171]">{{ group.count }}</span>
+            <span class="ml-1 text-xs text-ink-light">{{ group.count }}</span>
           </button>
 
           <!-- Reaction picker dropdown for this type -->
@@ -30,8 +30,8 @@
                 v-for="reaction in reactions"
                 :key="reaction.type"
                 @click="handleReactionClick(reaction.type)"
-                class="p-2 rounded hover:bg-gray-100"
-                :class="{ 'bg-[#E5E5E5]': userReaction === reaction.type }"
+                class="p-2 rounded text-ink-light hover:bg-accent-muted"
+                :class="{ 'bg-accent-muted': userReaction === reaction.type }"
                 :title="reaction.label"
               >
                 <span v-html="getReactionIcon(reaction.type)"></span>
@@ -46,7 +46,7 @@
             v-for="(appreciator, index) in group.users.slice(0, 3)"
             :key="appreciator.userId"
             :title="appreciator.userDisplayName || 'Unknown'"
-            class="relative inline-flex items-center justify-center w-7 h-7 rounded-full border-2 border-white text-[#717171] text-xs font-medium hover:z-10"
+            class="relative inline-flex items-center justify-center w-7 h-7 rounded-full border-2 border-paper text-ink-light text-xs font-medium hover:z-10"
             :class="getReactionColor(group.type)"
             :style="{ zIndex: group.users.length - index }"
           >
@@ -54,7 +54,7 @@
           </div>
           <div
             v-if="group.users.length > 3"
-            class="relative inline-flex items-center justify-center w-7 h-7 rounded-full border-2 border-white bg-[#D3D3D3] text-[#717171] text-xs font-medium hover:z-10"
+            class="relative inline-flex items-center justify-center w-7 h-7 rounded-full border-2 border-paper bg-accent-muted text-ink-light text-xs font-medium hover:z-10"
             :title="`${group.users.length - 3} more`"
             :style="{ zIndex: 0 }"
           >
@@ -69,11 +69,11 @@
       <button
         @click.stop="showPicker = !showPicker"
         :disabled="loading"
-        class="inline-flex items-center px-3 py-1 rounded-md text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed border border-line bg-paper hover:bg-gray-50"
+        class="inline-flex items-center px-3 py-1 rounded-md text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed border border-line bg-paper text-ink-light hover:bg-accent-muted"
       >
         <span v-if="loading">...</span>
         <span v-else v-html="getReactionIcon('like')"></span>
-        <span v-if="totalCount > 0" class="ml-1 text-xs text-[#717171]">{{ totalCount }}</span>
+        <span v-if="totalCount > 0" class="ml-1 text-xs text-ink-light">{{ totalCount }}</span>
       </button>
 
       <!-- Reaction picker dropdown -->
@@ -87,8 +87,8 @@
             v-for="reaction in reactions"
             :key="reaction.type"
             @click="handleReactionClick(reaction.type)"
-            class="p-2 rounded hover:bg-gray-100"
-            :class="{ 'bg-[#E5E5E5]': userReaction === reaction.type }"
+            class="p-2 rounded text-ink-light hover:bg-accent-muted"
+            :class="{ 'bg-accent-muted': userReaction === reaction.type }"
             :title="reaction.label"
           >
             <span v-html="getReactionIcon(reaction.type)"></span>
@@ -156,26 +156,29 @@ const reactions = [
   { type: 'angry' as ReactionType, label: 'Angry' }
 ]
 
-// Get icon SVG markup for reaction type - conservative icons in dark silver (#717171)
+// Get icon SVG markup for reaction type. Strokes use currentColor so the
+// icons inherit the parent button's text color and stay theme-aware in
+// both light and dark modes.
 const getReactionIcon = (type: ReactionType | null): string => {
   if (!type) type = 'like'
   
   const icons: Record<ReactionType, string> = {
-    like: `<svg class="w-4 h-4" fill="none" stroke="#717171" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" /></svg>`,
-    love: `<svg class="w-4 h-4" fill="none" stroke="#717171" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>`,
-    laugh: `<svg class="w-4 h-4" fill="none" stroke="#717171" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`,
-    wow: `<svg class="w-4 h-4" fill="none" stroke="#717171" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg>`,
-    sad: `<svg class="w-4 h-4" fill="none" stroke="#717171" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`,
-    angry: `<svg class="w-4 h-4" fill="none" stroke="#717171" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>`
+    like: `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" /></svg>`,
+    love: `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>`,
+    laugh: `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`,
+    wow: `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg>`,
+    sad: `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`,
+    angry: `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>`
   }
   
   return icons[type] || icons.like
 }
 
-// Get color class for reaction avatar - pastel grey and dark silver
+// Get color class for reaction avatar. All reactions share the same muted
+// accent surface so avatars sit quietly behind the conversation rather than
+// competing with the prose.
 const getReactionColor = (_type: ReactionType): string => {
-  // All reactions use the same conservative color scheme
-  return 'bg-[#D3D3D3]' // Pastel grey
+  return 'bg-accent-muted'
 }
 
 // Group appreciations by reaction type

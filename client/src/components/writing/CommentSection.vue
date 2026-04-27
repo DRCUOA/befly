@@ -15,7 +15,7 @@
           :disabled="submitting"
           placeholder="Write your comment..."
           rows="4"
-          class="w-full px-3 sm:px-4 py-2 sm:py-3 border border-line bg-paper text-ink rounded-md resize-none focus:outline-none focus:ring-1 focus:ring-[#717171] focus:border-[#717171] disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
+          class="w-full px-3 sm:px-4 py-2 sm:py-3 border border-line bg-paper text-ink rounded-md resize-none focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
           maxlength="5000"
         ></textarea>
         <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0">
@@ -23,7 +23,7 @@
           <button
             type="submit"
             :disabled="submitting || !newCommentContent.trim()"
-            class="w-full sm:w-auto px-4 py-2 text-xs sm:text-sm border border-line bg-paper hover:bg-[#E5E5E5] disabled:opacity-50 disabled:cursor-not-allowed text-[#717171]"
+            class="w-full sm:w-auto px-4 py-2 text-xs sm:text-sm border border-line bg-paper hover:bg-accent-muted disabled:opacity-50 disabled:cursor-not-allowed text-ink-light"
           >
             {{ submitting ? 'Posting...' : 'Post Comment' }}
           </button>
@@ -53,7 +53,7 @@
       >
         <div class="flex items-start justify-between mb-3 gap-3">
           <div class="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
-            <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#D3D3D3] flex items-center justify-center text-xs font-medium text-[#717171] flex-shrink-0">
+            <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-accent-muted flex items-center justify-center text-xs font-medium text-ink-light flex-shrink-0">
               {{ getInitials(comment.userDisplayName || '?') }}
             </div>
             <div class="min-w-0">
@@ -100,7 +100,7 @@
             v-model="editingContent"
             :disabled="updating"
             rows="4"
-            class="w-full px-3 sm:px-4 py-2 sm:py-3 border border-line bg-paper text-ink rounded-md resize-none focus:outline-none focus:ring-1 focus:ring-[#717171] focus:border-[#717171] disabled:opacity-50 text-sm sm:text-base"
+            class="w-full px-3 sm:px-4 py-2 sm:py-3 border border-line bg-paper text-ink rounded-md resize-none focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent disabled:opacity-50 text-sm sm:text-base"
             maxlength="5000"
           ></textarea>
           <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0">
@@ -109,14 +109,14 @@
               <button
                 type="button"
                 @click="cancelEdit"
-                class="flex-1 sm:flex-none px-3 py-1 text-xs border border-line bg-paper hover:bg-[#E5E5E5] text-[#717171]"
+                class="flex-1 sm:flex-none px-3 py-1 text-xs border border-line bg-paper hover:bg-accent-muted text-ink-light"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 :disabled="updating || !editingContent.trim()"
-                class="flex-1 sm:flex-none px-3 py-1 text-xs border border-line bg-paper hover:bg-[#E5E5E5] disabled:opacity-50 disabled:cursor-not-allowed text-[#717171]"
+                class="flex-1 sm:flex-none px-3 py-1 text-xs border border-line bg-paper hover:bg-accent-muted disabled:opacity-50 disabled:cursor-not-allowed text-ink-light"
               >
                 {{ updating ? 'Saving...' : 'Save' }}
               </button>

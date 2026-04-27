@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-paper flex flex-col">
+  <div class="min-h-screen page-canvas flex flex-col">
     <!-- Minimal header: ≤5 controls per epic DoD -->
     <header class="w-full border-b border-line bg-paper sticky top-0 z-50">
       <div class="w-full px-4 sm:px-6 md:px-8 lg:px-12 py-4 sm:py-6 flex items-center justify-between min-h-[44px]">
@@ -7,7 +7,7 @@
           to="/home"
           class="flex items-center gap-2 text-lg font-light tracking-tight text-ink-lighter hover:text-ink"
         >
-          <img :src="logoUrl" alt="" class="h-7 w-7" />
+          <AppLogo size-class="h-7 w-7" />
           {{ appConfig.appName }}
         </router-link>
 
@@ -86,7 +86,7 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '../stores/auth'
 import { appConfig } from '../config/app'
-import logoUrl from '../assets/logo2.png'
+import AppLogo from '../components/ui/AppLogo.vue'
 
 const router = useRouter()
 const { user, signout } = useAuth()

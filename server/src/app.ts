@@ -59,8 +59,13 @@ app.use(cors({
   credentials: true
 }))
 app.use(cookieParser())
-app.use(express.json())
-app.use(express.urlencoded({ extended: true }))
+// Global JSON body limit. Default is body-parser's 100kb which is too small
+// for a single long-form essay. 2mb comfortably fits any realistic single
+// essay POST/PUT (titles, body markdown, theme arrays) without giving any
+// individual route enough rope for a DoS. Bulk-import endpoints override
+// this with a much higher per-route limit at the route definition site.
+app.use(express.json({ limit: '2mb' }))
+app.use(express.urlencoded({ extended: true, limit: '2mb' }))
 
 // Apply general rate limiting to all API routes (except health check and auth routes)
 // Auth routes have their own stricter rate limiting

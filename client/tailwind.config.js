@@ -29,6 +29,10 @@ export default {
         'accent': cv('--color-accent'),
         'accent-hover': cv('--color-accent-hover'),
         'accent-muted': cv('--color-accent-muted'),
+        /* Coromandel Dusk palette extras — for highlights and celebratory UI.
+           Constant across modes so they read as deliberate accents. */
+        'highlight': cv('--color-highlight'), /* Solar Scarlet */
+        'gold': cv('--color-gold'),           /* Horizon Gold  */
       },
       spacing: {
         '18': '4.5rem',
