@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@300;400;500;600&family=Inter:wght@300;400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@300;400;500;600&family=Inter:wght@300;400;500&family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -37,6 +37,12 @@
   /* Optional palette colors — exposed for highlights, marks, and special UI */
   --color-highlight:    255  46  10; /* Solar Scarlet — emphasis / errors        */
   --color-gold:         255 208  85; /* Horizon Gold — premium / celebratory     */
+
+  /* Typography — the writing surface uses a real typewriter face for the
+     classic typed-on-paper feel. Courier Prime is the authentic choice
+     (clean enough for long-form, characterful enough to read as machine-
+     typed). Fallbacks cover macOS and generic systems. */
+  --font-typewriter: 'Courier Prime', 'American Typewriter', 'Courier New', ui-monospace, monospace;
 
   --space-xs: 4px;
   --space-sm: 8px;
@@ -134,14 +140,14 @@ body {
   cursor: default;
 }
 
-/* Breathing caret — P2-uix-06 / cni-06
-   Smooth opacity pulse replaces the harsh native blink.
-   1200ms cycle keeps the rhythm calm (spec ≥800ms).
-   Caret resets to full opacity on every keystroke so it feels
-   solid during active input and breathes only when idle. */
+/* Breathing caret — P2-uix-06 / cni-06 / zen
+   A slow, steady pulse in the accent color. The caret never fully fades —
+   minimum opacity stays high enough to read as "present and alive" rather
+   than blinking. 2400ms cycle so the rhythm reads as calm breath, not a
+   nervous tick. */
 @keyframes caret-breathe {
   0%, 100% { opacity: 1; }
-  50% { opacity: 0.2; }
+  50%      { opacity: 0.45; }
 }
 
 .breathing-caret {
@@ -152,7 +158,7 @@ body {
   z-index: 1;
   border-radius: 1px;
   will-change: opacity;
-  animation: caret-breathe 1200ms ease-in-out infinite;
+  animation: caret-breathe 2400ms cubic-bezier(0.45, 0, 0.55, 1) infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {

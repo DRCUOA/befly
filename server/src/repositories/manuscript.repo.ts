@@ -188,6 +188,84 @@ export const manuscriptRepo = {
     return attachSourceThemes(result.rows, themeMap)[0] as ManuscriptProject
   },
 
+  /**
+   * Find the manuscript that contains a given writing-block, if any. Returns
+   * the project plus a lightweight list of sibling items (other essays /
+   * placeholders in the same spine, with a one-line summary derived from
+   * either the item's writer-set summary or the first paragraph of the
+   * essay body). Used by writing-assist's coherence mode so the model can
+   * answer character-arc / cross-chapter questions with real context.
+   *
+   * Returns null if the writing-block is not part of any manuscript the
+   * caller can read. Visibility is enforced via assertAccess on the
+   * containing manuscript before any sibling rows are returned.
+   */
+  async findContextForWriting(
+    writingBlockId: string,
+    userId: string | null,
+    isAdmin: boolean = false
+  ): Promise<{
+    manuscript: ManuscriptProject
+    siblings: { itemId: string; title: string; summary: string }[]
+  } | null> {
+    // Step 1: locate the manuscript via the items table.
+    const lookup = await pool.query(
+      `SELECT manuscript_id AS "manuscriptId"
+         FROM manuscript_items
+        WHERE writing_block_id = $1
+        LIMIT 1`,
+      [writingBlockId]
+    )
+    if (lookup.rows.length === 0) return null
+    const manuscriptId = lookup.rows[0].manuscriptId as string
+
+    // Step 2: enforce read access on the containing manuscript. Throws
+    // ForbiddenError if the caller can't see it; we surface that as null
+    // so coherence falls back to "no manuscript context" rather than a 403.
+    try {
+      await assertAccess(manuscriptId, userId, isAdmin, 'read')
+    } catch {
+      return null
+    }
+
+    // Step 3: load the manuscript itself.
+    const projectResult = await pool.query(
+      `SELECT ${PROJECT_COLUMNS} FROM manuscript_projects WHERE id = $1`,
+      [manuscriptId]
+    )
+    if (projectResult.rows.length === 0) return null
+    const themeMap = await loadSourceThemeIds([manuscriptId])
+    const manuscript = attachSourceThemes(projectResult.rows, themeMap)[0] as ManuscriptProject
+
+    // Step 4: load sibling items. We deliberately use the writer's summary
+    // when present and fall back to the first ~280 chars of essay body —
+    // never the full body, because coherence prompts can pull in many
+    // siblings and we'd blow the token budget otherwise.
+    const siblingResult = await pool.query(
+      `SELECT
+         mi.id          AS "itemId",
+         mi.title,
+         mi.summary,
+         w.body         AS "body"
+       FROM manuscript_items mi
+       LEFT JOIN writing_blocks w ON w.id = mi.writing_block_id
+       WHERE mi.manuscript_id = $1
+         AND (mi.writing_block_id IS NULL OR mi.writing_block_id != $2)
+       ORDER BY mi.order_index ASC, mi.created_at ASC
+       LIMIT 30`,
+      [manuscriptId, writingBlockId]
+    )
+
+    const siblings = siblingResult.rows.map((r: { itemId: string; title: string; summary: string | null; body: string | null }) => {
+      const summary = r.summary?.trim()
+        || r.body?.trim().split(/\n\s*\n/, 1)[0]?.slice(0, 280)
+        || '(no summary or body yet)'
+      return { itemId: r.itemId, title: r.title, summary }
+    })
+
+    return { manuscript, siblings }
+  },
+
   async create(input: {
     userId: string
     title: string

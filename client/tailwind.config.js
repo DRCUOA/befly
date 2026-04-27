@@ -17,6 +17,14 @@ export default {
       fontFamily: {
         'serif': ['Crimson Pro', 'serif'],
         'sans': ['Inter', 'sans-serif'],
+        /* The writing surface uses this — see --font-typewriter in index.css. */
+        'typewriter': [
+          'Courier Prime',
+          'American Typewriter',
+          'Courier New',
+          'ui-monospace',
+          'monospace',
+        ],
       },
       colors: {
         'paper': cv('--color-paper'),

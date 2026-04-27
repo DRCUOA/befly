@@ -20,6 +20,7 @@ import {
   LlmConfigurationError,
   LlmRequestError,
 } from './llm-client.js'
+import { logger } from '../../utils/logger.js'
 
 const DEFAULT_MODEL = 'gpt-4o-mini'
 const DEFAULT_TEMPERATURE = 0.4
@@ -58,6 +59,15 @@ class OpenAIClient implements LlmClient {
       ],
     }
 
+    logger.debug('[openai] outbound request', {
+      model,
+      temperature: body.temperature,
+      max_tokens: body.max_tokens,
+      systemChars: req.system.length,
+      userChars: req.user.length,
+    })
+
+    const sentAt = Date.now()
     let response: Response
     try {
       response = await fetch(ENDPOINT, {
@@ -69,6 +79,11 @@ class OpenAIClient implements LlmClient {
         body: JSON.stringify(body),
       })
     } catch (networkErr) {
+      logger.error('[openai] network error', {
+        model,
+        ms: Date.now() - sentAt,
+        message: networkErr instanceof Error ? networkErr.message : String(networkErr),
+      })
       throw new LlmRequestError(
         `OpenAI request failed: ${networkErr instanceof Error ? networkErr.message : 'network error'}`
       )
@@ -76,6 +91,13 @@ class OpenAIClient implements LlmClient {
 
     if (!response.ok) {
       const text = await response.text().catch(() => '')
+      logger.error('[openai] non-2xx response', {
+        model,
+        status: response.status,
+        ms: Date.now() - sentAt,
+        // Truncated server error so logs stay readable but the cause is visible.
+        body: text.slice(0, 500),
+      })
       throw new LlmRequestError(
         `OpenAI returned ${response.status}: ${text.slice(0, 500)}`,
         response.status
@@ -96,10 +118,24 @@ class OpenAIClient implements LlmClient {
     try {
       json = JSON.parse(content)
     } catch (parseErr) {
+      logger.error('[openai] non-JSON content despite json_object mode', {
+        model,
+        ms: Date.now() - sentAt,
+        contentSnippet: content.slice(0, 200),
+      })
       throw new LlmRequestError(
         `OpenAI returned non-JSON content despite json_object mode: ${content.slice(0, 200)}`
       )
     }
+
+    logger.debug('[openai] response parsed', {
+      model,
+      ms: Date.now() - sentAt,
+      promptTokens: payload.usage?.prompt_tokens,
+      completionTokens: payload.usage?.completion_tokens,
+      totalTokens: payload.usage?.total_tokens,
+      contentChars: content.length,
+    })
 
     return {
       json,
