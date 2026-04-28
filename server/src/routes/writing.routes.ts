@@ -19,7 +19,9 @@ router.post('/', authMiddleware, validateBody(['title', 'body']), asyncHandler(w
 router.put('/:id', authMiddleware, asyncHandler(writingController.update))
 router.delete('/:id', authMiddleware, asyncHandler(writingController.delete))
 
-// AI assist — coherence Q&A, define, focus, expand, proofread.
+// AI assist — six core modes (coherence, define, focus, expand, proofread,
+// factcheck) plus the four-mode "Develop" quadrant (fiction-breadth,
+// fiction-depth, nonfiction-breadth, nonfiction-depth).
 // See shared/WritingAssist.ts for the per-mode args shape.
 router.post('/:id/assist', authMiddleware, validateBody(['mode', 'args']), asyncHandler(writingController.runAssist))
 

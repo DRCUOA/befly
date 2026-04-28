@@ -13,7 +13,24 @@ import type {
 } from '@shared/WritingAssist'
 
 const VALID_ASSIST_MODES: readonly WritingAssistMode[] = [
-  'coherence', 'define', 'focus', 'expand', 'proofread',
+  'coherence', 'define', 'focus', 'expand', 'proofread', 'factcheck',
+  // Develop quadrant — four sister modes grouped under the cluster's
+  // "Develop" sub-menu. Same arg shape as `expand`; the prompt carries
+  // the per-mode bias.
+  'fiction-breadth', 'fiction-depth', 'nonfiction-breadth', 'nonfiction-depth',
+] as const
+
+/**
+ * Allow-list of OpenAI models the writer can pick from the cluster's model
+ * selector. Keep in sync with MODEL_OPTIONS in WritingToolsCluster.vue.
+ * If the client sends anything outside this list, we ignore it and fall
+ * back to the OPENAI_MODEL env / default.
+ */
+const ALLOWED_MODELS: readonly string[] = [
+  'gpt-5.5',
+  'gpt-5.4-mini',
+  'gpt-4.1',
+  'gpt-4o-mini',
 ] as const
 
 /**
@@ -148,7 +165,9 @@ export const writingController = {
    * POST /api/writing/:id/assist
    *
    * Body: { mode, args }
-   *   - mode: 'coherence' | 'define' | 'focus' | 'expand' | 'proofread'
+   *   - mode: 'coherence' | 'define' | 'focus' | 'expand' | 'proofread' | 'factcheck'
+   *           | 'fiction-breadth' | 'fiction-depth'
+   *           | 'nonfiction-breadth' | 'nonfiction-depth'
    *   - args: per-mode shape (see shared/WritingAssist.ts)
    *
    * Returns the AI body + an optional drop-in replacement string.
@@ -195,10 +214,17 @@ export const writingController = {
     // assemble the discriminated union here so TypeScript stays happy.
     const request = { mode, args: argsRaw } as WritingAssistRequest
 
+    // Optional: which OpenAI model to use. Validated against ALLOWED_MODELS;
+    // anything else is silently ignored (server falls back to env default).
+    let model: string | undefined
+    if (typeof req.body?.model === 'string' && ALLOWED_MODELS.includes(req.body.model)) {
+      model = req.body.model
+    }
+
     const startedAt = Date.now()
     try {
       const result = await writingAssistService.run(
-        { writingId: id, request },
+        { writingId: id, request, model },
         userId,
         admin
       )

@@ -12,11 +12,22 @@
  */
 
 export type WritingAssistMode =
-  | 'coherence'   // free-form Q&A about the essay (with sibling-essay context)
-  | 'define'      // dictionary-style definition for a word or phrase
-  | 'focus'       // tighten a selection without losing meaning
-  | 'expand'      // add substance to a selection or whole essay (no padding)
-  | 'proofread'   // light-touch spelling/grammar/style fixes that preserve voice
+  | 'coherence'             // free-form Q&A about the essay (with sibling-essay context)
+  | 'define'                // dictionary-style definition for a word or phrase
+  | 'focus'                 // tighten a selection without losing meaning
+  | 'expand'                // add substance to a selection or whole essay (no padding)
+  | 'proofread'             // light-touch spelling/grammar/style fixes that preserve voice
+  | 'factcheck'             // evaluate factual claims for plausibility / accuracy
+  /* ---- Develop quadrant ---- four sister modes, each pushes the
+   * piece outward in one of two directions for one of two registers.
+   * Sister to 'expand', but each is opinionated about the kind of
+   * growth it produces. The cluster groups them under a single
+   * "Develop" sub-menu so the top toolbar stays zen.
+   */
+  | 'fiction-breadth'       // "Broaden the canvas" — subplots, POVs, regions, supporting cast
+  | 'fiction-depth'         // "Deepen the stakes" — interiority, backstory, sensory atmosphere
+  | 'nonfiction-breadth'    // "Cast a wider net" — adjacent topics, broader inquiry
+  | 'nonfiction-depth'      // "Drill down" — rigorous development of one specific point
 
 /* ---- Args, one shape per mode ---- */
 
@@ -62,14 +73,70 @@ export interface WritingAssistProofreadArgs {
   selection?: string
 }
 
+export interface WritingAssistFactCheckArgs {
+  /**
+   * The piece of text to fact-check. If omitted, the server checks the
+   * whole essay. Returns advisory findings (not replacement prose).
+   */
+  selection?: string
+}
+
+/* ---- Develop-quadrant args ----
+ *
+ * All four modes share the same shape (selection? + target). The four
+ * are kept as distinct interfaces (rather than one shared shape with a
+ * 'register' discriminator) so each can evolve its own knobs later
+ * without breaking the union — e.g. fiction-depth might one day take
+ * a `pov?: 'first' | 'third'` arg, and nonfiction-depth might take
+ * a `claimToDevelop?: string` arg.
+ *
+ * Like `expand`, each is transformative: the response carries
+ * `replacement` prose the writer can drop into the essay. The prompts
+ * (server-side) carry the per-mode bias — what KIND of growth to
+ * produce — so this layer stays simple.
+ */
+
+export interface WritingAssistFictionBreadthArgs {
+  /** The text to broaden. If omitted, the server works on the whole essay. */
+  selection?: string
+  /** 'whole' = broaden the entire essay; 'section' = a selection only. */
+  target: 'whole' | 'section'
+}
+
+export interface WritingAssistFictionDepthArgs {
+  /** The text to deepen. If omitted, the server works on the whole essay. */
+  selection?: string
+  /** 'whole' = deepen the entire essay; 'section' = a selection only. */
+  target: 'whole' | 'section'
+}
+
+export interface WritingAssistNonfictionBreadthArgs {
+  /** The text to widen. If omitted, the server works on the whole essay. */
+  selection?: string
+  /** 'whole' = widen the entire essay; 'section' = a selection only. */
+  target: 'whole' | 'section'
+}
+
+export interface WritingAssistNonfictionDepthArgs {
+  /** The text to drill into. If omitted, the server works on the whole essay. */
+  selection?: string
+  /** 'whole' = develop the entire essay's core thesis; 'section' = a selection only. */
+  target: 'whole' | 'section'
+}
+
 /* ---- Discriminated request union ---- */
 
 export type WritingAssistRequest =
-  | { mode: 'coherence'; args: WritingAssistCoherenceArgs }
-  | { mode: 'define';    args: WritingAssistDefineArgs }
-  | { mode: 'focus';     args: WritingAssistFocusArgs }
-  | { mode: 'expand';    args: WritingAssistExpandArgs }
-  | { mode: 'proofread'; args: WritingAssistProofreadArgs }
+  | { mode: 'coherence';            args: WritingAssistCoherenceArgs }
+  | { mode: 'define';               args: WritingAssistDefineArgs }
+  | { mode: 'focus';                args: WritingAssistFocusArgs }
+  | { mode: 'expand';               args: WritingAssistExpandArgs }
+  | { mode: 'proofread';            args: WritingAssistProofreadArgs }
+  | { mode: 'factcheck';            args: WritingAssistFactCheckArgs }
+  | { mode: 'fiction-breadth';      args: WritingAssistFictionBreadthArgs }
+  | { mode: 'fiction-depth';        args: WritingAssistFictionDepthArgs }
+  | { mode: 'nonfiction-breadth';   args: WritingAssistNonfictionBreadthArgs }
+  | { mode: 'nonfiction-depth';     args: WritingAssistNonfictionDepthArgs }
 
 /* ---- Response ---- */
 

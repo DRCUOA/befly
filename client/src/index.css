@@ -38,6 +38,10 @@
   --color-highlight:    255  46  10; /* Solar Scarlet — emphasis / errors        */
   --color-gold:         255 208  85; /* Horizon Gold — premium / celebratory     */
 
+  /* Writing-tools cluster icons. Tracks the theme but uses its own token
+     so we can pick a silver-white in dark mode without affecting body text. */
+  --cluster-icon-color:  30  46  28; /* Coastal Silhouette — dark green */
+
   /* Typography — the writing surface uses a real typewriter face for the
      classic typed-on-paper feel. Courier Prime is the authentic choice
      (clean enough for long-form, characterful enough to read as machine-
@@ -74,6 +78,7 @@
 
   --color-highlight:           255  46  10; /* Solar Scarlet                        */
   --color-gold:                255 208  85; /* Horizon Gold                         */
+  --cluster-icon-color:        255 255 255; /* bright white — maximum contrast on the dark cluster */
 }
 
 * {
@@ -83,6 +88,13 @@
 
 html {
   scroll-behavior: auto;
+  /* Defensive: some browser extensions (Dark Reader, Stylus user-styles,
+     etc.) inject a bare `.dark { display: none }` rule that matches
+     <html> when it has the .dark class — collapsing the entire page.
+     This !important guarantees <html> is always rendered regardless of
+     what classes accumulate on it. Cheap insurance with no downside:
+     <html> should never legitimately be display:none. */
+  display: block !important;
 }
 
 body {
@@ -102,7 +114,15 @@ body {
 }
 
 .dark .page-canvas {
-  background:
+  /* Use background-color + background-image (NOT the `background:`
+     shorthand) so the solid colour stays as a fallback if the gradient
+     vars resolve weirdly. The shorthand would reset background-color
+     to transparent — historically that paired badly with leaked inline
+     theme vars on <html>, producing dark text on transparent → solid
+     html bg → in some pages an invisible content area.
+     Setting both ensures the canvas is ALWAYS dark in dark mode. */
+  background-color: rgb(var(--color-paper));
+  background-image:
     linear-gradient(
       135deg,
       rgb(var(--color-paper-gradient-from)) 0%,

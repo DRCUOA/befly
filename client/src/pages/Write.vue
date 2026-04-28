@@ -1,5 +1,5 @@
 <template>
-  <div class="zen-editor w-full">
+  <div class="zen-editor w-full" :class="{ 'panel-open': assistOpen || metadataPanelOpen }">
     <!-- Typewriter chrome — purely decorative, evokes the machine without
          crowding the surface. Top: cylindrical platen bar with end-knobs.
          Bottom: ribbon strip with a thin accent stripe and ruler ticks.
@@ -21,6 +21,36 @@
     <!-- Zen editor surface: just the writing block. No header, no footer, no
          banners. All controls live in the floating WritingToolsCluster. -->
     <form @submit.prevent="handleSubmit" class="flex flex-col w-full">
+      <!-- Brightness slider — a near-invisible track in the top line of
+           the writing block. Sun icon thumb. Slides from full dark theme
+           (left) to full light theme (right). Drives JS interpolation of
+           every --color-* variable on documentElement. -->
+      <div class="zen-brightness w-full max-w-[100ch] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 pt-3">
+        <div class="zen-brightness-track">
+          <input
+            ref="brightnessInputRef"
+            type="range"
+            min="0"
+            max="100"
+            step="1"
+            v-model.number="brightnessValue"
+            aria-label="Page brightness — dark theme to light theme"
+            :title="`Brightness: ${brightnessValue}%`"
+            class="zen-brightness-slider"
+          />
+          <!-- Sun icon shown adjacent to the thumb. Stays at the right end as
+               a "destination = light" cue regardless of thumb position. -->
+          <span class="zen-brightness-icon" aria-hidden="true">
+            <svg width="14" height="14" viewBox="0 0 20 20" fill="none"
+                 stroke="currentColor" stroke-width="1.4"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="10" cy="10" r="3.2" />
+              <path d="M10 2v2M10 16v2M2 10h2M16 10h2M4.6 4.6l1.4 1.4M14 14l1.4 1.4M4.6 15.4l1.4-1.4M14 6l1.4-1.4" />
+            </svg>
+          </span>
+        </div>
+      </div>
+
       <!-- Title — typed onto the page, not a UI label. Same typewriter
            font as the body, slightly larger, with a faint bottom rule
            that suggests an underline-stamp from the typewriter itself.
@@ -48,6 +78,7 @@
           v-model="form.body"
           required
           class="zen-body block w-full min-h-[40vh] border-0 bg-transparent font-typewriter text-base sm:text-lg text-ink placeholder:text-ink-whisper focus:ring-0 focus:outline-none resize-none overflow-hidden py-2"
+          :style="bodyFontStyle"
           placeholder="Place your text here"
           aria-label="Body"
           @input="onBodyInput"
@@ -66,18 +97,15 @@
           ref="bodyMirrorRef"
           class="zen-body absolute top-0 left-0 right-0 invisible font-typewriter text-base sm:text-lg px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 py-2 whitespace-pre-wrap break-words pointer-events-none"
           :class="bodyMirrorClasses"
+          :style="bodyFontStyle"
           aria-hidden="true"
         ></div>
       </div>
     </form>
 
-    <!-- Slide-out metadata panel (cover, themes, visibility) - P1-uix-02 -->
-    <div
-      v-if="metadataPanelOpen"
-      class="fixed inset-0 z-30 bg-black/20 transition-opacity duration-150"
-      aria-hidden="true"
-      @click="metadataPanelOpen = false"
-    />
+    <!-- Metadata panel (cover, themes, visibility) — sits alongside the
+         editor when open (no modal backdrop), thanks to the panel-open
+         class on .zen-editor that adds right-padding to the writing area. -->
     <MetadataPanel
       v-model="metadataPanelOpen"
       :form="form"
@@ -104,10 +132,15 @@
       :save-busy="submitting"
       :save-disabled="loadingWriting || !canSave"
       :metadata-open="metadataPanelOpen"
+      :cursor-y="cursorViewportY"
+      :model="selectedModel"
       @select="openAssist"
       @save="handleSubmit"
       @metadata="metadataPanelOpen = true"
       @exit="handleExit"
+      @font-up="bumpFontSize(+1)"
+      @font-down="bumpFontSize(-1)"
+      @update:model="onModelChange"
     />
 
     <!-- Tiny bottom-left status pill — only visible briefly after save success
@@ -614,18 +647,50 @@ const hasLiveSelection = ref(false)
 // `writingAssist.isLoading` keeps the underlying ComputedRef wrapped, which
 // causes "Expected Boolean, got Object" prop warnings on the panel. So we
 // destructure into top-level locals.
+/* ============================================================
+ * Selected OpenAI model — the writer picks from a popover in the cluster.
+ * Default 'gpt-4o-mini' (cheapest, matches the server's prior default).
+ * Persisted to localStorage so the choice survives page reloads. The
+ * server validates against an allow-list before honouring it.
+ * ============================================================ */
+const SELECTED_MODEL_STORAGE_KEY = 'rambulations-selected-model'
+const DEFAULT_MODEL = 'gpt-4o-mini'
+
+const selectedModel = ref<string>((() => {
+  try {
+    return localStorage.getItem(SELECTED_MODEL_STORAGE_KEY) || DEFAULT_MODEL
+  } catch {
+    return DEFAULT_MODEL
+  }
+})())
+
+function onModelChange(modelId: string) {
+  selectedModel.value = modelId
+  try { localStorage.setItem(SELECTED_MODEL_STORAGE_KEY, modelId) } catch { /* quota / unavailable — ignore */ }
+}
+
 const {
-  response:           assistResponse,
-  isLoading:          assistIsLoading,
-  errorMessage:       assistErrorMessage,
-  unconfigured:       assistUnconfigured,
-  coherence:          runCoherence,
-  define:             runDefine,
-  focus:              runFocus,
-  expand:             runExpand,
-  proofread:          runProofread,
-  clear:              clearAssist,
-} = useWritingAssist(() => writingId.value ?? null)
+  response:             assistResponse,
+  isLoading:            assistIsLoading,
+  errorMessage:         assistErrorMessage,
+  unconfigured:         assistUnconfigured,
+  coherence:            runCoherence,
+  define:               runDefine,
+  focus:                runFocus,
+  expand:               runExpand,
+  proofread:            runProofread,
+  factCheck:            runFactCheck,
+  // Develop quadrant — four sister wrappers, dispatched from the
+  // cluster's Develop sub-menu. Same arg shape as runExpand.
+  fictionBreadth:       runFictionBreadth,
+  fictionDepth:         runFictionDepth,
+  nonfictionBreadth:    runNonfictionBreadth,
+  nonfictionDepth:      runNonfictionDepth,
+  clear:                clearAssist,
+} = useWritingAssist(
+  () => writingId.value ?? null,
+  () => selectedModel.value,
+)
 
 function captureCurrentSelection(): { text: string; start: number; end: number } {
   const ta = bodyTextareaRef.value
@@ -651,6 +716,184 @@ const canSave = computed(() =>
  *  Stays minimal, fades after a short timeout, keeps the canvas zen. */
 const zenStatus = ref<{ kind: 'success' | 'error' | 'info'; message: string } | null>(null)
 let zenStatusTimer: ReturnType<typeof setTimeout> | null = null
+
+/* ============================================================
+ * Body font size — controlled by the A+ / A- icons in the cluster.
+ * Default is null, meaning "use the CSS default" (text-base sm:text-lg).
+ * Once the writer adjusts, we apply a pixel-explicit font-size on both
+ * the textarea AND the mirror via :style binding. They MUST stay in
+ * sync or line wrapping will diverge and typewriter scroll breaks.
+ * ============================================================ */
+
+const FONT_SIZE_MIN = 12
+const FONT_SIZE_MAX = 28
+const FONT_SIZE_STEP = 2
+
+const bodyFontSize = ref<number | null>(null) // null = use CSS default
+
+/** Style object applied to both textarea and mirror. Returns an empty
+ *  object when no override is in play (CSS class governs). */
+const bodyFontStyle = computed<Record<string, string>>(() =>
+  bodyFontSize.value === null
+    ? {}
+    : { fontSize: `${bodyFontSize.value}px` }
+)
+
+function bumpFontSize(direction: number) {
+  const ta = bodyTextareaRef.value
+  const current = bodyFontSize.value
+    ?? (ta ? parseFloat(getComputedStyle(ta).fontSize) || 16 : 16)
+  const next = Math.max(FONT_SIZE_MIN, Math.min(FONT_SIZE_MAX, current + direction * FONT_SIZE_STEP))
+  bodyFontSize.value = next
+  // Re-snap textarea height since line-height (unitless 1.85) scales with
+  // font-size — the new content height is different. Wait one tick so the
+  // style binding has flushed before we measure.
+  nextTick(() => {
+    autoResizeBody()
+    refreshCursorViewportY()
+  })
+}
+
+/* ============================================================
+ * Idle autosave — saves the essay to the server 10 seconds after the
+ * last change, but only when:
+ *   - we're editing an existing essay (need a server-side id), AND
+ *   - the form differs from the last-saved state, AND
+ *   - we're not already in the middle of a manual save.
+ *
+ * Different from useWriteDraft (which writes to localStorage in create
+ * mode for crash-recovery). This one is server persistence in edit mode.
+ *
+ * Implementation: every form change resets a debounce timer; if no
+ * further changes land before it fires, the autosave runs.
+ * ============================================================ */
+
+const AUTOSAVE_IDLE_MS = 10000
+let autosaveTimer: ReturnType<typeof setTimeout> | null = null
+
+function scheduleAutosave() {
+  if (!isEditing.value) return // new essays still require manual Publish
+  if (autosaveTimer) clearTimeout(autosaveTimer)
+  autosaveTimer = setTimeout(runAutosaveIfNeeded, AUTOSAVE_IDLE_MS)
+}
+
+async function runAutosaveIfNeeded() {
+  autosaveTimer = null
+  // Re-check guards at fire time — state may have changed in the 10s
+  // since we scheduled. The writer might have hit Publish manually,
+  // navigated away, or simply not made any net changes.
+  if (!isEditing.value) return
+  if (submitting.value) return
+  if (!hasUnsavedChanges.value) return
+  const id = writingId.value
+  if (!id) return
+
+  try {
+    submitting.value = true
+    await api.put<ApiResponse<any>>(`/writing/${id}`, {
+      title: form.value.title,
+      body: form.value.body,
+      themeIds: form.value.themeIds,
+      visibility: form.value.visibility,
+      coverImageUrl: form.value.coverImageUrl || undefined,
+      coverImagePosition: form.value.coverImagePosition || undefined,
+    })
+    // Snap initialFormState to the just-saved values so hasUnsavedChanges
+    // flips false. Note this MUTATES form.value via setFormState; the
+    // subsequent watcher won't trigger another autosave because each
+    // watched getter returns the same primitive value as before.
+    setFormState(form.value)
+    flashZenStatus('info', 'Autosaved', 1200)
+  } catch (err) {
+    // Stay quiet on autosave failures — the writer didn't ask for this
+    // to happen, so a brief notice is enough; they can manually Save
+    // (cluster Save icon) if they want a guaranteed write.
+    const msg = err instanceof Error ? err.message : 'Autosave failed'
+    flashZenStatus('error', `Autosave failed: ${msg}`, 3000)
+  } finally {
+    submitting.value = false
+  }
+}
+
+// Watch every saveable form field. Any change schedules a fresh idle
+// timer — so 10 seconds of no further edits triggers the autosave.
+watch(
+  () => [
+    form.value.title,
+    form.value.body,
+    form.value.themeIds,
+    form.value.visibility,
+    form.value.coverImageUrl,
+    form.value.coverImagePosition,
+  ],
+  () => {
+    scheduleAutosave()
+  },
+  { deep: true }
+)
+
+/* ============================================================
+ * Brightness slider — interpolates between the dark and light theme
+ * colors defined in index.css. The slider value (0–100) drives a JS
+ * lerp of every --color-* variable, applied as inline styles on
+ * document.documentElement (which override :root and .dark definitions).
+ *
+ * The .dark structural class is also stripped while the slider is in
+ * use, so treatments that depend on it (the body gradient, the hidden
+ * paper-grain overlay) don't fight the interpolation. They re-engage
+ * if the writer drags the slider all the way to 0.
+ * ============================================================ */
+
+const brightnessInputRef = ref<HTMLInputElement | null>(null)
+const brightnessValue = ref<number>(100) // 100 = light by default
+
+/** Snapshot of `.dark`-on-`<html>` taken at mount, BEFORE applyBrightness
+ *  strips the class. The unmount cleanup uses this to restore the writer
+ *  to the same theme state they arrived in. Module-scoped (not a ref)
+ *  because no template needs it — it's plumbing for cleanup. */
+let wasDarkOnEntry = false
+
+/** Pairs of (light-mode RGB) and (dark-mode RGB) for every theme token.
+ *  Keep these in sync with the values in index.css :root / .dark blocks.
+ *  When you change a token's color in index.css, also update its entry
+ *  here or the brightness slider will lerp to a stale value. */
+type Rgb = readonly [number, number, number]
+const THEME_PAIRS: { name: string; light: Rgb; dark: Rgb }[] = [
+  { name: '--color-paper',         light: [226, 204, 172], dark: [54,  52,  46] },
+  { name: '--color-surface',       light: [234, 215, 188], dark: [64,  70,  58] },
+  { name: '--color-ink',           light: [37,  37,  32 ], dark: [226, 204, 172] },
+  { name: '--color-ink-light',     light: [30,  46,  28 ], dark: [168, 180, 196] },
+  { name: '--color-ink-lighter',   light: [122, 142, 158], dark: [122, 142, 158] },
+  { name: '--color-ink-whisper',   light: [168, 180, 196], dark: [98,  95,  85 ] },
+  { name: '--color-line',          light: [207, 188, 156], dark: [78,  76,  68 ] },
+  { name: '--color-accent',        light: [255, 128, 24 ], dark: [255, 128, 24 ] },
+  { name: '--color-accent-hover',  light: [230, 100, 10 ], dark: [255, 208, 85 ] },
+  { name: '--color-accent-muted',  light: [248, 230, 200], dark: [70,  52,  36 ] },
+  { name: '--cluster-icon-color',  light: [30,  46,  28 ], dark: [255, 255, 255] },
+]
+
+function applyBrightness(value: number) {
+  const t = Math.max(0, Math.min(100, value)) / 100
+  const root = document.documentElement
+  for (const pair of THEME_PAIRS) {
+    const r = Math.round(pair.dark[0] + (pair.light[0] - pair.dark[0]) * t)
+    const g = Math.round(pair.dark[1] + (pair.light[1] - pair.dark[1]) * t)
+    const b = Math.round(pair.dark[2] + (pair.light[2] - pair.dark[2]) * t)
+    root.style.setProperty(pair.name, `${r} ${g} ${b}`)
+  }
+  // ALWAYS strip .dark — the slider drives all colors via inline vars,
+  // and the structural .dark CSS (body gradient, page-canvas gradient,
+  // hidden paper grain) was fighting those overrides. At slider=0 the
+  // shorthand `background: linear-gradient(...)` in .dark .page-canvas
+  // resets background-color to transparent and depends on the gradient
+  // vars, producing a blank surface. Solid colours via inline vars are
+  // predictable across the entire 0–100 range. The animated dusk-drift
+  // remains available outside slider mode — if the writer hasn't touched
+  // the slider, system-pref / .dark behaviour is unchanged.
+  root.classList.remove('dark')
+}
+
+watch(brightnessValue, (v) => applyBrightness(v))
 
 function flashZenStatus(kind: 'success' | 'error' | 'info', message: string, ms: number = 2400) {
   zenStatus.value = { kind, message }
@@ -733,6 +976,16 @@ watch(() => form.value.body, () => nextTick(autoResizeBody))
  */
 const TYPEWRITER_BOTTOM_PCT = 0.20
 
+/**
+ * Cursor's Y position in the viewport, in pixels. Updated whenever we
+ * compute the marker's position (typewriter scroll, selection change,
+ * window scroll/resize). Null when the textarea is not focused.
+ *
+ * The floating WritingToolsCluster reads this via :cursor-y prop and
+ * tracks it 10px above when the writer toggles to float mode.
+ */
+const cursorViewportY = ref<number | null>(null)
+
 let typewriterRaf: number | null = null
 let typewriterEnabled: boolean | null = null
 
@@ -751,26 +1004,41 @@ function scheduleTypewriterScroll() {
   })
 }
 
-function runTypewriterScroll() {
+/**
+ * Measure the cursor's viewport Y by injecting a zero-width marker into
+ * the mirror at the caret position and reading getBoundingClientRect().top.
+ *
+ * Returns null if the textarea isn't focused (cursor isn't really
+ * "anywhere" in that case) or the refs aren't ready. Side-effect: the
+ * mirror's content is replaced with [head, marker, tail]. autoResizeBody
+ * also writes to the mirror, but the marker is zero-width so it doesn't
+ * meaningfully change mirror.offsetHeight; auto-resize remains accurate.
+ */
+function measureCursorViewportY(): number | null {
   const ta = bodyTextareaRef.value
   const mirror = bodyMirrorRef.value
-  if (!ta || !mirror) return
-  if (document.activeElement !== ta) return // only when actively writing
+  if (!ta || !mirror) return null
+  if (document.activeElement !== ta) return null
 
-  // Build the mirror content as: text-up-to-caret + zero-width marker + rest.
-  // Reading offsetTop on the marker gives us the caret's Y inside the mirror.
   const value = ta.value
   const caret = ta.selectionStart ?? value.length
-  // Use textContent for the head so HTML in prose can't break the mirror.
-  // We rely on a single inline marker the layout treats like normal text.
+
   mirror.textContent = ''
-  const head = document.createTextNode(value.slice(0, caret))
+  mirror.appendChild(document.createTextNode(value.slice(0, caret)))
   const marker = document.createElement('span')
   marker.textContent = '​' // zero-width space — keeps line height correct
-  const tail = document.createTextNode(value.slice(caret) || ' ')
-  mirror.appendChild(head)
   mirror.appendChild(marker)
-  mirror.appendChild(tail)
+  mirror.appendChild(document.createTextNode(value.slice(caret) || ' '))
+
+  return marker.getBoundingClientRect().top
+}
+
+function runTypewriterScroll() {
+  const cursorY = measureCursorViewportY()
+  if (cursorY === null) return
+
+  // Update the floating-cluster's tracking position whenever we measure.
+  cursorViewportY.value = cursorY
 
   // Compute the marker's absolute Y in the document, then scroll so it
   // sits with TYPEWRITER_BOTTOM_PCT of the viewport remaining below it.
@@ -778,15 +1046,33 @@ function runTypewriterScroll() {
   // floor" feel) while still showing plenty of context above the active
   // line. We only scroll DOWN: cursors above the target line are left
   // where they are, so short essays don't get yanked around.
-  const rect = marker.getBoundingClientRect()
   const targetY = window.innerHeight * (1 - TYPEWRITER_BOTTOM_PCT)
-  const delta = rect.top - targetY
+  const delta = cursorY - targetY
   if (delta < 4) return // cursor is at or above the line — leave it alone
 
   window.scrollBy({
     top: delta,
     behavior: prefersReducedMotion() ? 'auto' : 'smooth',
   })
+
+  // After a smooth scroll the cursor's viewport Y will be ~targetY.
+  // Update the tracker in the next frame so the floating cluster
+  // settles to the right position post-scroll. (No need to wait for
+  // the actual smooth-scroll animation — the cluster's own CSS
+  // transition smooths the visual.)
+  cursorViewportY.value = targetY
+}
+
+/**
+ * Lightweight cursor-Y updater that does NOT scroll the page. Called on
+ * selection change, window scroll, and window resize so the floating
+ * cluster keeps tracking even when the writer isn't typing.
+ */
+function refreshCursorViewportY() {
+  const y = measureCursorViewportY()
+  // null is meaningful — it means the cursor isn't in the textarea.
+  // Pass it through so the cluster falls back to its fixed corner.
+  cursorViewportY.value = y
 }
 
 /** Combined input handler — schedule the typewriter window-scroll. The
@@ -850,6 +1136,28 @@ function openAssist(mode: WritingAssistMode) {
   } else if (mode === 'proofread') {
     void runProofread({
       selection: snap.text || undefined,
+    })
+  } else if (mode === 'factcheck') {
+    void runFactCheck({
+      selection: snap.text || undefined,
+    })
+  } else if (
+    // Develop quadrant — four sister modes share `expand`'s dispatch
+    // shape. The runner is picked by mode; everything else (selection
+    // snapshot, whole-vs-section target) is identical to expand.
+    mode === 'fiction-breadth'
+    || mode === 'fiction-depth'
+    || mode === 'nonfiction-breadth'
+    || mode === 'nonfiction-depth'
+  ) {
+    const runner =
+      mode === 'fiction-breadth'    ? runFictionBreadth :
+      mode === 'fiction-depth'      ? runFictionDepth :
+      mode === 'nonfiction-breadth' ? runNonfictionBreadth :
+                                      runNonfictionDepth
+    void runner({
+      selection: snap.text || undefined,
+      target: snap.text ? 'section' : 'whole',
     })
   }
 }
@@ -935,8 +1243,23 @@ function handleReplaceSelection(text: string) {
 
 // selectionchange is the cleanest signal for "the selection in any input
 // has changed". Fires for both keyboard (shift+arrow) and mouse drag.
+// Also refreshes the cursor's viewport Y so the floating cluster tracks
+// arrow-key navigation, not just typing.
 function onDocumentSelectionChange() {
   onSelectionMaybeChanged()
+  refreshCursorViewportY()
+}
+
+/** Window scroll / resize — the cursor's viewport Y changes even when the
+ *  writer isn't doing anything (page scrolling, window resize). The
+ *  floating cluster needs to follow. Throttled to one rAF to avoid spam. */
+let cursorYRaf: number | null = null
+function onWindowScrollOrResize() {
+  if (cursorYRaf !== null) return
+  cursorYRaf = requestAnimationFrame(() => {
+    cursorYRaf = null
+    refreshCursorViewportY()
+  })
 }
 
 // Persist draft to localStorage before leaving (no confirmation dialog)
@@ -947,7 +1270,20 @@ const handleBeforeUnload = () => {
 }
 
 // Vue Router guard: persist draft to localStorage before in-app navigation
-onBeforeRouteLeave((_to, _from, next) => {
+onBeforeRouteLeave(async (_to, _from, next) => {
+  // If a pending idle-autosave was scheduled but hasn't fired yet, flush
+  // it now — otherwise the writer's last 10s of edits would only live in
+  // localStorage (via draft.saveDraft below) and not on the server.
+  if (autosaveTimer) {
+    clearTimeout(autosaveTimer)
+    autosaveTimer = null
+    if (isEditing.value && hasUnsavedChanges.value) {
+      try { await runAutosaveIfNeeded() } catch { /* swallow — fall through to draft */ }
+    }
+  }
+  // Always also persist to localStorage as a belt-and-braces backup,
+  // matching the original behaviour for create mode and surviving any
+  // server failure in edit mode.
   if (hasUnsavedChanges.value) {
     draft.saveDraft()
   }
@@ -975,20 +1311,64 @@ onMounted(async () => {
   await nextTick()
   autoResizeBody()
 
+  // Initialize brightness from the current document state. If the writer
+  // arrived in dark mode (.dark class set by useTheme), the slider starts
+  // at 0 (full dark). Otherwise 100 (full light). This is purely visual
+  // initialization — the slider takes over from here.
+  //
+  // We snapshot the original .dark state BEFORE applyBrightness strips
+  // it, so onBeforeUnmount can restore it. Without this, navigating
+  // away leaves the inline CSS vars on <html> and the .dark class
+  // stripped, which breaks the rest of the app: any later toggle of
+  // dark mode pairs the structural .dark gradient with light-valued
+  // inline CSS vars, producing dark text on a dark gradient → blank
+  // pages site-wide. See also: cleanup block in onBeforeUnmount.
+  wasDarkOnEntry = document.documentElement.classList.contains('dark')
+  brightnessValue.value = wasDarkOnEntry ? 0 : 100
+
   // Add beforeunload event listener
   window.addEventListener('beforeunload', handleBeforeUnload)
   // selectionchange tells the writing-tools cluster whether to enable
   // selection-only tools like Focus. It fires from both keyboard and mouse.
   document.addEventListener('selectionchange', onDocumentSelectionChange)
+  // Page scroll + viewport resize change the cursor's viewport Y even
+  // without typing — the floating cluster must follow.
+  window.addEventListener('scroll', onWindowScrollOrResize, { passive: true })
+  window.addEventListener('resize', onWindowScrollOrResize)
 })
 
 onBeforeUnmount(() => {
   if (scanTimer) clearTimeout(scanTimer)
   if (zenStatusTimer) clearTimeout(zenStatusTimer)
+  if (autosaveTimer) clearTimeout(autosaveTimer)
   if (typewriterRaf !== null) cancelAnimationFrame(typewriterRaf)
+  if (cursorYRaf !== null) cancelAnimationFrame(cursorYRaf)
   draft.disableAutosave()
   window.removeEventListener('beforeunload', handleBeforeUnload)
   document.removeEventListener('selectionchange', onDocumentSelectionChange)
+  window.removeEventListener('scroll', onWindowScrollOrResize)
+  window.removeEventListener('resize', onWindowScrollOrResize)
+
+  /* ---- Brightness cleanup ----
+   *
+   * The slider sets inline CSS vars on document.documentElement and
+   * strips the .dark class. Both effects must be undone when the
+   * writer leaves /write — otherwise the rest of the app inherits the
+   * inline overrides. The classic symptom: user visits /write, hits
+   * dark mode somewhere else later, and content becomes invisible
+   * because dark-mode structural CSS (the .page-canvas gradient)
+   * pairs with light-valued inline vars (--color-ink stuck at 37 37
+   * 32) producing dark text on a dark gradient.
+   *
+   * Strategy: remove every theme-pair var we set, then restore the
+   * .dark class to whatever it was on entry so useTheme stays in
+   * sync.
+   */
+  const rootStyle = document.documentElement.style
+  for (const pair of THEME_PAIRS) {
+    rootStyle.removeProperty(pair.name)
+  }
+  document.documentElement.classList.toggle('dark', wasDarkOnEntry)
 })
 
 </script>
@@ -1003,6 +1383,111 @@ onBeforeUnmount(() => {
    page on load. */
 .zen-body-area {
   padding-bottom: 100vh;
+}
+
+/* Side-by-side panel layout — when AssistPanel or MetadataPanel is open,
+   the editor reserves a right-side gutter the width of the panel. The
+   title + body have max-width + mx-auto, so this gutter shifts the
+   centered content leftward without breaking line-length. The platen
+   and ribbon stay viewport-wide; the panel sits opaque on top of them
+   on the right. */
+.zen-editor.panel-open {
+  padding-right: 420px;
+  transition: padding-right 240ms cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+.zen-editor {
+  transition: padding-right 240ms cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .zen-editor,
+  .zen-editor.panel-open {
+    transition: none;
+  }
+}
+@media (max-width: 768px) {
+  /* On narrow viewports, panel takes full width; no point shifting the
+     editor — it'd just be hidden anyway. */
+  .zen-editor.panel-open {
+    padding-right: 0;
+  }
+}
+
+/* ============================================================
+ * Brightness slider — sits in the top line of the writing block.
+ * Track is a near-invisible 1px line in the line color; thumb is a
+ * 20px sun icon in the accent color. The native range input is
+ * styled to be effectively invisible aside from the thumb area.
+ * ============================================================ */
+.zen-brightness {
+  pointer-events: none; /* container — events only on the track */
+}
+.zen-brightness-track {
+  position: relative;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  pointer-events: auto;
+}
+.zen-brightness-slider {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  height: 22px;
+  background: transparent;
+  cursor: pointer;
+  outline: none;
+  /* Track styled via ::-webkit-slider-runnable-track and ::-moz-range-track
+     below. The wrapper element is just for layout. */
+}
+.zen-brightness-slider::-webkit-slider-runnable-track {
+  height: 1px;
+  background: rgb(var(--color-line) / 0.5);
+  border-radius: 1px;
+}
+.zen-brightness-slider::-moz-range-track {
+  height: 1px;
+  background: rgb(var(--color-line) / 0.5);
+  border-radius: 1px;
+}
+.zen-brightness-slider::-webkit-slider-thumb {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgb(var(--color-paper));
+  border: 1.5px solid rgb(var(--color-accent));
+  margin-top: -9px; /* center on 1px track */
+  cursor: grab;
+  transition: transform 120ms ease-out, background-color 120ms ease-out;
+}
+.zen-brightness-slider::-webkit-slider-thumb:hover,
+.zen-brightness-slider:focus::-webkit-slider-thumb {
+  transform: scale(1.12);
+  background: rgb(var(--color-accent-muted));
+}
+.zen-brightness-slider:active::-webkit-slider-thumb {
+  cursor: grabbing;
+}
+.zen-brightness-slider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgb(var(--color-paper));
+  border: 1.5px solid rgb(var(--color-accent));
+  cursor: grab;
+}
+.zen-brightness-slider:focus-visible {
+  outline: none;
+}
+.zen-brightness-icon {
+  position: absolute;
+  right: -2px; /* float just past the right edge of the track */
+  top: 50%;
+  transform: translateY(-50%);
+  color: rgb(var(--color-accent));
+  pointer-events: none;
+  display: inline-flex;
 }
 
 /* Title — typed onto the page. Subtle underline-rule directly beneath the

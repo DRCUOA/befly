@@ -25,6 +25,11 @@ import type {
   WritingAssistFocusArgs,
   WritingAssistExpandArgs,
   WritingAssistProofreadArgs,
+  WritingAssistFactCheckArgs,
+  WritingAssistFictionBreadthArgs,
+  WritingAssistFictionDepthArgs,
+  WritingAssistNonfictionBreadthArgs,
+  WritingAssistNonfictionDepthArgs,
 } from '@shared/WritingAssist'
 import type { ApiResponse } from '@shared/ApiResponses'
 
@@ -34,7 +39,16 @@ export type AssistStatus =
   | { kind: 'ready'; mode: WritingAssistMode; response: WritingAssistResponse }
   | { kind: 'error'; mode: WritingAssistMode; message: string; unconfigured: boolean }
 
-export function useWritingAssist(writingId: () => string | null) {
+export function useWritingAssist(
+  writingId: () => string | null,
+  /**
+   * Optional getter for the writer's chosen model. Returns one of the
+   * allow-listed model ids (e.g. 'gpt-5.5'), or null/undefined to let
+   * the server use its default. Read fresh on every request so the
+   * cluster's selector is honoured immediately.
+   */
+  modelGetter?: () => string | null | undefined,
+) {
   const status = shallowRef<AssistStatus>({ kind: 'idle' })
 
   // Convenience flags for templates
@@ -80,9 +94,15 @@ export function useWritingAssist(writingId: () => string | null) {
     const startedAt = performance.now()
 
     try {
+      // Include the writer's chosen model when one is set; server falls
+      // back to its default if absent or not in the allow-list.
+      const model = modelGetter?.() ?? null
+      const body: Record<string, unknown> = { mode: request.mode, args: request.args }
+      if (model) body.model = model
+
       const wrapped = await api.post<ApiResponse<WritingAssistResponse>>(
         `/writing/${id}/assist`,
-        { mode: request.mode, args: request.args }
+        body
       )
       // The server unwraps to { data: WritingAssistResponse }; api.post returns
       // the raw envelope so we extract here.
@@ -143,6 +163,18 @@ export function useWritingAssist(writingId: () => string | null) {
         }
       case 'proofread':
         return { selectionChars: request.args.selection?.length ?? 0 }
+      case 'factcheck':
+        return { selectionChars: request.args.selection?.length ?? 0 }
+      // Develop quadrant — same shape as expand, log it the same way so
+      // the four modes are visually consistent in the console.
+      case 'fiction-breadth':
+      case 'fiction-depth':
+      case 'nonfiction-breadth':
+      case 'nonfiction-depth':
+        return {
+          target: request.args.target,
+          selectionChars: request.args.selection?.length ?? 0,
+        }
     }
   }
 
@@ -168,6 +200,31 @@ export function useWritingAssist(writingId: () => string | null) {
     return run({ mode: 'proofread', args })
   }
 
+  function factCheck(args: WritingAssistFactCheckArgs): Promise<WritingAssistResponse> {
+    return run({ mode: 'factcheck', args })
+  }
+
+  /* ----- Develop quadrant ----- four sister wrappers, one per mode.
+   * Same shape as `expand` from the call-site's perspective; the
+   * difference is which prompt the server runs.
+   */
+
+  function fictionBreadth(args: WritingAssistFictionBreadthArgs): Promise<WritingAssistResponse> {
+    return run({ mode: 'fiction-breadth', args })
+  }
+
+  function fictionDepth(args: WritingAssistFictionDepthArgs): Promise<WritingAssistResponse> {
+    return run({ mode: 'fiction-depth', args })
+  }
+
+  function nonfictionBreadth(args: WritingAssistNonfictionBreadthArgs): Promise<WritingAssistResponse> {
+    return run({ mode: 'nonfiction-breadth', args })
+  }
+
+  function nonfictionDepth(args: WritingAssistNonfictionDepthArgs): Promise<WritingAssistResponse> {
+    return run({ mode: 'nonfiction-depth', args })
+  }
+
   return {
     // state
     status,
@@ -183,6 +240,12 @@ export function useWritingAssist(writingId: () => string | null) {
     focus,
     expand,
     proofread,
+    factCheck,
+    // Develop quadrant
+    fictionBreadth,
+    fictionDepth,
+    nonfictionBreadth,
+    nonfictionDepth,
     clear,
   }
 }

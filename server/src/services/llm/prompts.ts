@@ -193,15 +193,17 @@ If no significant gap exists, return:
 /*
  * The writing-assist family is sister to gap_analysis. It runs at the
  * essay level (not the manuscript spine) and returns ephemeral results
- * the writer can insert into their prose. Five modes:
+ * the writer can insert into their prose. Six core modes plus the
+ * four-mode "Develop" quadrant (defined further down):
  *
  *   coherence  — free-form Q&A, optionally anchored to a selection
  *   define     — dictionary-style definition with one usage example
  *   focus      — tighten a selection without losing meaning or voice
  *   expand     — add substance without padding (anti-filler instructions)
  *   proofread  — light spelling/grammar/style fixes that preserve voice
+ *   factcheck  — flag checkable claims with confidence markers
  *
- * All five modes share the same JSON envelope: { body, replacement }.
+ * All modes share the same JSON envelope: { body, replacement }.
  *   body         — markdown the panel renders to the writer
  *   replacement  — drop-in substitute prose, when applicable; null for
  *                  advisory modes (coherence, define).
@@ -449,5 +451,233 @@ ${input.text.trim()}
 {
   "body": "A short bulleted list of every change you made, in the form '\\"original\\" → \\"corrected\\" — reason'. If you made no changes, write 'No corrections needed.'",
   "replacement": "The corrected passage, with paragraph breaks preserved. If you made no changes, return the input verbatim."
+}`
+}
+
+/* ----- factcheck ----- */
+
+export interface BuildFactCheckPromptInput {
+  text: string
+}
+
+export function buildFactCheckPrompt(input: BuildFactCheckPromptInput): string {
+  return `# Task: Fact-check this passage
+
+Identify factual claims the writer is making and assess each. Factual claims are checkable assertions about the world: specific dates, statistics, named events, attributed quotes, scientific or historical claims, named people / places / works, biographical details about real people, definitions, technical specifications.
+
+NOT factual claims (do NOT flag these):
+- The writer's own opinions, feelings, sensations, intuitions, interpretations
+- Personal experiences and memories the writer is recounting
+- Impressionistic descriptions ("the air felt heavy", "the room glowed")
+- Aesthetic judgements ("this was the best summer of my life")
+- Hypotheticals, speculation framed as such, fiction within the prose
+- Subjective characterisations of people the writer knows
+
+For each factual claim you DO flag, mark it as one of:
+- ✓ likely accurate — your training supports this claim with reasonable confidence
+- ? uncertain — the claim is plausible but you can't confirm; suggest what to verify
+- ✗ likely incorrect — your training contradicts this claim; explain what you believe is correct
+- — unable to verify — outside your training (e.g. specifics about a private person, very recent events, niche local detail)
+
+Be honest about your limitations: knowledge cutoff (training data ends at a date), no live internet access, hallucination risk. If you're not confident, say "unable to verify" rather than guessing.
+
+# Text to check
+
+${input.text.trim()}
+
+# Required JSON response shape
+
+{
+  "body": "Markdown response. If no checkable claims appear, write 'No factual claims to check.' Otherwise: a short intro line, then a bulleted list. Each bullet starts with the marker (✓ ? ✗ —), the verbatim claim quoted, then a short explanation. End with a brief reminder that you may be wrong, and that the writer should verify anything load-bearing themselves before publishing.",
+  "replacement": null
+}`
+}
+
+/* ============================================================ */
+/* Develop quadrant — four sister modes                          */
+/* ============================================================ */
+/*
+ * The "Develop" family is a refinement of `expand`. Each mode is
+ * opinionated about WHAT KIND of growth to produce, mapped onto a
+ * 2×2 of register (fiction / non-fiction) × axis (breadth / depth).
+ *
+ *   fiction-breadth     "Broaden the canvas"   horizontal worldbuilding
+ *   fiction-depth       "Deepen the stakes"    vertical interiority
+ *   nonfiction-breadth  "Cast a wider net"     adjacent topics
+ *   nonfiction-depth    "Drill down"           rigorous single-point analysis
+ *
+ * All four share the JSON envelope { body, replacement } and the
+ * voice-preservation rules from WRITING_ASSIST_SYSTEM_PROMPT. They
+ * also inherit the anti-padding rules from `expand`: every addition
+ * must earn its place by adding substance, never filler.
+ *
+ * Implementation note: the four prompts intentionally re-state the
+ * anti-padding constraints rather than relying on the writer to have
+ * read `expand`. Models tend to drift toward filler when given a
+ * "make this longer" task; restating the constraints inline keeps
+ * the per-call temperature lower than it would otherwise be.
+ */
+
+export interface BuildDevelopPromptInput {
+  /** The selection or whole essay being developed. */
+  text: string
+  /** Whether the writer asked to develop a selection or the whole essay. */
+  target: 'whole' | 'section'
+}
+
+/** Shared anti-padding block reused across all four Develop modes. Inlined
+ *  rather than imported via template literal so the model sees one
+ *  continuous prompt — splitting tends to lower instruction-following. */
+const DEVELOP_ANTI_PADDING_RULES = `Hard rules — these are the patterns of "padding" you must REJECT:
+- Restating the previous sentence in different words.
+- Generic transitions ("Furthermore", "It is worth noting", "In essence", "At its core").
+- Empty intensifiers and adjectives ("truly", "deeply", "profoundly", "remarkable", "incredible").
+- Summaries of what the essay just said.
+- Repeating an image or example with slightly different wording.
+- Filler clauses that hedge ("in many ways", "to some extent", "in a sense").
+
+Voice rules:
+- Preserve voice, register, rhythm. Match the writer's sentence-length variety.
+- Use only imagery and vocabulary already present in the writer's material — do not introduce new metaphors of your own.
+- If a beat genuinely needs information the writer hasn't given (a name, a date, a detail), leave a bracketed placeholder like [name?] rather than invent.`
+
+/* ----- fiction-breadth — "Broaden the canvas" ----- */
+
+export function buildFictionBreadthPrompt(input: BuildDevelopPromptInput): string {
+  const scopeNote = input.target === 'whole'
+    ? 'You are broadening the WHOLE piece. Look for places where the world feels narrow — single setting, thin supporting cast, an A-plot with no B-plot — and propose horizontal openings the writer can develop.'
+    : 'You are broadening a SELECTION inside a longer piece. Add horizontal scope to this passage without disturbing the prose immediately before or after it.'
+
+  return `# Task: Broaden the canvas (fiction)
+
+The writer is working on a piece of fiction. Expand the HORIZONTAL scope of their material — the world it occupies, not the inner life of any single character. Concrete openings only:
+- A subplot that runs alongside the main thread, drawing on tension already implied.
+- A new POV character whose perspective contrasts or complements an existing one (must be grounded in someone or something already named in the text).
+- A previously off-stage region of the story's geography or institution.
+- A supporting-cast figure whose pressure on the protagonist would change the texture of a scene.
+- A timeline branch — what was happening elsewhere while this scene unfolded.
+
+${scopeNote}
+
+${DEVELOP_ANTI_PADDING_RULES}
+
+Additional constraint specific to broadening: do NOT collapse the new horizontal element into exposition. Show it through a concrete beat (a moment, a line of dialogue, a sensory detail) rather than a paragraph that EXPLAINS the new subplot or character to the reader.
+
+# Text to broaden
+
+${input.text.trim()}
+
+# Required JSON response shape
+
+{
+  "body": "Two or three sentences naming the horizontal opening(s) you took, why each adds canvas (not filler), and any [bracketed placeholders] left for the writer to fill in.",
+  "replacement": "The broadened passage, ready to drop in. Preserves the input's paragraph breaks. Includes any [bracketed placeholders] inline."
+}`
+}
+
+/* ----- fiction-depth — "Deepen the stakes" ----- */
+
+export function buildFictionDepthPrompt(input: BuildDevelopPromptInput): string {
+  const scopeNote = input.target === 'whole'
+    ? 'You are deepening the WHOLE piece. Find the moments where the prose is moving fast over a beat that deserves more weight, and slow them down with interior or sensory work.'
+    : 'You are deepening a SELECTION inside a longer piece. Add vertical weight to this passage — interiority, sensation, consequence — without disturbing the prose immediately before or after it.'
+
+  return `# Task: Deepen the stakes (fiction)
+
+The writer is working on a piece of fiction. Expand the VERTICAL scope of their material — go further INTO a moment that is already on the page, rather than out into new territory. Concrete additions only:
+- Internal monologue that reveals what a character is actually thinking under what they're saying or doing.
+- A short backstory beat that recasts the present moment (must be consistent with anything already established).
+- Sensory atmosphere — what the scene sounds, smells, feels like — using imagery already in the writer's vocabulary.
+- A specific physical reaction to an emotional beat (a hand tightening, breath held, eyes finding the floor) rather than naming the emotion.
+- The cost or consequence of a choice, made concrete for one character.
+
+${scopeNote}
+
+${DEVELOP_ANTI_PADDING_RULES}
+
+Additional constraint specific to deepening: do NOT name the emotion in the abstract ("she felt sad", "he was angry"). Render it through a physical, sensory, or thought-shaped beat the reader can feel. Do NOT add new external events — depth is about what's already happening, not about more happening.
+
+# Text to deepen
+
+${input.text.trim()}
+
+# Required JSON response shape
+
+{
+  "body": "Two or three sentences naming the vertical openings you took (which beats you slowed down, what kind of interiority/sensation/consequence you added), and any [bracketed placeholders] left for the writer to fill in.",
+  "replacement": "The deepened passage, ready to drop in. Preserves the input's paragraph breaks. Includes any [bracketed placeholders] inline."
+}`
+}
+
+/* ----- nonfiction-breadth — "Cast a wider net" ----- */
+
+export function buildNonfictionBreadthPrompt(input: BuildDevelopPromptInput): string {
+  const scopeNote = input.target === 'whole'
+    ? 'You are widening the WHOLE inquiry. Look for places where a single angle is doing the work of a question that has more sides, and propose adjacent angles the writer can fold in.'
+    : 'You are widening a SELECTION. Bring adjacent material into THIS passage without disturbing the prose immediately before or after it.'
+
+  return `# Task: Cast a wider net (non-fiction)
+
+The writer is working on non-fiction (essay, memoir, argument). Expand the BREADTH of the inquiry — bring in adjacent angles, perspectives, or domains that strengthen what's already on the page. Concrete additions only:
+- A neighbouring topic that pressures the central claim from a new direction.
+- A counter-perspective the writer can engage with rather than dismiss.
+- A second discipline's lens on the same question (economic / historical / personal / cultural / scientific).
+- An unexpected case study or example that mirrors the existing argument's structure.
+- A scope expansion that reframes the question being asked, not just the answer.
+
+${scopeNote}
+
+${DEVELOP_ANTI_PADDING_RULES}
+
+Additional constraints specific to widening:
+- Do NOT smuggle in claims as if they were the writer's own. Mark new perspectives with attributing phrases the writer can confirm or strike ("[some economists argue?]", "[the counter-case from X?]").
+- Do NOT introduce empirical claims (statistics, dated events, named studies) without flagging them as [verify?] — the writer is responsible for grounding what makes it past you.
+
+# Text to widen
+
+${input.text.trim()}
+
+# Required JSON response shape
+
+{
+  "body": "Two or three sentences naming the new angle(s) you brought in, why each genuinely widens the inquiry rather than padding it, and any [bracketed placeholders] or [verify?] flags the writer needs to resolve.",
+  "replacement": "The widened passage, ready to drop in. Preserves the input's paragraph breaks. Includes any [bracketed placeholders] and [verify?] markers inline."
+}`
+}
+
+/* ----- nonfiction-depth — "Drill down" ----- */
+
+export function buildNonfictionDepthPrompt(input: BuildDevelopPromptInput): string {
+  const scopeNote = input.target === 'whole'
+    ? 'You are drilling into the WHOLE piece. Identify the SINGLE strongest claim or the most load-bearing turn in the argument and develop THAT, rather than spreading attention across all of them.'
+    : 'You are drilling into a SELECTION. Develop the specific claim or turn made here, without disturbing the prose immediately before or after it.'
+
+  return `# Task: Drill down (non-fiction)
+
+The writer is working on non-fiction (essay, memoir, argument). Expand the DEPTH on a single specific claim already in the text — make the case rigorously rather than gesturing at it. Concrete additions only:
+- A precise mechanism: explain HOW the claim is true, step by step, in the writer's own conceptual vocabulary.
+- A worked example that instantiates the claim concretely (one example, fully developed — not three skimmed).
+- An anticipated objection, taken seriously and answered.
+- A clarifying distinction between this claim and an adjacent claim it could be confused with.
+- A specific implication: if the claim is true, what follows? Trace one consequence carefully.
+
+${scopeNote}
+
+${DEVELOP_ANTI_PADDING_RULES}
+
+Additional constraints specific to drilling:
+- Pick ONE claim or turn to develop (or, in 'section' target, the claim already on the page). Do NOT broaden to adjacent topics — that's a different mode.
+- Do NOT introduce new empirical claims (statistics, dated events, named studies) without marking them [verify?] for the writer to ground.
+- If the existing prose is too vague to develop without inventing, surface that with a question to the writer ([is the claim X really doing the work here?]) rather than papering over it.
+
+# Text to drill into
+
+${input.text.trim()}
+
+# Required JSON response shape
+
+{
+  "body": "Two or three sentences naming the claim you developed, what kind of development you added (mechanism, example, objection, implication, etc.), and any [bracketed placeholders] or [verify?] flags the writer needs to resolve.",
+  "replacement": "The developed passage, ready to drop in. Preserves the input's paragraph breaks. Includes any [bracketed placeholders] and [verify?] markers inline."
 }`
 }

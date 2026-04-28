@@ -2,14 +2,19 @@
  * Writing-assist service — orchestrates the essay-level AI assist modes.
  *
  * Sister to manuscript-assist.service.ts but operates on a single essay
- * (writing block) rather than a manuscript spine. Five modes:
+ * (writing block) rather than a manuscript spine. Ten modes:
  *
- *   coherence  — free-form Q&A about the essay (with sibling context if
- *                the essay belongs to a manuscript)
- *   define     — dictionary-style definition for a word or phrase
- *   focus      — tighten a selection without losing meaning
- *   expand     — add substance without padding
- *   proofread  — light spelling/grammar that preserves voice
+ *   coherence            — free-form Q&A about the essay (with sibling context if
+ *                          the essay belongs to a manuscript)
+ *   define               — dictionary-style definition for a word or phrase
+ *   focus                — tighten a selection without losing meaning
+ *   expand               — add substance without padding
+ *   proofread            — light spelling/grammar that preserves voice
+ *   factcheck            — flag checkable claims with confidence markers
+ *   fiction-breadth      — "Broaden the canvas" — subplots, POVs, regions
+ *   fiction-depth        — "Deepen the stakes" — interiority, sensory atmosphere
+ *   nonfiction-breadth   — "Cast a wider net" — adjacent topics, broader inquiry
+ *   nonfiction-depth     — "Drill down" — rigorous development of one point
  *
  * Results are ephemeral. Unlike gap_analysis, no artifact rows are
  * persisted — the writer either inserts the suggestion into their prose
@@ -35,6 +40,11 @@ import {
   buildFocusPrompt,
   buildExpandPrompt,
   buildProofreadPrompt,
+  buildFactCheckPrompt,
+  buildFictionBreadthPrompt,
+  buildFictionDepthPrompt,
+  buildNonfictionBreadthPrompt,
+  buildNonfictionDepthPrompt,
   trimBodyForPrompt,
   CoherenceSiblingItem,
 } from './llm/prompts.js'
@@ -80,6 +90,21 @@ function asString(v: unknown, fallback = ''): string {
   return typeof v === 'string' ? v : fallback
 }
 
+/**
+ * Modes that never carry replacement prose. The model is instructed in
+ * the prompt to return `replacement: null`; this guards against a model
+ * that returns garbage replacement text for an advisory mode anyway.
+ *
+ * Everything NOT in this set is treated as transformative — i.e. the
+ * UI will surface an Insert / Replace button whenever the model returns
+ * a non-empty replacement string.
+ */
+const ADVISORY_MODES: ReadonlySet<WritingAssistMode> = new Set([
+  'coherence',
+  'define',
+  'factcheck',
+])
+
 function normaliseAssistResponse(raw: unknown, mode: WritingAssistMode): { body: string; replacement: string | null } {
   const r = (raw && typeof raw === 'object') ? raw as RawAssistResponse : {}
   const body = asString(r.body, '').trim()
@@ -87,8 +112,7 @@ function normaliseAssistResponse(raw: unknown, mode: WritingAssistMode): { body:
         ? 'The model returned no answer.'
         : 'The model returned no suggestion.')
 
-  // Advisory modes (coherence, define) never carry replacement text.
-  if (mode === 'coherence' || mode === 'define') {
+  if (ADVISORY_MODES.has(mode)) {
     return { body, replacement: null }
   }
   // Transformative modes — replacement is required to be a string. Fall
@@ -98,11 +122,62 @@ function normaliseAssistResponse(raw: unknown, mode: WritingAssistMode): { body:
   return { body, replacement: replacement || null }
 }
 
+/* ----- Develop-quadrant helpers (shared by the four sister modes) ----- */
+
+interface DevelopArgsLike {
+  selection?: string
+  target: 'whole' | 'section'
+}
+
+/**
+ * Validate + resolve the text the develop-quadrant model should grow.
+ * Mirrors `expand`'s logic exactly so the four modes feel identical
+ * from the caller's point of view: pick whole-essay vs. selection,
+ * trim to budget, refuse if there's nothing to work with.
+ */
+function resolveDevelopText(mode: WritingAssistMode, args: DevelopArgsLike, essayBody: string | null): string {
+  const target = args.target
+  if (target !== 'whole' && target !== 'section') {
+    throw new ValidationError(`${mode}: target must be 'whole' or 'section'`)
+  }
+  const selection = (args.selection ?? '').slice(0, MAX_SELECTION_CHARS)
+  const text = target === 'whole'
+    ? trimBodyForPrompt(essayBody, MAX_ESSAY_BODY_CHARS)
+    : selection.trim()
+  if (!text) {
+    throw new ValidationError(
+      target === 'section'
+        ? `${mode}: selection is required when target=section`
+        : `${mode}: essay body is empty`
+    )
+  }
+  return text
+}
+
+/**
+ * Temperature + token budget for the develop-quadrant. Same numbers
+ * as `expand` for now — both are "make this longer with substance"
+ * jobs and the same anti-padding rules apply. Centralised so a future
+ * tuning pass changes one number, not four.
+ */
+function developDispatchKnobs(text: string): { temperature: number; maxOutputTokens: number } {
+  return {
+    temperature: 0.5,
+    maxOutputTokens: Math.min(3000, Math.ceil(text.length * 1.5) + 600),
+  }
+}
+
 /* ----- Public entrypoint ----- */
 
 export interface RunWritingAssistInput {
   writingId: string
   request: WritingAssistRequest
+  /**
+   * Optional model override (e.g. 'gpt-5.5'). Falls back to OPENAI_MODEL
+   * env var, then 'gpt-4o-mini', when not provided. The controller
+   * validates this against an allow-list before passing it in.
+   */
+  model?: string
 }
 
 export const writingAssistService = {
@@ -261,6 +336,55 @@ export const writingAssistService = {
         break
       }
 
+      case 'factcheck': {
+        const selection = (request.args.selection ?? '').trim()
+        const text = selection
+          ? selection.slice(0, MAX_SELECTION_CHARS)
+          : trimBodyForPrompt(writing.body, MAX_ESSAY_BODY_CHARS)
+        if (!text) throw new ValidationError('factcheck: nothing to check')
+        userPrompt = buildFactCheckPrompt({ text })
+        // Low temperature — fact-check should be cautious + consistent.
+        // The prompt itself biases toward "unable to verify" rather than
+        // guessing, but lower temperature compounds that.
+        temperature = 0.2
+        // Generous budget — fact-check listings can be longer than the
+        // input if there are many claims to discuss.
+        maxOutputTokens = Math.min(2500, Math.ceil(text.length / 2) + 800)
+        break
+      }
+
+      /* ---- Develop quadrant ----
+       *
+       * The four sister modes share `expand`'s arg shape, validation,
+       * temperature, and token budget. Only the prompt builder changes.
+       * `resolveDevelopText` collapses the shared validation; the per-
+       * case body stays focused on which builder to call.
+       */
+      case 'fiction-breadth': {
+        const text = resolveDevelopText(request.mode, request.args, writing.body)
+        userPrompt = buildFictionBreadthPrompt({ text, target: request.args.target })
+        ;({ temperature, maxOutputTokens } = developDispatchKnobs(text))
+        break
+      }
+      case 'fiction-depth': {
+        const text = resolveDevelopText(request.mode, request.args, writing.body)
+        userPrompt = buildFictionDepthPrompt({ text, target: request.args.target })
+        ;({ temperature, maxOutputTokens } = developDispatchKnobs(text))
+        break
+      }
+      case 'nonfiction-breadth': {
+        const text = resolveDevelopText(request.mode, request.args, writing.body)
+        userPrompt = buildNonfictionBreadthPrompt({ text, target: request.args.target })
+        ;({ temperature, maxOutputTokens } = developDispatchKnobs(text))
+        break
+      }
+      case 'nonfiction-depth': {
+        const text = resolveDevelopText(request.mode, request.args, writing.body)
+        userPrompt = buildNonfictionDepthPrompt({ text, target: request.args.target })
+        ;({ temperature, maxOutputTokens } = developDispatchKnobs(text))
+        break
+      }
+
       default: {
         // Exhaustive check — the discriminated union should never reach here.
         const _exhaustive: never = request
@@ -269,8 +393,11 @@ export const writingAssistService = {
     }
 
     // 4. Single shared chatJson call. Mode-specific args were already baked
-    //    into the prompt above.
-    const model = process.env.OPENAI_MODEL?.trim() || 'gpt-4o-mini'
+    //    into the prompt above. Model precedence: explicit input → env var →
+    //    'gpt-4o-mini' default.
+    const model = input.model
+      || process.env.OPENAI_MODEL?.trim()
+      || 'gpt-4o-mini'
     logger.debug('[writing-assist] dispatching to LLM', {
       mode: request.mode,
       model,

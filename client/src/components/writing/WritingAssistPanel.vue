@@ -245,27 +245,47 @@ const emit = defineEmits<{
 }>()
 
 const MODE_LABELS: Record<WritingAssistMode, string> = {
-  coherence: 'Coherence question',
-  define:    'Define',
-  focus:     'Focus selection',
-  expand:    'Expand without padding',
-  proofread: 'Proofread',
+  coherence:             'Coherence question',
+  define:                'Define',
+  focus:                 'Focus selection',
+  expand:                'Expand without padding',
+  proofread:             'Proofread',
+  factcheck:             'Fact-check',
+  // Develop quadrant — header text shown at the top of the panel.
+  // Phrasing matches the cluster's sub-menu so the writer can match
+  // what they clicked to what the panel is doing.
+  'fiction-breadth':     'Broaden the canvas',
+  'fiction-depth':       'Deepen the stakes',
+  'nonfiction-breadth':  'Cast a wider net',
+  'nonfiction-depth':    'Drill down',
 }
 
 const AUTO_LABELS: Record<WritingAssistMode, string> = {
-  coherence: 'Coherence question',
-  define:    'Define',
-  focus:     'Focus',
-  expand:    'Expand',
-  proofread: 'Proofread',
+  coherence:             'Coherence question',
+  define:                'Define',
+  focus:                 'Focus',
+  expand:                'Expand',
+  proofread:             'Proofread',
+  factcheck:             'Fact-check',
+  'fiction-breadth':     'Broaden the canvas',
+  'fiction-depth':       'Deepen the stakes',
+  'nonfiction-breadth':  'Cast a wider net',
+  'nonfiction-depth':    'Drill down',
 }
 
 const LOADING_LINES: Record<WritingAssistMode, string> = {
-  coherence: 'Reading the essay and any siblings…',
-  define:    'Looking up the term…',
-  focus:     'Tightening without losing voice…',
-  expand:    'Looking for substance, not filler…',
-  proofread: 'Checking for objective errors only…',
+  coherence:             'Reading the essay and any siblings…',
+  define:                'Looking up the term…',
+  focus:                 'Tightening without losing voice…',
+  expand:                'Looking for substance, not filler…',
+  proofread:             'Checking for objective errors only…',
+  factcheck:             'Checking the claims, flagging what I can…',
+  // Develop quadrant — each loading line nods to the framing without
+  // bragging. Same length-and-tone register as the other modes.
+  'fiction-breadth':     'Looking for canvas to widen, not filler…',
+  'fiction-depth':       'Slowing down beats that earn the weight…',
+  'nonfiction-breadth':  'Casting around for adjacent angles…',
+  'nonfiction-depth':    'Picking the load-bearing claim to develop…',
 }
 
 /* ---- Local input state ---- */
