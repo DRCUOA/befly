@@ -27,6 +27,25 @@ const DEFAULT_TEMPERATURE = 0.4
 const DEFAULT_MAX_TOKENS = 1500
 const ENDPOINT = 'https://api.openai.com/v1/chat/completions'
 
+/**
+ * True if the model id belongs to OpenAI's reasoning families. Those
+ * have a different parameter contract (no custom temperature/top_p,
+ * uses `reasoning_effort` instead). See the comment block in
+ * `chatJson` for details. Heuristic — not exhaustive — extend when
+ * new families ship.
+ *
+ * Matched: gpt-5*, o1*, o3*, o4*  (case-insensitive).
+ * Not matched: gpt-4o*, gpt-4.1*, gpt-4-turbo*, gpt-3.5*.
+ */
+function isReasoningModel(model: string): boolean {
+  const m = model.trim().toLowerCase()
+  if (m.startsWith('gpt-5')) return true
+  // o-series — single letter 'o' followed by a single digit and either
+  // end-of-string or a non-letter separator. Avoids false positives
+  // like `oasis-foo` or models that happen to start with 'o'.
+  return /^o[1-9](?:[-.]|$)/.test(m)
+}
+
 interface OpenAIConfig {
   apiKey: string
   defaultModel: string
@@ -48,21 +67,67 @@ class OpenAIClient implements LlmClient {
 
   async chatJson(req: LlmJsonRequest): Promise<LlmJsonResponse> {
     const model = req.model || this.config.defaultModel
-    const body = {
+    /* ---- OpenAI parameter compatibility, as of April 2026 ----
+     *
+     * The Chat Completions API has split into two parameter shapes
+     * over the past 12 months. We branch by model family so callers
+     * (writing-assist, manuscript-assist) don't have to know which
+     * model accepts which knob.
+     *
+     * Reasoning models (gpt-5.*, o1*, o3*, o4*):
+     *   - `temperature` is LOCKED to 1. Sending any other value returns
+     *     400 "Unsupported value: 'temperature' does not support 0.5
+     *     with this model. Only the default (1) value is supported."
+     *   - `top_p` is similarly locked.
+     *   - `max_completion_tokens` covers BOTH visible output AND
+     *     internal reasoning tokens — budget generously.
+     *   - Output shaping uses `reasoning_effort` ('minimal'|'low'|
+     *     'medium'|'high') instead of temperature. Lower effort = less
+     *     internal thinking = faster + cheaper. For short assist
+     *     responses we use 'low'.
+     *   - `response_format: json_object` is supported on gpt-5.*; the
+     *     o-series only supports `json_schema` (not used here).
+     *
+     * Chat models (gpt-4o*, gpt-4.1*, gpt-4-turbo, gpt-3.5*):
+     *   - Accept `temperature` (0–2), `top_p`, `max_completion_tokens`.
+     *   - The legacy `max_tokens` name is rejected by gpt-4o family
+     *     since the late-2024 deprecation; `max_completion_tokens` is
+     *     the only safe choice.
+     *
+     * Heuristic for `isReasoningModel`: any id whose alpha-then-digit
+     * prefix is `gpt-5`, `o1`, `o3`, or `o4`. Adjust this when OpenAI
+     * ships a new family. False positives risk passing the wrong
+     * shape; false negatives risk a 400 like the one that drove this
+     * branching in the first place.
+     */
+    const reasoning = isReasoningModel(model)
+
+    const body: Record<string, unknown> = {
       model,
       response_format: { type: 'json_object' as const },
-      temperature: req.temperature ?? DEFAULT_TEMPERATURE,
-      max_tokens: req.maxOutputTokens ?? DEFAULT_MAX_TOKENS,
+      max_completion_tokens: req.maxOutputTokens ?? DEFAULT_MAX_TOKENS,
       messages: [
         { role: 'system' as const, content: req.system },
         { role: 'user' as const,   content: req.user },
       ],
     }
 
+    if (reasoning) {
+      // Reasoning models — caller's `req.temperature` is intentionally
+      // ignored (the API would reject it). We default to 'low' effort
+      // because writing-assist tasks (proofread, focus, etc.) don't
+      // need deep chains of thought; this keeps latency and cost down.
+      body.reasoning_effort = 'low'
+    } else {
+      body.temperature = req.temperature ?? DEFAULT_TEMPERATURE
+    }
+
     logger.debug('[openai] outbound request', {
       model,
-      temperature: body.temperature,
-      max_tokens: body.max_tokens,
+      modelFamily: reasoning ? 'reasoning' : 'chat',
+      temperature: reasoning ? '(omitted — locked to 1)' : body.temperature,
+      reasoning_effort: reasoning ? body.reasoning_effort : undefined,
+      max_completion_tokens: body.max_completion_tokens,
       systemChars: req.system.length,
       userChars: req.user.length,
     })
