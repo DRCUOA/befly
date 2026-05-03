@@ -84,3 +84,6 @@ docker-compose.override.yml
 *.bak
 *.backup
 *~
+
+# Claude Code worktrees and session state
+.claude/
