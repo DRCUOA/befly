@@ -92,6 +92,27 @@
         </ul>
       </fieldset>
 
+      <!-- Type size -->
+      <fieldset class="space-y-2">
+        <legend class="text-xs uppercase tracking-widest text-ink-lighter font-sans mb-1">Type</legend>
+        <label class="block">
+          <span class="text-sm font-medium block mb-1">
+            Body font size: <span class="text-ink-lighter">{{ bookFontSize }} px</span>
+          </span>
+          <input
+            v-model.number="bookFontSize"
+            type="range"
+            min="11"
+            max="22"
+            step="1"
+            class="w-full"
+          />
+          <span class="block text-xs text-ink-lighter mt-1">
+            12&ndash;14&thinsp;px reads like a paperback. Larger sizes mimic large-print editions.
+          </span>
+        </label>
+      </fieldset>
+
       <!-- Layout options -->
       <fieldset class="space-y-2">
         <legend class="text-xs uppercase tracking-widest text-ink-lighter font-sans mb-1">Layout</legend>
@@ -224,16 +245,26 @@
           }"
         >
           <div class="bp-page bp-page-left" @dblclick="prevSpread">
-            <div class="bp-page-inner" v-if="pages[currentSpread.left]" v-html="pages[currentSpread.left].html"></div>
-            <div class="bp-page-inner" v-else>
+            <div
+              class="bp-page-inner"
+              :style="pageInnerStyle"
+              v-if="pages[currentSpread.left]"
+              v-html="pages[currentSpread.left].html"
+            ></div>
+            <div class="bp-page-inner" :style="pageInnerStyle" v-else>
               <div class="bp-page-blank"></div>
             </div>
             <div class="bp-page-num" v-if="pages[currentSpread.left]">{{ currentSpread.left + 1 }}</div>
           </div>
           <div class="bp-spine-shadow"></div>
           <div class="bp-page bp-page-right" @dblclick="nextSpread">
-            <div class="bp-page-inner" v-if="pages[currentSpread.right]" v-html="pages[currentSpread.right].html"></div>
-            <div class="bp-page-inner" v-else>
+            <div
+              class="bp-page-inner"
+              :style="pageInnerStyle"
+              v-if="pages[currentSpread.right]"
+              v-html="pages[currentSpread.right].html"
+            ></div>
+            <div class="bp-page-inner" :style="pageInnerStyle" v-else>
               <div class="bp-page-blank"></div>
             </div>
             <div class="bp-page-num" v-if="pages[currentSpread.right]">{{ currentSpread.right + 1 }}</div>
@@ -265,6 +296,7 @@
             width: contentWidth + 'px',
             height: contentHeight + 'px',
             columnWidth: contentWidth + 'px',
+            ...flowTypographyStyle,
           }"
           v-html="bookFlowHtml"
         ></div>
@@ -274,7 +306,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, nextTick } from 'vue'
+import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount } from 'vue'
 import { api } from '../../api/client'
 import { renderMarkdown } from '../../utils/markdown'
 import type { ApiResponse } from '@shared/ApiResponses'
@@ -297,14 +329,64 @@ const emit = defineEmits<{ (e: 'close'): void }>()
 const stage = ref<'setup' | 'book'>('setup')
 const bookState = ref<'closed-front' | 'open' | 'closed-back'>('closed-front')
 
-const pageWidth = 380
-const pageHeight = 560
-// Page padding (must match `.bp-page-inner` inset below). The flow that does
-// the actual CSS-column pagination is sized to the content box, not the page.
-const padX = 32
-const padY = 36
-const contentWidth = pageWidth - padX * 2
-const contentHeight = pageHeight - padY * 2
+// Viewport-driven page geometry. The book stage gets up to ~92% of the
+// viewport height (minus the topbar) and we hold a paperback-ish 1.55:1
+// aspect (height:width) per page. If two pages plus gutter would exceed the
+// viewport width, we scale down so the spread always fits.
+const viewportH = ref(typeof window !== 'undefined' ? window.innerHeight : 1000)
+const viewportW = ref(typeof window !== 'undefined' ? window.innerWidth : 1600)
+
+function onResize() {
+  viewportH.value = window.innerHeight
+  viewportW.value = window.innerWidth
+}
+onMounted(() => window.addEventListener('resize', onResize))
+onBeforeUnmount(() => window.removeEventListener('resize', onResize))
+
+const TOPBAR_PX = 56
+const VERT_PADDING_PX = 32
+const HORIZ_PADDING_PX = 48
+const GUTTER_PX = 12
+const ASPECT = 1.55 // page-height / page-width
+
+const pageDims = computed(() => {
+  const availH = Math.max(360, viewportH.value - TOPBAR_PX - VERT_PADDING_PX)
+  let pageH = availH
+  let pageW = pageH / ASPECT
+  const availW = Math.max(360, viewportW.value - HORIZ_PADDING_PX * 2)
+  if (pageW * 2 + GUTTER_PX > availW) {
+    pageW = (availW - GUTTER_PX) / 2
+    pageH = pageW * ASPECT
+  }
+  return { pageW: Math.floor(pageW), pageH: Math.floor(pageH) }
+})
+
+const pageWidth = computed(() => pageDims.value.pageW)
+const pageHeight = computed(() => pageDims.value.pageH)
+
+// Page padding (the printed margin around the body type). Scales with the
+// page so a smaller spread keeps a sensible margin ratio.
+const padX = computed(() => Math.round(pageWidth.value * 0.085))
+const padY = computed(() => Math.round(pageHeight.value * 0.075))
+const contentWidth = computed(() => pageWidth.value - padX.value * 2)
+const contentHeight = computed(() => pageHeight.value - padY.value * 2)
+
+// Body font size in px. 14px ≈ 10.5pt — close to a paperback's running text.
+// User can tune via the slider in the setup screen.
+const bookFontSize = ref(14)
+const lineHeight = 1.45
+
+const flowTypographyStyle = computed(() => ({
+  fontSize: bookFontSize.value + 'px',
+  lineHeight: String(lineHeight),
+}))
+
+const pageInnerStyle = computed(() => ({
+  top: padY.value + 'px',
+  right: padX.value + 'px',
+  bottom: padY.value + 'px',
+  left: padX.value + 'px',
+}))
 
 const sortedSections = computed(() =>
   [...props.sections].sort((a, b) => a.orderIndex - b.orderIndex || a.createdAt.localeCompare(b.createdAt))
@@ -588,20 +670,22 @@ async function paginate() {
   await new Promise(r => requestAnimationFrame(() => r(null)))
   await new Promise(r => requestAnimationFrame(() => r(null)))
   const total = el.scrollWidth
-  const count = Math.max(1, Math.round(total / contentWidth))
+  const cw = contentWidth.value
+  const ch = contentHeight.value
+  const count = Math.max(1, Math.round(total / cw))
 
-  // Each "page" re-renders the same flow inside an overflow:hidden viewport,
-  // shifted left by i * contentWidth so that the i-th column is in view.
-  // Duplicating the flow is simpler than threading a single positioned flow
-  // through both pages of a spread, and keeps each page independently scrollable
-  // by future selection logic. Column counts are usually < 200 for realistic
-  // manuscripts so the DOM cost is acceptable.
+  // Each page re-renders the full flow at width = count * contentWidth so that
+  // every column is laid out side-by-side and positioned. The surrounding
+  // .bp-page-inner is overflow:hidden and only contentWidth wide, clipping
+  // everything except the column the inner flow's translateX scrolls into view.
+  const flowWidth = count * cw
   const flowHtml = el.innerHTML
+  const fs = bookFontSize.value
   const out: { html: string }[] = []
   for (let i = 0; i < count; i++) {
     out.push({
       html:
-        `<div class="bp-page-flow" style="width:${contentWidth}px;height:${contentHeight}px;column-width:${contentWidth}px;column-gap:0;column-fill:auto;transform:translateX(-${i * contentWidth}px);">` +
+        `<div class="bp-page-flow" style="width:${flowWidth}px;height:${ch}px;column-width:${cw}px;column-gap:0;column-fill:auto;transform:translateX(-${i * cw}px);font-size:${fs}px;line-height:${lineHeight};">` +
         flowHtml +
         `</div>`,
     })
@@ -610,7 +694,7 @@ async function paginate() {
 }
 
 watch(
-  [bookFlowHtml, () => stage.value],
+  [bookFlowHtml, () => stage.value, bookFontSize, contentWidth, contentHeight],
   async ([html, st]) => {
     if (st === 'book' && html) {
       await paginate()
@@ -839,7 +923,8 @@ function closeIfSetup() {
 
 .bp-page-inner {
   position: absolute;
-  inset: 36px 32px 36px 32px;
+  /* inset values come from the inline `pageInnerStyle` so the printed margin
+     scales with the page. */
   overflow: hidden;
 }
 
@@ -859,17 +944,11 @@ function closeIfSetup() {
   height: 100%;
 }
 
-/* The actual paginated flow lives inside .bp-page-inner via v-html. */
+/* The actual paginated flow lives inside .bp-page-inner via v-html.
+   font-size and line-height are set inline so the slider can update them. */
 .bp-page-inner :deep(.bp-page-flow) {
-  /* width/height/transform set inline; columns split content into pageWidth columns */
-  overflow: hidden;
   font-family: ui-serif, Georgia, "Iowan Old Style", serif;
-  font-size: 0.95rem;
-  line-height: 1.55;
   color: #1f1a14;
-  /* Reserve outer padding via .bp-page-inner; the flow itself is
-     pageWidth × pageHeight then translated into view. We compensate the
-     page padding by shrinking the flow block. */
   padding: 0;
 }
 
@@ -978,12 +1057,11 @@ function closeIfSetup() {
   pointer-events: none;
 }
 .bp-measure-flow {
-  /* width/height/columnWidth set inline; identical typography to the page flow */
+  /* width/height/columnWidth/font-size/line-height are all set inline so the
+     measurement matches the page-flow exactly when the user adjusts type. */
   column-gap: 0;
   column-fill: auto;
   font-family: ui-serif, Georgia, "Iowan Old Style", serif;
-  font-size: 0.95rem;
-  line-height: 1.55;
   overflow: hidden;
 }
 </style>
