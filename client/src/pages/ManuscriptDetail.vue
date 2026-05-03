@@ -48,6 +48,13 @@
               </span>
               <button
                 type="button"
+                @click="showPreview = true"
+                class="px-4 py-2 text-sm tracking-wide font-sans border border-line text-ink-light hover:text-ink hover:border-ink-lighter transition-colors duration-300"
+              >
+                Preview book
+              </button>
+              <button
+                type="button"
                 @click="openExportDialog"
                 class="px-4 py-2 text-sm tracking-wide font-sans border border-line text-ink-light hover:text-ink hover:border-ink-lighter transition-colors duration-300"
               >
@@ -676,6 +683,16 @@
         </div>
       </div>
     </div>
+
+    <!-- Book preview -->
+    <BookPreviewModal
+      v-if="manuscript"
+      :open="showPreview"
+      :manuscript="manuscript"
+      :sections="sections"
+      :items="items"
+      @close="showPreview = false"
+    />
   </div>
 </template>
 
@@ -686,6 +703,7 @@ import { manuscriptsApi } from '../api/manuscripts'
 import { api } from '../api/client'
 import { useAuth } from '../stores/auth'
 import EditableProse from '../components/manuscripts/EditableProse.vue'
+import BookPreviewModal from '../components/manuscripts/BookPreviewModal.vue'
 import HelpTooltip from '../components/ui/HelpTooltip.vue'
 import type { ApiResponse } from '@shared/ApiResponses'
 import type { Theme } from '../domain/Theme'
@@ -730,6 +748,9 @@ const newItem = ref<{
 })
 
 const dragOverItemId = ref<string | null>(null)
+
+// ---- preview ----
+const showPreview = ref(false)
 
 // ---- export ----
 const showExport = ref(false)
