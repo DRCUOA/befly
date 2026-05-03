@@ -12,6 +12,25 @@
  * markdown/JSON parsing footguns.
  */
 
+/**
+ * Optional provenance attached to each chatJson call. The OpenAI client uses
+ * this to persist a row in `ai_exchanges` so an admin can inspect the actual
+ * payload that went out and what came back. Tests can omit it; production
+ * call sites (writing-assist, manuscript-assist) populate every field they
+ * have available.
+ */
+export interface LlmRequestContext {
+  /** App surface that triggered the call, e.g. 'writing-assist'. */
+  feature: string
+  /** Per-feature mode/op, e.g. 'coherence' / 'gaps'. */
+  mode?: string | null
+  /** Authenticated user that initiated the call. */
+  userId?: string | null
+  /** Resource the call is about (e.g. writing_block id, manuscript id). */
+  resourceType?: string | null
+  resourceId?: string | null
+}
+
 export interface LlmJsonRequest {
   /** Concrete model name passed through to the provider (e.g. 'gpt-4o-mini'). */
   model: string
@@ -23,6 +42,8 @@ export interface LlmJsonRequest {
   temperature?: number
   /** Hard ceiling on output tokens to bound cost. */
   maxOutputTokens?: number
+  /** Optional diagnostic context — see LlmRequestContext. */
+  context?: LlmRequestContext
 }
 
 export interface LlmJsonResponse {

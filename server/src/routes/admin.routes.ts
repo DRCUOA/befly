@@ -24,6 +24,9 @@ router.post('/typography-rules/:id/reorder', asyncHandler(typographyController.r
 // Usage analytics
 router.get('/stats', asyncHandler(adminController.getStats))
 
+// AI exchanges (diagnostic log of LLM request/response)
+router.get('/ai-exchanges', asyncHandler(adminController.listAiExchanges))
+
 // User management
 router.get('/users', asyncHandler(adminController.listUsers))
 router.get('/users/:id', asyncHandler(adminController.getUser))

@@ -1,6 +1,22 @@
 import { marked } from 'marked'
 
 /**
+ * True when the body is a complete standalone HTML document (an SPA pasted
+ * by the author, e.g. with `<!DOCTYPE html>` or starting with `<html>`).
+ *
+ * When true, the reader and editor must skip the markdown pipeline entirely
+ * and render the body in a sandboxed iframe instead. The markdown renderer
+ * would mangle the document, the paragraph splitter would chop `<script>`
+ * tags across paragraphs, and the typography scanner would emit nonsense
+ * suggestions on HTML attributes.
+ */
+export function isStandaloneHtmlDoc(s: string | undefined | null): boolean {
+  if (!s) return false
+  const head = s.trimStart().slice(0, 200).toLowerCase()
+  return head.startsWith('<!doctype html') || head.startsWith('<html')
+}
+
+/**
  * Render markdown to HTML
  */
 export function renderMarkdown(markdown: string): string {

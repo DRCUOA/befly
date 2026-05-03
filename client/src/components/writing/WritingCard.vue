@@ -27,13 +27,24 @@
         <h2 class="text-2xl sm:text-3xl md:text-4xl font-light tracking-tight mb-4 sm:mb-6 leading-tight group-hover:text-ink-light">
           {{ writing.title }}
         </h2>
-        <p class="text-base sm:text-lg font-light text-ink-light leading-relaxed mb-4 sm:mb-6">
+        <p
+          v-if="!isSpa"
+          class="text-base sm:text-lg font-light text-ink-light leading-relaxed mb-4 sm:mb-6"
+        >
           {{ preview }}
         </p>
         <div class="flex flex-wrap items-center gap-4 sm:gap-6 text-xs sm:text-sm font-sans text-ink-lighter">
-          <span>{{ wordCount }} words</span>
-          <span>·</span>
-          <span>{{ readTime }} min read</span>
+          <template v-if="isSpa">
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full border border-line bg-line/30 uppercase tracking-widest text-[10px] sm:text-xs">
+              <span class="w-1.5 h-1.5 rounded-full bg-accent"></span>
+              Interactive
+            </span>
+          </template>
+          <template v-else>
+            <span>{{ wordCount }} words</span>
+            <span>·</span>
+            <span>{{ readTime }} min read</span>
+          </template>
           <template v-if="reactionSummary && reactionSummary.total > 0">
             <span>·</span>
             <ReactionSummary :summary="reactionSummary" />
@@ -96,7 +107,7 @@ import type { Theme } from '../../domain/Theme'
 import type { WritingReactionSummary } from '../../domain/Appreciation'
 import ThemeTag from './ThemeTag.vue'
 import ReactionSummary from './ReactionSummary.vue'
-import { markdownToText } from '../../utils/markdown'
+import { markdownToText, isStandaloneHtmlDoc } from '../../utils/markdown'
 
 interface Props {
   writing: WritingBlock
@@ -133,12 +144,18 @@ const isRecentlyRead = computed(() => {
   return readingStore.isRecentlyRead(props.writing.id)
 })
 
+// True when the body is a complete HTML SPA — drives a different card
+// layout (no preview text, no word/read counts, "Interactive" pill instead).
+const isSpa = computed(() => isStandaloneHtmlDoc(props.writing.body))
+
 const preview = computed(() => {
+  if (isSpa.value) return ''
   const text = markdownToText(props.writing.body)
   return text.substring(0, 200) + (text.length > 200 ? '...' : '')
 })
 
 const wordCount = computed(() => {
+  if (isSpa.value) return 0
   const text = markdownToText(props.writing.body)
   return text.split(/\s+/).filter(word => word.length > 0).length
 })

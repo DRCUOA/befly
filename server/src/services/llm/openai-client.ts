@@ -21,6 +21,8 @@ import {
   LlmRequestError,
 } from './llm-client.js'
 import { logger } from '../../utils/logger.js'
+import { aiExchangeRepo } from '../../repositories/ai-exchange.repo.js'
+import type { CreateAiExchangeParams } from '../../models/AiExchange.js'
 
 const DEFAULT_MODEL = 'gpt-4o-mini'
 const DEFAULT_TEMPERATURE = 0.4
@@ -132,6 +134,27 @@ class OpenAIClient implements LlmClient {
       userChars: req.user.length,
     })
 
+    /* ---- Diagnostic exchange row ----
+     * Every code path below funnels into recordExchange() so the
+     * ai_exchanges table captures the raw on-the-wire request and
+     * response (success, network failure, non-2xx, or non-JSON body).
+     * The write is fire-and-forget at the catch sites; the assist
+     * service must never fail because we couldn't write a log row.
+     */
+    const baseRecord: Omit<CreateAiExchangeParams, 'status' | 'durationMs'> = {
+      userId:          req.context?.userId ?? null,
+      feature:         req.context?.feature ?? 'unknown',
+      mode:            req.context?.mode ?? null,
+      resourceType:    req.context?.resourceType ?? null,
+      resourceId:      req.context?.resourceId ?? null,
+      provider:        'openai',
+      model,
+      temperature:     reasoning ? null : (body.temperature as number),
+      maxOutputTokens: body.max_completion_tokens as number,
+      systemPrompt:    req.system,
+      userPrompt:      req.user,
+    }
+
     const sentAt = Date.now()
     let response: Response
     try {
@@ -144,24 +167,39 @@ class OpenAIClient implements LlmClient {
         body: JSON.stringify(body),
       })
     } catch (networkErr) {
-      logger.error('[openai] network error', {
-        model,
-        ms: Date.now() - sentAt,
-        message: networkErr instanceof Error ? networkErr.message : String(networkErr),
+      const ms = Date.now() - sentAt
+      const message = networkErr instanceof Error ? networkErr.message : String(networkErr)
+      logger.error('[openai] network error', { model, ms, message })
+      void aiExchangeRepo.record({
+        ...baseRecord,
+        status: 'error',
+        httpStatus: null,
+        responseRaw: null,
+        responseJson: null,
+        durationMs: ms,
+        errorMessage: `network error: ${message}`,
       })
-      throw new LlmRequestError(
-        `OpenAI request failed: ${networkErr instanceof Error ? networkErr.message : 'network error'}`
-      )
+      throw new LlmRequestError(`OpenAI request failed: ${message}`)
     }
 
     if (!response.ok) {
       const text = await response.text().catch(() => '')
+      const ms = Date.now() - sentAt
       logger.error('[openai] non-2xx response', {
         model,
         status: response.status,
-        ms: Date.now() - sentAt,
+        ms,
         // Truncated server error so logs stay readable but the cause is visible.
         body: text.slice(0, 500),
+      })
+      void aiExchangeRepo.record({
+        ...baseRecord,
+        status: 'error',
+        httpStatus: response.status,
+        responseRaw: text,
+        responseJson: null,
+        durationMs: ms,
+        errorMessage: `provider returned HTTP ${response.status}`,
       })
       throw new LlmRequestError(
         `OpenAI returned ${response.status}: ${text.slice(0, 500)}`,
@@ -169,13 +207,49 @@ class OpenAIClient implements LlmClient {
       )
     }
 
-    const payload = await response.json() as {
+    const rawBodyText = await response.text()
+    let payload: {
       choices?: { message?: { content?: string } }[]
       usage?: { prompt_tokens?: number; completion_tokens?: number; total_tokens?: number }
+    }
+    try {
+      payload = JSON.parse(rawBodyText)
+    } catch (parseErr) {
+      const ms = Date.now() - sentAt
+      logger.error('[openai] response body not JSON', {
+        model,
+        ms,
+        snippet: rawBodyText.slice(0, 200),
+      })
+      void aiExchangeRepo.record({
+        ...baseRecord,
+        status: 'error',
+        httpStatus: response.status,
+        responseRaw: rawBodyText,
+        responseJson: null,
+        durationMs: ms,
+        errorMessage: `provider envelope was not JSON: ${parseErr instanceof Error ? parseErr.message : String(parseErr)}`,
+      })
+      throw new LlmRequestError(
+        `OpenAI returned non-JSON envelope: ${rawBodyText.slice(0, 200)}`
+      )
     }
 
     const content = payload.choices?.[0]?.message?.content
     if (typeof content !== 'string' || content.trim() === '') {
+      const ms = Date.now() - sentAt
+      void aiExchangeRepo.record({
+        ...baseRecord,
+        status: 'error',
+        httpStatus: response.status,
+        responseRaw: rawBodyText,
+        responseJson: null,
+        promptTokens:     payload.usage?.prompt_tokens     ?? null,
+        completionTokens: payload.usage?.completion_tokens ?? null,
+        totalTokens:      payload.usage?.total_tokens      ?? null,
+        durationMs: ms,
+        errorMessage: 'provider returned no message content',
+      })
       throw new LlmRequestError('OpenAI returned no message content')
     }
 
@@ -183,23 +257,49 @@ class OpenAIClient implements LlmClient {
     try {
       json = JSON.parse(content)
     } catch (parseErr) {
+      const ms = Date.now() - sentAt
       logger.error('[openai] non-JSON content despite json_object mode', {
         model,
-        ms: Date.now() - sentAt,
+        ms,
         contentSnippet: content.slice(0, 200),
+      })
+      void aiExchangeRepo.record({
+        ...baseRecord,
+        status: 'error',
+        httpStatus: response.status,
+        responseRaw: content,
+        responseJson: null,
+        promptTokens:     payload.usage?.prompt_tokens     ?? null,
+        completionTokens: payload.usage?.completion_tokens ?? null,
+        totalTokens:      payload.usage?.total_tokens      ?? null,
+        durationMs: ms,
+        errorMessage: `non-JSON content despite json_object mode: ${parseErr instanceof Error ? parseErr.message : String(parseErr)}`,
       })
       throw new LlmRequestError(
         `OpenAI returned non-JSON content despite json_object mode: ${content.slice(0, 200)}`
       )
     }
 
+    const ms = Date.now() - sentAt
     logger.debug('[openai] response parsed', {
       model,
-      ms: Date.now() - sentAt,
+      ms,
       promptTokens: payload.usage?.prompt_tokens,
       completionTokens: payload.usage?.completion_tokens,
       totalTokens: payload.usage?.total_tokens,
       contentChars: content.length,
+    })
+
+    void aiExchangeRepo.record({
+      ...baseRecord,
+      status: 'ok',
+      httpStatus: response.status,
+      responseRaw: content,
+      responseJson: json,
+      promptTokens:     payload.usage?.prompt_tokens     ?? null,
+      completionTokens: payload.usage?.completion_tokens ?? null,
+      totalTokens:      payload.usage?.total_tokens      ?? null,
+      durationMs: ms,
     })
 
     return {

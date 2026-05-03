@@ -414,6 +414,14 @@ export const writingAssistService = {
       user: userPrompt,
       temperature,
       maxOutputTokens,
+      // Provenance for the diagnostic ai_exchanges log — see migration 019.
+      context: {
+        feature: 'writing-assist',
+        mode: request.mode,
+        userId,
+        resourceType: 'writing_block',
+        resourceId: writing.id,
+      },
     })
     logger.info('[writing-assist] LLM response received', {
       mode: request.mode,

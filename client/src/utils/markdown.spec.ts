@@ -9,8 +9,34 @@ import {
   bodyMarkdownAfterExcerptPrefix,
   excerptPlainCutLength,
   readingExcerptPlainCutLength,
-  READING_EXCERPT_PLAIN_LENGTH
+  READING_EXCERPT_PLAIN_LENGTH,
+  isStandaloneHtmlDoc
 } from './markdown'
+
+describe('isStandaloneHtmlDoc', () => {
+  it('detects DOCTYPE-led documents (case-insensitive)', () => {
+    expect(isStandaloneHtmlDoc('<!DOCTYPE html><html><body></body></html>')).toBe(true)
+    expect(isStandaloneHtmlDoc('<!doctype html>\n<html></html>')).toBe(true)
+  })
+
+  it('detects bare <html> openers (with or without attrs)', () => {
+    expect(isStandaloneHtmlDoc('<html lang="en"><body></body></html>')).toBe(true)
+    expect(isStandaloneHtmlDoc('<HTML>')).toBe(true)
+  })
+
+  it('tolerates leading whitespace before the document', () => {
+    expect(isStandaloneHtmlDoc('   \n  <!DOCTYPE html><html></html>')).toBe(true)
+  })
+
+  it('returns false for prose, markdown and HTML fragments', () => {
+    expect(isStandaloneHtmlDoc('# Hello\n\nA paragraph.')).toBe(false)
+    expect(isStandaloneHtmlDoc('<p>just a fragment</p>')).toBe(false)
+    expect(isStandaloneHtmlDoc('<div><html></html></div>')).toBe(false) // <html> not at start
+    expect(isStandaloneHtmlDoc('')).toBe(false)
+    expect(isStandaloneHtmlDoc(null)).toBe(false)
+    expect(isStandaloneHtmlDoc(undefined)).toBe(false)
+  })
+})
 
 describe('stripMarkdownForWordCount', () => {
   it('strips headers and keeps content', () => {

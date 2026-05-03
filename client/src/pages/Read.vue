@@ -49,40 +49,80 @@
             <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-light tracking-tight leading-tight">
               {{ writing.title }}
             </h1>
-            <router-link
-              v-if="canEdit"
-              :to="`/write/${writing.id}`"
-              class="flex-shrink-0 mt-2 sm:mt-3 inline-flex items-center justify-center w-10 h-10 rounded text-ink-lighter hover:text-ink hover:bg-line transition-colors"
-              :aria-label="`Edit ${writing.title}`"
-              title="Edit essay"
-            >
-              <svg
-                class="w-5 h-5"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.6"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                aria-hidden="true"
+            <div class="flex items-center gap-2 flex-shrink-0 mt-2 sm:mt-3">
+              <a
+                v-if="isSpa"
+                :href="`/spa/${writing.id}`"
+                target="_blank"
+                rel="noopener"
+                class="inline-flex items-center justify-center w-10 h-10 rounded text-ink-lighter hover:text-ink hover:bg-line transition-colors"
+                aria-label="Open full screen in a new tab"
+                title="Open full screen"
               >
-                <!-- Heroicons "pencil-square" -->
-                <path d="M16.862 4.487 18.549 2.799a2.121 2.121 0 1 1 3 3L19.862 7.487M16.862 4.487 7.5 13.85l-1.5 4.5 4.5-1.5 9.362-9.363M16.862 4.487l3 3" />
-                <path d="M21 12v7.5A2.25 2.25 0 0 1 18.75 21.75H6A2.25 2.25 0 0 1 3.75 19.5V6.75A2.25 2.25 0 0 1 6 4.5h6" />
-              </svg>
-            </router-link>
+                <svg
+                  class="w-5 h-5"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.6"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <!-- Heroicons "arrows-pointing-out" -->
+                  <path d="M3.75 9V3.75h5.25M14.25 3.75H19.5V9M19.5 15v5.25H14.25M9 19.5H3.75V14.25" />
+                  <path d="m3.75 3.75 6 6M19.5 3.75l-6 6M19.5 19.5l-6-6M3.75 19.5l6-6" />
+                </svg>
+              </a>
+              <router-link
+                v-if="canEdit"
+                :to="`/write/${writing.id}`"
+                class="inline-flex items-center justify-center w-10 h-10 rounded text-ink-lighter hover:text-ink hover:bg-line transition-colors"
+                :aria-label="`Edit ${writing.title}`"
+                title="Edit essay"
+              >
+                <svg
+                  class="w-5 h-5"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.6"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <!-- Heroicons "pencil-square" -->
+                  <path d="M16.862 4.487 18.549 2.799a2.121 2.121 0 1 1 3 3L19.862 7.487M16.862 4.487 7.5 13.85l-1.5 4.5 4.5-1.5 9.362-9.363M16.862 4.487l3 3" />
+                  <path d="M21 12v7.5A2.25 2.25 0 0 1 18.75 21.75H6A2.25 2.25 0 0 1 3.75 19.5V6.75A2.25 2.25 0 0 1 6 4.5h6" />
+                </svg>
+              </router-link>
+            </div>
           </div>
-          
+
+          <!-- For SPA essays we deliberately hide word count, read time and the
+               italic excerpt — none of them apply to an interactive piece.
+               A small pill announces the format instead. -->
           <div class="flex flex-wrap items-center gap-4 sm:gap-6 md:gap-8 text-xs sm:text-sm font-sans text-ink-lighter mb-8 sm:mb-12 md:mb-16">
-            <span>{{ wordCount }} words</span>
-            <span>·</span>
-            <span>{{ readTime }} min read</span>
-            <span>·</span>
-            <span>Published {{ formattedDate }}</span>
+            <template v-if="isSpa">
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full border border-line bg-line/30 uppercase tracking-widest text-[10px] sm:text-xs">
+                <span class="w-1.5 h-1.5 rounded-full bg-accent"></span>
+                Interactive
+              </span>
+              <span>·</span>
+              <span>Published {{ formattedDate }}</span>
+            </template>
+            <template v-else>
+              <span>{{ wordCount }} words</span>
+              <span>·</span>
+              <span>{{ readTime }} min read</span>
+              <span>·</span>
+              <span>Published {{ formattedDate }}</span>
+            </template>
           </div>
-          
-          <div class="border-t border-line pt-6 sm:pt-8">
+
+          <div v-if="!isSpa" class="border-t border-line pt-6 sm:pt-8">
             <p class="text-base sm:text-lg md:text-xl font-light text-ink-light leading-relaxed italic">
               {{ excerpt }}
             </p>
@@ -90,9 +130,39 @@
         </div>
       </div>
 
+      <!-- Standalone HTML SPA — render in a sandboxed iframe so the author's
+           CDN scripts (Tailwind, Chart.js, fonts, etc.) load against a fresh
+           document context, with no access to the host app's cookies, storage
+           or DOM. We size the frame to a generous viewport height; the
+           "Open full screen" button above pops it out at 100vw × 100vh. -->
+      <div
+        v-if="isSpa"
+        class="w-full px-0 sm:px-4 md:px-6 py-6 sm:py-8 bg-paper"
+      >
+        <div class="max-w-6xl mx-auto">
+          <iframe
+            :srcdoc="writing.body"
+            :title="writing.title"
+            class="spa-embed"
+            sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox"
+            referrerpolicy="no-referrer"
+            loading="lazy"
+          />
+          <p class="mt-3 px-4 text-xs font-sans text-ink-lighter">
+            Interactive essay rendered in an isolated frame. For best experience,
+            <a
+              :href="`/spa/${writing.id}`"
+              target="_blank"
+              rel="noopener"
+              class="text-accent hover:text-accent-hover underline"
+            >open full screen</a>.
+          </p>
+        </div>
+      </div>
+
       <!-- Essay Content (continues after the excerpt; no duplicate of the opening lines) -->
       <div
-        v-if="paragraphs.length > 0"
+        v-else-if="paragraphs.length > 0"
         class="w-full px-4 sm:px-6 md:px-8 py-8 sm:py-12 md:py-16 bg-paper"
       >
         <div class="max-w-3xl mx-auto essay-content text-base sm:text-lg md:text-xl leading-relaxed">
@@ -157,7 +227,8 @@ import type { ApiResponse } from '@shared/ApiResponses'
 import {
   markdownToText,
   bodyMarkdownAfterExcerptPrefix,
-  excerptPlainCutLength
+  excerptPlainCutLength,
+  isStandaloneHtmlDoc
 } from '../utils/markdown'
 
 const route = useRoute()
@@ -171,15 +242,21 @@ const appreciations = ref<Appreciation[]>([])
 const loading = ref(true)
 const error = ref<string | null>(null)
 
+// True when the author pasted a complete HTML document (`<!DOCTYPE …` / `<html …`).
+// Drives a separate render path: sandboxed iframe instead of markdown paragraphs.
+const isSpa = computed(() => isStandaloneHtmlDoc(writing.value?.body))
+
 // Split content into paragraphs for progressive reveal (body only — excerpt covers the opening)
 const paragraphs = computed(() => {
   if (!writing.value) return []
+  if (isSpa.value) return []
   const afterExcerpt = bodyMarkdownAfterExcerptPrefix(writing.value.body)
   return afterExcerpt.split(/\n\n+/).filter(p => p.trim().length > 0)
 })
 
 const wordCount = computed(() => {
   if (!writing.value) return 0
+  if (isSpa.value) return 0
   const text = markdownToText(writing.value.body)
   return text.split(/\s+/).filter(word => word.length > 0).length
 })
@@ -191,6 +268,7 @@ const readTime = computed(() => {
 
 const excerpt = computed(() => {
   if (!writing.value) return ''
+  if (isSpa.value) return ''
   const text = markdownToText(writing.value.body)
   const cut = excerptPlainCutLength(text)
   if (cut >= text.length) return text
@@ -302,4 +380,26 @@ onUnmounted(() => {
   min-height: 100vh;
 }
 
+/* Sandboxed SPA frame: tall enough to feel native (the author's pasted SPA
+   often uses h-screen), with a soft border to delineate "this is a piece"
+   from the surrounding essay chrome. The frame's own background paints the
+   author's intended canvas inside. */
+.spa-embed {
+  display: block;
+  width: 100%;
+  height: 100vh;
+  min-height: 600px;
+  border: 1px solid rgb(var(--color-line));
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 6px 18px rgba(0, 0, 0, 0.06);
+}
+@media (max-width: 640px) {
+  .spa-embed {
+    border-radius: 0;
+    border-left: 0;
+    border-right: 0;
+    height: 90vh;
+  }
+}
 </style>

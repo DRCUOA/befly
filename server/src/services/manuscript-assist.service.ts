@@ -310,6 +310,14 @@ async function runGapAnalysis(input: GapRunInput): Promise<RunAssistResult> {
       model: process.env.OPENAI_MODEL?.trim() || 'gpt-4o-mini',
       system: ASSIST_SYSTEM_PROMPT,
       user: prompt,
+      // Provenance for the diagnostic ai_exchanges log — see migration 019.
+      context: {
+        feature: 'manuscript-assist',
+        mode: 'gaps',
+        userId,
+        resourceType: 'manuscript',
+        resourceId: manuscript.id,
+      },
     })
     lastModel = response.model
 

@@ -21,6 +21,10 @@ const layout = computed(() => {
   if (route.name === 'Read') {
     return PassThroughLayout
   }
+  // Standalone-HTML SPA viewer: chrome-less, full viewport (the iframe owns everything)
+  if (route.name === 'Spa') {
+    return PassThroughLayout
+  }
   // Use minimal layout for landing page to allow full-width sections
   if (route.name === 'Landing') {
     return MinimalLayout

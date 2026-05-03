@@ -4,6 +4,7 @@ import { isTrackedRoute, setOriginForRoute } from '../stores/navigation'
 import Home from '../pages/Home.vue'
 import Landing from '../pages/Landing.vue'
 import Read from '../pages/Read.vue'
+import SpaView from '../pages/SpaView.vue'
 import Write from '../pages/Write.vue'
 import Themes from '../pages/Themes.vue'
 import ThemeForm from '../pages/ThemeForm.vue'
@@ -20,6 +21,7 @@ import SignIn from '../pages/SignIn.vue'
 import SignUp from '../pages/SignUp.vue'
 import Admin from '../pages/Admin.vue'
 import AdminRules from '../pages/AdminRules.vue'
+import AdminAiExchanges from '../pages/AdminAiExchanges.vue'
 import BaselineTest from '../pages/BaselineTest.vue'
 
 const router = createRouter({
@@ -40,6 +42,11 @@ const router = createRouter({
       path: '/read/:id?',
       name: 'Read',
       component: Read
+    },
+    {
+      path: '/spa/:id',
+      name: 'Spa',
+      component: SpaView
     },
     {
       path: '/write',
@@ -133,6 +140,12 @@ const router = createRouter({
       path: '/admin/rules',
       name: 'AdminRules',
       component: AdminRules,
+      meta: { requiresAuth: true, requiresAdmin: true }
+    },
+    {
+      path: '/admin/ai-exchanges',
+      name: 'AdminAiExchanges',
+      component: AdminAiExchanges,
       meta: { requiresAuth: true, requiresAdmin: true }
     },
     {

@@ -68,6 +68,30 @@
         />
       </div>
 
+      <!-- Standalone-HTML banner — appears the moment the writer pastes a
+           full HTML document into the body. Tells them what's about to
+           happen and offers a Preview toggle that swaps the textarea for a
+           sandboxed iframe of the current value. While preview is on, the
+           textarea is hidden but the underlying value is unchanged. -->
+      <div
+        v-if="isSpaBody"
+        class="zen-spa-banner w-full max-w-[100ch] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 pt-3"
+      >
+        <div class="zen-spa-banner-pill">
+          <span class="zen-spa-banner-dot" aria-hidden="true"></span>
+          <span class="zen-spa-banner-text">
+            Interactive HTML detected — this essay will render as a sandboxed SPA when published.
+          </span>
+          <button
+            type="button"
+            class="zen-spa-banner-toggle"
+            @click="spaPreviewOpen = !spaPreviewOpen"
+          >
+            {{ spaPreviewOpen ? 'Edit source' : 'Preview' }}
+          </button>
+        </div>
+      </div>
+
       <!-- Body — typewriter scrolling: 100vh padding-bottom so any line
            can be scrolled to the typewriter position. Width matches the
            title (100ch) so the page reads as one wide sheet. -->
@@ -75,6 +99,7 @@
         <textarea
           id="body"
           ref="bodyTextareaRef"
+          v-show="!isSpaBody || !spaPreviewOpen"
           v-model="form.body"
           required
           class="zen-body block w-full min-h-[40vh] border-0 bg-transparent font-typewriter text-base sm:text-lg text-ink placeholder:text-ink-whisper focus:ring-0 focus:outline-none resize-none overflow-hidden py-2"
@@ -85,6 +110,21 @@
           @click="scheduleTypewriterScroll"
           @keyup="scheduleTypewriterScroll"
           @blur="onBodyBlur"
+        />
+
+        <!-- Live SPA preview — sandboxed iframe of the current body value.
+             Sandbox flags match the reader. We re-key by an incrementing id
+             so big edits force a fresh document load (otherwise srcdoc
+             updates can leave stale CDN-script side effects in the iframe). -->
+        <iframe
+          v-if="isSpaBody && spaPreviewOpen"
+          :key="spaPreviewKey"
+          :srcdoc="form.body"
+          title="SPA preview"
+          class="zen-spa-preview"
+          sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox"
+          referrerpolicy="no-referrer"
+          loading="eager"
         />
         <!-- Mirror div: an invisible copy of the textarea content used to
              measure caret pixel position for typewriter scrolling.
@@ -237,7 +277,7 @@ import WritingAssistPanel from '../components/writing/WritingAssistPanel.vue'
 import { useBreathingCaret } from '../composables/useBreathingCaret'
 import { useWritingAssist } from '../composables/useWritingAssist'
 import type { WritingAssistMode } from '@shared/WritingAssist'
-import { countWordsInMarkdown } from '../utils/markdown'
+import { countWordsInMarkdown, isStandaloneHtmlDoc } from '../utils/markdown'
 import { useNavigationOrigin } from '../stores/navigation'
 
 const route = useRoute()
@@ -323,7 +363,40 @@ function suggestionKey(s: TypographySuggestion): string {
   return `${s.ruleId}:${s.original}`
 }
 
+/* ============================================================
+ * Standalone-HTML SPA mode
+ *
+ * If the body is a complete HTML document (DOCTYPE / <html>) we treat the
+ * essay as an interactive SPA: the reader will render it inside a sandboxed
+ * iframe, so typography suggestions don't apply (they'd flag attribute
+ * quotes, ampersands, etc.) and the editor offers a Preview toggle that
+ * swaps the textarea for a live sandboxed iframe of the current value.
+ * ============================================================ */
+const isSpaBody = computed(() => isStandaloneHtmlDoc(form.value.body))
+const spaPreviewOpen = ref(false)
+// Bumped after a debounce so the iframe re-mounts on substantive edits —
+// without this, srcdoc updates accumulate inside the same document context
+// and CDN scripts can keep stale side effects from the previous render.
+const spaPreviewKey = ref(0)
+let spaReloadTimer: ReturnType<typeof setTimeout> | null = null
+
+watch(() => form.value.body, () => {
+  if (!spaPreviewOpen.value) return
+  if (spaReloadTimer) clearTimeout(spaReloadTimer)
+  spaReloadTimer = setTimeout(() => { spaPreviewKey.value++ }, 500)
+})
+
+// Closing the editor — clean up the debounce so it doesn't fire post-unmount.
+onBeforeUnmount(() => { if (spaReloadTimer) clearTimeout(spaReloadTimer) })
+
 function refreshSuggestions() {
+  // Skip the typography scan for SPA bodies — the rules target prose, and
+  // running them on raw HTML produces noisy, unhelpful suggestions on
+  // attribute quotes, entity ampersands, etc.
+  if (isSpaBody.value) {
+    typographySuggestions.value = []
+    return
+  }
   const all = scanTypography(form.value.body, typographyRules.value)
   typographySuggestions.value = all.filter(
     s => !dismissedSuggestionKeys.value.has(suggestionKey(s))
@@ -1761,6 +1834,81 @@ onBeforeUnmount(() => {
     /* Slightly tighter line-height at smaller text size. */
     top: calc(80vh + 30px);
   }
+}
+
+/* ============================================================
+ * Standalone-HTML SPA UI
+ *
+ * Banner + preview iframe styles. The banner is a thin pill that sits
+ * just under the title, low-contrast so it doesn't shout. The preview
+ * iframe replaces the textarea visually but the textarea remains in the
+ * DOM (just v-show'd off) so all the keyboard / draft state is intact.
+ * ============================================================ */
+.zen-spa-banner {
+  pointer-events: none;
+}
+.zen-spa-banner-pill {
+  pointer-events: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgb(var(--color-surface));
+  border: 1px solid rgb(var(--color-line));
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.01em;
+  color: rgb(var(--color-ink-light));
+  max-width: 100%;
+}
+.zen-spa-banner-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgb(var(--color-accent));
+  flex-shrink: 0;
+}
+.zen-spa-banner-text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.zen-spa-banner-toggle {
+  flex-shrink: 0;
+  margin-left: 4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid rgb(var(--color-line));
+  background: transparent;
+  color: rgb(var(--color-ink));
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 120ms ease-out, color 120ms ease-out;
+}
+.zen-spa-banner-toggle:hover {
+  background: rgb(var(--color-accent));
+  color: rgb(var(--color-paper));
+  border-color: rgb(var(--color-accent));
+}
+@media (max-width: 640px) {
+  .zen-spa-banner-text {
+    white-space: normal;
+  }
+}
+
+.zen-spa-preview {
+  display: block;
+  width: 100%;
+  height: 80vh;
+  min-height: 480px;
+  margin-top: 8px;
+  border: 1px solid rgb(var(--color-line));
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 6px 18px rgba(0, 0, 0, 0.06);
 }
 
 /* Tiny status pill — bottom-left, fades in/out, stays out of the way. */

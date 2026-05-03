@@ -12,6 +12,8 @@ import {
 } from '../services/essay-export.service.js'
 import { runEssayImport } from '../services/essay-import.service.js'
 import { EssayImportOptions } from '../models/EssayExport.js'
+import { aiExchangeRepo } from '../repositories/ai-exchange.repo.js'
+import type { AiExchangeListFilter, AiExchangeStatus } from '../models/AiExchange.js'
 
 /**
  * Admin controller - handles admin-only operations
@@ -723,6 +725,44 @@ export const adminController = {
         })),
         recentActivity: recentResult.rows
       }
+    })
+  },
+
+  // ─── AI exchanges (diagnostic log) ───────────────────────────────
+  //
+  // Returns the most recent rows from the ai_exchanges table so an admin
+  // can see exactly what prompts the app sent and what the LLM returned.
+  // This is a temporary diagnostic surface — see migration 019. The full
+  // row payload (including system + user prompts and the raw response
+  // body) ships in the response on purpose; the page is admin-only and
+  // the whole point is inspection.
+
+  async listAiExchanges(req: Request, res: Response) {
+    const limit  = Math.max(1, Math.min(parseInt(req.query.limit  as string) || 25, 200))
+    const offset = Math.max(0, parseInt(req.query.offset as string) || 0)
+
+    const filter: AiExchangeListFilter = {}
+    if (typeof req.query.feature === 'string' && req.query.feature.trim()) {
+      filter.feature = req.query.feature.trim()
+    }
+    if (req.query.status === 'ok' || req.query.status === 'error') {
+      filter.status = req.query.status as AiExchangeStatus
+    }
+    if (typeof req.query.userId === 'string' && req.query.userId.trim()) {
+      filter.userId = req.query.userId.trim()
+    }
+    if (typeof req.query.resourceId === 'string' && req.query.resourceId.trim()) {
+      filter.resourceId = req.query.resourceId.trim()
+    }
+
+    const [rows, total] = await Promise.all([
+      aiExchangeRepo.list(filter, limit, offset),
+      aiExchangeRepo.count(filter),
+    ])
+
+    res.json({
+      data: rows,
+      meta: { total, limit, offset, filter },
     })
   }
 }

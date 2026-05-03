@@ -13,6 +13,12 @@
           >
             Typography rules
           </router-link>
+          <router-link
+            to="/admin/ai-exchanges"
+            class="text-sm text-blue-600 hover:text-blue-800 hover:underline"
+          >
+            AI exchanges
+          </router-link>
           <button
             type="button"
             @click="showImportExport = true"
