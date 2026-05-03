@@ -590,18 +590,17 @@ async function paginate() {
   const total = el.scrollWidth
   const count = Math.max(1, Math.round(total / contentWidth))
 
-  // Each "page" re-renders the same flow inside an overflow:hidden viewport,
-  // shifted left by i * contentWidth so that the i-th column is in view.
-  // Duplicating the flow is simpler than threading a single positioned flow
-  // through both pages of a spread, and keeps each page independently scrollable
-  // by future selection logic. Column counts are usually < 200 for realistic
-  // manuscripts so the DOM cost is acceptable.
+  // Each page re-renders the full flow at width = count * contentWidth so that
+  // every column is laid out side-by-side and positioned. The surrounding
+  // .bp-page-inner is overflow:hidden and only contentWidth wide, clipping
+  // everything except the column the inner flow's translateX scrolls into view.
+  const flowWidth = count * contentWidth
   const flowHtml = el.innerHTML
   const out: { html: string }[] = []
   for (let i = 0; i < count; i++) {
     out.push({
       html:
-        `<div class="bp-page-flow" style="width:${contentWidth}px;height:${contentHeight}px;column-width:${contentWidth}px;column-gap:0;column-fill:auto;transform:translateX(-${i * contentWidth}px);">` +
+        `<div class="bp-page-flow" style="width:${flowWidth}px;height:${contentHeight}px;column-width:${contentWidth}px;column-gap:0;column-fill:auto;transform:translateX(-${i * contentWidth}px);">` +
         flowHtml +
         `</div>`,
     })
