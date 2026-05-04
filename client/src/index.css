@@ -59,6 +59,12 @@
 }
 
 .dark {
+  /* Tells the UA to render native widgets (form controls, scrollbars,
+     spin buttons, default focus rings, etc.) in their dark variant. Without
+     this, native inputs inside admin tables render with a bright UA-default
+     background and white-on-white text becomes invisible. */
+  color-scheme: dark;
+
   /* Dark mode — earth half of the dusk.
      Paper is a warm "light charcoal" rather than pure Midnight Ground so
      the page reads less inky. Cards/modals use this solid value; the page
@@ -228,5 +234,415 @@ select:focus-visible,
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* ---------------------------------------------------------------------------
+ * Admin views — dark mode contrast overrides
+ *
+ * The four admin pages (Admin, AdminAiExchanges, AdminEssays, AdminRules) were
+ * built with hardcoded light-mode Tailwind classes — bg-white, border-gray-100,
+ * text-gray-700, text-blue-600, bg-red-50, etc. — without dark: variants. In
+ * dark mode that produced glaring white cards on the dark page, near-invisible
+ * borders, and low-contrast secondary text.
+ *
+ * Rather than touch every class attribute across four large Vue files (high
+ * blast radius), we re-map the offending utilities here, scoped to the admin
+ * page roots so nothing else in the app changes. Specificity is .dark + page
+ * root + utility = 0,3,0, which beats single-class Tailwind utilities (0,1,0)
+ * without resorting to !important. Component-level `dark:` overrides added
+ * later will still win on equal specificity (later in source) or via 0,4,0+
+ * selectors. Mappings target the existing palette tokens so dark admin reads
+ * as the same "earth half of the dusk" as the rest of dark mode.
+ * ------------------------------------------------------------------------- */
+.dark .admin-page,
+.dark .admin-ai-exchanges-page,
+.dark .admin-essays-page,
+.dark .admin-rules-page {
+  /* Surface backgrounds — cards, modals, rows, popovers, code blocks. */
+  --admin-surface:        rgb(var(--color-paper));        /* solid card */
+  --admin-surface-sunken: rgb(var(--color-paper-gradient-to)); /* sunken / nested */
+  --admin-surface-raised: rgb(var(--color-surface));      /* hover / active */
+}
+
+/* --- Surfaces ----------------------------------------------------------- */
+.dark .admin-page .bg-white,
+.dark .admin-ai-exchanges-page .bg-white,
+.dark .admin-essays-page .bg-white,
+.dark .admin-rules-page .bg-white {
+  background-color: rgb(var(--color-paper));
+}
+
+.dark .admin-page .bg-gray-50,
+.dark .admin-ai-exchanges-page .bg-gray-50,
+.dark .admin-essays-page .bg-gray-50,
+.dark .admin-rules-page .bg-gray-50 {
+  background-color: rgb(var(--color-paper-gradient-to));
+}
+
+/* hover backgrounds and slightly-tinted nested surfaces (e.g. bg-gray-50/50) */
+.dark .admin-page [class*="bg-gray-50/"],
+.dark .admin-ai-exchanges-page [class*="bg-gray-50/"],
+.dark .admin-essays-page [class*="bg-gray-50/"],
+.dark .admin-rules-page [class*="bg-gray-50/"],
+.dark .admin-page .hover\:bg-gray-50:hover,
+.dark .admin-ai-exchanges-page .hover\:bg-gray-50:hover,
+.dark .admin-essays-page .hover\:bg-gray-50:hover,
+.dark .admin-rules-page .hover\:bg-gray-50:hover {
+  background-color: rgb(var(--color-surface) / 0.6);
+}
+
+.dark .admin-page .bg-gray-100,
+.dark .admin-ai-exchanges-page .bg-gray-100,
+.dark .admin-essays-page .bg-gray-100,
+.dark .admin-rules-page .bg-gray-100 {
+  background-color: rgb(var(--color-surface));
+}
+
+/* Header gradient on each admin page is `from-paper to-gray-50`. In dark mode
+   the `to-gray-50` half stays at #f9fafb and produces a glaring bright band.
+   Override the gradient stops to ride the existing dusk charcoals instead. */
+.dark .admin-page .bg-gradient-to-b.from-paper.to-gray-50,
+.dark .admin-ai-exchanges-page .bg-gradient-to-b.from-paper.to-gray-50,
+.dark .admin-essays-page .bg-gradient-to-b.from-paper.to-gray-50,
+.dark .admin-rules-page .bg-gradient-to-b.from-paper.to-gray-50 {
+  --tw-gradient-from: rgb(var(--color-paper-gradient-from)) var(--tw-gradient-from-position);
+  --tw-gradient-to:   rgb(var(--color-paper-gradient-to))   var(--tw-gradient-to-position);
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}
+
+/* --- Borders ------------------------------------------------------------ */
+.dark .admin-page .border-gray-100,
+.dark .admin-ai-exchanges-page .border-gray-100,
+.dark .admin-essays-page .border-gray-100,
+.dark .admin-rules-page .border-gray-100,
+.dark .admin-page .border-gray-200,
+.dark .admin-ai-exchanges-page .border-gray-200,
+.dark .admin-essays-page .border-gray-200,
+.dark .admin-rules-page .border-gray-200,
+.dark .admin-page .border-gray-300,
+.dark .admin-ai-exchanges-page .border-gray-300,
+.dark .admin-essays-page .border-gray-300,
+.dark .admin-rules-page .border-gray-300,
+.dark .admin-page .border-b.border-gray-50,
+.dark .admin-ai-exchanges-page .border-b.border-gray-50,
+.dark .admin-essays-page .border-b.border-gray-50,
+.dark .admin-rules-page .border-b.border-gray-50 {
+  border-color: rgb(var(--color-line));
+}
+
+/* dashed dividers used on the chart grid */
+.dark .admin-page .border-dashed.border-gray-100,
+.dark .admin-ai-exchanges-page .border-dashed.border-gray-100,
+.dark .admin-essays-page .border-dashed.border-gray-100,
+.dark .admin-rules-page .border-dashed.border-gray-100 {
+  border-color: rgb(var(--color-line) / 0.6);
+}
+
+/* --- Text --------------------------------------------------------------- */
+.dark .admin-page .text-gray-600,
+.dark .admin-ai-exchanges-page .text-gray-600,
+.dark .admin-essays-page .text-gray-600,
+.dark .admin-rules-page .text-gray-600,
+.dark .admin-page .text-gray-700,
+.dark .admin-ai-exchanges-page .text-gray-700,
+.dark .admin-essays-page .text-gray-700,
+.dark .admin-rules-page .text-gray-700 {
+  color: rgb(var(--color-ink-light));
+}
+
+/* Links — Tailwind blues become hard to read on warm charcoal. Map to the
+   palette accent so admin links match the rest of the app's dark-mode UI. */
+.dark .admin-page .text-blue-600,
+.dark .admin-ai-exchanges-page .text-blue-600,
+.dark .admin-essays-page .text-blue-600,
+.dark .admin-rules-page .text-blue-600,
+.dark .admin-page .text-blue-700,
+.dark .admin-ai-exchanges-page .text-blue-700,
+.dark .admin-essays-page .text-blue-700,
+.dark .admin-rules-page .text-blue-700 {
+  color: rgb(var(--color-accent));
+}
+
+.dark .admin-page .hover\:text-blue-800:hover,
+.dark .admin-ai-exchanges-page .hover\:text-blue-800:hover,
+.dark .admin-essays-page .hover\:text-blue-800:hover,
+.dark .admin-rules-page .hover\:text-blue-800:hover {
+  color: rgb(var(--color-accent-hover));
+}
+
+/* --- Status: error (red) ------------------------------------------------ */
+.dark .admin-page .bg-red-50,
+.dark .admin-ai-exchanges-page .bg-red-50,
+.dark .admin-essays-page .bg-red-50,
+.dark .admin-rules-page .bg-red-50 {
+  background-color: rgb(80 30 30 / 0.55);
+}
+
+.dark .admin-page [class*="bg-red-50/"],
+.dark .admin-ai-exchanges-page [class*="bg-red-50/"],
+.dark .admin-essays-page [class*="bg-red-50/"],
+.dark .admin-rules-page [class*="bg-red-50/"] {
+  background-color: rgb(80 30 30 / 0.35);
+}
+
+.dark .admin-page .bg-red-100,
+.dark .admin-ai-exchanges-page .bg-red-100,
+.dark .admin-essays-page .bg-red-100,
+.dark .admin-rules-page .bg-red-100 {
+  background-color: rgb(120 40 40 / 0.7);
+}
+
+.dark .admin-page .border-red-100,
+.dark .admin-ai-exchanges-page .border-red-100,
+.dark .admin-essays-page .border-red-100,
+.dark .admin-rules-page .border-red-100,
+.dark .admin-page .border-red-200,
+.dark .admin-ai-exchanges-page .border-red-200,
+.dark .admin-essays-page .border-red-200,
+.dark .admin-rules-page .border-red-200,
+.dark .admin-page .border-red-300,
+.dark .admin-ai-exchanges-page .border-red-300,
+.dark .admin-essays-page .border-red-300,
+.dark .admin-rules-page .border-red-300 {
+  border-color: rgb(180 80 80 / 0.6);
+}
+
+.dark .admin-page .text-red-600,
+.dark .admin-ai-exchanges-page .text-red-600,
+.dark .admin-essays-page .text-red-600,
+.dark .admin-rules-page .text-red-600,
+.dark .admin-page .text-red-700,
+.dark .admin-ai-exchanges-page .text-red-700,
+.dark .admin-essays-page .text-red-700,
+.dark .admin-rules-page .text-red-700,
+.dark .admin-page .text-red-800,
+.dark .admin-ai-exchanges-page .text-red-800,
+.dark .admin-essays-page .text-red-800,
+.dark .admin-rules-page .text-red-800 {
+  color: rgb(255 170 160);
+}
+
+.dark .admin-page .hover\:text-red-800:hover,
+.dark .admin-ai-exchanges-page .hover\:text-red-800:hover,
+.dark .admin-essays-page .hover\:text-red-800:hover,
+.dark .admin-rules-page .hover\:text-red-800:hover {
+  color: rgb(255 200 195);
+}
+
+.dark .admin-page .hover\:bg-red-50:hover,
+.dark .admin-ai-exchanges-page .hover\:bg-red-50:hover,
+.dark .admin-essays-page .hover\:bg-red-50:hover,
+.dark .admin-rules-page .hover\:bg-red-50:hover {
+  background-color: rgb(80 30 30 / 0.5);
+}
+
+.dark .admin-page .hover\:border-red-300:hover,
+.dark .admin-ai-exchanges-page .hover\:border-red-300:hover,
+.dark .admin-essays-page .hover\:border-red-300:hover,
+.dark .admin-rules-page .hover\:border-red-300:hover {
+  border-color: rgb(220 120 120 / 0.7);
+}
+
+/* --- Status: success (green / emerald) ---------------------------------- */
+.dark .admin-page .bg-green-100,
+.dark .admin-ai-exchanges-page .bg-green-100,
+.dark .admin-essays-page .bg-green-100,
+.dark .admin-rules-page .bg-green-100 {
+  background-color: rgb(40 90 50 / 0.7);
+}
+
+.dark .admin-page .text-green-600,
+.dark .admin-ai-exchanges-page .text-green-600,
+.dark .admin-essays-page .text-green-600,
+.dark .admin-rules-page .text-green-600,
+.dark .admin-page .text-green-700,
+.dark .admin-ai-exchanges-page .text-green-700,
+.dark .admin-essays-page .text-green-700,
+.dark .admin-rules-page .text-green-700,
+.dark .admin-page .text-green-800,
+.dark .admin-ai-exchanges-page .text-green-800,
+.dark .admin-essays-page .text-green-800,
+.dark .admin-rules-page .text-green-800,
+.dark .admin-page .text-emerald-700,
+.dark .admin-ai-exchanges-page .text-emerald-700,
+.dark .admin-essays-page .text-emerald-700,
+.dark .admin-rules-page .text-emerald-700 {
+  color: rgb(150 220 165);
+}
+
+.dark .admin-page .border-green-300,
+.dark .admin-ai-exchanges-page .border-green-300,
+.dark .admin-essays-page .border-green-300,
+.dark .admin-rules-page .border-green-300 {
+  border-color: rgb(120 180 130 / 0.7);
+}
+
+.dark .admin-page .hover\:bg-green-50:hover,
+.dark .admin-ai-exchanges-page .hover\:bg-green-50:hover,
+.dark .admin-essays-page .hover\:bg-green-50:hover,
+.dark .admin-rules-page .hover\:bg-green-50:hover {
+  background-color: rgb(40 90 50 / 0.5);
+}
+
+/* --- Primary action buttons (blue) -------------------------------------- */
+/* Re-skin the Tailwind blue buttons in the burnt-orange accent so dark-mode
+   admin matches the rest of the app's accent language. White button text
+   stays — accent is dark enough that white reads well on it. */
+.dark .admin-page .bg-blue-600,
+.dark .admin-ai-exchanges-page .bg-blue-600,
+.dark .admin-essays-page .bg-blue-600,
+.dark .admin-rules-page .bg-blue-600 {
+  background-color: rgb(var(--color-accent));
+}
+
+.dark .admin-page .hover\:bg-blue-700:hover,
+.dark .admin-ai-exchanges-page .hover\:bg-blue-700:hover,
+.dark .admin-essays-page .hover\:bg-blue-700:hover,
+.dark .admin-rules-page .hover\:bg-blue-700:hover {
+  background-color: rgb(var(--color-accent-hover));
+}
+
+.dark .admin-page .border-blue-300,
+.dark .admin-ai-exchanges-page .border-blue-300,
+.dark .admin-essays-page .border-blue-300,
+.dark .admin-rules-page .border-blue-300 {
+  border-color: rgb(var(--color-accent) / 0.55);
+}
+
+.dark .admin-page .hover\:bg-blue-50:hover,
+.dark .admin-ai-exchanges-page .hover\:bg-blue-50:hover,
+.dark .admin-essays-page .hover\:bg-blue-50:hover,
+.dark .admin-rules-page .hover\:bg-blue-50:hover {
+  background-color: rgb(var(--color-accent) / 0.18);
+}
+
+/* Native focus ring on selects/inputs uses ring-blue-400 — re-tint to accent */
+.dark .admin-page .focus\:ring-blue-400:focus,
+.dark .admin-ai-exchanges-page .focus\:ring-blue-400:focus,
+.dark .admin-essays-page .focus\:ring-blue-400:focus,
+.dark .admin-rules-page .focus\:ring-blue-400:focus {
+  --tw-ring-color: rgb(var(--color-accent) / 0.7);
+}
+
+/* --- Form controls ------------------------------------------------------ */
+/* Bare <input>, <select>, <textarea> in the admin pages don't carry explicit
+   bg/text classes for every variant — give them sensible dark defaults so
+   typed text is readable and option lists don't render white-on-white. */
+.dark .admin-page input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+.dark .admin-ai-exchanges-page input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+.dark .admin-essays-page input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+.dark .admin-rules-page input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+.dark .admin-page select,
+.dark .admin-ai-exchanges-page select,
+.dark .admin-essays-page select,
+.dark .admin-rules-page select,
+.dark .admin-page textarea,
+.dark .admin-ai-exchanges-page textarea,
+.dark .admin-essays-page textarea,
+.dark .admin-rules-page textarea {
+  background-color: rgb(var(--color-paper));
+  color: rgb(var(--color-ink));
+  caret-color: rgb(var(--color-accent));
+}
+
+.dark .admin-page input::placeholder,
+.dark .admin-ai-exchanges-page input::placeholder,
+.dark .admin-essays-page input::placeholder,
+.dark .admin-rules-page input::placeholder,
+.dark .admin-page textarea::placeholder,
+.dark .admin-ai-exchanges-page textarea::placeholder,
+.dark .admin-essays-page textarea::placeholder,
+.dark .admin-rules-page textarea::placeholder {
+  color: rgb(var(--color-ink-lighter));
+}
+
+/* --- Activity-log badges & chart fallbacks ----------------------------- */
+/* The activity log composes coloured pills via class concatenation
+   (e.g. `bg-blue-50 text-blue-700 border-blue-200`). The -50 wash and the
+   -200 outline both vanish on dark; map them to translucent accent tints. */
+.dark .admin-page .bg-blue-50,
+.dark .admin-ai-exchanges-page .bg-blue-50,
+.dark .admin-essays-page .bg-blue-50,
+.dark .admin-rules-page .bg-blue-50 {
+  background-color: rgb(var(--color-accent) / 0.18);
+}
+
+.dark .admin-page .bg-green-50,
+.dark .admin-ai-exchanges-page .bg-green-50,
+.dark .admin-essays-page .bg-green-50,
+.dark .admin-rules-page .bg-green-50,
+.dark .admin-page .bg-emerald-50,
+.dark .admin-ai-exchanges-page .bg-emerald-50,
+.dark .admin-essays-page .bg-emerald-50,
+.dark .admin-rules-page .bg-emerald-50 {
+  background-color: rgb(40 90 50 / 0.45);
+}
+
+.dark .admin-page .border-blue-200,
+.dark .admin-ai-exchanges-page .border-blue-200,
+.dark .admin-essays-page .border-blue-200,
+.dark .admin-rules-page .border-blue-200 {
+  border-color: rgb(var(--color-accent) / 0.45);
+}
+
+.dark .admin-page .border-green-200,
+.dark .admin-ai-exchanges-page .border-green-200,
+.dark .admin-essays-page .border-green-200,
+.dark .admin-rules-page .border-green-200,
+.dark .admin-page .border-emerald-200,
+.dark .admin-ai-exchanges-page .border-emerald-200,
+.dark .admin-essays-page .border-emerald-200,
+.dark .admin-rules-page .border-emerald-200 {
+  border-color: rgb(120 180 130 / 0.55);
+}
+
+/* Heatmap and progress-bar fallbacks return literal `bg-gray-200`/`bg-gray-400`
+   for "no data" cells. On dark, gray-200 is too bright and gray-400 reads
+   ambiguous — map to muted line/surface so empty cells fade into the page. */
+.dark .admin-page .bg-gray-200,
+.dark .admin-ai-exchanges-page .bg-gray-200,
+.dark .admin-essays-page .bg-gray-200,
+.dark .admin-rules-page .bg-gray-200 {
+  background-color: rgb(var(--color-line));
+}
+
+.dark .admin-page .bg-gray-400,
+.dark .admin-ai-exchanges-page .bg-gray-400,
+.dark .admin-essays-page .bg-gray-400,
+.dark .admin-rules-page .bg-gray-400 {
+  background-color: rgb(var(--color-ink-whisper));
+}
+
+/* Hover/focus rings used on the colour-swatch picker */
+.dark .admin-page .hover\:ring-blue-200:hover,
+.dark .admin-ai-exchanges-page .hover\:ring-blue-200:hover,
+.dark .admin-essays-page .hover\:ring-blue-200:hover,
+.dark .admin-rules-page .hover\:ring-blue-200:hover {
+  --tw-ring-color: rgb(var(--color-accent) / 0.35);
+}
+
+.dark .admin-page .hover\:border-blue-500:hover,
+.dark .admin-ai-exchanges-page .hover\:border-blue-500:hover,
+.dark .admin-essays-page .hover\:border-blue-500:hover,
+.dark .admin-rules-page .hover\:border-blue-500:hover {
+  border-color: rgb(var(--color-accent));
+}
+
+/* --- Tooltips & chart hovers ------------------------------------------- */
+/* The chart tooltips use `bg-gray-800 text-white` plus a `border-gray-600`
+   inner divider — already dark-friendly, but the divider is a touch faint
+   on the dark canvas. Lift it slightly so totals stay legible. */
+.dark .admin-page .border-gray-600,
+.dark .admin-ai-exchanges-page .border-gray-600,
+.dark .admin-essays-page .border-gray-600,
+.dark .admin-rules-page .border-gray-600 {
+  border-color: rgb(120 120 120);
+}
+
+.dark .admin-page .text-gray-300,
+.dark .admin-ai-exchanges-page .text-gray-300,
+.dark .admin-essays-page .text-gray-300,
+.dark .admin-rules-page .text-gray-300 {
+  color: rgb(220 215 205);
 }
 
