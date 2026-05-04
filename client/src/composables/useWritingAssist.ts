@@ -14,7 +14,7 @@
  * generic error.
  */
 
-import { ref, shallowRef, computed } from 'vue'
+import { shallowRef, computed } from 'vue'
 import { api } from '../api/client'
 import type {
   WritingAssistMode,

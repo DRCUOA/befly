@@ -262,11 +262,9 @@ import type { Theme } from '../domain/Theme'
 import type { WritingBlock } from '../domain/WritingBlock'
 import type { ApiResponse } from '@shared/ApiResponses'
 import { useWriteDraft } from '../composables/useWriteDraft'
-import { formatTime, formatTimeWithSeconds } from '../utils/time'
+import { formatTime } from '../utils/time'
 import {
   scanTypography,
-  applySuggestion,
-  applySuggestions,
   type TypographySuggestion
 } from '../utils/typography-suggestions'
 import { useTypographyRules } from '../composables/useTypographyRules'
@@ -277,12 +275,14 @@ import WritingAssistPanel from '../components/writing/WritingAssistPanel.vue'
 import { useBreathingCaret } from '../composables/useBreathingCaret'
 import { useWritingAssist } from '../composables/useWritingAssist'
 import type { WritingAssistMode } from '@shared/WritingAssist'
-import { countWordsInMarkdown, isStandaloneHtmlDoc } from '../utils/markdown'
+import { isStandaloneHtmlDoc } from '../utils/markdown'
 import { useNavigationOrigin } from '../stores/navigation'
 
 const route = useRoute()
 
-const { origin: navOrigin, navigateBack } = useNavigationOrigin('/home')
+// `origin` is tracked by the store but Write.vue only needs the navigateBack
+// closure here; the origin is read by other consumers via the store.
+const { navigateBack } = useNavigationOrigin('/home')
 
 const writingId = computed(() => route.params.id as string | undefined)
 const isEditing = computed(() => !!writingId.value)
@@ -319,7 +319,6 @@ const { rules: typographyRules } = useTypographyRules()
 const titleInputRef = ref<HTMLInputElement | null>(null)
 const bodyTextareaRef = ref<HTMLTextAreaElement | null>(null)
 const typographySuggestions = ref<TypographySuggestion[]>([])
-const suggestionsPanelExpanded = ref(false)
 const dismissedSuggestionKeys = ref(new Set<string>())
 // Breathing caret — P2-uix-06 / cni-06
 const { refresh: refreshCaret } = useBreathingCaret(titleInputRef, bodyTextareaRef)
@@ -331,7 +330,6 @@ const SCAN_DEBOUNCE_MS = 1500
 
 // Word count on pause (P3-uix-07 / cni-07): visible only after typing pause, 2 lines below text
 const showWordCount = ref(false)
-const bodyWordCount = computed(() => countWordsInMarkdown(form.value.body))
 const bodyMirrorRef = ref<HTMLDivElement | null>(null)
 const wordCountStyle = ref<{ top: string }>({ top: '0.5rem' })
 
@@ -446,17 +444,6 @@ const hasUnsavedChanges = computed(() => {
   const sortedInitial = [...initialThemes].sort()
   
   return sortedCurrent.some((id, index) => id !== sortedInitial[index])
-})
-
-// Reactive draft status for template (ensures updates when lastSaved changes)
-const draftSavedAt = computed(() => {
-  const saved = draft.lastSaved.value
-  return saved ? formatTimeWithSeconds(saved) : null
-})
-
-const showDraftIndicator = computed(() => {
-  if (isEditing.value) return false
-  return !!(form.value.title.trim() || form.value.body.trim() || draft.lastSaved.value)
 })
 
 // Sync initialFormState when draft is saved to localStorage so color turns green
@@ -649,48 +636,14 @@ const handleSubmit = async () => {
   await doSubmit()
 }
 
-function applySuggestionViaTextarea(suggestion: TypographySuggestion) {
-  const textarea = bodyTextareaRef.value
-  if (textarea) {
-    textarea.focus()
-    textarea.setSelectionRange(suggestion.start, suggestion.end)
-    textarea.setRangeText(suggestion.replacement, suggestion.start, suggestion.end, 'select')
-    form.value.body = textarea.value
-  } else {
-    form.value.body = applySuggestion(form.value.body, suggestion)
-  }
-}
-
-function acceptTypographySuggestion(idx: number) {
-  const suggestion = typographySuggestions.value[idx]
-  if (!suggestion) return
-  applySuggestionViaTextarea(suggestion)
-  refreshSuggestions()
-}
-
-function dismissTypographySuggestion(idx: number) {
-  const suggestion = typographySuggestions.value[idx]
-  if (suggestion) {
-    dismissedSuggestionKeys.value.add(suggestionKey(suggestion))
-  }
-  typographySuggestions.value = typographySuggestions.value.filter((_, i) => i !== idx)
-}
-
-function acceptAllTypographySuggestions() {
-  const suggestions = typographySuggestions.value
-  if (suggestions.length === 0) return
-  form.value.body = applySuggestions(form.value.body, suggestions)
-  typographySuggestions.value = []
-  suggestionsPanelExpanded.value = false
-}
-
-function dismissAllTypographySuggestions() {
-  for (const s of typographySuggestions.value) {
-    dismissedSuggestionKeys.value.add(suggestionKey(s))
-  }
-  typographySuggestions.value = []
-  suggestionsPanelExpanded.value = false
-}
+// Typography-suggestion handlers (accept / dismiss / accept-all / dismiss-all,
+// plus the textarea-aware applySuggestionViaTextarea helper) used to live
+// here. They were removed when the suggestions UI was unwired from the
+// template; the underlying scan still runs and populates
+// `typographySuggestions` but no surface consumes it right now. If/when the
+// UI returns, restore those handlers (and re-import `applySuggestion` /
+// `applySuggestions` from utils/typography-suggestions) — the data plumbing
+// is already in place.
 
 /* ============================================================
  * Writing assist — coherence Q&A, define, focus, expand, proofread.
@@ -805,8 +758,11 @@ const FONT_SIZE_STEP = 2
 const bodyFontSize = ref<number | null>(null) // null = use CSS default
 
 /** Style object applied to both textarea and mirror. Returns an empty
- *  object when no override is in play (CSS class governs). */
-const bodyFontStyle = computed<Record<string, string>>(() =>
+ *  object when no override is in play (CSS class governs). The
+ *  `fontSize` key is optional so `{}` is a clean member of the type;
+ *  using `Record<string, string>` here trips strict TS because the
+ *  empty-object branch isn't assignable to a fully-required mapping. */
+const bodyFontStyle = computed<{ fontSize?: string }>(() =>
   bodyFontSize.value === null
     ? {}
     : { fontSize: `${bodyFontSize.value}px` }

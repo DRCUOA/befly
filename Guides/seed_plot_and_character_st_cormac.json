@@ -1,0 +1,1559 @@
+{
+  "title": "St Cormac's Character and Plot Seed Object",
+  "purpose": "To seed character development and plot development for St Cormac's using the existing project sources as canon. This object is designed for another LLM to build from the established material rather than replace, simplify, overwrite, or re-conceive it.",
+  "status": "development_seed",
+  "non_replacement_instruction": "Do not replace the existing concept, voice bibles, timeline, structural fugue, or core tragedy. Treat this object as a consolidation and activation layer built from the existing project sources.",
+  "source_basis": {
+  "primary_project_sources_analyzed": [
+  "St. Cormac's Writing Guide 1",
+  "St Cormac's school history",
+  "1986 British Context Research - Attitudes and Legal View on Homosexuality",
+  "Chronology of a Decade: International, National, and Local Context (1983-1989)",
+  "St. Cormac's 1986 Research",
+  "Historical sexual abuse in 1980s Britain and Ireland",
+  "Psychology of Institutional Abuse & Suicidality",
+  "Author's Note and Content Warning"
+  ],
+  "existing_project_invariants": [
+  "The novel is fiction.",
+  "The setting is St Cormac's, a fictitious Benedictine Catholic independent boarding school in Berkshire, England.",
+  "The main story timeframe is the 1980s, especially 1982-1987.",
+  "The central dramatic field is silence: emotional silence, institutional silence, sexual shame, religious authority, class pressure, and failed communication.",
+  "The structure is polyphonic, with Jake, Marcus, Thomas, Diana, and John Ellery as the key voices.",
+  "The book should use dramatic irony as a moral instrument.",
+  "The reader should assemble a truth no single character fully possesses.",
+  "The abuse itself should never be graphically depicted.",
+  "Thomas's deterioration should be shown through voice, omission, fragmentation, environment, and consequence.",
+  "The kiss between Jake and Marcus is not a romantic victory; it is brief recognition under social force.",
+  "The ending should remain unresolved in a morally deliberate way.",
+  "The final structural gesture should probably return to Thomas's silenced voice."
+  ]
+  },
+  "core_story_premise": {
+  "one_sentence": "At a Benedictine Catholic boys' boarding school in 1980s Berkshire, four young lives and several adult failures collide around abuse, shame, institutional silence, and an almost-love that becomes legible too late.",
+  "expanded": "Jake and Marcus arrive at St Cormac's from different social worlds and form an attachment neither can name. Thomas, bright and perceptive, sees more than either of them about what passes between them, while becoming increasingly isolated under Brother Declan's attention. Diana Webb, Marcus's mother, discovers evidence of her son's hidden emotional life and intervenes with the wrong person. Thomas dies, Marcus is blamed or implicated by distortion, and Jake accepts enough of the false story to separate from him. A year later, during a football cup final, John Ellery speaks one plain truth that breaks Jake's distortion. Jake and Marcus briefly recognise each other in the mud, then are torn apart.",
+  "reader_promise": "The reader will see the moral cost of silence before the characters can. The emotional payoff is not possession, rescue, or redemption. The payoff is recognition: the terrible, partial understanding of what was true and what was lost.",
+  "what_the_book_is_not": [
+  "Not a straightforward coming-of-age story.",
+  "Not a conventional romance.",
+  "Not a mystery about whether Declan is dangerous.",
+  "Not a revenge story.",
+  "Not a redemptive trauma narrative.",
+  "Not an institutional exposé masquerading as fiction.",
+  "Not a nostalgia piece about boarding school life."
+  ],
+  "what_the_book_is": [
+  "A tragic polyphonic novel.",
+  "A moral study of silence and misrecognition.",
+  "A story of childhood, institutional power, shame, class, faith, desire, and irreversible harm.",
+  "A book where the reader must do the work the characters cannot do."
+  ]
+  },
+  "moral_and_thematic_seed": {
+  "central_subject": "Being separated from oneself by what cannot be said.",
+  "counter_subject": "The school itself as a fifth presence: bells, bricks, chapel, dormitories, football pitch, polished boards, mud, incense, cold corridors, and the institutional habit of silence.",
+  "moral_engine": "The vulnerable are made to carry what adults, institutions, and social codes refuse to face.",
+  "core_question": "What happens when children are forced to interpret danger, desire, shame, and authority with no safe language?",
+  "secondary_questions": [
+  "How does an institution convert suffering into order?",
+  "How does love become harmful when filtered through fear and respectability?",
+  "How does class shape who is believed, who speaks, and who doubts themselves?",
+  "How does silence protect the wrong people?",
+  "How can a truth arrive too late and still matter?"
+  ],
+  "recurring_tensions": [
+  "Truth versus reputation",
+  "Desire versus shame",
+  "Observation versus speech",
+  "Protection versus control",
+  "Faith versus institutional cowardice",
+  "Masculinity versus tenderness",
+  "Belonging versus self-knowledge",
+  "Memory versus official story"
+  ]
+  },
+  "historical_context_seed": {
+  "setting_identity": {
+  "school_name": "St Cormac's College",
+  "location": "Wooded rise above the Pang Valley, Berkshire, near Reading and the Thames corridor",
+  "founded": 1878,
+  "tradition": "Benedictine Catholic independent boys' boarding school",
+  "motto": "In silentio robur",
+  "motto_translation": "In silence, strength",
+  "institutional_personality": "Old, polished, disciplined, class-conscious, Catholic, hierarchical, beautiful, emotionally withholding, and increasingly out of step with modern safeguarding and psychological language."
+  },
+  "school_culture_1980s": [
+  "Bell-led routine.",
+  "House hierarchy.",
+  "Chapel and Catholic ritual as daily atmosphere.",
+  "Latin residue and Benedictine vocabulary.",
+  "Boarding privacy is limited.",
+  "Letters, dormitories, bathrooms, corridors, and changing rooms are socially charged spaces.",
+  "Football is a major masculine proving ground.",
+  "Corporal punishment remains plausible in independent schools in 1986.",
+  "The school sees itself as forming boys, not merely educating them.",
+  "The official moral language is euphemistic, punitive, and reputation-conscious."
+  ],
+  "wider_1980s_weather": [
+  "Thatcher-era competition, hierarchy, social conservatism, ambition, and respectability.",
+  "AIDS panic and hostile public discourse around homosexuality.",
+  "No modern therapeutic vocabulary for grooming, trauma, dissociation, safeguarding, or sexual identity.",
+  "Homosexuality among schoolboys is framed through sin, scandal, weakness, dirt, criminality, or silence.",
+  "The absence of mobile phones makes letters, rumours, visits, and delays structurally important.",
+  "Cold War anxiety, Greenham Common, Chernobyl, Challenger, the Miners' Strike, Hungerford, and the Great Storm form cultural weather rather than foreground plot."
+  ],
+  "language_constraints": {
+  "avoid_modern_terms_inside_character_consciousness": [
+  "trauma response",
+  "grooming",
+  "safeguarding",
+  "identity",
+  "internalised homophobia",
+  "mental health support",
+  "boundaries",
+  "processing",
+  "disclosure",
+  "abuse survivor"
+  ],
+  "period_appropriate_adult_euphemisms": [
+  "particular friendship",
+  "unhealthy attachment",
+  "moral danger",
+  "over-familiarity",
+  "bad influence",
+  "needs firm handling",
+  "not a good mixer",
+  "emotional irregularity",
+  "foul practices",
+  "a phase",
+  "weakness"
+  ],
+  "period_appropriate_peer_language_note": "Peer language may be cruel, homophobic, blunt, and historically accurate, but it should be used purposefully rather than gratuitously."
+  }
+  },
+  "safety_and_handling_constraints": {
+  "abuse_representation": {
+  "rule": "Do not depict child sexual abuse graphically or erotically.",
+  "method": "Represent abuse through aftermath, voice change, avoidance, setting details, ritual, dread, silence, dissociation, and the reactions of others.",
+  "reader_calibration": "The reader should become uneasy early, suspicious by the second Thomas section, and morally certain by the third or fourth, without explicit description."
+  },
+  "minor_sexuality_representation": {
+  "rule": "Do not sexualise minors or write explicit sexual content involving minors.",
+  "allowed_focus": [
+  "Confusion",
+  "Longing",
+  "Shame",
+  "Friendship intensifying beyond available language",
+  "Brief non-explicit kiss",
+  "Embodied but non-graphic recognition"
+  ],
+  "avoid": [
+  "Eroticised physical description",
+  "Explicit sexual acts",
+  "Voyeuristic dormitory or changing-room detail",
+  "Adult framing of teenage attraction as titillation"
+  ]
+  },
+  "suicide_representation": {
+  "rule": "Do not provide method detail, instructional description, or sensationalised treatment.",
+  "method": "Focus on preceding isolation, failed communication, aftermath, grief, institutional distortion, and the moral consequence of the death.",
+  "tone": "Serious, restrained, non-romanticised, non-deterministic."
+  },
+  "institutional_abuse_context": {
+  "rule": "Do not imply that abuse is caused by Catholicism, queerness, boarding school, class, or any single factor alone.",
+  "method": "Show accumulation: power, secrecy, shame, institutional reputation, adult cowardice, isolation, and predatory exploitation."
+  }
+  },
+  "timeline_seed": {
+  "locked_or_preferred_timeline": [
+  {
+  "year": 1982,
+  "term": "Michaelmas",
+  "boys_age": 13,
+  "event": "Jake and Marcus arrive at St Cormac's. First meeting. The school is established as place, system, and moral weather."
+  },
+  {
+  "year": 1983,
+  "term": "School year",
+  "boys_age": 14,
+  "event": "Friendship deepens. Thomas becomes part of the social and emotional field. The school rhythm becomes familiar."
+  },
+  {
+  "year": 1984,
+  "term": "School year",
+  "boys_age": 15,
+  "event": "Declan begins to single Thomas out. Thomas's early brightness remains visible, but unease begins."
+  },
+  {
+  "year": 1985,
+  "term": "Autumn",
+  "boys_age": 16,
+  "event": "Thomas's voice begins to fracture. Marcus notices. Jake notices either nothing or the wrong thing."
+  },
+  {
+  "year": 1985,
+  "term": "Christmas",
+  "boys_age": 16,
+  "event": "Diana finds Marcus's notebook or writing. She interprets his interior life through fear and respectability."
+  },
+  {
+  "year": 1986,
+  "term": "January",
+  "boys_age": 16,
+  "event": "Diana visits or contacts Declan. This is a pivot: maternal intervention becomes catastrophic misdirection."
+  },
+  {
+  "year": 1986,
+  "term": "February",
+  "boys_age": 16,
+  "event": "Thomas dies. Sleet, cold, silence, empty bed, institutional management."
+  },
+  {
+  "year": 1986,
+  "term": "Spring",
+  "boys_age": 16,
+  "event": "Declan is quietly removed or dismissed. Marcus is transferred to Alderton. The official story hardens."
+  },
+  {
+  "year": 1986,
+  "term": "Late 1986",
+  "boys_age": 16,
+  "event": "Separate years begin. Jake becomes volatile. Marcus rebuilds partially at Alderton."
+  },
+  {
+  "year": 1987,
+  "term": "Spring or May",
+  "boys_age": 17,
+  "event": "St Cormac's and Alderton meet in a cup final. Jake and Marcus confront each other physically and emotionally through football."
+  },
+  {
+  "year": 1987,
+  "term": "Cup final",
+  "boys_age": 17,
+  "event": "John Ellery speaks a plain sentence that breaks Jake's false story. Jake crosses the mud. Jake and Marcus kiss. They are immediately separated."
+  },
+  {
+  "year": 1987,
+  "term": "Aftermath or coda",
+  "boys_age": 17,
+  "event": "Thomas's final fragment returns. The unresolved ending becomes the moral statement."
+  }
+  ],
+  "timeline_caution": "Football finals in May may be late for school football unless framed as a private inter-school cup or delayed fixture. If historical plausibility matters, either justify May or move final closer to March or April. If sleet is essential, February or March is more plausible."
+  },
+  "polyphonic_structure_seed": {
+  "voices": [
+  "Jake",
+  "Marcus",
+  "Thomas",
+  "Diana",
+  "John Ellery"
+  ],
+  "entry_order": [
+  "Jake",
+  "Marcus",
+  "Thomas",
+  "Diana later, not at the start",
+  "John Ellery near the end"
+  ],
+  "structural_logic": "The voices should feel like a fugue: each voice enters with its own subject, then overlaps, answers, contradicts, and reframes the others.",
+  "reader_role": "The reader is the only consciousness that can assemble the whole truth.",
+  "pov_rotation_rule": "Do not rotate mechanically. The next voice should be chosen because it adds pressure, contradiction, irony, or withheld knowledge.",
+  "stretto_zone": "The match sequence is the one place where POVs may alternate rapidly, because the structure itself should feel as though it is tightening under pressure.",
+  "coda_rule": "The final note should likely belong to Thomas, not as explanation but as resurfacing of the silenced voice."
+  },
+  "character_seeds": {
+  "jake": {
+  "full_name": "Jake",
+  "role": "Privileged St Cormac's boy, footballer, emotionally avoidant centre of embodied recognition.",
+  "social_position": "Inside privilege. He belongs before he has to earn belonging.",
+  "core_contradiction": "Physically fearless, emotionally avoidant.",
+  "public_self": "Confident, kinetic, capable, admired, comfortable in hierarchy.",
+  "private_self": "Confused by attachment, threatened by tenderness, dependent on Marcus in a way he cannot name.",
+  "conscious_want": "To belong, to win, to be seen as strong, to maintain control.",
+  "unconscious_want": "To keep Marcus close without naming the feeling.",
+  "hidden_need": "To recognise desire and grief without converting them into shame, violence, or denial.",
+  "greatest_fear": "Being seen as weak, wrong, dependent, soft, or exposed.",
+  "false_belief": "If something cannot be said, it can be controlled.",
+  "wound_or_pressure": "Inherited masculinity, paternal expectation, class confidence that leaves him emotionally untrained.",
+  "misreadings": [
+  "Misreads his own longing as irritation, loyalty, competitiveness, or protectiveness.",
+  "Misreads Marcus's grief and silence as guilt or betrayal.",
+  "Misreads Thomas's deterioration because he lacks the emotional vocabulary to interpret it.",
+  "Misreads the official story because it protects him from self-knowledge."
+  ],
+  "truth_he_holds": "The bodily truth of attachment before language.",
+  "truth_he_lacks": "The moral and factual truth about Thomas, Declan, and Marcus's position.",
+  "arc": [
+  "Belonging",
+  "Attachment without language",
+  "Deflection",
+  "False story",
+  "Volatility",
+  "Revelation",
+  "Recognition",
+  "Brief public action",
+  "Separation"
+  ],
+  "voice": {
+  "sentence_length": "Short to medium, especially early.",
+  "syntax": "Direct, physical, often simple. Subordinate clauses creep in as control slips.",
+  "lexicon": [
+  "football",
+  "movement",
+  "balance",
+  "weather",
+  "bodies",
+  "winning",
+  "control"
+  ],
+  "forbidden_or_rare_words": [
+  "love",
+  "want",
+  "desire",
+  "afraid",
+  "grief"
+  ],
+  "emotional_leakage": "Shorter sentences, repeated 'I', physical action, fouls, running, avoidance.",
+  "metaphor_source": "Football, weather, physical contest, rank.",
+  "attention_pattern": "Notices bodies, movement, rooms as playing fields, threat, status, and whether someone is off-balance.",
+  "avoidance_pattern": "Does not discuss his mother. Talks around his father. Converts emotional events into physical ones."
+  },
+  "plot_functions": [
+  "Establishes St Cormac's from inside privilege.",
+  "Embodies the attraction/denial axis.",
+  "Provides the reader with desire before self-knowledge.",
+  "Accepts enough of the false story to make the separation possible.",
+  "Carries the late recognition after John Ellery's sentence.",
+  "Turns recognition into action by crossing the mud."
+  ],
+  "scene_seed_examples": [
+  {
+  "scene": "Arrival",
+  "function": "Establish school smell, father legacy, inherited belonging, first sight of Marcus.",
+  "inner_turn": "From assumed belonging to a barely noticed disturbance."
+  },
+  {
+  "scene": "Choosing Marcus over a prefect",
+  "function": "Jake acts from attachment before he can name it.",
+  "inner_turn": "Loyalty becomes socially costly."
+  },
+  {
+  "scene": "After Thomas's death",
+  "function": "Jake fails to feel correctly and retreats into football or bodily control.",
+  "inner_turn": "Numbness becomes susceptibility to false explanation."
+  },
+  {
+  "scene": "Cup final revelation",
+  "function": "Jake's false internal plot collapses.",
+  "inner_turn": "Anger gives way to recognition."
+  },
+  {
+  "scene": "The kiss",
+  "function": "Jake acts physically where speech fails.",
+  "inner_turn": "Denial becomes public, irreversible recognition."
+  }
+  ]
+  },
+  "marcus": {
+  "full_name": "Marcus Webb",
+  "role": "Scholarship or socially less secure boy, observer, emotional counterpoint to Jake.",
+  "social_position": "Inside the school but not fully of it. Reads rooms carefully because belonging is conditional.",
+  "core_contradiction": "Sees almost everything, permits himself to know almost nothing.",
+  "public_self": "Polite, careful, intelligent, contained, observant.",
+  "private_self": "Hungry for belonging, drawn intensely to Jake, frightened of over-reading what he sees.",
+  "conscious_want": "To survive St Cormac's without humiliation, to earn his place, to avoid making claims he cannot defend.",
+  "unconscious_want": "To be chosen by Jake in a way that feels undeniable.",
+  "hidden_need": "To trust his own perception enough to speak before proof arrives.",
+  "greatest_fear": "Being presumptuous, ridiculous, exposed, socially wrong, or responsible for making things worse.",
+  "false_belief": "Perception without proof is not enough to act on.",
+  "wound_or_pressure": "Class anxiety, maternal ambition, conditional belonging, emotional restraint learned as survival.",
+  "misreadings": [
+  "Misreads Thomas's crisis in the bathroom because he interprets it through shame and sexuality rather than abuse.",
+  "Misreads Jake's silence as rejection or belief in the official story.",
+  "Misreads his own longing as admiration, gratitude, or excessive friendship.",
+  "May suspect Declan earlier than he admits, but does not allow suspicion to become knowledge."
+  ],
+  "truth_he_holds": "The social and emotional details others miss.",
+  "truth_he_lacks": "Proof, authority, and a safe language for the danger he perceives.",
+  "arc": [
+  "Arrival as outsider",
+  "Observation",
+  "Attachment to Jake",
+  "Perception of Thomas changing",
+  "Hesitation",
+  "Mistranslation",
+  "Grief",
+  "Transfer",
+  "Partial recovery",
+  "Cup final confrontation",
+  "Recognition without possession"
+  ],
+  "voice": {
+  "sentence_length": "Longer, qualified, careful.",
+  "syntax": "Often uses clauses, dashes, colons, and conditional phrasing.",
+  "lexicon": [
+  "faces",
+  "hands",
+  "rooms",
+  "later",
+  "perhaps",
+  "I think",
+  "I could be wrong",
+  "though I did not say so"
+  ],
+  "forbidden_or_rare_moves": [
+  "self-pity",
+  "melodrama",
+  "open accusation",
+  "simple certainty too early"
+  ],
+  "emotional_leakage": "Over-qualification, precise observation, delayed admission, noticing small physical details.",
+  "metaphor_source": "Books, rooms, class markers, social weather, faces, hands.",
+  "attention_pattern": "Notices what people do with their eyes, hands, laughter, clothes, timing, and silence.",
+  "avoidance_pattern": "Avoids claiming grief or desire as his own entitlement."
+  },
+  "plot_functions": [
+  "Re-establishes St Cormac's from outside privilege.",
+  "Shows the reader what Jake misses.",
+  "Carries the near-knowledge of Thomas's danger.",
+  "Makes the bathroom scene morally devastating because his answer is understandable and wrong.",
+  "Becomes the object of the false story and transfer.",
+  "Returns at Alderton as altered but not healed."
+  ],
+  "scene_seed_examples": [
+  {
+  "scene": "Arrival with Diana",
+  "function": "Establish class anxiety, maternal ambition, and Marcus's habit of careful reading.",
+  "inner_turn": "Hope becomes vigilance."
+  },
+  {
+  "scene": "First sight of Jake on pitch",
+  "function": "Contrast Jake's apparent fearlessness with Marcus's self-consciousness.",
+  "inner_turn": "Admiration becomes attachment."
+  },
+  {
+  "scene": "Noticing Thomas",
+  "function": "Marcus begins to see what others do not.",
+  "inner_turn": "Unease becomes responsibility."
+  },
+  {
+  "scene": "Bathroom scene",
+  "function": "Marcus answers the wrong question truthfully.",
+  "inner_turn": "Care becomes catastrophe."
+  },
+  {
+  "scene": "Transfer",
+  "function": "Marcus is removed before truth can stabilise.",
+  "inner_turn": "Speechlessness becomes exile."
+  },
+  {
+  "scene": "Cup final",
+  "function": "Marcus senses change in Jake without knowing its cause.",
+  "inner_turn": "Defensive distance becomes impossible recognition."
+  }
+  ]
+  },
+  "thomas": {
+  "full_name": "Thomas Ellery",
+  "role": "Bright, warm, perceptive boy whose voice becomes the novel's haunting absence.",
+  "social_position": "Within the school but increasingly isolated. Emotionally and intellectually alive in a place that punishes vulnerability.",
+  "core_contradiction": "Understands others clearly, cannot make himself understood.",
+  "public_self": "Funny, quick, bright, linguistically playful, likeable.",
+  "private_self": "Frightened, ashamed, increasingly fragmented, trying to preserve meaning through language and pattern.",
+  "conscious_want": "To stay ordinary, liked, clever, safe, and intelligible.",
+  "unconscious_want": "To be rescued without having to say the unsayable.",
+  "hidden_need": "Protection from an adult and language that can carry what is happening.",
+  "greatest_fear": "That what has been done to him means he is dirty, complicit, damned, or already lost.",
+  "false_belief": "If he can find the right phrase, someone will understand without him having to say everything.",
+  "wound_or_pressure": "Predatory adult attention, Catholic shame, institutional isolation, collapse of bodily safety.",
+  "misreadings": [
+  "Believes partial disclosure may be enough.",
+  "May believe Marcus can infer what he cannot say.",
+  "May interpret his own body's responses or silence as guilt.",
+  "May believe the institution's moral categories apply to him."
+  ],
+  "truth_he_holds": "He sees Jake's feeling for Marcus before Jake does. He understands emotional truth sharply early on.",
+  "truth_he_lacks": "A survivable path to disclosure, protection, or self-exoneration.",
+  "arc": [
+  "Warmth",
+  "Lateral intelligence",
+  "Insight",
+  "Declan's attention",
+  "Unease",
+  "Counting and surfaces",
+  "Fragmentation",
+  "Failed appeal",
+  "Death",
+  "Coda"
+  ],
+  "voice": {
+  "early_sentence_mode": "Quick, warm, lateral, witty, capable of Latin jokes and etymological play.",
+  "middle_sentence_mode": "Sentences start and fail to finish. Surfaces become over-described. Counting increases.",
+  "late_sentence_mode": "Fragments, white space, abandoned letters, short sections under pressure.",
+  "lexicon": [
+  "Latin",
+  "translation",
+  "numbers",
+  "ceilings",
+  "letters",
+  "phrases",
+  "jokes that become refrains"
+  ],
+  "forbidden_content": [
+  "Explicit description of abuse",
+  "Adult-like trauma explanation",
+  "Melodramatic suicide foreshadowing"
+  ],
+  "emotional_leakage": "Syntax breaks, repetition, counting, crossed-out phrases, over-specific surfaces.",
+  "metaphor_source": "Latin, translation, chapel surfaces, numbers, small absurdities.",
+  "attention_pattern": "Notices language, mismatch, jokes, tiny signs of feeling between others, and later countable objects.",
+  "avoidance_pattern": "Avoids direct reference to his body and to what Declan does."
+  },
+  "plot_functions": [
+  "Provides early warmth so later absence matters.",
+  "Sees Jake and Marcus clearly before they see themselves.",
+  "Carries the abuse plot through silence and voice fracture.",
+  "Makes the reader feel the failure of language.",
+  "Becomes the moral absence around which the rest of the book turns.",
+  "Returns in coda as unresolved fragment."
+  ],
+  "scene_seed_examples": [
+  {
+  "scene": "Latin class with Odi et amo",
+  "function": "Establish wit, language, emotional intelligence, and future refrain.",
+  "inner_turn": "A joke becomes a buried prophecy."
+  },
+  {
+  "scene": "Explaining something to Jake",
+  "function": "Show Thomas seeing Jake's feeling for Marcus before Jake can.",
+  "inner_turn": "Playfulness reveals dangerous clarity."
+  },
+  {
+  "scene": "Declan's office through objects",
+  "function": "Let setting imply danger without explicit description.",
+  "inner_turn": "Authority becomes dread."
+  },
+  {
+  "scene": "Chapel ceiling counting",
+  "function": "Show dissociation and surface refuge.",
+  "inner_turn": "World narrows to countable panels."
+  },
+  {
+  "scene": "Abandoned letter",
+  "function": "Show failed disclosure.",
+  "inner_turn": "Language approaches the truth and breaks."
+  },
+  {
+  "scene": "Coda fragment",
+  "function": "Return the silenced voice after the main action.",
+  "inner_turn": "The book ends on what could not be said."
+  }
+  ]
+  },
+  "diana": {
+  "full_name": "Diana Webb",
+  "role": "Marcus's mother; articulate, loving, controlling, and catastrophically selective.",
+  "social_position": "Anxious aspirational parent navigating class, respectability, school authority, and maternal fear.",
+  "core_contradiction": "Loves her son truthfully, protects the wrong version of him.",
+  "public_self": "Capable, articulate, respectable, precise, reasonable.",
+  "private_self": "Frightened of social ruin, frightened for Marcus, unwilling to face the full complexity of his interior life.",
+  "conscious_want": "To protect Marcus's future.",
+  "unconscious_want": "To preserve a version of Marcus she can understand and present safely to the world.",
+  "hidden_need": "To listen before acting, but she cannot tolerate the uncertainty.",
+  "greatest_fear": "That Marcus will be marked, ruined, deviant, vulnerable, or socially destroyed.",
+  "false_belief": "The right adult authority can contain the problem discreetly.",
+  "wound_or_pressure": "Class insecurity, maternal control, gendered isolation, fear of scandal, trust in institutional language.",
+  "misreadings": [
+  "Misreads Marcus's notebook or inner life.",
+  "Misreads Jake's role in Marcus's emotional world.",
+  "Misreads Declan as a safe authority.",
+  "Misreads decisive intervention as protection.",
+  "Misreads silence after the event as evidence that order has been restored."
+  ],
+  "truth_she_holds": "She loves Marcus and sees some of his vulnerability.",
+  "truth_she_lacks": "The actual danger, the meaning of her intervention, and the difference between protection and control.",
+  "arc": [
+  "Concern",
+  "Discovery",
+  "Interpretation",
+  "Decision",
+  "Visit to Declan",
+  "Self-justification",
+  "Story-shaping",
+  "No full recognition"
+  ],
+  "voice": {
+  "sentence_length": "Long, fluent, articulate.",
+  "syntax": "Self-clarifying, parenthetical, controlled.",
+  "lexicon": [
+  "to be clear",
+  "to be precise",
+  "not that",
+  "I only mean",
+  "what any mother would do",
+  "future",
+  "care",
+  "sensible"
+  ],
+  "forbidden_or_avoided": [
+  "ex-husband's name",
+  "exact costs",
+  "direct acknowledgement of catastrophic responsibility",
+  "explicit self-recognition"
+  ],
+  "emotional_leakage": "Correction, qualification, careful category-making, tenderness followed by control.",
+  "metaphor_source": "Domestic order, sacrifice, maternal duty, respectability, education as rescue.",
+  "attention_pattern": "Notices presentation, clothes, letters, tone, school authority, what can be explained.",
+  "avoidance_pattern": "Selects rather than lies. Leaves out what would destabilise her preferred version."
+  },
+  "plot_functions": [
+  "Brings the adult world into the boys' tragedy.",
+  "Converts private adolescent feeling into institutional danger.",
+  "Gives Declan information or opportunity through misplaced trust.",
+  "Shapes the false story after Thomas's death.",
+  "Embodies love as harm without becoming a cartoon villain."
+  ],
+  "non_negotiable_rule": "Every Diana section should contain one true and tender thing about Marcus and one thing that is catastrophic when read against what the reader knows.",
+  "scene_seed_examples": [
+  {
+  "scene": "Finding the notebook",
+  "function": "Diana discovers Marcus's interior life and turns it into a problem to manage.",
+  "inner_turn": "Tender concern becomes fear-driven interpretation."
+  },
+  {
+  "scene": "Decision to visit Declan",
+  "function": "She chooses authority over listening.",
+  "inner_turn": "Maternal protection becomes institutional exposure."
+  },
+  {
+  "scene": "Meeting with Declan",
+  "function": "The wrong adult receives the wrong information under the guise of care.",
+  "inner_turn": "Certainty becomes catastrophe."
+  },
+  {
+  "scene": "After Thomas's death",
+  "function": "Diana participates in shaping or accepting a version that protects reputation.",
+  "inner_turn": "Control becomes moral evasion."
+  }
+  ]
+  },
+  "john_ellery": {
+  "full_name": "John Ellery",
+  "role": "Thomas's father; late voice; plain speaker of the fact that breaks Jake's false story.",
+  "social_position": "Grieving parent, physiotherapist or body-worker, outside the schoolboys' emotional mythology.",
+  "core_contradiction": "Carries devastating truth, speaks it without drama.",
+  "public_self": "Professional, practical, factual, contained.",
+  "private_self": "Grief-struck, exhausted, past expectation of justice or full understanding.",
+  "conscious_want": "Possibly no grand want; he responds to what he sees in front of him.",
+  "unconscious_want": "That someone still living might be spared one falsehood.",
+  "hidden_need": "Not resolution, but dignity.",
+  "greatest_fear": "Not central in the section; his fear has already happened.",
+  "false_belief": "He may believe truth usually arrives too late to matter.",
+  "truth_he_holds": "The truth about Declan and Thomas that Jake has not been told or has not understood.",
+  "truth_he_lacks": "Any belief that truth restores what was lost.",
+  "arc": [
+  "One section only",
+  "Observation of injury or collision",
+  "Plain sentence",
+  "Withdrawal"
+  ],
+  "voice": {
+  "sentence_length": "Plain, short to medium.",
+  "syntax": "Factual, professional, no ornament.",
+  "lexicon": [
+  "body",
+  "damage",
+  "muscle",
+  "joint",
+  "weight",
+  "cold",
+  "practical detail"
+  ],
+  "forbidden": [
+  "wisdom figure tone",
+  "speechifying",
+  "therapeutic exposition",
+  "dramatic revelation monologue"
+  ],
+  "emotional_leakage": "Understatement, flatness, practical care.",
+  "metaphor_source": "Body and damage management.",
+  "attention_pattern": "Sees physical injury and the human cost beneath it."
+  },
+  "plot_functions": [
+  "Delivers the fact that breaks Jake's distortion.",
+  "Does not explain the whole book.",
+  "Allows truth to enter without melodrama.",
+  "Exits before becoming a moral authority."
+  ],
+  "scene_seed_examples": [
+  {
+  "scene": "Touchline collision",
+  "function": "John attends to injury and recognises Jake or the situation.",
+  "inner_turn": "Practical attention opens into devastating fact."
+  },
+  {
+  "scene": "Plain sentence",
+  "function": "Break Jake's false belief about Marcus and Thomas.",
+  "inner_turn": "The official story collapses in one understated line."
+  }
+  ]
+  },
+  "brother_declan": {
+  "full_name": "Brother Declan",
+  "role": "Predatory religious authority figure and institutional danger.",
+  "narrative_status": "Should not be given a full interior POV unless a later structural decision absolutely requires it. His power is most frightening when mediated through others' trust, fear, and silence.",
+  "public_self": "Controlled, authoritative, religiously legitimate, disciplined, perhaps dry or cold.",
+  "private_truth": "Predatory exploitation of institutional trust.",
+  "plot_functions": [
+  "Singles out Thomas.",
+  "Benefits from Diana's misplaced trust.",
+  "Is protected by institutional habits of discretion.",
+  "Is removed quietly rather than publicly exposed.",
+  "Represents not Catholicism itself, but the catastrophic danger of authority without accountability."
+  ],
+  "representation_constraints": [
+  "Do not make him melodramatically evil.",
+  "Do not write abuse scenes directly.",
+  "Do not make him explain himself.",
+  "Show danger through access, language, objects, routines, and others' altered behaviour."
+  ]
+  },
+  "the_school": {
+  "role": "Fifth presence or counter-subject.",
+  "personality": "Beautiful, old, polished, disciplined, hierarchical, cold, protective of form, invested in silence.",
+  "functions": [
+  "Shapes what characters can say.",
+  "Gives Jake belonging.",
+  "Makes Marcus conditional.",
+  "Gives Declan cover.",
+  "Gives Diana confidence in authority.",
+  "Turns Thomas's distress into a discipline or pastoral problem.",
+  "Turns scandal into management."
+  ],
+  "motifs": [
+  "Bells",
+  "Chapel",
+  "Latin",
+  "Polished floors",
+  "Dormitories",
+  "Mud",
+  "Football pitch",
+  "Honours boards",
+  "War memorial",
+  "Punishment ledger",
+  "Letters",
+  "Cold bathrooms",
+  "Incense",
+  "Sleet"
+  ]
+  }
+  },
+  "relationship_matrix": {
+  "jake_marcus": {
+  "surface": "Friendship, rivalry, loyalty, class-crossing intimacy, football and school life.",
+  "hidden": "Mutual attachment that exceeds available language.",
+  "asymmetry": "Jake has social power and bodily confidence. Marcus has interpretive power and emotional perception.",
+  "danger": "Neither can name what is happening without risking social ruin.",
+  "development": [
+  "First noticing",
+  "Chosen loyalty",
+  "Unspoken reliance",
+  "Jealousy or confusion",
+  "Thomas sees them",
+  "False story fractures them",
+  "Separate years distort memory",
+  "Cup final reactivates recognition",
+  "Kiss makes the unsaid briefly public",
+  "External force separates them"
+  ]
+  },
+  "marcus_thomas": {
+  "surface": "Schoolmates, perhaps intellectual or observational connection.",
+  "hidden": "Thomas may understand Marcus's attachment to Jake; Marcus becomes one of the only boys who might notice Thomas's distress.",
+  "tragic_axis": "Marcus nearly understands but answers the wrong problem.",
+  "bathroom_scene_core": "Thomas says something partial such as 'It does not stop.' Marcus interprets it through shame or forbidden desire and gives a response that is true for one problem but fatal for the actual one."
+  },
+  "jake_thomas": {
+  "surface": "Friendship, humour, Latin help, schoolboy warmth.",
+  "hidden": "Thomas understands Jake's feelings before Jake does.",
+  "tragic_axis": "Jake's inability to read emotional danger means Thomas's deterioration does not reach him as knowledge.",
+  "function": "Thomas acts as early mirror and later absence."
+  },
+  "diana_marcus": {
+  "surface": "Mother and son; ambition, sacrifice, care, pressure.",
+  "hidden": "Diana loves Marcus but cannot tolerate the parts of him that threaten her imagined safe future for him.",
+  "tragic_axis": "She acts to protect him and helps create the conditions of catastrophe.",
+  "rule": "Write her tenderness truthfully. The harm is stronger because the love is real."
+  },
+  "diana_declan": {
+  "surface": "Concerned parent seeks discreet guidance from religious/school authority.",
+  "hidden": "Diana gives power to the wrong person.",
+  "tragic_axis": "Respectability and institutional trust become routes of exposure."
+  },
+  "declan_thomas": {
+  "surface": "Teacher or religious adult giving special attention, correction, guidance, or discipline.",
+  "hidden": "Predatory access and coercive control.",
+  "tragic_axis": "Thomas's silence is exploited and then deepened.",
+  "representation": "Never eroticise or explicitly depict. Use objects, dread, aftermath, voice fracture."
+  },
+  "john_jake": {
+  "surface": "Brief touchline encounter after collision or injury.",
+  "hidden": "John carries the fact Jake needed long ago.",
+  "function": "Truth enters late, plainly, without restoring what was lost."
+  }
+  },
+  "plot_engine": {
+  "causal_chain": [
+  "Because St Cormac's teaches silence as strength, boys learn to convert fear and tenderness into performance.",
+  "Because Jake belongs easily, he does not learn to question the language of the institution or his own emotional evasions.",
+  "Because Marcus belongs conditionally, he becomes skilled at reading rooms but cautious about claiming what he sees.",
+  "Because Thomas is linguistically bright and emotionally perceptive, he sees Jake and Marcus clearly before they do.",
+  "Because Declan has authority and access, his attention to Thomas can be disguised as guidance, discipline, or pastoral concern.",
+  "Because Thomas lacks safe language, his distress appears as oddness, shame, counting, withdrawal, or schoolboy difficulty.",
+  "Because Marcus notices but mistrusts himself, he delays speech.",
+  "Because Diana finds Marcus's interior life and fears ruin, she seeks discreet adult intervention.",
+  "Because Diana chooses Declan as authority, she unknowingly routes private fear toward the predator.",
+  "Because the institution protects surfaces, danger is managed as reputation rather than faced as harm.",
+  "Because Thomas can only partially speak, Marcus answers the wrong meaning.",
+  "Because Thomas dies, everyone needs a story that can be survived socially.",
+  "Because the official story implicates or distorts Marcus, Jake accepts enough of it to protect himself from his own attachment.",
+  "Because Marcus is transferred, the false story hardens in absence.",
+  "Because Jake and Marcus meet again through football, the body reopens what language closed.",
+  "Because John Ellery speaks plainly, Jake's distortion collapses.",
+  "Because Jake finally understands enough, he crosses the mud and kisses Marcus.",
+  "Because the world around them remains unchanged, recognition does not become rescue."
+  ],
+  "main_reversals": [
+  {
+  "reversal": "Thomas's brightness becomes evidence of what has been lost.",
+  "placement": "Middle movement",
+  "effect": "The reader rereads earlier wit as tragic clarity."
+  },
+  {
+  "reversal": "Diana's maternal intervention becomes exposure.",
+  "placement": "Movement II",
+  "effect": "Love and harm become inseparable."
+  },
+  {
+  "reversal": "Marcus's carefulness becomes failure.",
+  "placement": "Bathroom and aftermath",
+  "effect": "His best survival skill fails the person who needed him."
+  },
+  {
+  "reversal": "Jake's certainty about Marcus collapses.",
+  "placement": "Cup final touchline",
+  "effect": "The false emotional plot breaks."
+  },
+  {
+  "reversal": "The kiss is recognition, not victory.",
+  "placement": "Final movement",
+  "effect": "Reader receives the emotional truth and the social impossibility simultaneously."
+  }
+  ],
+  "dramatic_irony_spine": [
+  "The reader sees Jake's desire before Jake does.",
+  "The reader sees Marcus's perception before Marcus trusts it.",
+  "The reader sees Thomas's danger before the characters can name it.",
+  "The reader sees Diana's error before she does.",
+  "The reader sees the institution's quietness as violence.",
+  "The reader understands the kiss as both truth and loss."
+  ]
+  },
+  "movement_structure_seed": {
+  "movement_i_establishing": {
+  "target_function": "Give the reader a world to lose. Establish Jake and Marcus as distinct voices, Thomas as warmth and clarity, and St Cormac's as beautiful, enclosing, and morally pressurised.",
+  "approximate_weight": "35 percent",
+  "dominant_questions": [
+  "Who belongs here and at what cost?",
+  "What can these boys not say?",
+  "Why does the school feel safe to some and dangerous to others?"
+  ],
+  "key_beats": [
+  "Jake arrival: smell, father legacy, photograph, first sight of Marcus.",
+  "Marcus arrival: Diana, tie-straightening, scholarship or class anxiety, first sight of Jake.",
+  "Thomas Latin class: Odi et amo, wit, Declan's red ink or attention.",
+  "Jake chooses Marcus in a small but costly way.",
+  "Marcus refracts the same event and shows what Jake cannot.",
+  "Thomas sees the Jake-Marcus attachment before they do.",
+  "A scene of school stability and pleasure, so the later fracture matters."
+  ],
+  "craft_priority": "Do not rush. Texture is not delay; it is future grief being built."
+  },
+  "movement_ii_fracture": {
+  "target_function": "Tighten the trap. Thomas fragments, Marcus notices, Jake misreads or avoids, Diana enters, and the institution converts danger into silence.",
+  "approximate_weight": "40 percent",
+  "dominant_questions": [
+  "What does Marcus see but not say?",
+  "What does Diana think she is saving?",
+  "How does Thomas's language fail?",
+  "How does the institution protect itself?"
+  ],
+  "key_beats": [
+  "Declan's office rendered through objects.",
+  "Marcus notices Thomas's alteration and argues himself out of speaking.",
+  "Jake notices the wrong things.",
+  "Thomas counts chapel panels or surfaces.",
+  "Diana finds Marcus's notebook or writing.",
+  "Diana visits Declan.",
+  "Marcus almost speaks to a master but does not.",
+  "Thomas fragment or abandoned letter.",
+  "Bathroom scene: Marcus gives wrong answer to partial truth.",
+  "Thomas's death.",
+  "Jake's empty-bed or aftermath scene.",
+  "Funeral or institutional ritual.",
+  "Diana helps shape or accept a survivable official story.",
+  "Jake receives the story third-hand.",
+  "Marcus tries to explain and fails.",
+  "Marcus is transferred to Alderton."
+  ],
+  "craft_priority": "Make every silence active. The reader should feel the narrowing even when nothing is stated directly."
+  },
+  "movement_iii_separate_years_and_match": {
+  "target_function": "Show how false stories live in absence, then bring Jake and Marcus back into physical proximity where truth can break through.",
+  "approximate_weight": "25 percent",
+  "dominant_questions": [
+  "What has absence done to each boy?",
+  "Can bodily recognition outrun the false story?",
+  "What does truth change if it arrives too late?"
+  ],
+  "key_beats": [
+  "Marcus at Alderton: rebuilding, unsent letters, cautious recovery.",
+  "Jake at St Cormac's: volatility, fights, replaying, denial.",
+  "Pre-match anticipation.",
+  "Cup final begins with football as emotional language.",
+  "Jake and Marcus read each other through movement.",
+  "Collision or touchline moment brings John Ellery into contact with Jake.",
+  "John speaks the plain sentence.",
+  "Jake's false story collapses.",
+  "Match resumes or continues under altered reality.",
+  "Final whistle or decisive moment.",
+  "Jake crosses the mud.",
+  "The kiss.",
+  "Immediate separation by fathers, masters, boys, or institutional force.",
+  "Thomas coda."
+  ],
+  "craft_priority": "The match should tighten rapidly, then the kiss sequence should slow almost to stopped time."
+  }
+  },
+  "scene_seed_table": [
+  {
+  "id": "S01",
+  "movement": "I",
+  "pov": "Jake",
+  "outer_event": "Jake arrives at St Cormac's.",
+  "inner_turn": "Inherited belonging is disturbed by first notice of Marcus.",
+  "reader_function": "Establish Jake's privilege, physical voice, father legacy, and school smell.",
+  "motifs": [
+  "smell",
+  "photograph",
+  "stone",
+  "father",
+  "chapel steps"
+  ]
+  },
+  {
+  "id": "S02",
+  "movement": "I",
+  "pov": "Marcus",
+  "outer_event": "Marcus arrives with Diana.",
+  "inner_turn": "Hope becomes careful self-monitoring.",
+  "reader_function": "Re-establish the same school as social risk.",
+  "motifs": [
+  "tie",
+  "mother's hands",
+  "trunk",
+  "pitch",
+  "uniform"
+  ]
+  },
+  {
+  "id": "S03",
+  "movement": "I",
+  "pov": "Thomas",
+  "outer_event": "Latin class introduces Odi et amo.",
+  "inner_turn": "Play becomes emotional code.",
+  "reader_function": "Make Thomas immediately alive and pleasurable on the page.",
+  "motifs": [
+  "Latin",
+  "red ink",
+  "translation",
+  "joke"
+  ]
+  },
+  {
+  "id": "S04",
+  "movement": "I",
+  "pov": "Jake",
+  "outer_event": "Jake chooses Marcus over a prefect or higher-status boy.",
+  "inner_turn": "Attachment acts before self-knowledge.",
+  "reader_function": "Show Jake's loyalty as behavioural, not reflective.",
+  "motifs": [
+  "corridor",
+  "laughter",
+  "balance",
+  "cold shoulder"
+  ]
+  },
+  {
+  "id": "S05",
+  "movement": "I",
+  "pov": "Marcus",
+  "outer_event": "Marcus retells or refracts Jake's choice.",
+  "inner_turn": "Gratitude becomes dangerous hope.",
+  "reader_function": "Show the same event's emotional cost.",
+  "motifs": [
+  "faces",
+  "hands",
+  "late laughter"
+  ]
+  },
+  {
+  "id": "S06",
+  "movement": "I",
+  "pov": "Thomas",
+  "outer_event": "Thomas observes Jake talking about Marcus without knowing what he reveals.",
+  "inner_turn": "Thomas recognises what Jake cannot.",
+  "reader_function": "Seed Thomas as the clearest reader of the boys.",
+  "motifs": [
+  "Odi et amo",
+  "mispronunciation",
+  "smile",
+  "not saying"
+  ]
+  },
+  {
+  "id": "S07",
+  "movement": "II",
+  "pov": "Thomas",
+  "outer_event": "Declan's office scene, described only through objects.",
+  "inner_turn": "Authority becomes dread.",
+  "reader_function": "Let the reader infer danger without explicit content.",
+  "motifs": [
+  "lamp",
+  "crucifix",
+  "books",
+  "chair",
+  "door"
+  ]
+  },
+  {
+  "id": "S08",
+  "movement": "II",
+  "pov": "Marcus",
+  "outer_event": "Marcus notices Thomas altered after chapel or class.",
+  "inner_turn": "Vague unease becomes private responsibility.",
+  "reader_function": "Build near-knowledge.",
+  "motifs": [
+  "face",
+  "hands",
+  "ceiling",
+  "silence"
+  ]
+  },
+  {
+  "id": "S09",
+  "movement": "II",
+  "pov": "Jake",
+  "outer_event": "Jake notices Marcus noticing Thomas but interprets it wrongly.",
+  "inner_turn": "Confusion becomes irritation or avoidance.",
+  "reader_function": "Show Jake's emotional blindness without making him stupid.",
+  "motifs": [
+  "football",
+  "off-balance",
+  "weather",
+  "not looking"
+  ]
+  },
+  {
+  "id": "S10",
+  "movement": "II",
+  "pov": "Diana",
+  "outer_event": "Diana finds Marcus's notebook or writing.",
+  "inner_turn": "Tender concern becomes fear-driven interpretation.",
+  "reader_function": "Introduce adult fluency and catastrophic selection.",
+  "motifs": [
+  "bedroom",
+  "drawer",
+  "paper",
+  "handwriting",
+  "sacrifice"
+  ]
+  },
+  {
+  "id": "S11",
+  "movement": "II",
+  "pov": "Diana",
+  "outer_event": "Diana visits or contacts Declan.",
+  "inner_turn": "Protection becomes exposure.",
+  "reader_function": "Load-bearing pivot scene.",
+  "motifs": [
+  "office",
+  "taxi",
+  "careful words",
+  "tea",
+  "authority"
+  ]
+  },
+  {
+  "id": "S12",
+  "movement": "II",
+  "pov": "Thomas",
+  "outer_event": "Fragmented chapel ceiling or abandoned letter.",
+  "inner_turn": "Language fails and surfaces become refuge.",
+  "reader_function": "Make the reader feel deterioration structurally.",
+  "motifs": [
+  "panels",
+  "numbers",
+  "Latin",
+  "crossed-out line"
+  ]
+  },
+  {
+  "id": "S13",
+  "movement": "II",
+  "pov": "Marcus",
+  "outer_event": "Bathroom scene with Thomas.",
+  "inner_turn": "Care becomes fatal mistranslation.",
+  "reader_function": "Central moral wound for Marcus.",
+  "motifs": [
+  "tile",
+  "cold",
+  "water",
+  "partial sentence",
+  "wrong answer"
+  ]
+  },
+  {
+  "id": "S14",
+  "movement": "II",
+  "pov": "Jake",
+  "outer_event": "The morning after Thomas's death or the empty bed.",
+  "inner_turn": "Shock becomes numbness and bodily retreat.",
+  "reader_function": "Show Jake unable to grieve in language.",
+  "motifs": [
+  "bed",
+  "boots",
+  "pitch",
+  "breakfast",
+  "sleet"
+  ]
+  },
+  {
+  "id": "S15",
+  "movement": "II",
+  "pov": "Marcus",
+  "outer_event": "Funeral or institutional ritual.",
+  "inner_turn": "Suspicion becomes unbearable but unsayable knowledge.",
+  "reader_function": "Show ritual failing the truth.",
+  "motifs": [
+  "psalm",
+  "incense",
+  "Declan's voice",
+  "hands",
+  "pews"
+  ]
+  },
+  {
+  "id": "S16",
+  "movement": "II",
+  "pov": "Diana",
+  "outer_event": "Diana participates in shaping or accepting the story.",
+  "inner_turn": "Certainty becomes moral evasion.",
+  "reader_function": "Show social management as violence.",
+  "motifs": [
+  "letters",
+  "phone call",
+  "careful phrasing",
+  "school paper"
+  ]
+  },
+  {
+  "id": "S17",
+  "movement": "II",
+  "pov": "Marcus",
+  "outer_event": "Marcus is transferred to Alderton.",
+  "inner_turn": "Speechlessness becomes exile.",
+  "reader_function": "Separate the boys before truth can stabilise.",
+  "motifs": [
+  "trunk",
+  "car",
+  "window",
+  "no goodbye"
+  ]
+  },
+  {
+  "id": "S18",
+  "movement": "III",
+  "pov": "Marcus",
+  "outer_event": "Alderton rebuilding scene.",
+  "inner_turn": "Survival begins without resolution.",
+  "reader_function": "Prevent separate years from becoming montage.",
+  "motifs": [
+  "unsent letter",
+  "different dorm",
+  "new tie",
+  "breathing space"
+  ]
+  },
+  {
+  "id": "S19",
+  "movement": "III",
+  "pov": "Jake",
+  "outer_event": "Jake's volatile year at St Cormac's.",
+  "inner_turn": "False story hardens into anger.",
+  "reader_function": "Show absence deforming him.",
+  "motifs": [
+  "fight",
+  "mud",
+  "father",
+  "night",
+  "boots"
+  ]
+  },
+  {
+  "id": "S20",
+  "movement": "III",
+  "pov": "Alternating Jake and Marcus",
+  "outer_event": "Cup final begins.",
+  "inner_turn": "Bodies recognise what minds have distorted.",
+  "reader_function": "Use football as emotional language.",
+  "motifs": [
+  "mud",
+  "whistle",
+  "breath",
+  "studs",
+  "touchline"
+  ]
+  },
+  {
+  "id": "S21",
+  "movement": "III",
+  "pov": "John Ellery",
+  "outer_event": "Collision or injury near touchline.",
+  "inner_turn": "Practical care opens into plain truth.",
+  "reader_function": "Break Jake's false story without melodrama.",
+  "motifs": [
+  "body",
+  "damage",
+  "cold mud",
+  "plain sentence"
+  ]
+  },
+  {
+  "id": "S22",
+  "movement": "III",
+  "pov": "Jake",
+  "outer_event": "Jake absorbs John's sentence.",
+  "inner_turn": "Anger collapses into recognition.",
+  "reader_function": "Let reader feel truth arriving late.",
+  "motifs": [
+  "sound dropping out",
+  "Marcus across pitch",
+  "mud",
+  "breath"
+  ]
+  },
+  {
+  "id": "S23",
+  "movement": "III",
+  "pov": "Marcus",
+  "outer_event": "Marcus senses Jake has changed.",
+  "inner_turn": "Defence becomes hope and fear.",
+  "reader_function": "Show recognition from the other side without full knowledge.",
+  "motifs": [
+  "eyes",
+  "distance",
+  "mud",
+  "noise"
+  ]
+  },
+  {
+  "id": "S24",
+  "movement": "III",
+  "pov": "Jake and Marcus, possibly separate short sections",
+  "outer_event": "Jake crosses the mud and kisses Marcus.",
+  "inner_turn": "The unsaid becomes briefly public.",
+  "reader_function": "Emotional recognition, not romantic resolution.",
+  "motifs": [
+  "hands",
+  "mud",
+  "breath",
+  "silence after noise"
+  ]
+  },
+  {
+  "id": "S25",
+  "movement": "III",
+  "pov": "Thomas",
+  "outer_event": "Coda fragment from an unfinished letter.",
+  "inner_turn": "The silenced voice returns without explanation.",
+  "reader_function": "End on unresolved moral absence.",
+  "motifs": [
+  "letter",
+  "unfinished sentence",
+  "M",
+  "white space"
+  ]
+  }
+  ],
+  "knowledge_ledger_seed": {
+  "principle": "Track unequal knowledge at every beat. Polyphony works because no one knows enough, but the reader can assemble more than any single character.",
+  "critical_knowledge_items": [
+  {
+  "item": "Jake's attachment to Marcus",
+  "jake": "Feels it bodily but cannot name it.",
+  "marcus": "Suspects or hopes but fears over-reading.",
+  "thomas": "Sees it early.",
+  "diana": "Finds traces and misinterprets through fear.",
+  "reader": "Should understand before Jake."
+  },
+  {
+  "item": "Thomas's abuse",
+  "jake": "Does not understand or notices wrong things.",
+  "marcus": "Notices distress, may suspect danger but misreads specifics.",
+  "thomas": "Knows but cannot speak directly.",
+  "diana": "Does not know and worsens danger.",
+  "john": "Eventually knows enough to name Declan as relevant.",
+  "reader": "Should infer gradually without explicit depiction."
+  },
+  {
+  "item": "Diana's intervention",
+  "jake": "May not know or only later hears distorted consequences.",
+  "marcus": "May not know fully.",
+  "thomas": "Feels consequences, not necessarily source.",
+  "diana": "Believes she acted responsibly.",
+  "declan": "Uses or benefits from it.",
+  "reader": "Should recognise catastrophe before Diana does."
+  },
+  {
+  "item": "Official story after Thomas's death",
+  "jake": "Receives and partially accepts because it protects him from self-knowledge.",
+  "marcus": "Is injured by it and cannot correct it effectively.",
+  "diana": "May help shape or accept it.",
+  "school": "Uses it to preserve order.",
+  "john": "Knows it is false or incomplete.",
+  "reader": "Should see it as morally convenient distortion."
+  },
+  {
+  "item": "John Ellery's truth",
+  "jake": "Learns late at cup final.",
+  "marcus": "May not hear or may not know what changed Jake.",
+  "reader": "Receives confirmation and grief, not surprise only."
+  }
+  ]
+  },
+  "motif_seed": {
+  "bells": {
+  "function": "Order, obedience, time, institutional control.",
+  "jake": "Signal to move.",
+  "marcus": "Reminder that everyone else seems to know where to go.",
+  "thomas": "Sound that becomes repetitive and oppressive.",
+  "diana": "Evidence of structure and seriousness.",
+  "john": "Distant sound after damage."
+  },
+  "mud": {
+  "function": "Physical truth, humiliation, football, class levelling, final contact.",
+  "jake": "Proof of effort and game reality.",
+  "marcus": "Marks clothes, body, class vulnerability.",
+  "thomas": "May appear as texture or avoidance.",
+  "diana": "Something boys are expected to endure.",
+  "john": "A practical surface where bodies are damaged."
+  },
+  "chapel_ceiling": {
+  "function": "Beauty, surveillance, refuge, dissociation.",
+  "jake": "Architecture barely noticed.",
+  "marcus": "Place where faces become unreadable.",
+  "thomas": "Countable refuge.",
+  "diana": "Institutional reassurance.",
+  "john": "Likely not central."
+  },
+  "hands": {
+  "function": "Touch, care, violence, desire, control, maternal adjustment, clinical damage.",
+  "jake": "Grip, tackle, strength, withheld touch.",
+  "marcus": "Nervous habits, class details, longing.",
+  "thomas": "Avoidance, contamination, counting fingers.",
+  "diana": "Tie-straightening, smoothing, controlling care.",
+  "john": "Professional assessment of injury."
+  },
+  "latin": {
+  "function": "Precision, tradition, moral weight, failed translation.",
+  "jake": "School requirement or joke he half-understands.",
+  "marcus": "Cultural capital and careful learning.",
+  "thomas": "Living language, refuge, code, broken refrain.",
+  "diana": "Prestige and seriousness.",
+  "school": "Continuity and authority."
+  },
+  "letters_and_notebooks": {
+  "function": "Delayed communication, privacy, exposure, failed disclosure.",
+  "jake": "Avoided or poorly handled.",
+  "marcus": "Unsent longing and interiority.",
+  "thomas": "Abandoned appeal.",
+  "diana": "Discovery and misinterpretation.",
+  "school": "Records, references, official paper."
+  }
+  },
+  "voice_sample_seed": {
+  "instruction": "These are not final prose. They are tonal calibration examples for another LLM.",
+  "jake_neutral": "The thing about the place was the smell. Polish first. Then stone. Then something like church, though I would not have said that then.",
+  "jake_under_pressure": "I saw him. I looked away. I looked back. He had mud on his face and I hated him for standing there as if he had not been gone all year.",
+  "marcus_neutral": "I noticed, because I had already learned that noticing was safer than asking, that the boys who belonged did not look around to see whether they did.",
+  "marcus_under_pressure": "I might have said something then. I have told myself that often enough for it to have the shape of truth, though it is not, strictly speaking, true.",
+  "thomas_early": "Odi et amo, Brother Declan said, and Hale whispered that Latin was what happened when English died and nobody had the decency to bury it.",
+  "thomas_late": "There are twelve panels above the altar. Not eleven. I counted again because eleven would have meant I had missed one.",
+  "diana_neutral": "I want to be clear that I did not go to the school in anger. Concern, yes. Fear, perhaps, though fear is a word one uses after the event, when it has become respectable.",
+  "john_neutral": "His knee was not badly damaged. Boys fall worse than that every week. It was the way he looked past me that made me say it."
+  },
+  "load_bearing_scenes": {
+  "diana_finds_notebook": {
+  "must_do": [
+  "Show real maternal tenderness.",
+  "Show Diana selecting an interpretation.",
+  "Avoid making Marcus's writing too explicit.",
+  "Make the reader dread what she will do with partial knowledge."
+  ],
+  "must_not_do": [
+  "Turn Diana into a villain.",
+  "Use modern language of identity.",
+  "Resolve her uncertainty too cleanly."
+  ]
+  },
+  "diana_visits_declan": {
+  "must_do": [
+  "Make the conversation plausible, careful, coded, and socially realistic.",
+  "Let Declan appear institutionally safe.",
+  "Make Diana's error visible to reader without making her stupid.",
+  "Use office details and restrained dialogue."
+  ],
+  "must_not_do": [
+  "Have Diana say everything directly.",
+  "Have Declan reveal himself.",
+  "Make the scene melodramatic."
+  ]
+  },
+  "marcus_bathroom_scene": {
+  "must_do": [
+  "Keep Thomas's language partial.",
+  "Make Marcus's answer understandable.",
+  "Let the reader see the wrongness of the interpretation.",
+  "Make the setting cold, physical, and claustrophobic.",
+  "Avoid explicit abuse detail."
+  ],
+  "must_not_do": [
+  "Have Thomas fully explain.",
+  "Have Marcus act stupidly for plot convenience.",
+  "Make suicide feel caused by one sentence alone."
+  ]
+  },
+  "thomas_death_aftermath": {
+  "must_do": [
+  "Focus on absence, institutional handling, shock, ritual, and misinterpretation.",
+  "Avoid method detail.",
+  "Let different voices process the absence differently."
+  ],
+  "must_not_do": [
+  "Sensationalise.",
+  "Explain everything.",
+  "Use the death as mere plot device."
+  ]
+  },
+  "john_ellery_touchline": {
+  "must_do": [
+  "Keep John plain.",
+  "Deliver one fact or sentence that shifts Jake's understanding.",
+  "Avoid full exposition.",
+  "Let grief sit under the sentence."
+  ],
+  "must_not_do": [
+  "Make John a therapist or sage.",
+  "Give a dramatic monologue.",
+  "Resolve the whole moral structure."
+  ]
+  },
+  "the_kiss": {
+  "must_do": [
+  "Keep it brief, physical, non-explicit, and emotionally overwhelming.",
+  "Make it recognition rather than triumph.",
+  "Let the surrounding world interrupt or crush it.",
+  "Use mud, breath, hands, noise dropping away."
+  ],
+  "must_not_do": [
+  "Make it romantic fulfilment.",
+  "Make either boy think in polished complete emotional abstractions.",
+  "Sexualise the minors.",
+  "Let it solve the story."
+  ]
+  },
+  "thomas_coda": {
+  "must_do": [
+  "Return Thomas's voice in fragment.",
+  "Let absence remain.",
+  "End with restraint.",
+  "Avoid explaining the book's meaning."
+  ],
+  "must_not_do": [
+  "Over-write.",
+  "Summarise.",
+  "Turn Thomas into a symbol only."
+  ]
+  }
+  },
+  "drafting_directives_for_another_llm": {
+  "primary_instruction": "Use this seed object to generate material consistent with the established St Cormac's project. Preserve the existing premise, structure, voices, timeline, and moral restraint.",
+  "before_writing_any_scene": [
+  "Identify the POV.",
+  "Identify what this POV uniquely knows, misreads, and withholds.",
+  "Identify the scene's outer event and inner turn.",
+  "Identify what the reader should infer that the character cannot.",
+  "Identify the motif or echo being used.",
+  "Check period language.",
+  "Check safety constraints around minors, abuse, and suicide."
+  ],
+  "style_rules": [
+  "Show emotion through behaviour, syntax, omission, and setting.",
+  "Do not over-explain psychology.",
+  "Do not use modern therapeutic language in 1980s character consciousness.",
+  "Let each voice sound recognisably different.",
+  "Use school texture as pressure, not decoration.",
+  "Keep Catholic and Benedictine details specific but not over-researched on the page.",
+  "Let silence do plot work.",
+  "Trust the reader."
+  ],
+  "continuity_rules": [
+  "Thomas must be likeable and bright before he fragments.",
+  "Marcus must be observant but not melodramatic.",
+  "Jake must be emotionally opaque but not stupid.",
+  "Diana must be loving and harmful, not simply cruel.",
+  "John must be plain and brief.",
+  "Declan's danger must be legible but not graphically staged.",
+  "The school must feel both beautiful and morally dangerous.",
+  "The kiss must be earned by accumulated misrecognition and late truth."
+  ],
+  "scene_output_template": {
+  "pov": "",
+  "timeline_point": "",
+  "outer_event": "",
+  "inner_turn": "",
+  "unique_pov_function": "",
+  "reader_inference": "",
+  "voice_constraints": [],
+  "motifs": [],
+  "continuity_links": [],
+  "draft_scene": ""
+  }
+  },
+  "revision_questions": [
+  "Does this scene build from the existing project rather than replacing its premise?",
+  "Could this POV be identified without a heading?",
+  "Does the scene turn something emotionally, morally, or factually?",
+  "Does the scene add knowledge, contradiction, pressure, or consequence?",
+  "Is any character behaving badly only because the plot requires it?",
+  "Is the school present as pressure rather than wallpaper?",
+  "Is the language period-appropriate?",
+  "Is the material around abuse and suicide restrained, non-graphic, and non-sensational?",
+  "Does the reader understand more than the narrator without feeling manipulated?",
+  "Does the scene preserve the unresolved tragic dignity of the whole?"
+  ],
+  "bottom_line": "St Cormac's should be developed as a tragic polyphonic novel where character and plot are inseparable through consequence. The central craft task is not inventing more events, but sharpening the causal chain by which silence, shame, class, institutional authority, and partial knowledge make the final recognition both inevitable and too late."
+  }
+  

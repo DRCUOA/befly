@@ -12,6 +12,9 @@ import ThemeDetail from '../pages/ThemeDetail.vue'
 import Manuscripts from '../pages/Manuscripts.vue'
 import ManuscriptForm from '../pages/ManuscriptForm.vue'
 import ManuscriptDetail from '../pages/ManuscriptDetail.vue'
+import CharacterStudio from '../pages/CharacterStudio.vue'
+import PolyphonicMap from '../pages/PolyphonicMap.vue'
+import PlotCausality from '../pages/PlotCausality.vue'
 import Help from '../pages/Help.vue'
 import HelpManuscripts from '../pages/help/HelpManuscripts.vue'
 import HelpAiAssist from '../pages/help/HelpAiAssist.vue'
@@ -103,6 +106,21 @@ const router = createRouter({
       path: '/manuscripts/:id',
       name: 'ManuscriptDetail',
       component: ManuscriptDetail
+    },
+    {
+      path: '/manuscripts/:id/characters',
+      name: 'CharacterStudio',
+      component: CharacterStudio
+    },
+    {
+      path: '/manuscripts/:id/polyphonic',
+      name: 'PolyphonicMap',
+      component: PolyphonicMap
+    },
+    {
+      path: '/manuscripts/:id/plot',
+      name: 'PlotCausality',
+      component: PlotCausality
     },
     {
       path: '/profile',

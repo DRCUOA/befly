@@ -1,0 +1,525 @@
+{
+  "title": "Polyphonic Fiction Technique: Process Companion",
+  "purpose": "A complementary craft framework focused specifically on getting the best from a polyphonic novel: multiple distinct voices, partial knowledge, structural counterpoint, dramatic irony, and emotional accumulation.",
+  "core_thesis": "Polyphonic fiction works when each voice feels complete in itself, but incomplete in relation to the whole. The reader experiences meaning by hearing the gaps, contradictions, echoes, and misreadings between voices.",
+  "definition": {
+  "polyphonic_fiction": "A novel built from multiple distinct consciousnesses or narrative voices, where no single voice fully owns the truth.",
+  "key_effect": "The reader becomes the only figure capable of assembling the full moral, emotional, and factual pattern.",
+  "central_risk": "If the voices are not truly distinct, the book becomes a rotating single narrator. If the structure is too mechanical, the reader feels the author arranging pieces rather than characters living."
+  },
+  "core_principles": [
+  {
+  "principle": "Each voice must have its own truth",
+  "explanation": "A polyphonic novel fails if one narrator is secretly the correct one and the others are merely mistaken. Each voice should contain a real, partial, emotionally valid truth."
+  },
+  {
+  "principle": "Each voice must also be wrong",
+  "explanation": "The power comes from partial perception. Every narrator should misread something important because of their desire, fear, class position, trauma, loyalty, shame, or limited information."
+  },
+  {
+  "principle": "The reader should know more than any single character",
+  "explanation": "Dramatic irony is the main reward of polyphony. The reader gradually assembles the pattern from fragments."
+  },
+  {
+  "principle": "Voices should answer each other indirectly",
+  "explanation": "A section should often respond to a question, wound, claim, or misunderstanding raised by the previous voice, even though the characters themselves do not realise this."
+  },
+  {
+  "principle": "Do not rotate mechanically",
+  "explanation": "A predictable sequence such as Jake, Marcus, Thomas, Diana, Jake, Marcus can become deadening. The next voice should arrive because the book needs that angle of pressure."
+  },
+  {
+  "principle": "Difference must exist at sentence level",
+  "explanation": "Polyphony is not achieved by changing names at the top of chapters. It must be visible in syntax, rhythm, vocabulary, metaphor, omission, and emotional access."
+  },
+  {
+  "principle": "The whole book should know more than its narrators",
+  "explanation": "The final meaning belongs to the arrangement, not to any one character's explanation."
+  }
+  ],
+  "polyphonic_design_questions": [
+  "Why does this story need more than one voice?",
+  "What truth can each voice access that no other voice can?",
+  "What truth is each voice unable or unwilling to access?",
+  "What does the reader learn only by comparing voices?",
+  "What emotional effect is created by switching voices here?",
+  "What would be lost if this section were told by someone else?",
+  "Does this voice deepen the scene, contradict it, reframe it, or merely repeat it?",
+  "Where should the reader feel ahead of the characters?",
+  "Where should the reader feel uncertain despite having more information?",
+  "Where should a later voice change the meaning of an earlier scene?"
+  ],
+  "voice_architecture": {
+  "goal": "Make each narrator recognisable without needing chapter headings.",
+  "voice_dimensions": {
+  "syntax": "Sentence length, punctuation, subordination, fragments, rhythm.",
+  "lexicon": "The words this character naturally reaches for.",
+  "metaphor_source": "The area of life from which the character draws comparisons.",
+  "attention_pattern": "What the character notices first, ignores, exaggerates, or returns to.",
+  "emotional_access": "What the character can name, cannot name, or only reveals indirectly.",
+  "time_orientation": "Whether the character thinks in present action, memory, regret, anticipation, or retrospective correction.",
+  "social_position": "How class, authority, gender, age, religion, and status shape what the character dares to say.",
+  "silence_pattern": "What kinds of things disappear from the narration."
+  },
+  "voice_bible_template": {
+  "character": "",
+  "core_consciousness": "",
+  "sentence_length": "",
+  "rhythm": "",
+  "punctuation_habits": "",
+  "preferred_words": [],
+  "forbidden_words": [],
+  "metaphor_sources": [],
+  "what_they_notice": [],
+  "what_they_miss": [],
+  "what_they_lie_about": "",
+  "what_they_selectively_tell": "",
+  "what_they_never_say_directly": "",
+  "how_emotion_leaks": "",
+  "how_pressure_changes_the_voice": "",
+  "sample_sentence_neutral": "",
+  "sample_sentence_under_pressure": ""
+  }
+  },
+  "knowledge_mapping": {
+  "purpose": "Polyphonic fiction depends on unequal knowledge. Track who knows what, who suspects what, who misreads what, and what the reader knows at each point.",
+  "knowledge_categories": {
+  "known_fact": "Something the character knows with confidence.",
+  "suspected_truth": "Something the character senses but cannot prove.",
+  "misinterpretation": "Something the character explains wrongly.",
+  "forbidden_knowledge": "Something the character cannot let themselves know.",
+  "reader_knowledge": "Something the reader can infer by comparing voices.",
+  "institutional_story": "The official version that suppresses or distorts the truth."
+  },
+  "knowledge_table_template": {
+  "beat": "",
+  "pov": "",
+  "event": "",
+  "what_this_character_knows": [],
+  "what_this_character_suspects": [],
+  "what_this_character_gets_wrong": [],
+  "what_the_reader_knows": [],
+  "what_other_characters_know": {},
+  "official_version": "",
+  "truth_beneath_the_scene": ""
+  },
+  "rule": "Before switching POV, identify what the new voice adds to the reader's knowledge that the previous voice could not provide."
+  },
+  "section_function_types": [
+  {
+  "type": "establishing_voice",
+  "purpose": "Introduces how a character thinks, notices, avoids, and desires.",
+  "danger": "Too much exposition or biography.",
+  "best_use": "Early sections where the reader is learning how to hear each narrator."
+  },
+  {
+  "type": "counterpoint",
+  "purpose": "Shows the same world or event from a contrasting consciousness.",
+  "danger": "Simple repetition.",
+  "best_use": "When the second version changes meaning, not merely perspective."
+  },
+  {
+  "type": "correction",
+  "purpose": "Reveals that a prior narrator misunderstood something.",
+  "danger": "Making one narrator look stupid rather than limited.",
+  "best_use": "When the correction creates pity, dread, or moral complexity."
+  },
+  {
+  "type": "echo",
+  "purpose": "Repeats an image, phrase, setting, or gesture in a different emotional key.",
+  "danger": "Over-obvious symbolism.",
+  "best_use": "To create unity across different voices."
+  },
+  {
+  "type": "withholding",
+  "purpose": "Allows a narrator to avoid naming something the reader can still infer.",
+  "danger": "Making the scene obscure rather than charged.",
+  "best_use": "For trauma, shame, desire, institutional secrecy, and moral evasion."
+  },
+  {
+  "type": "fragment",
+  "purpose": "Uses brevity, incompletion, or rupture to show a consciousness under pressure.",
+  "danger": "Becoming decorative or melodramatic.",
+  "best_use": "Sparingly, after the reader has already known the character in a fuller state."
+  },
+  {
+  "type": "reframing",
+  "purpose": "A later voice changes the reader's interpretation of an earlier scene.",
+  "danger": "Cheap twist logic.",
+  "best_use": "When the new meaning was already latent in the original scene."
+  },
+  {
+  "type": "stretto",
+  "purpose": "Accelerates the alternation of voices during a climactic sequence.",
+  "danger": "Confusion or gimmickry.",
+  "best_use": "Only when pressure is high enough that the structure feels like it is tightening naturally."
+  }
+  ],
+  "pov_switching_rules": {
+  "good_reasons_to_switch": [
+  "The current narrator cannot know the next necessary truth.",
+  "The emotional pressure would intensify if seen from another mind.",
+  "A prior scene needs contradiction or reframing.",
+  "The reader needs to feel dramatic irony sharpen.",
+  "The structure needs silence from one character to become noticeable.",
+  "A different voice can expose the cost of what just happened.",
+  "The next section answers an unstated question from the previous one."
+  ],
+  "bad_reasons_to_switch": [
+  "It is this character's turn in the rotation.",
+  "The author wants to distribute page count evenly.",
+  "The same event is being repeated without new pressure.",
+  "The writer is avoiding a difficult emotional scene.",
+  "The switch exists only to provide exposition.",
+  "The voice is not distinct enough to justify itself."
+  ],
+  "decision_prompt": "Why must this exact character tell this exact section at this exact point in the book?"
+  },
+  "counterpoint_method": {
+  "definition": "Counterpoint is the technique of placing voices near each other so their differences create meaning.",
+  "forms": [
+  {
+  "form": "same_event_different_meaning",
+  "example": "Jake experiences a football incident as physical contest; Marcus reads the same incident as social signalling and emotional displacement."
+  },
+  {
+  "form": "same_image_different_emotion",
+  "example": "The chapel ceiling is grandeur to Jake, refuge to Thomas, hierarchy to Marcus, and reassurance to Diana."
+  },
+  {
+  "form": "same_phrase_different_consequence",
+  "example": "A phrase such as 'nothing happened' may mean denial for Jake, danger for Marcus, institutional cover for Diana, and annihilation for Thomas."
+  },
+  {
+  "form": "missing_scene",
+  "example": "One narrator does not describe an event at all, and the absence becomes meaningful because another voice circles around it."
+  }
+  ],
+  "rule": "Never retell the same event unless the retelling changes the reader's moral, emotional, or factual understanding."
+  },
+  "dramatic_irony_framework": {
+  "purpose": "Use the reader's superior knowledge as an emotional and moral instrument.",
+  "types": {
+  "factual_irony": "The reader knows what happened when a character does not.",
+  "emotional_irony": "The reader understands a feeling before the character can name it.",
+  "moral_irony": "The reader sees the harm in a choice the character believes is responsible.",
+  "institutional_irony": "The reader sees the official explanation as false, cowardly, or incomplete.",
+  "retrospective_irony": "A later section changes the meaning of an earlier innocent detail."
+  },
+  "application_rule": "The reader should not merely know more. They should suffer more because they know more."
+  },
+  "silence_management": {
+  "purpose": "In polyphonic fiction, silence is structural material. Track what is missing from each voice.",
+  "silence_types": {
+  "psychological_silence": "What the character cannot admit to themselves.",
+  "social_silence": "What cannot be said within the school, family, class, or period.",
+  "institutional_silence": "What authority suppresses to preserve reputation.",
+  "formal_silence": "White space, fragments, withheld scenes, missing explanations.",
+  "ethical_silence": "Restraint around material that should not be rendered exploitatively."
+  },
+  "silence_table_template": {
+  "character": "",
+  "what_they_do_not_say": [],
+  "why_they_do_not_say_it": "",
+  "how_the_reader_detects_it": "",
+  "what_consequence_the_silence_creates": ""
+  },
+  "rule": "A silence must have pressure around it. If the reader cannot feel the thing being avoided, the silence will read as vagueness."
+  },
+  "echo_and_motif_system": {
+  "purpose": "Use recurring details to bind multiple voices without flattening them.",
+  "motif_template": {
+  "motif": "",
+  "literal_form": "",
+  "jake_version": "",
+  "marcus_version": "",
+  "thomas_version": "",
+  "diana_version": "",
+  "john_version": "",
+  "how_it_changes_over_time": ""
+  },
+  "possible_motifs_for_st_cormacs": [
+  {
+  "motif": "Bells",
+  "function": "Order, obedience, time pressure, institutional control.",
+  "voice_variations": {
+  "jake": "A signal to move.",
+  "marcus": "A reminder that everyone else knows where to go.",
+  "thomas": "A repeated sound that becomes unbearable.",
+  "diana": "Proof of structure and seriousness.",
+  "john": "Something heard from a distance after damage is done."
+  }
+  },
+  {
+  "motif": "Mud",
+  "function": "Physical truth, class levelling, football, humiliation, final contact.",
+  "voice_variations": {
+  "jake": "Game surface, proof of effort.",
+  "marcus": "Something that marks clothes and status.",
+  "thomas": "A texture avoided or noticed in fragments.",
+  "diana": "Something boys are expected to endure.",
+  "john": "A practical surface where bodies are injured."
+  }
+  },
+  {
+  "motif": "Chapel ceiling",
+  "function": "Beauty, surveillance, refuge, dissociation.",
+  "voice_variations": {
+  "jake": "Architecture barely noticed.",
+  "marcus": "A place where others look pious and unreadable.",
+  "thomas": "A countable refuge.",
+  "diana": "Institutional reassurance.",
+  "john": "Not central unless recalled through grief."
+  }
+  },
+  {
+  "motif": "Hands",
+  "function": "Desire, violence, care, control, injury.",
+  "voice_variations": {
+  "jake": "Grip, tackle, strength.",
+  "marcus": "Class markers, nervous habits, withheld touch.",
+  "thomas": "Avoidance, contamination, counting fingers.",
+  "diana": "Maternal adjustment of tie, control disguised as care.",
+  "john": "Clinical knowledge of damage."
+  }
+  }
+  ],
+  "rule": "A motif should never mean exactly the same thing in every voice. Its changing meaning is the point."
+  },
+  "st_cormacs_polyphonic_map": {
+  "jake": {
+  "voice_function": "Embodied privilege and emotional denial.",
+  "truth_he_has": "The physical reality of desire before language.",
+  "truth_he_lacks": "The meaning of his own attachment and the truth about Thomas.",
+  "what_he_misreads": "Marcus's grief, Thomas's distress, his own longing.",
+  "reader_effect": "The reader sees feeling before Jake can."
+  },
+  "marcus": {
+  "voice_function": "Observation, class anxiety, moral hesitation.",
+  "truth_he_has": "The social and emotional details Jake misses.",
+  "truth_he_lacks": "Proof, permission, and a safe language for what he sees.",
+  "what_he_misreads": "Thomas's statement in the bathroom; Jake's silence after the death.",
+  "reader_effect": "The reader trusts his perception but fears his hesitation."
+  },
+  "thomas": {
+  "voice_function": "Clarity becoming fragmentation.",
+  "truth_he_has": "An early understanding of Jake and Marcus that they do not have themselves.",
+  "truth_he_lacks": "A survivable way to speak about what is happening to him.",
+  "what_he_misreads": "He believes a partial sentence may be enough to save him.",
+  "reader_effect": "The reader feels the collapse of language as structural loss."
+  },
+  "diana": {
+  "voice_function": "Adult fluency, selection, maternal misinterpretation.",
+  "truth_she_has": "Real tenderness toward Marcus and real fear for his future.",
+  "truth_she_lacks": "The actual meaning of what she has found and the danger of the adult she trusts.",
+  "what_she_misreads": "Marcus's inner life, Jake's role, institutional authority.",
+  "reader_effect": "The reader sees love becoming harm without turning her into a cartoon villain."
+  },
+  "john_ellery": {
+  "voice_function": "Plain factual rupture.",
+  "truth_he_has": "The fact that breaks Jake's false version.",
+  "truth_he_lacks": "Any belief that truth restores what was lost.",
+  "what_he_misreads": "Possibly nothing central; his limitation is emotional exhaustion rather than interpretive failure.",
+  "reader_effect": "The reader experiences relief and grief at once."
+  }
+  },
+  "structural_patterns": {
+  "early_book": {
+  "goal": "Establish each voice as pleasurable, distinct, and necessary.",
+  "method": "Use longer sections for Jake and Marcus, short bright Thomas sections, and delay Diana.",
+  "danger": "Over-explaining the structure before the reader cares."
+  },
+  "middle_book": {
+  "goal": "Increase pressure through misreadings, shorter Thomas sections, and widening dramatic irony.",
+  "method": "Let Marcus notice more, Jake understand less, Thomas say less, and Diana arrive with dangerous fluency.",
+  "danger": "Making the machinery too obvious or Thomas too obscure."
+  },
+  "late_book": {
+  "goal": "Let prior misreadings collide with consequence.",
+  "method": "Use faster alternation around the match, then slow almost to stopped time at the kiss and separation.",
+  "danger": "Letting the ending become romantic fulfilment rather than tragic recognition."
+  },
+  "coda": {
+  "goal": "Return the silenced voice without explaining everything.",
+  "method": "A brief Thomas fragment should reframe the unresolved ending as a moral statement.",
+  "danger": "Overwriting the final note."
+  }
+  },
+  "polyphonic_scene_template": {
+  "section_number": "",
+  "pov": "",
+  "section_function_type": "",
+  "previous_section_question_or_wound": "",
+  "how_this_section_answers_or_complicates_it": "",
+  "outer_event": "",
+  "inner_turn": "",
+  "what_this_voice_can_uniquely_provide": "",
+  "what_this_voice_cannot_know": "",
+  "what_this_voice_misreads": "",
+  "what_the_reader_infers": "",
+  "echo_or_motif_used": "",
+  "voice_constraint": "",
+  "degree_of_withholding": "low | medium | high",
+  "reason_for_next_pov_switch": ""
+  },
+  "quality_control_checklist": [
+  {
+  "test": "Voice distinctness",
+  "question": "Could a reader identify the POV from one paragraph without a chapter heading?"
+  },
+  {
+  "test": "Necessity",
+  "question": "What does this voice provide that no other voice could?"
+  },
+  {
+  "test": "Non-repetition",
+  "question": "Does this section add new pressure, contradiction, knowledge, or emotional consequence?"
+  },
+  {
+  "test": "Dramatic irony",
+  "question": "Does the reader know, suspect, or fear something the narrator does not?"
+  },
+  {
+  "test": "Moral complexity",
+  "question": "Is each character both understandable and limited?"
+  },
+  {
+  "test": "Structural invisibility",
+  "question": "Does the POV order feel emotionally necessary rather than designed?"
+  },
+  {
+  "test": "Silence pressure",
+  "question": "Can the reader feel what is being withheld?"
+  },
+  {
+  "test": "Echo control",
+  "question": "Are motifs recurring with variation rather than repetition?"
+  },
+  {
+  "test": "Voice drift",
+  "question": "Has one narrator begun to sound like another?"
+  },
+  {
+  "test": "Whole-book intelligence",
+  "question": "Does the arrangement reveal a truth no single narrator states?"
+  }
+  ],
+  "common_failures_and_fixes": [
+  {
+  "failure": "All voices sound like the author.",
+  "symptoms": [
+  "Similar sentence rhythms.",
+  "Same level of introspection.",
+  "Same vocabulary.",
+  "Same metaphor habits."
+  ],
+  "fix": "Create stricter voice bibles and rewrite one page of the same neutral event in each voice to test difference."
+  },
+  {
+  "failure": "POV rotation becomes mechanical.",
+  "symptoms": [
+  "Predictable order.",
+  "Equal chapter lengths without dramatic reason.",
+  "Sections feel interchangeable."
+  ],
+  "fix": "Choose the next POV based on pressure, not fairness."
+  },
+  {
+  "failure": "Retellings feel repetitive.",
+  "symptoms": [
+  "Same event repeated with only minor observational differences.",
+  "Reader learns nothing new.",
+  "Pace stalls."
+  ],
+  "fix": "Only retell if the second version changes the meaning of the first."
+  },
+  {
+  "failure": "One voice becomes the official truth.",
+  "symptoms": [
+  "Other voices become decorative.",
+  "Reader stops evaluating contradictions.",
+  "Moral complexity collapses."
+  ],
+  "fix": "Give every narrator one truth they see clearly and one truth they cannot see."
+  },
+  {
+  "failure": "Withholding becomes confusion.",
+  "symptoms": [
+  "Reader cannot tell what matters.",
+  "Important implications are too vague.",
+  "Emotional pressure dissipates."
+  ],
+  "fix": "Add concrete sensory detail, behavioural consequence, or echo from another voice."
+  },
+  {
+  "failure": "Fragments become aesthetic decoration.",
+  "symptoms": [
+  "Short sections feel pretty but not necessary.",
+  "Fragmentation arrives before the reader knows the full voice.",
+  "White space substitutes for drama."
+  ],
+  "fix": "Use fragmentation only after the character's fuller voice has been established."
+  },
+  {
+  "failure": "Dramatic irony becomes author manipulation.",
+  "symptoms": [
+  "Characters miss obvious truths for plot convenience.",
+  "Reader feels superior rather than grief-struck.",
+  "Misreadings feel stupid rather than plausible."
+  ],
+  "fix": "Ground every misreading in period, class, shame, fear, institutional pressure, or emotional self-protection."
+  }
+  ],
+  "revision_passes_for_polyphony": [
+  {
+  "pass": "Voice isolation pass",
+  "method": "Extract each POV into a separate document and read straight through.",
+  "goal": "Check that each voice has its own rhythm, development, and private logic."
+  },
+  {
+  "pass": "Knowledge pass",
+  "method": "Track what each character knows, suspects, misreads, and withholds at every beat.",
+  "goal": "Prevent accidental omniscience or impossible knowledge."
+  },
+  {
+  "pass": "Echo pass",
+  "method": "List recurring motifs and check how each voice transforms them.",
+  "goal": "Create unity without flattening voice."
+  },
+  {
+  "pass": "Transition pass",
+  "method": "Read only the final paragraph of each section and the first paragraph of the next.",
+  "goal": "Ensure POV switches create charge, not interruption."
+  },
+  {
+  "pass": "Dramatic irony pass",
+  "method": "Mark what the reader understands at each point that the narrator does not.",
+  "goal": "Keep the reader actively assembling the truth."
+  },
+  {
+  "pass": "Silence pass",
+  "method": "Identify what is unsaid in each section and whether the pressure around it is legible.",
+  "goal": "Make withholding meaningful rather than vague."
+  },
+  {
+  "pass": "Load-bearing scene pass",
+  "method": "Re-examine the scenes on which the whole structure depends.",
+  "goal": "Ensure Diana's intervention, Marcus's bathroom scene, John Ellery's sentence, and the kiss all carry accumulated pressure from multiple voices."
+  }
+  ],
+  "practical_prompt_for_another_llm": {
+  "instruction": "When analysing or drafting a polyphonic section, do not simply write in the requested POV. First identify why this POV is necessary, what unique knowledge or misreading it brings, how it answers or complicates the previous voice, and what the reader should understand that the character does not.",
+  "required_output_fields": [
+  "POV necessity",
+  "Voice constraints",
+  "Unique perception",
+  "Blind spot",
+  "Dramatic irony",
+  "Motif or echo",
+  "Scene turn",
+  "Reason for next POV"
+  ]
+  },
+  "bottom_line": "The best polyphonic technique does not mean adding more narrators. It means making the space between narrators morally and emotionally active. Each voice should be necessary, partial, distinct, and haunted by what the others can almost but not quite say."
+  }
+  

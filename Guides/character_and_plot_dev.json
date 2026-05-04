@@ -1,0 +1,346 @@
+{
+  "title": "Fiction Craft Research Synthesis: Character Development and Plot Development",
+  "purpose": "A structured craft guide for writing strong fiction, with specific emphasis on treating character development and plot development as discrete planning processes before integrating them in the draft.",
+  "core_thesis": "Great fiction separates character and plot during planning, then fuses them on the page. Character is revealed by choice under pressure. Plot is the chain of consequences created by those choices.",
+  "high_level_principles": [
+  {
+  "principle": "Character and plot are not enemies",
+  "explanation": "The strongest fiction usually treats character and plot as separate diagnostic tools but not separate reading experiences. Readers experience them together through action, pressure, consequence, and change."
+  },
+  {
+  "principle": "Plot is causality, not chronology",
+  "explanation": "A list of events is not yet a plot. Plot emerges when each event happens because of earlier pressures, choices, misunderstandings, or constraints."
+  },
+  {
+  "principle": "Character is revealed through behaviour",
+  "explanation": "A character's feelings should produce observable choices, evasions, habits, silences, gestures, or consequences."
+  },
+  {
+  "principle": "Every scene should turn something",
+  "explanation": "A scene should move ignorance into knowledge, closeness into distance, safety into danger, certainty into doubt, silence into speech, or falsehood into recognition."
+  },
+  {
+  "principle": "Silence can be action",
+  "explanation": "In some novels, especially institutional or trauma-centred fiction, silence is not absence. It protects, isolates, misleads, paralyses, and preserves false order."
+  }
+  ],
+  "character_development": {
+  "definition": "Character development means designing a person so the reader can feel what they want, what they fear, what they misunderstand, what they conceal, how they behave under pressure, and how they change or fail to change.",
+  "core_questions": [
+  "What does this character consciously want?",
+  "What do they privately want but cannot admit?",
+  "What do they need, even if they resist it?",
+  "What are they afraid of?",
+  "What false belief governs their behaviour?",
+  "What do they refuse to say?",
+  "What do they notice first?",
+  "What do they never notice?",
+  "What do they do when ashamed?",
+  "What changes their behaviour?"
+  ],
+  "key_terms": {
+  "desire": "What the character consciously wants.",
+  "need": "What would make the character more whole, even if they resist it.",
+  "wound": "A formative injury, pressure, lack, or damage that shapes current behaviour.",
+  "mask": "The public self the character presents to others.",
+  "contradiction": "The internal gap that makes the character feel alive and unstable.",
+  "agency": "The character's ability to act meaningfully within constraints.",
+  "arc": "The movement from one inner condition to another.",
+  "idiolect": "The character's specific speech and thought pattern.",
+  "pressure_test": "A moment that reveals who the character really is."
+  },
+  "working_template": {
+  "character": "",
+  "public_want": "",
+  "private_want": "",
+  "hidden_need": "",
+  "greatest_fear": "",
+  "false_belief": "",
+  "what_they_refuse_to_say": "",
+  "what_they_notice_first": "",
+  "what_they_never_notice": "",
+  "what_they_do_when_ashamed": "",
+  "what_changes_their_behaviour": ""
+  },
+  "voice_bible_template": {
+  "sentence_length": "",
+  "rhythm": "",
+  "favourite_verbs": "",
+  "forbidden_words": "",
+  "metaphor_source": "",
+  "emotional_leakage": "",
+  "what_breaks_the_voice": "",
+  "what_the_reader_must_infer": ""
+  },
+  "rule": "A character must not merely have feelings. Their feelings must have behavioural consequences."
+  },
+  "plot_development": {
+  "definition": "Plot is a chain of causally linked events. It is not what happens next, but why one event produces the next and why that sequence becomes emotionally or morally irreversible.",
+  "core_questions": [
+  "What is the visible plot?",
+  "What is the hidden plot?",
+  "What is the emotional plot?",
+  "What is the moral plot?",
+  "What does the reader know that the character does not?",
+  "What consequence does this scene create?",
+  "Why must the next scene happen because of this one?"
+  ],
+  "key_terms": {
+  "premise": "The story's core situation and promise.",
+  "dramatic_question": "The question pulling the reader onward.",
+  "inciting_incident": "The disturbance that destabilises the old order.",
+  "progressive_complication": "An event that makes retreat harder.",
+  "reversal": "A turn that changes the meaning of prior events.",
+  "recognition": "A truth becoming visible.",
+  "crisis_choice": "A choice made under maximum pressure.",
+  "climax": "The irreversible action or confrontation.",
+  "denouement": "The settling consequence after the climax.",
+  "plant_and_payoff": "An earlier detail returning with new force.",
+  "dramatic_irony": "The reader knows more than one or more characters.",
+  "causality_chain": "A sequence built on because/therefore logic rather than and-then chronology."
+  },
+  "causality_template": [
+  "Because...",
+  "Therefore...",
+  "But because...",
+  "Therefore...",
+  "Until...",
+  "Therefore..."
+  ],
+  "scene_turn_types": [
+  "Ignorance to knowledge",
+  "Certainty to doubt",
+  "Safety to danger",
+  "Closeness to distance",
+  "Silence to speech",
+  "False story to true story",
+  "Desire to action",
+  "Recognition to loss"
+  ],
+  "outer_inner_scene_template": {
+  "outer_event": "",
+  "inner_movement": ""
+  },
+  "rule": "No turn, no scene."
+  },
+  "integration_model": {
+  "central_question": "Does the plot force the character to reveal what they would otherwise conceal?",
+  "formula": "Character flaw + institutional or external pressure + incomplete knowledge = meaningful action and consequence.",
+  "scene_test": [
+  "What does this person reveal by what they do here?",
+  "What consequence does that action create?"
+  ]
+  },
+  "recommended_drafting_method": {
+  "pass_1_character_pass": {
+  "goal": "Draft each major character's material separately so each voice becomes internally coherent.",
+  "method": [
+  "Write all Jake sections as a continuous through-draft.",
+  "Write all Marcus sections as a continuous through-draft.",
+  "Write Thomas's sections as a progression from brightness to fragmentation.",
+  "Write Diana after the boys, because her sections depend on what she misreads.",
+  "Write John Ellery separately, keeping the voice plain and factual."
+  ]
+  },
+  "pass_2_plot_causality_pass": {
+  "goal": "Create a master table that tracks causality, knowledge, and emotional pressure.",
+  "table_columns": [
+  "Beat",
+  "POV",
+  "Outer event",
+  "Inner turn",
+  "Causal link",
+  "Reader knows",
+  "Character knows"
+  ],
+  "test": "Because of the previous beat, this beat must become more likely, more painful, or more dangerous."
+  },
+  "pass_3_weave_pass": {
+  "goal": "Interleave POV sections according to dramatic need, not mechanical rotation.",
+  "rule": "The next POV belongs to the character whose misunderstanding, silence, or partial knowledge most intensifies the previous section."
+  },
+  "pass_4_scene_pressure_pass": {
+  "questions": [
+  "What does this character want here?",
+  "What do they avoid saying?",
+  "What changes by the end?",
+  "What does the reader understand that the character does not?",
+  "What future consequence has this scene planted?"
+  ]
+  },
+  "pass_5_voice_drift_pass": {
+  "goal": "Read each character's sections in isolation and correct drift.",
+  "checks": [
+  "Has Jake become too articulate?",
+  "Has Marcus become too lyrical?",
+  "Has Thomas become only broken, losing his earlier warmth?",
+  "Has Diana become a villain rather than a selecting narrator?",
+  "Has John become wise instead of plain?"
+  ]
+  }
+  },
+  "st_cormacs_specific_application": {
+  "overall_engine": "The novel works through dramatic irony, silence, institutional distortion, misreading, and delayed recognition.",
+  "visible_plot": "Two boys are separated by a false story and briefly reunited.",
+  "hidden_plot": "An institution and several adults convert abuse, shame, and desire into silence.",
+  "emotional_plot": "Jake and Marcus almost understand each other too late.",
+  "moral_plot": "The wrong people are protected by silence; the vulnerable are made to carry it.",
+  "jake": {
+  "governing_contradiction": "Physically fearless, emotionally avoidant.",
+  "plot_role": "A boy trained to trust body, rank, and inherited certainty is forced to confront a truth that can only be understood emotionally.",
+  "arc": [
+  "Belonging",
+  "Disturbance",
+  "Denial",
+  "False certainty",
+  "Violence or avoidance",
+  "Revelation",
+  "Embodied recognition",
+  "Public rupture"
+  ],
+  "voice_notes": "Physical, sensory, kinetic, football-inflected. Avoids abstraction and emotional naming."
+  },
+  "marcus": {
+  "governing_contradiction": "Sees almost everything, permits himself to know almost nothing.",
+  "plot_role": "The watcher who nearly understands but has been trained by class and circumstance not to overclaim his own perception.",
+  "arc": [
+  "Watching",
+  "Attachment",
+  "Suspicion",
+  "Hesitation",
+  "Mistranslation",
+  "Exile",
+  "Partial recovery",
+  "Return",
+  "Recognition without possession"
+  ],
+  "voice_notes": "Qualified, precise, observant, conditional. Avoids melodrama and accusation."
+  },
+  "thomas": {
+  "governing_contradiction": "Understands others clearly, cannot make himself understood.",
+  "plot_role": "The clearest moral intelligence in the book, progressively deprived of language.",
+  "arc": [
+  "Brightness",
+  "Insight",
+  "Unease",
+  "Fragmentation",
+  "Failed appeal",
+  "Absence",
+  "Final fragment"
+  ],
+  "voice_notes": "Early warmth and quickness are essential. Later fragmentation matters only because the reader remembers the brightness."
+  },
+  "diana": {
+  "governing_contradiction": "Loves her son truthfully, protects the wrong version of him.",
+  "plot_role": "The adult whose love becomes dangerous because it is filtered through fear, class aspiration, control, and social shame.",
+  "arc": [
+  "Tenderness",
+  "Selection",
+  "Certainty",
+  "Catastrophic partial knowledge"
+  ],
+  "voice_notes": "Long, articulate, self-correcting. She should never be treated as a simple villain."
+  },
+  "john_ellery": {
+  "governing_contradiction": "Carries devastating truth, speaks it without drama.",
+  "plot_role": "The plain sentence that punctures the false plot.",
+  "voice_notes": "Plain, professional, factual. Do not make him a wisdom figure."
+  }
+  },
+  "scene_planning_template": {
+  "pov": "",
+  "date_or_timeline_point": "",
+  "outer_event": "",
+  "character_want": "",
+  "character_fear": "",
+  "what_they_cannot_say": "",
+  "what_they_misread": "",
+  "what_changes_by_the_end": "",
+  "what_the_reader_understands": "",
+  "what_future_consequence_this_plants": "",
+  "voice_constraint": "",
+  "final_image": ""
+  },
+  "example_scene_plan": {
+  "pov": "Marcus",
+  "outer_event": "Marcus sees Thomas after chapel and notices something wrong.",
+  "character_want": "To understand without intruding.",
+  "character_fear": "That naming it will make him ridiculous, presumptuous, or unsafe.",
+  "what_he_cannot_say": "I think something has happened to him.",
+  "what_he_misreads": "He thinks Thomas's distress is about shame or sexuality, not abuse.",
+  "what_changes_by_the_end": "Unease becomes responsibility.",
+  "what_the_reader_understands": "Marcus is close to the truth but socially disabled from reaching it.",
+  "what_future_consequence_this_plants": "The bathroom scene becomes plausible and devastating.",
+  "voice_constraint": "Qualified, observational, no melodrama.",
+  "final_image": "Thomas counting something Marcus cannot see."
+  },
+  "practical_craft_rules": [
+  {
+  "rule": "Do not explain what can be dramatised.",
+  "weak_example": "Jake was confused about his feelings for Marcus.",
+  "strong_example": "Jake notices Marcus's cold hands, thinks about them during football, then fouls someone too hard."
+  },
+  {
+  "rule": "Give every character a private logic.",
+  "explanation": "Even disastrous choices must make sense from inside the chooser."
+  },
+  {
+  "rule": "Let plot expose character, not decorate it.",
+  "explanation": "A scene should not exist merely because it is atmospheric. Atmosphere must carry pressure."
+  },
+  {
+  "rule": "Avoid modern therapeutic language inside period characters.",
+  "explanation": "The reader can understand trauma, grooming, dissociation, shame, and moral injury, but 1980s schoolboys should not use those terms."
+  },
+  {
+  "rule": "Let every major character be wrong in a different way.",
+  "examples": {
+  "jake": "Mistakes emotional danger for social danger.",
+  "marcus": "Mistakes perception for proof.",
+  "thomas": "Mistakes one desperate phrase for enough explanation.",
+  "diana": "Mistakes intervention for protection.",
+  "the_school": "Mistakes quietness for order.",
+  "john": "Perhaps mistakes plain truth as too late to matter, but says it anyway."
+  }
+  }
+  ],
+  "recommended_sources": [
+  {
+  "source": "Aristotle, Poetics",
+  "use": "Plot as structured action; reversal and recognition; useful for tragedy.",
+  "url": "[https://classics.mit.edu/Aristotle/poetics.1.1.html](https://classics.mit.edu/Aristotle/poetics.1.1.html)"
+  },
+  {
+  "source": "E. M. Forster, Aspects of the Novel",
+  "use": "Plot as causality rather than sequence; useful for delayed understanding and moral structure.",
+  "url": "[https://www.gutenberg.org/files/70492/70492-h/70492-h.htm](https://www.gutenberg.org/files/70492/70492-h/70492-h.htm)"
+  },
+  {
+  "source": "Purdue OWL Fiction Writing Basics",
+  "use": "Practical grounding on character, plot, conflict, action, and theme.",
+  "url": "[https://owl.purdue.edu/owl/subject_specific_writing/creative_writing/writers/fiction_writing_basics/index.html](https://owl.purdue.edu/owl/subject_specific_writing/creative_writing/writers/fiction_writing_basics/index.html)"
+  },
+  {
+  "source": "OpenLearn, Start Writing Fiction",
+  "use": "Structured free course on characterisation, setting, genre, and fiction process.",
+  "url": "[https://www.open.edu/openlearn/history-the-arts/creative-writing/start-writing-fiction/content-section-0?intro=1](https://www.open.edu/openlearn/history-the-arts/creative-writing/start-writing-fiction/content-section-0?intro=1)"
+  },
+  {
+  "source": "Ursula K. Le Guin, Steering the Craft",
+  "use": "Voice, point of view, sentence-level control, and disciplined prose exercises.",
+  "url": "[https://www.ursulakleguin.com/steering-the-craft](https://www.ursulakleguin.com/steering-the-craft)"
+  },
+  {
+  "source": "National Centre for Writing",
+  "use": "Modern craft guidance on balancing plot, theme, and character.",
+  "url": "[https://nationalcentreforwriting.org.uk/writing-hub/balancing-plot-theme-and-character/](https://nationalcentreforwriting.org.uk/writing-hub/balancing-plot-theme-and-character/)"
+  },
+  {
+  "source": "St Cormac's Writing Guide 1",
+  "use": "Project-specific guide covering voice bibles, fugue structure, pacing, risk register, and drafting order.",
+  "note": "Previously cited from uploaded file as file_search source."
+  }
+  ],
+  "bottom_line": "Do not chase more plot. Chase cleaner causality. Do not chase deeper character by adding backstory. Chase sharper contradiction under pressure. The book will work if every section reveals who someone is through what they do and creates a consequence that cannot be fully undone."
+  }
+  

@@ -86,6 +86,10 @@
       </div>
     </div>
 
+    <!-- Story-craft sub-nav: Overview / Characters / Polyphonic / Plot -->
+    <ManuscriptSubNav v-if="manuscript" :manuscript-id="manuscript.id" />
+
+
     <!-- Body -->
     <div class="w-full px-4 sm:px-6 md:px-8 py-12 sm:py-16 bg-paper">
       <div class="max-w-6xl mx-auto">
@@ -705,6 +709,7 @@ import { useAuth } from '../stores/auth'
 import EditableProse from '../components/manuscripts/EditableProse.vue'
 import BookPreviewModal from '../components/manuscripts/BookPreviewModal.vue'
 import HelpTooltip from '../components/ui/HelpTooltip.vue'
+import ManuscriptSubNav from '../components/storycraft/ManuscriptSubNav.vue'
 import type { ApiResponse } from '@shared/ApiResponses'
 import type { Theme } from '../domain/Theme'
 import type { WritingBlock } from '../domain/WritingBlock'
