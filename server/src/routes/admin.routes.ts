@@ -39,6 +39,7 @@ router.post('/uploads', uploadSingle, asyncHandler(uploadsController.upload))
 router.get('/uploads', asyncHandler(uploadsController.list))
 
 // Content management (admin CRUD on any content)
+router.get('/writings', asyncHandler(adminController.listWritings))
 router.put('/writings/:id/visibility', asyncHandler(adminController.updateWritingVisibility))
 router.put('/writings/:id/cover-image', asyncHandler(adminController.updateWritingCoverImage))
 router.delete('/writings/:id', asyncHandler(adminController.deleteWriting))

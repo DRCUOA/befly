@@ -291,6 +291,129 @@ export const adminController = {
   // ─── Content management (admin CRUD on any content) ──────────────
 
   /**
+   * GET /api/admin/writings
+   *
+   * Admin-scoped list of every essay across every user. Optional filters:
+   *   q          — case-insensitive substring match against title or body
+   *   userId     — restrict to one author
+   *   visibility — 'private' | 'shared' | 'public'
+   *   sort       — 'created_at' (default) | 'updated_at' | 'title' | 'author'
+   *   order      — 'asc' | 'desc' (default)
+   *   limit      — 1..200 (default 50)
+   *   offset     — default 0
+   *
+   * Joins author display name and counts (themes, comments, appreciations,
+   * views) so the admin table is one round-trip. Body is truncated to a
+   * preview field; pulling full bodies for hundreds of rows would blow up
+   * the response size with no benefit (the table doesn't render them).
+   */
+  async listWritings(req: Request, res: Response) {
+    const limit = Math.max(1, Math.min(parseInt(req.query.limit as string) || 50, 200))
+    const offset = Math.max(0, parseInt(req.query.offset as string) || 0)
+
+    const conditions: string[] = []
+    const params: unknown[] = []
+
+    if (typeof req.query.q === 'string' && req.query.q.trim()) {
+      const q = `%${req.query.q.trim()}%`
+      params.push(q)
+      const idx = params.length
+      // ILIKE matches title OR body. Body LIKE on a long-text column is not
+      // indexed, but at admin scale this is fine — and it's more useful than
+      // title-only search when the writer remembers a phrase, not a title.
+      conditions.push(`(wb.title ILIKE $${idx} OR wb.body ILIKE $${idx})`)
+    }
+    if (typeof req.query.userId === 'string' && req.query.userId.trim()) {
+      params.push(req.query.userId.trim())
+      conditions.push(`wb.user_id = $${params.length}`)
+    }
+    if (typeof req.query.visibility === 'string' && ['private','shared','public'].includes(req.query.visibility)) {
+      params.push(req.query.visibility)
+      conditions.push(`COALESCE(wb.visibility, 'private') = $${params.length}`)
+    }
+
+    const where = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : ''
+
+    const SORT_COLUMNS: Record<string, string> = {
+      created_at: 'wb.created_at',
+      updated_at: 'wb.updated_at',
+      title:      'wb.title',
+      author:     'author_display_name',
+    }
+    const sortKey = typeof req.query.sort === 'string' && SORT_COLUMNS[req.query.sort]
+      ? req.query.sort
+      : 'created_at'
+    const order = req.query.order === 'asc' ? 'ASC' : 'DESC'
+    const orderClause = `ORDER BY ${SORT_COLUMNS[sortKey]} ${order} NULLS LAST`
+
+    // Total count for pagination — built without LIMIT/OFFSET, same WHERE.
+    const countParams = [...params]
+    const countSql = `SELECT COUNT(*)::int AS count FROM writing_blocks wb ${where}`
+
+    // Push limit/offset for the data query.
+    params.push(limit)
+    const limitIdx = params.length
+    params.push(offset)
+    const offsetIdx = params.length
+
+    const dataSql = `
+      SELECT
+        wb.id,
+        wb.user_id                         AS "userId",
+        COALESCE(u.display_name, u.email)  AS "authorDisplayName",
+        u.email                            AS "authorEmail",
+        wb.title,
+        SUBSTRING(wb.body, 1, 280)         AS "bodyPreview",
+        LENGTH(wb.body)                    AS "bodyLength",
+        COALESCE(wb.visibility, 'private') AS visibility,
+        wb.cover_image_url                 AS "coverImageUrl",
+        COALESCE(wb.cover_image_position, '50% 50%') AS "coverImagePosition",
+        wb.created_at                      AS "createdAt",
+        wb.updated_at                      AS "updatedAt",
+        COALESCE(u.display_name, u.email)  AS author_display_name,
+        (SELECT COUNT(*)::int FROM writing_themes wt WHERE wt.writing_id = wb.id)  AS "themeCount",
+        (SELECT COUNT(*)::int FROM comments c WHERE c.writing_id = wb.id)          AS "commentCount",
+        (SELECT COUNT(*)::int FROM appreciations a WHERE a.writing_id = wb.id)     AS "appreciationCount",
+        (SELECT COUNT(*)::int FROM user_activity_logs ual
+           WHERE ual.resource_type = 'writing_block'
+             AND ual.resource_id = wb.id
+             AND ual.action = 'view')                                              AS "viewCount"
+      FROM writing_blocks wb
+      LEFT JOIN users u ON u.id = wb.user_id
+      ${where}
+      ${orderClause}
+      LIMIT $${limitIdx} OFFSET $${offsetIdx}
+    `
+
+    const [data, total] = await Promise.all([
+      pool.query(dataSql, params),
+      pool.query(countSql, countParams),
+    ])
+
+    // Strip the helper sort alias from the row payload.
+    const rows = data.rows.map((r: any) => {
+      const { author_display_name, ...rest } = r
+      return rest
+    })
+
+    res.json({
+      data: rows,
+      meta: {
+        total: total.rows[0].count as number,
+        limit,
+        offset,
+        filter: {
+          q: req.query.q ?? null,
+          userId: req.query.userId ?? null,
+          visibility: req.query.visibility ?? null,
+          sort: sortKey,
+          order: order.toLowerCase(),
+        },
+      },
+    })
+  },
+
+  /**
    * Update a writing's visibility (admin-only)
    */
   async updateWritingVisibility(req: Request, res: Response) {

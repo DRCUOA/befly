@@ -19,6 +19,10 @@
   "devDependencies": {
     "concurrently": "^8.2.2"
   },
+  "//overrides": "Force-resolve transitive glob to a non-deprecated version. js-beautify@1.15.4 (pulled in by @vue/test-utils) declares glob: ^10.4.5, which npm was resolving to glob@10.5.0 — flagged as deprecated for known security vulnerabilities. glob@11 is API-compatible for js-beautify's use (file pattern enumeration in its CLI).",
+  "overrides": {
+    "glob": "^11.0.0"
+  },
   "engines": {
     "node": ">=18.0.0"
   }

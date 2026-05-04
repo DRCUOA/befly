@@ -12,7 +12,82 @@ import type {
   EssayImportResult,
 } from '@shared/EssayExport'
 
+/* ----- Admin essays list ----- */
+
+/** Row shape returned by GET /api/admin/writings. */
+export interface AdminEssayRow {
+  id: string
+  userId: string
+  authorDisplayName: string | null
+  authorEmail: string | null
+  title: string
+  bodyPreview: string | null
+  bodyLength: number
+  visibility: 'private' | 'shared' | 'public'
+  coverImageUrl: string | null
+  coverImagePosition: string
+  createdAt: string
+  updatedAt: string
+  themeCount: number
+  commentCount: number
+  appreciationCount: number
+  viewCount: number
+}
+
+export interface AdminEssayFilter {
+  q?: string
+  userId?: string
+  visibility?: 'private' | 'shared' | 'public'
+  sort?: 'created_at' | 'updated_at' | 'title' | 'author'
+  order?: 'asc' | 'desc'
+  limit?: number
+  offset?: number
+}
+
+export interface AdminEssayListResponse {
+  data: AdminEssayRow[]
+  meta: {
+    total: number
+    limit: number
+    offset: number
+    filter: Record<string, unknown>
+  }
+}
+
 export const adminApi = {
+  /* ----- Admin essays ----- */
+
+  listEssays(filter: AdminEssayFilter = {}): Promise<AdminEssayListResponse> {
+    const params: Record<string, string> = {}
+    if (filter.q) params.q = filter.q
+    if (filter.userId) params.userId = filter.userId
+    if (filter.visibility) params.visibility = filter.visibility
+    if (filter.sort) params.sort = filter.sort
+    if (filter.order) params.order = filter.order
+    if (filter.limit !== undefined) params.limit = String(filter.limit)
+    if (filter.offset !== undefined) params.offset = String(filter.offset)
+    return api.get<AdminEssayListResponse>('/admin/writings', { params })
+  },
+
+  /**
+   * Update visibility on any user's essay. Hits the dedicated admin endpoint
+   * (which logs the action). For broader updates (title/body/themes) the
+   * admin can use the standard `PUT /api/writing/:id` — that endpoint already
+   * bypasses ownership when called by an admin.
+   */
+  setEssayVisibility(id: string, visibility: 'private' | 'shared' | 'public') {
+    return api
+      .put<ApiResponse<{ id: string; visibility: string }>>(
+        `/admin/writings/${id}/visibility`,
+        { visibility }
+      )
+      .then(r => r.data)
+  },
+
+  deleteEssay(id: string) {
+    return api.delete(`/admin/writings/${id}`)
+  },
+
   /**
    * Build the URL for the export endpoint. We return a URL string rather
    * than calling fetch ourselves so the modal can use a plain anchor tag
