@@ -210,7 +210,7 @@
         <div class="bp-progress">
           <span v-if="bookState === 'closed-front'">Front cover</span>
           <span v-else-if="bookState === 'closed-back'">Back cover</span>
-          <span v-else>Pages {{ currentSpread.left + 1 }}&ndash;{{ currentSpread.right + 1 }} of {{ totalPages }}</span>
+          <span v-else>{{ progressLabel }}</span>
         </div>
         <button type="button" class="bp-btn" @click="$emit('close')">Close</button>
       </div>
@@ -248,26 +248,26 @@
             <div
               class="bp-page-inner"
               :style="pageInnerStyle"
-              v-if="pages[currentSpread.left]"
-              v-html="pages[currentSpread.left].html"
+              v-if="isContentPage(currentSpread.left)"
+              v-html="pageHtml(currentSpread.left)"
             ></div>
             <div class="bp-page-inner" :style="pageInnerStyle" v-else>
               <div class="bp-page-blank"></div>
             </div>
-            <div class="bp-page-num" v-if="pages[currentSpread.left]">{{ currentSpread.left + 1 }}</div>
+            <div class="bp-page-num" v-if="showFolio(currentSpread.left)">{{ folioFor(currentSpread.left) }}</div>
           </div>
           <div class="bp-spine-shadow"></div>
           <div class="bp-page bp-page-right" @dblclick="nextSpread">
             <div
               class="bp-page-inner"
               :style="pageInnerStyle"
-              v-if="pages[currentSpread.right]"
-              v-html="pages[currentSpread.right].html"
+              v-if="isContentPage(currentSpread.right)"
+              v-html="pageHtml(currentSpread.right)"
             ></div>
             <div class="bp-page-inner" :style="pageInnerStyle" v-else>
               <div class="bp-page-blank"></div>
             </div>
-            <div class="bp-page-num" v-if="pages[currentSpread.right]">{{ currentSpread.right + 1 }}</div>
+            <div class="bp-page-num" v-if="showFolio(currentSpread.right)">{{ folioFor(currentSpread.right) }}</div>
           </div>
         </div>
 
@@ -646,16 +646,41 @@ const bookFlowHtml = computed(() => {
 })
 
 // ---- Pagination (CSS columns, measured) ----
+//
+// Book typography conventions enforced here:
+//   * The bound book opens to a spread whose LEFT page is the inside front
+//     cover (a blank verso) and whose RIGHT page is the first numbered page
+//     (a recto). Body content always begins on a recto.
+//   * Odd page numbers fall on rectos (right). Even page numbers fall on
+//     versos (left). In our 0-based `pages` array we model this directly:
+//     index 0 is the blank inside-front-cover, then index 1 is page 1 (recto),
+//     index 2 is page 2 (verso), and so on. Spread N pairs pages[2N] (left,
+//     verso) with pages[2N+1] (right, recto).
+//   * Chapter openings — and other major recto-only pages such as the
+//     half-title, title page, and the start of the table of contents — must
+//     fall on a recto. If a chapter would otherwise land on a verso, a blank
+//     verso is inserted before it to push it to the next recto. This is the
+//     conventional "blank facing page" of trade book printing.
+//   * Folios (running page numbers) are suppressed on blanks and on chapter
+//     opening pages (drop-folio convention).
+type Page = { html: string; blank?: boolean; mustRecto?: boolean }
+
 const measureContainer = ref<HTMLElement | null>(null)
-const pages = ref<{ html: string }[]>([])
+const pages = ref<Page[]>([])
 const currentSpreadIndex = ref(0)
 
-const totalPages = computed(() => pages.value.length)
-const totalSpreads = computed(() => Math.max(1, Math.ceil(totalPages.value / 2)))
+// Total numbered positions in the book (everything in `pages` except the
+// inside-front-cover slot at index 0).
+const totalPages = computed(() => Math.max(0, pages.value.length - 1))
+const totalSpreads = computed(() => Math.max(1, Math.ceil(pages.value.length / 2)))
 const currentSpread = computed(() => ({
   left: currentSpreadIndex.value * 2,
   right: currentSpreadIndex.value * 2 + 1,
 }))
+
+// CSS selector for elements whose page MUST fall on a recto.
+const RECTO_SELECTOR =
+  '.bp-frontmatter, .bp-titlepage, .bp-toc, .bp-chapter-title, .bp-h2.bp-page-break-before'
 
 async function paginate() {
   await nextTick()
@@ -674,6 +699,15 @@ async function paginate() {
   const ch = contentHeight.value
   const count = Math.max(1, Math.round(total / cw))
 
+  // Identify which raw column indices contain a "must-be-recto" element.
+  // Because column-gap is 0 on the measurement flow, an element's offsetLeft
+  // divided by content-width gives the column it ended up in.
+  const rectoColumnIndices = new Set<number>()
+  for (const rEl of Array.from(el.querySelectorAll<HTMLElement>(RECTO_SELECTOR))) {
+    const colIdx = Math.max(0, Math.floor(rEl.offsetLeft / cw))
+    rectoColumnIndices.add(colIdx)
+  }
+
   // Each page re-renders the full flow at width = count * contentWidth so that
   // every column is laid out side-by-side and positioned. The surrounding
   // .bp-page-inner is overflow:hidden and only contentWidth wide, clipping
@@ -681,17 +715,90 @@ async function paginate() {
   const flowWidth = count * cw
   const flowHtml = el.innerHTML
   const fs = bookFontSize.value
-  const out: { html: string }[] = []
+
+  type RawPage = { html: string; mustRecto: boolean }
+  const rawPages: RawPage[] = []
   for (let i = 0; i < count; i++) {
-    out.push({
+    rawPages.push({
       html:
         `<div class="bp-page-flow" style="width:${flowWidth}px;height:${ch}px;column-width:${cw}px;column-gap:0;column-fill:auto;transform:translateX(-${i * cw}px);font-size:${fs}px;line-height:${lineHeight};">` +
         flowHtml +
         `</div>`,
+      mustRecto: rectoColumnIndices.has(i),
     })
   }
-  pages.value = out
+
+  // Build the final, recto-aware page list.
+  //   * Index 0 is always a blank verso — the inside front cover. This guarantees
+  //     the first numbered page (index 1) lands on a recto.
+  //   * For every raw page tagged mustRecto, if it would land on an even index
+  //     (a verso), we insert a blank verso before it to push it to the next
+  //     odd index (a recto).
+  //   * If the final length is odd, we add a trailing blank so the last
+  //     spread always pairs cleanly (content on verso, blank on recto, or
+  //     vice versa).
+  const finalPages: Page[] = []
+  finalPages.push({ html: '', blank: true })
+
+  for (const rp of rawPages) {
+    if (rp.mustRecto && finalPages.length % 2 === 0) {
+      // Even index = verso; insert a blank to push the chapter onto a recto.
+      finalPages.push({ html: '', blank: true })
+    }
+    finalPages.push({ html: rp.html, mustRecto: rp.mustRecto })
+  }
+
+  if (finalPages.length % 2 !== 0) {
+    finalPages.push({ html: '', blank: true })
+  }
+
+  pages.value = finalPages
+
+  // Clamp the current spread index in case the new pagination shrank the book.
+  if (currentSpreadIndex.value > totalSpreads.value - 1) {
+    currentSpreadIndex.value = Math.max(0, totalSpreads.value - 1)
+  }
 }
+
+// Helpers used by the template.
+function pageAt(idx: number): Page | null {
+  return pages.value[idx] || null
+}
+function pageHtml(idx: number): string {
+  return pageAt(idx)?.html || ''
+}
+function isContentPage(idx: number): boolean {
+  const p = pageAt(idx)
+  return !!p && !p.blank
+}
+function showFolio(idx: number): boolean {
+  // Suppress the page number on the blank inside-front-cover slot, on any
+  // inserted blanks, and on chapter / front-matter opening pages (drop-folio
+  // convention).
+  if (idx <= 0) return false
+  const p = pageAt(idx)
+  if (!p || p.blank || p.mustRecto) return false
+  return true
+}
+function folioFor(idx: number): number {
+  // Page numbers are 1-based and start at index 1 (since index 0 is the
+  // blank inside-front-cover, not a numbered page).
+  return idx
+}
+
+const progressLabel = computed(() => {
+  const left = currentSpread.value.left
+  const right = currentSpread.value.right
+  const total = totalPages.value
+  const lShown = isContentPage(left)
+  const rShown = isContentPage(right)
+  const lN = folioFor(left)
+  const rN = folioFor(right)
+  if (lShown && rShown) return `Pages ${lN}–${rN} of ${total}`
+  if (lShown) return `Page ${lN} of ${total}`
+  if (rShown) return `Page ${rN} of ${total}`
+  return ''
+})
 
 watch(
   [bookFlowHtml, () => stage.value, bookFontSize, contentWidth, contentHeight],
@@ -1063,5 +1170,34 @@ function closeIfSetup() {
   column-fill: auto;
   font-family: ui-serif, Georgia, "Iowan Old Style", serif;
   overflow: hidden;
+}
+
+/* The layout-affecting rules above are scoped to `.bp-page-inner :deep(...)`
+   for the rendered spread. The measurement flow has no `.bp-page-inner`
+   ancestor, so we mirror the column-break and chapter-padding rules here
+   so measurement and render produce the same column layout. Without this,
+   `offsetLeft / contentWidth` reports the wrong column index for chapter
+   openings, breaking the recto-detection logic. */
+.bp-measure-flow :deep(.bp-page-break-before) { break-before: column; }
+.bp-measure-flow :deep(.bp-page-break-after)  { break-after: column; }
+.bp-measure-flow :deep(.bp-chapter-title) {
+  text-align: center;
+  padding-top: 30%;
+  break-before: column;
+  break-inside: avoid;
+}
+.bp-measure-flow :deep(.bp-frontmatter),
+.bp-measure-flow :deep(.bp-titlepage),
+.bp-measure-flow :deep(.bp-toc) {
+  break-inside: avoid;
+}
+.bp-measure-flow :deep(.bp-half-title) {
+  margin-top: 40%;
+}
+.bp-measure-flow :deep(.bp-titlepage) {
+  padding-top: 18%;
+}
+.bp-measure-flow :deep(.bp-toc) {
+  padding-top: 8%;
 }
 </style>
