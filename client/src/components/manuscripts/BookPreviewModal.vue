@@ -13,8 +13,8 @@
         <h3 class="text-xl font-light tracking-tight">Preview as a book</h3>
         <p class="text-sm text-ink-light mt-1">
           Choose what to include, optionally add cover artwork, then open the book.
-          Double-tap the cover to open it. From an open spread, double-tap the
-          right page to turn forward, the left page to turn back.
+          Tap the cover to open it. From an open spread, tap the right page to
+          turn forward, the left page to turn back.
         </p>
       </div>
 
@@ -173,6 +173,182 @@
             Lower values let the book&rsquo;s base colour show through the artwork.
           </span>
         </label>
+
+        <!-- Author name -->
+        <label class="block">
+          <span class="text-sm font-medium block mb-1">Author name</span>
+          <input
+            v-model.trim="opts.coverAuthor"
+            type="text"
+            placeholder="e.g. R. D. Clark"
+            class="block w-full px-2 py-1 text-sm border border-line rounded-sm bg-paper focus:outline-none focus:ring-1 focus:ring-ink"
+          />
+          <span class="block text-xs text-ink-lighter mt-1">
+            Appears on the front cover and beneath the title on the back. Leave blank to omit.
+          </span>
+        </label>
+
+        <!-- Title: position, size, colour, alignment -->
+        <div class="space-y-2 border border-line rounded-sm p-3">
+          <span class="text-xs uppercase tracking-widest text-ink-lighter font-sans">Title</span>
+
+          <label class="block">
+            <span class="text-sm font-medium block mb-1">
+              Vertical position: <span class="text-ink-lighter">{{ opts.coverTitleY }}% from top</span>
+            </span>
+            <input
+              v-model.number="opts.coverTitleY"
+              type="range"
+              min="5"
+              max="95"
+              step="1"
+              class="w-full"
+            />
+          </label>
+
+          <div class="grid grid-cols-2 gap-3">
+            <label class="block">
+              <span class="text-sm font-medium block mb-1">
+                Size: <span class="text-ink-lighter">{{ opts.coverTitleSize }} px</span>
+              </span>
+              <input
+                v-model.number="opts.coverTitleSize"
+                type="range"
+                min="12"
+                max="72"
+                step="1"
+                class="w-full"
+              />
+            </label>
+            <label class="block">
+              <span class="text-sm font-medium block mb-1">Colour</span>
+              <input
+                v-model="opts.coverTitleColor"
+                type="color"
+                class="block w-full h-8 p-0 border border-line rounded-sm cursor-pointer bg-paper"
+              />
+            </label>
+          </div>
+
+          <div>
+            <span class="text-sm font-medium block mb-1">Alignment</span>
+            <div class="inline-flex border border-line rounded-sm overflow-hidden text-sm">
+              <button
+                v-for="a in ['left', 'center', 'right'] as const"
+                :key="a"
+                type="button"
+                @click="opts.coverTitleAlign = a"
+                :class="[
+                  'px-3 py-1 capitalize transition-colors',
+                  opts.coverTitleAlign === a
+                    ? 'bg-ink text-paper'
+                    : 'bg-paper text-ink-light hover:text-ink',
+                ]"
+              >
+                {{ a }}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Author: position, size, colour, alignment -->
+        <div
+          class="space-y-2 border border-line rounded-sm p-3"
+          :class="{ 'opacity-50 pointer-events-none': !opts.coverAuthor }"
+        >
+          <span class="text-xs uppercase tracking-widest text-ink-lighter font-sans">Author</span>
+
+          <label class="block">
+            <span class="text-sm font-medium block mb-1">
+              Vertical position: <span class="text-ink-lighter">{{ opts.coverAuthorY }}% from top</span>
+            </span>
+            <input
+              v-model.number="opts.coverAuthorY"
+              type="range"
+              min="5"
+              max="95"
+              step="1"
+              :disabled="!opts.coverAuthor"
+              class="w-full"
+            />
+          </label>
+
+          <div class="grid grid-cols-2 gap-3">
+            <label class="block">
+              <span class="text-sm font-medium block mb-1">
+                Size: <span class="text-ink-lighter">{{ opts.coverAuthorSize }} px</span>
+              </span>
+              <input
+                v-model.number="opts.coverAuthorSize"
+                type="range"
+                min="10"
+                max="48"
+                step="1"
+                :disabled="!opts.coverAuthor"
+                class="w-full"
+              />
+            </label>
+            <label class="block">
+              <span class="text-sm font-medium block mb-1">Colour</span>
+              <input
+                v-model="opts.coverAuthorColor"
+                type="color"
+                :disabled="!opts.coverAuthor"
+                class="block w-full h-8 p-0 border border-line rounded-sm cursor-pointer bg-paper"
+              />
+            </label>
+          </div>
+
+          <div>
+            <span class="text-sm font-medium block mb-1">Alignment</span>
+            <div class="inline-flex border border-line rounded-sm overflow-hidden text-sm">
+              <button
+                v-for="a in ['left', 'center', 'right'] as const"
+                :key="a"
+                type="button"
+                @click="opts.coverAuthorAlign = a"
+                :disabled="!opts.coverAuthor"
+                :class="[
+                  'px-3 py-1 capitalize transition-colors',
+                  opts.coverAuthorAlign === a
+                    ? 'bg-ink text-paper'
+                    : 'bg-paper text-ink-light hover:text-ink',
+                ]"
+              >
+                {{ a }}
+              </button>
+            </div>
+          </div>
+          <span class="block text-xs text-ink-lighter">
+            Only used when an author name is set above.
+          </span>
+        </div>
+
+        <!-- Back cover text -->
+        <div class="space-y-2">
+          <label class="block">
+            <span class="text-sm font-medium block mb-1">Back cover text</span>
+            <textarea
+              v-model="opts.coverBackText"
+              rows="4"
+              placeholder="Blurb, quote, dedication — anything you'd like on the back cover."
+              class="block w-full px-2 py-1 text-sm border border-line rounded-sm bg-paper focus:outline-none focus:ring-1 focus:ring-ink resize-y leading-snug"
+            ></textarea>
+            <span class="block text-xs text-ink-lighter mt-1">
+              Appears between the title and author on the back cover. Line breaks are preserved; the size auto-fits.
+            </span>
+          </label>
+
+          <label class="block max-w-xs" :class="{ 'opacity-50': !opts.coverBackText }">
+            <span class="text-sm font-medium block mb-1">Back text colour</span>
+            <input
+              v-model="opts.coverBackTextColor"
+              type="color"
+              :disabled="!opts.coverBackText"
+              class="block w-full h-8 p-0 border border-line rounded-sm cursor-pointer bg-paper"
+            />
+          </label>
+        </div>
       </fieldset>
 
       <div v-if="loadError" class="text-sm text-rose-700 bg-rose-50 border border-rose-200 rounded p-3">
@@ -222,15 +398,23 @@
           v-if="bookState === 'closed-front'"
           class="bp-cover bp-cover-front"
           :style="{ width: pageWidth + 'px', height: pageHeight + 'px' }"
-          @dblclick="openFromFront"
+          @click="openFromFront"
         >
           <div class="bp-cover-bg" :style="frontCoverBgStyle"></div>
           <div class="bp-cover-content">
-            <h2 class="bp-cover-title">{{ manuscript.title }}</h2>
-            <p v-if="manuscript.workingSubtitle" class="bp-cover-subtitle">
-              {{ manuscript.workingSubtitle }}
-            </p>
-            <p class="bp-cover-hint">Double-tap to open</p>
+            <div class="bp-cover-title-block" :style="coverTitleStyle">
+              <h2 class="bp-cover-title" :style="coverTitleTextStyle">{{ manuscript.title }}</h2>
+              <p v-if="manuscript.workingSubtitle" class="bp-cover-subtitle">
+                {{ manuscript.workingSubtitle }}
+              </p>
+            </div>
+            <div
+              v-if="opts.coverAuthor"
+              class="bp-cover-author-block"
+              :style="coverAuthorStyle"
+            >
+              {{ opts.coverAuthor }}
+            </div>
           </div>
           <div class="bp-cover-spine"></div>
         </div>
@@ -244,7 +428,7 @@
             height: pageHeight + 'px',
           }"
         >
-          <div class="bp-page bp-page-left" @dblclick="prevSpread">
+          <div class="bp-page bp-page-left" @click="prevSpread">
             <div
               class="bp-page-inner"
               :style="pageInnerStyle"
@@ -257,7 +441,7 @@
             <div class="bp-page-num" v-if="showFolio(currentSpread.left)">{{ folioFor(currentSpread.left) }}</div>
           </div>
           <div class="bp-spine-shadow"></div>
-          <div class="bp-page bp-page-right" @dblclick="nextSpread">
+          <div class="bp-page bp-page-right" @click="nextSpread">
             <div
               class="bp-page-inner"
               :style="pageInnerStyle"
@@ -276,12 +460,30 @@
           v-else-if="bookState === 'closed-back'"
           class="bp-cover bp-cover-back"
           :style="{ width: pageWidth + 'px', height: pageHeight + 'px' }"
-          @dblclick="reopenFromBack"
+          @click="reopenFromBack"
         >
           <div class="bp-cover-bg" :style="backCoverBgStyle"></div>
           <div class="bp-cover-content">
-            <p class="bp-cover-back-title">{{ manuscript.title }}</p>
-            <p class="bp-cover-hint">Double-tap to return</p>
+            <div
+              class="bp-cover-back-stack"
+              :class="{ 'has-back-text': !!opts.coverBackText }"
+            >
+              <p class="bp-cover-back-title">{{ manuscript.title }}</p>
+              <div
+                v-if="opts.coverBackText"
+                ref="backTextWrap"
+                class="bp-cover-back-text-wrap"
+              >
+                <p
+                  ref="backTextEl"
+                  class="bp-cover-back-text"
+                  :style="coverBackTextStyle"
+                >{{ opts.coverBackText }}</p>
+              </div>
+              <p v-if="opts.coverAuthor" class="bp-cover-back-author">
+                {{ opts.coverAuthor }}
+              </p>
+            </div>
           </div>
           <div class="bp-cover-spine bp-cover-spine-back"></div>
         </div>
@@ -463,12 +665,111 @@ function toggleSection(sectionId: string, on: boolean) {
 }
 
 // ---- Layout options ----
+// Cover-text positions are stored as percentages from the top of the cover.
+// They drive `top: N%` on absolutely-positioned text blocks, with each block
+// translated up by half its own height so the percentage refers to the block's
+// VERTICAL CENTER. Defaults follow a classic trade-cover layout: title sits
+// in the upper-third, author near the bottom.
+//
+// Title size/colour are bound to the .bp-cover-title h2 (size) and the title
+// block (colour, which inherits down to the subtitle). Author size/colour are
+// bound directly to .bp-cover-author-block, since that block IS the text.
 const opts = ref({
   includeFrontMatter: true,
   includeToc: true,
   chapterTitlePages: true,
   coverOpacity: 0.85,
+  coverAuthor: '',
+  coverTitleY: 38,
+  coverAuthorY: 82,
+  coverTitleSize: 26,
+  coverTitleColor: '#f4ecdd',
+  coverAuthorSize: 16,
+  coverAuthorColor: '#f4ecdd',
+  coverTitleAlign: 'center' as 'left' | 'center' | 'right',
+  coverAuthorAlign: 'center' as 'left' | 'center' | 'right',
+  coverBackText: '',
+  coverBackTextColor: '#f4ecdd',
 })
+
+const coverBackTextStyle = computed(() => ({
+  color: opts.value.coverBackTextColor,
+}))
+
+const coverTitleStyle = computed(() => ({
+  top: opts.value.coverTitleY + '%',
+  color: opts.value.coverTitleColor,
+  textAlign: opts.value.coverTitleAlign,
+}))
+const coverTitleTextStyle = computed(() => ({
+  fontSize: opts.value.coverTitleSize + 'px',
+}))
+const coverAuthorStyle = computed(() => ({
+  top: opts.value.coverAuthorY + '%',
+  fontSize: opts.value.coverAuthorSize + 'px',
+  color: opts.value.coverAuthorColor,
+  textAlign: opts.value.coverAuthorAlign,
+}))
+
+// ---- Back-cover text auto-fit ----
+// The user's blurb may be one short line or a long paragraph; either way it
+// should sit comfortably on the back cover with breathing room. We wrap the
+// text in a flex-1 div whose height = (cover height − title − author − the
+// stack's top/bottom padding), then iteratively shrink the font size from
+// MAX down to MIN until both `scrollHeight` and `scrollWidth` fit inside the
+// wrapper. The shrink runs on a post-flush watcher so the DOM is up to date
+// when we measure.
+const backTextEl = ref<HTMLParagraphElement | null>(null)
+const backTextWrap = ref<HTMLDivElement | null>(null)
+const BACK_TEXT_MAX_FONT_PX = 18
+const BACK_TEXT_MIN_FONT_PX = 7
+
+function fitBackCoverText() {
+  const textEl = backTextEl.value
+  const wrap = backTextWrap.value
+  if (!textEl || !wrap) return
+
+  // Reset to the maximum size before measuring, otherwise a previous shrink
+  // would lock us at the smaller size even after the text gets shorter.
+  let size = BACK_TEXT_MAX_FONT_PX
+  textEl.style.fontSize = size + 'px'
+  // Force layout to settle before reading dimensions.
+  void wrap.offsetHeight
+
+  const availW = wrap.clientWidth
+  const availH = wrap.clientHeight
+  if (availW <= 0 || availH <= 0) return
+
+  // Linear shrink at 0.5px steps. The font size range is small so this is
+  // cheap; a binary search would be marginally faster but harder to reason
+  // about (line wrapping makes the fit function non-monotonic in practice
+  // only at the boundary, but linear from the top avoids the issue entirely).
+  while (
+    size > BACK_TEXT_MIN_FONT_PX &&
+    (textEl.scrollHeight > availH || textEl.scrollWidth > availW)
+  ) {
+    size -= 0.5
+    textEl.style.fontSize = size + 'px'
+    void textEl.offsetHeight
+  }
+}
+
+watch(
+  [
+    () => opts.value.coverBackText,
+    () => opts.value.coverAuthor,
+    () => bookState.value,
+    pageWidth,
+    pageHeight,
+  ],
+  async () => {
+    if (bookState.value !== 'closed-back') return
+    // Wait for the v-if to mount the wrapper after a state change.
+    await nextTick()
+    fitBackCoverText()
+  },
+  { flush: 'post' },
+)
 
 // ---- Cover images (loaded as data URLs so the preview is fully local) ----
 const frontCoverUrl = ref<string | null>(null)
@@ -694,22 +995,32 @@ async function paginate() {
   // browser splits into N columns of pageWidth, and scrollWidth ~= N * pageWidth.
   await new Promise(r => requestAnimationFrame(() => r(null)))
   await new Promise(r => requestAnimationFrame(() => r(null)))
-  const total = el.scrollWidth
   const cw = contentWidth.value
   const ch = contentHeight.value
+  const total = el.scrollWidth
   const count = Math.max(1, Math.round(total / cw))
 
   // Identify which raw column indices contain a "must-be-recto" element.
   //
-  // We CANNOT use `offsetLeft` here: in a CSS multi-column layout, browsers
-  // report `offsetLeft` based on the element's position in the static flow
-  // (effectively column 0), not the column it visually lands in. We use
-  // `getBoundingClientRect()` against the measurement container's rect — the
-  // viewport-space bounding box reflects the visual fragment position, so
-  // `(rect.left - containerRect.left) / cw` gives the actual column index.
-  // The recto-only elements all have `break-inside: avoid` applied during
-  // measurement so each is rendered as a single fragment, making the first
-  // bounding rect their full visual position.
+  // This is the tricky bit. The measurement container is declared as a single
+  // column wide (`width: cw; column-width: cw`) and multi-column content
+  // overflows it horizontally. In that overflow region, browsers are
+  // inconsistent about `offsetLeft`/`getBoundingClientRect()` for multi-column
+  // descendants — Chrome and Firefox have historically reported either the
+  // static-flow position (column 0) or the visual column position depending
+  // on the element type and ancestor chain.
+  //
+  // The reliable workaround is to do a second-pass measurement: temporarily
+  // widen the container to `count * cw` so every column fits *inside* the
+  // container's declared box (no overflow). With every column laid out within
+  // the container's box, `getBoundingClientRect()` is well-defined for every
+  // browser: the i-th column starts at `containerRect.left + i * cw`.
+  const originalWidth = (el.style as CSSStyleDeclaration).width
+  el.style.width = `${count * cw}px`
+  // Force a synchronous reflow so the new width takes effect before we read
+  // bounding rects. Reading offsetWidth flushes layout.
+  void el.offsetWidth
+
   const rectoColumnIndices = new Set<number>()
   const containerRect = el.getBoundingClientRect()
   for (const rEl of Array.from(el.querySelectorAll<HTMLElement>(RECTO_SELECTOR))) {
@@ -719,6 +1030,9 @@ async function paginate() {
     const colIdx = Math.max(0, Math.min(count - 1, Math.floor(x / cw)))
     rectoColumnIndices.add(colIdx)
   }
+
+  // Restore the original measurement-container width.
+  el.style.width = originalWidth
 
   // Each page re-renders the full flow at width = count * contentWidth so that
   // every column is laid out side-by-side and positioned. The surrounding
@@ -931,16 +1245,26 @@ function closeIfSetup() {
   background: #3a2f24;
 }
 .bp-cover-content {
+  /* Children (.bp-cover-title-block, .bp-cover-author-block) are absolutely
+     positioned via inline `top: N%` and centred horizontally. The previous
+     flex-centering would override the slider-driven vertical positions, so
+     it has been removed here. The back cover keeps a simple flex stack
+     centred via .bp-cover-back-stack. */
   position: absolute;
   inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
   text-align: center;
   padding: 2rem;
   color: #f4ecdd;
   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.55);
+}
+.bp-cover-title-block,
+.bp-cover-author-block {
+  position: absolute;
+  left: 50%;
+  /* `top` comes from the slider (inline style). We translate up by half the
+     block's height so the slider value refers to the block's vertical centre. */
+  transform: translate(-50%, -50%);
+  width: calc(100% - 4rem);
 }
 .bp-cover-title {
   font-family: ui-serif, Georgia, serif;
@@ -954,19 +1278,70 @@ function closeIfSetup() {
   margin-top: 0.5rem;
   opacity: 0.9;
 }
-.bp-cover-hint {
+.bp-cover-author-block {
+  font-family: ui-serif, Georgia, serif;
+  font-size: 1rem;
+  font-style: italic;
+  letter-spacing: 0.08em;
+  opacity: 0.95;
+}
+.bp-cover-back-stack {
+  /* Default layout (no back-cover blurb): title and author centred together
+     in the middle of the cover. The padding here sits inside the cover edge
+     and supplies the top/bottom breathing room around all back-cover text. */
   position: absolute;
-  bottom: 1rem;
-  font-size: 0.7rem;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: rgba(244, 236, 221, 0.65);
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 2rem;
+}
+.bp-cover-back-stack.has-back-text {
+  /* When the user has supplied a blurb, anchor the title at the top, the
+     author at the bottom, and let the blurb wrapper grow to fill what's
+     between them. */
+  justify-content: space-between;
+  gap: 1rem;
+}
+.bp-cover-back-text-wrap {
+  flex: 1 1 auto;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Hide overflow while we measure / shrink the text to fit. */
+  overflow: hidden;
 }
 .bp-cover-back-title {
   font-family: ui-serif, Georgia, serif;
   font-style: italic;
   font-size: 1rem;
   letter-spacing: 0.04em;
+}
+.bp-cover-back-author {
+  font-family: ui-serif, Georgia, serif;
+  font-size: 0.85rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.85;
+}
+.bp-cover-back-text {
+  /* Free-form back-cover text: blurb, quote, dedication.
+     The font-size here is just a starting point — fitBackCoverText() in the
+     script picks the largest size between BACK_TEXT_MIN_FONT_PX and
+     BACK_TEXT_MAX_FONT_PX where the text fits inside .bp-cover-back-text-wrap. */
+  font-family: ui-serif, Georgia, serif;
+  font-size: 16px;
+  line-height: 1.5;
+  /* Preserve user line breaks from the textarea while still wrapping long
+     lines at the cover's edge. */
+  white-space: pre-wrap;
+  max-width: 28em;
+  margin: 0;
+  opacity: 0.92;
+  text-align: center;
 }
 
 .bp-cover-spine {
