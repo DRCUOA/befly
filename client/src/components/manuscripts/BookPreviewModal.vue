@@ -700,11 +700,23 @@ async function paginate() {
   const count = Math.max(1, Math.round(total / cw))
 
   // Identify which raw column indices contain a "must-be-recto" element.
-  // Because column-gap is 0 on the measurement flow, an element's offsetLeft
-  // divided by content-width gives the column it ended up in.
+  //
+  // We CANNOT use `offsetLeft` here: in a CSS multi-column layout, browsers
+  // report `offsetLeft` based on the element's position in the static flow
+  // (effectively column 0), not the column it visually lands in. We use
+  // `getBoundingClientRect()` against the measurement container's rect — the
+  // viewport-space bounding box reflects the visual fragment position, so
+  // `(rect.left - containerRect.left) / cw` gives the actual column index.
+  // The recto-only elements all have `break-inside: avoid` applied during
+  // measurement so each is rendered as a single fragment, making the first
+  // bounding rect their full visual position.
   const rectoColumnIndices = new Set<number>()
+  const containerRect = el.getBoundingClientRect()
   for (const rEl of Array.from(el.querySelectorAll<HTMLElement>(RECTO_SELECTOR))) {
-    const colIdx = Math.max(0, Math.floor(rEl.offsetLeft / cw))
+    const rect = rEl.getBoundingClientRect()
+    if (!rect.width && !rect.height) continue
+    const x = rect.left - containerRect.left
+    const colIdx = Math.max(0, Math.min(count - 1, Math.floor(x / cw)))
     rectoColumnIndices.add(colIdx)
   }
 
