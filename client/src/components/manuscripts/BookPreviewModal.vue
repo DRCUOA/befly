@@ -841,7 +841,7 @@ async function loadBodiesForSelected(): Promise<void> {
     for (const { id, body } of fresh) next.set(id, body)
     bodyById.value = next
   } catch (err) {
-    loadError.value = err instanceof Error ? err.message : 'Failed to load essay content'
+    loadError.value = err instanceof Error ? err.message : 'Failed to load frag content'
   } finally {
     loadingBodies.value = false
   }
@@ -922,7 +922,7 @@ const bookFlowHtml = computed(() => {
       let inner = ''
       if (it.itemType === 'essay' && it.writingBlockId) {
         const body = bodyById.value.get(it.writingBlockId) || ''
-        const rendered = body ? renderMarkdown(body) : '<p><em>(Essay body not loaded.)</em></p>'
+        const rendered = body ? renderMarkdown(body) : '<p><em>(Frag body not loaded.)</em></p>'
         inner =
           `<h3 class="bp-h3">${escapeHtml(it.title || 'Untitled')}</h3>` + rendered
       } else if (it.itemType === 'placeholder') {

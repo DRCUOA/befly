@@ -35,7 +35,7 @@
               :to="`/read/${latestWriting.id}`"
               class="group inline-flex items-center gap-2 text-sm tracking-wide font-sans font-light text-ink-lighter hover:text-ink transition-colors duration-slow"
             >
-              <span>Read the latest essay</span>
+              <span>Read the latest frag</span>
               <svg class="w-3.5 h-3.5 transition-transform duration-slow group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
               </svg>
@@ -160,9 +160,9 @@
               </div>
             </div>
             <div class="flex-1">
-              <h3 class="text-xl sm:text-2xl font-light mb-3 sm:mb-4 tracking-tight">One essay at a time</h3>
+              <h3 class="text-xl sm:text-2xl font-light mb-3 sm:mb-4 tracking-tight">One frag at a time</h3>
               <p class="text-base sm:text-lg font-light text-ink-light leading-relaxed mb-3 sm:mb-4">
-                When you open an essay, that's all you see. No sidebar of recommendations. No "related posts." No distractions competing for your attention. Just the piece you chose to read.
+                When you open a frag, that's all you see. No sidebar of recommendations. No "related posts." No distractions competing for your attention. Just the piece you chose to read.
               </p>
               <p class="text-base font-light text-ink-lighter leading-relaxed">
                 The navigation reappears only when you finish or choose to leave.
@@ -199,7 +199,7 @@
                 No pop-ups asking for your email. No cookie banners. No chat widgets. No analytics tracking your scroll depth. You're here to read, and we respect that.
               </p>
               <p class="text-base font-light text-ink-lighter leading-relaxed">
-                If you want to stay connected, there's a simple option at the end of each essay. One click, no pressure.
+                If you want to stay connected, there's a simple option at the end of each frag. One click, no pressure.
               </p>
             </div>
           </div>
@@ -230,7 +230,7 @@
             <div class="flex-1">
               <h3 class="text-xl sm:text-2xl font-light mb-3 sm:mb-4 tracking-tight">Leave when you're ready</h3>
               <p class="text-base sm:text-lg font-light text-ink-light leading-relaxed mb-3 sm:mb-4">
-                If an essay isn't resonating, you can leave at any time. No guilt, no friction. Your attention is yours to give.
+                If a frag isn't resonating, you can leave at any time. No guilt, no friction. Your attention is yours to give.
               </p>
               <p class="text-base font-light text-ink-lighter leading-relaxed">
                 The work that matters will find you when the timing is right.
@@ -249,7 +249,7 @@
             Take your time.<br/>The words will wait.
           </h2>
           <p class="text-base sm:text-lg md:text-xl font-light text-ink-light leading-relaxed max-w-2xl mx-auto px-4">
-            When you're ready to begin, choose an essay. Or come back tomorrow. Or next week. There's no urgency here.
+            When you're ready to begin, choose a frag. Or come back tomorrow. Or next week. There's no urgency here.
           </p>
         </div>
         

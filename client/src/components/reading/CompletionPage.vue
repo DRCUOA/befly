@@ -71,7 +71,7 @@ interface Props {
 
 withDefaults(defineProps<Props>(), {
   exitOptions: () => [
-    { type: 'link', label: 'Back to essays', route: '/home' },
+    { type: 'link', label: 'Back to frags', route: '/home' },
     { type: 'link', label: 'Browse more', route: '/home' },
   ],
 })

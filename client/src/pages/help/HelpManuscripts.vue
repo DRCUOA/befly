@@ -11,7 +11,7 @@
           Working with manuscripts
         </h1>
         <p class="text-base sm:text-lg font-light text-ink-light leading-relaxed">
-          A manuscript is the layer above your essays where a body of work
+          A manuscript is the layer above your frags where a body of work
           starts to find its shape. This guide explains every field, every
           structural piece, and the workflow they&rsquo;re designed for.
         </p>
@@ -58,10 +58,10 @@
               the work to become a <em>book</em>, not just a pile.
             </p>
             <p>
-              A manuscript draws from one or more themes. The essays themselves stay in
+              A manuscript draws from one or more themes. The frags themselves stay in
               your library &mdash; the manuscript references them. You can include the
-              same essay in two different manuscripts; you can leave essays out;
-              you can include essays you haven&rsquo;t written yet (placeholders).
+              same frag in two different manuscripts; you can leave frags out;
+              you can include frags you haven&rsquo;t written yet (placeholders).
             </p>
             <div class="callout">
               <p class="callout-label">Practical:</p>
@@ -100,7 +100,7 @@
 
             <h3 id="through-line">Through-line</h3>
             <p>
-              What holds the essays together as a single work. The thread you can
+              What holds the frags together as a single work. The thread you can
               point to and say <em>that&rsquo;s why these belong in the same book</em>.
               Often discovered, not declared &mdash; you can leave it blank and come
               back when you can name it.
@@ -129,14 +129,14 @@
             <h3 id="form">Form</h3>
             <p>
               What kind of book this wants to be. The form changes how the AI treats
-              it &mdash; an essay collection allows more variation between pieces;
-              a long-form essay expects a single sustained argument; a memoir expects
+              it &mdash; a frag collection allows more variation between pieces;
+              a long-form frag expects a single sustained argument; a memoir expects
               forward chronology and rising stakes.
             </p>
             <ul class="form-list">
               <li><strong>Memoir</strong> &mdash; first-person life narrative, time-shaped.</li>
-              <li><strong>Essay collection</strong> &mdash; discrete pieces that can be read separately, but resonate when read in order.</li>
-              <li><strong>Long-form essay</strong> &mdash; one extended argument, possibly book-length.</li>
+              <li><strong>Frag collection</strong> &mdash; discrete pieces that can be read separately, but resonate when read in order.</li>
+              <li><strong>Long-form frag</strong> &mdash; one extended argument, possibly book-length.</li>
               <li><strong>Creative nonfiction</strong> &mdash; reportage, criticism, hybrid voice work.</li>
               <li><strong>Hybrid</strong> &mdash; deliberately mixes forms.</li>
               <li><strong>Fictionalised memoir</strong> &mdash; lived material moved into fiction; the form gives the AI permission for invented composite figures, etc.</li>
@@ -159,13 +159,13 @@
 
             <h3 id="source-themes">Source themes</h3>
             <p>
-              The themes whose essays seed this manuscript. A manuscript can draw
-              from many themes, and an essay can belong to multiple themes, so a single
+              The themes whose frags seed this manuscript. A manuscript can draw
+              from many themes, and a frag can belong to multiple themes, so a single
               manuscript can pull from a wide net.
             </p>
             <p>
-              Linking a theme doesn&rsquo;t automatically pull every essay from that
-              theme into the spine &mdash; you still choose which essays go on the
+              Linking a theme doesn&rsquo;t automatically pull every frag from that
+              theme into the spine &mdash; you still choose which frags go on the
               spine. Themes mostly help the AI know what kind of material to expect.
             </p>
           </section>
@@ -203,26 +203,26 @@
             <h3 id="items">Items</h3>
             <p>
               An item is a single thing the reader will encounter at one point in the
-              manuscript. Most items are <strong>essays</strong>: they link to a real
-              piece in your library, and that essay&rsquo;s text is what the reader
+              manuscript. Most items are <strong>frags</strong>: they link to a real
+              piece in your library, and that frag&rsquo;s text is what the reader
               gets when they reach this point. But items can also represent things
-              that don&rsquo;t exist yet, or things that aren&rsquo;t essays at all.
+              that don&rsquo;t exist yet, or things that aren&rsquo;t frags at all.
             </p>
 
             <h3 id="item-types">The item types</h3>
             <ul class="form-list">
               <li>
-                <strong>Essay</strong> &mdash; links to an existing essay in your library.
-                The export inlines the essay&rsquo;s body. The AI sees the body when it
+                <strong>Frag</strong> &mdash; links to an existing frag in your library.
+                The export inlines the frag&rsquo;s body. The AI sees the body when it
                 analyses gaps.
               </li>
               <li>
-                <strong>Bridge</strong> &mdash; connective tissue between two essays.
+                <strong>Bridge</strong> &mdash; connective tissue between two frags.
                 Often a paragraph or two; you write it directly inside the manuscript
-                rather than as a standalone essay.
+                rather than as a standalone frag.
               </li>
               <li>
-                <strong>Placeholder</strong> &mdash; an essay you haven&rsquo;t written
+                <strong>Placeholder</strong> &mdash; a frag you haven&rsquo;t written
                 yet. Drop placeholders into the spine to see the shape before the
                 content exists. They appear as italic stubs in the export.
               </li>
@@ -233,7 +233,7 @@
               </li>
               <li>
                 <strong>Fragment</strong> &mdash; a piece of writing too small to be
-                an essay yet. Excluded from exports by default for the same reason.
+                a frag yet. Excluded from exports by default for the same reason.
               </li>
             </ul>
 
@@ -249,7 +249,7 @@
             <h2>Suggested workflow</h2>
             <ol class="form-list workflow">
               <li>
-                <strong>Gather first.</strong> Write essays into themes. Don&rsquo;t
+                <strong>Gather first.</strong> Write frags into themes. Don&rsquo;t
                 worry about a manuscript until you have material.
               </li>
               <li>
@@ -258,7 +258,7 @@
                 literary-direction fields blank if you don&rsquo;t know them yet.
               </li>
               <li>
-                <strong>Drop your existing essays onto the spine.</strong> Just put them
+                <strong>Drop your existing frags onto the spine.</strong> Just put them
                 in some order &mdash; don&rsquo;t agonise. You&rsquo;re trying to see
                 the shape, not finalise it.
               </li>
@@ -279,7 +279,7 @@
               </li>
               <li>
                 <strong>Iterate.</strong> Reorder. Write bridges. Convert placeholders
-                into real essays. Re-run gap analysis on specific junctions you&rsquo;ve
+                into real frags. Re-run gap analysis on specific junctions you&rsquo;ve
                 changed.
               </li>
               <li>
@@ -293,7 +293,7 @@
             <h2>Exporting your manuscript</h2>
             <p>
               The Export button in the Book Room produces a single Markdown file. It
-              respects the spine: sections become H2s, items become H3s, essay bodies
+              respects the spine: sections become H2s, items become H3s, frag bodies
               are inlined, and bridges read as transitions. A few options worth knowing:
             </p>
             <ul class="form-list">
@@ -315,8 +315,8 @@
                 default. Useful if you&rsquo;re exporting for review.
               </li>
               <li>
-                <strong>Number essays</strong> &mdash; prefixes essay headings with
-                1., 2.&hellip; Numbering only counts essays, not bridges or
+                <strong>Number frags</strong> &mdash; prefixes frag headings with
+                1., 2.&hellip; Numbering only counts frags, not bridges or
                 placeholders.
               </li>
             </ul>

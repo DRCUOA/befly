@@ -7,7 +7,7 @@
       <div>
         <h3 class="text-2xl sm:text-3xl font-light mb-2 sm:mb-3 tracking-tight">{{ title }}</h3>
         <p class="text-xs sm:text-sm tracking-widest uppercase font-sans text-ink-lighter">
-          {{ count }} {{ count === 1 ? 'essay' : 'essays' }}
+          {{ count }} {{ count === 1 ? 'frag' : 'frags' }}
         </p>
       </div>
       <svg

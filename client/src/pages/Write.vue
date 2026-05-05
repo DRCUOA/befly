@@ -80,7 +80,7 @@
         <div class="zen-spa-banner-pill">
           <span class="zen-spa-banner-dot" aria-hidden="true"></span>
           <span class="zen-spa-banner-text">
-            Interactive HTML detected — this essay will render as a sandboxed SPA when published.
+            Interactive HTML detected — this frag will render as a sandboxed SPA when published.
           </span>
           <button
             type="button"

@@ -11,7 +11,7 @@
             to="/admin/essays"
             class="text-sm text-blue-600 hover:text-blue-800 hover:underline"
           >
-            Essays
+            Frags
           </router-link>
           <router-link
             to="/admin/rules"
@@ -30,7 +30,7 @@
             @click="showImportExport = true"
             class="text-sm text-blue-600 hover:text-blue-800 hover:underline"
           >
-            Import / Export essays
+            Import / Export frags
           </button>
         </div>
         <h1 class="text-3xl sm:text-4xl md:text-5xl font-light tracking-tight mb-4">
@@ -239,10 +239,10 @@
                     @change="handleCoverFileSelect"
                   />
                   <h3 class="text-sm font-semibold uppercase tracking-wider text-ink-lighter mb-3">
-                    Essays ({{ userContent.writings.length }})
+                    Frags ({{ userContent.writings.length }})
                   </h3>
                   <div v-if="userContent.writings.length === 0" class="text-sm text-ink-lighter italic py-2">
-                    No essays
+                    No frags
                   </div>
                   <div v-else class="space-y-3">
                     <div
@@ -390,7 +390,7 @@
                       <thead>
                         <tr class="border-b border-gray-100">
                           <th class="text-left px-3 py-2 text-xs font-semibold uppercase text-ink-lighter">Comment</th>
-                          <th class="text-left px-3 py-2 text-xs font-semibold uppercase text-ink-lighter">On Essay</th>
+                          <th class="text-left px-3 py-2 text-xs font-semibold uppercase text-ink-lighter">On Frag</th>
                           <th class="text-left px-3 py-2 text-xs font-semibold uppercase text-ink-lighter">Date</th>
                           <th class="text-right px-3 py-2 text-xs font-semibold uppercase text-ink-lighter">Actions</th>
                         </tr>
@@ -413,7 +413,7 @@
                             >
                               {{ c.writingTitle }}
                             </router-link>
-                            <span v-else class="italic">deleted essay</span>
+                            <span v-else class="italic">deleted frag</span>
                           </td>
                           <td class="px-3 py-2 text-ink-lighter text-xs whitespace-nowrap">
                             {{ formatDate(c.createdAt) }}
@@ -446,7 +446,7 @@
                       <thead>
                         <tr class="border-b border-gray-100">
                           <th class="text-left px-3 py-2 text-xs font-semibold uppercase text-ink-lighter">Reaction</th>
-                          <th class="text-left px-3 py-2 text-xs font-semibold uppercase text-ink-lighter">On Essay</th>
+                          <th class="text-left px-3 py-2 text-xs font-semibold uppercase text-ink-lighter">On Frag</th>
                           <th class="text-left px-3 py-2 text-xs font-semibold uppercase text-ink-lighter">Date</th>
                           <th class="text-right px-3 py-2 text-xs font-semibold uppercase text-ink-lighter">Actions</th>
                         </tr>
@@ -472,7 +472,7 @@
                             >
                               {{ a.writingTitle }}
                             </router-link>
-                            <span v-else class="italic">deleted essay</span>
+                            <span v-else class="italic">deleted frag</span>
                           </td>
                           <td class="px-3 py-2 text-ink-lighter text-xs whitespace-nowrap">
                             {{ formatDate(a.createdAt) }}
@@ -1569,10 +1569,10 @@ const confirmDeleteUser = (u: User) => {
 
 const confirmDeleteWriting = (w: AdminWriting) => {
   deleteModal.value = {
-    title: 'Delete Essay',
-    message: 'Are you sure you want to delete this essay?',
+    title: 'Delete Frag',
+    message: 'Are you sure you want to delete this frag?',
     detail: w.title,
-    warning: 'This will permanently delete the essay and all its comments and appreciations.',
+    warning: 'This will permanently delete the frag and all its comments and appreciations.',
     inProgress: false,
     onConfirm: async () => {
       deleteModal.value!.inProgress = true
@@ -1588,7 +1588,7 @@ const confirmDeleteWriting = (w: AdminWriting) => {
         showFeedback(`"${w.title}" has been deleted`)
       } catch (err) {
         deleteModal.value!.inProgress = false
-        showFeedback(err instanceof Error ? err.message : 'Failed to delete essay', 'error')
+        showFeedback(err instanceof Error ? err.message : 'Failed to delete frag', 'error')
       }
     }
   }

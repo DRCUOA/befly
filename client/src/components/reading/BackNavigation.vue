@@ -33,7 +33,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  backLabel: 'Back to essays',
+  backLabel: 'Back to frags',
 })
 
 const backRoute = computed(() => {

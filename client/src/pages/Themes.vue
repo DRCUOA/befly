@@ -63,7 +63,7 @@
                   {{ theme.name }}
                 </h2>
                 <p class="text-xs tracking-widest uppercase font-sans text-ink-lighter">
-                  {{ getThemeCount(theme.id) }} {{ getThemeCount(theme.id) === 1 ? 'essay' : 'essays' }}
+                  {{ getThemeCount(theme.id) }} {{ getThemeCount(theme.id) === 1 ? 'frag' : 'frags' }}
                 </p>
               </div>
               <div v-if="canModify(theme)" class="flex items-center gap-2" @click.stop>
@@ -91,7 +91,7 @@
             </div>
             
             <p class="text-sm sm:text-base font-light text-ink-light leading-relaxed mb-4 sm:mb-6">
-              Essays exploring {{ theme.name.toLowerCase() }}
+              Frags exploring {{ theme.name.toLowerCase() }}
             </p>
             
             <div class="flex flex-col sm:flex-row items-center justify-center md:justify-between gap-2">

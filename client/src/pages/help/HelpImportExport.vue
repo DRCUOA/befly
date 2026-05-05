@@ -8,10 +8,10 @@
         </router-link>
         <p class="text-xs uppercase tracking-widest font-sans text-ink-lighter mb-3">Guide 3 · Admin</p>
         <h1 class="text-3xl sm:text-4xl md:text-5xl font-light tracking-tight mb-4 leading-tight">
-          Import &middot; Export essays
+          Import &middot; Export frags
         </h1>
         <p class="text-base sm:text-lg font-light text-ink-light leading-relaxed">
-          Move essays in and out of the system as JSON. Bulk migration, backups,
+          Move frags in and out of the system as JSON. Bulk migration, backups,
           and account-to-account transfers.
         </p>
       </div>
@@ -42,7 +42,7 @@
             <h2>What it is</h2>
             <p>
               The Import / Export tool lives in the Admin view (button in the
-              header). It lets an admin export essays as a single JSON file, and
+              header). It lets an admin export frags as a single JSON file, and
               import a JSON file back into the same or a different deployment.
               Three tabs:
             </p>
@@ -72,16 +72,16 @@
   "users":   [ ... ]
 }</code></pre>
             <p>
-              <strong>Themes travel inline.</strong> Each essay&rsquo;s
+              <strong>Themes travel inline.</strong> Each frag&rsquo;s
               <code>themeIds</code> reference the <code>themes[]</code> array within
               the same file. On import, those IDs are remapped to the destination
               account&rsquo;s real theme IDs (see <a href="#themes-dedup">theme
               dedup</a> below).
             </p>
             <p>
-              <strong>Essay IDs are advisory.</strong> The importer always assigns
+              <strong>Frag IDs are advisory.</strong> The importer always assigns
               fresh UUIDs. This makes the same file safe to import twice: you get
-              duplicate essays, not constraint collisions.
+              duplicate frags, not constraint collisions.
             </p>
             <p>
               <strong>The version is enforced.</strong> If the envelope&rsquo;s
@@ -100,8 +100,8 @@
             <h2>Export</h2>
             <p>Two scope choices:</p>
             <ul class="form-list">
-              <li><strong>All users, all essays.</strong> Every essay in the database. Use carefully on large datasets &mdash; the file can be tens of megabytes.</li>
-              <li><strong>A specific user&rsquo;s essays.</strong> Once you pick a user, an optional checkbox list appears. Tick none to export everything they have; tick some to export only those.</li>
+              <li><strong>All users, all frags.</strong> Every frag in the database. Use carefully on large datasets &mdash; the file can be tens of megabytes.</li>
+              <li><strong>A specific user&rsquo;s frags.</strong> Once you pick a user, an optional checkbox list appears. Tick none to export everything they have; tick some to export only those.</li>
             </ul>
             <p>
               The download is a plain anchor with <code>download</code> attribute, so
@@ -121,21 +121,21 @@
             <p>Steps:</p>
             <ol class="form-list">
               <li>Drop or pick the JSON file. The client parses it and previews the count.</li>
-              <li>Choose who should own the imported essays (see <a href="#ownership">ownership</a>).</li>
-              <li>Optionally select a subset of essays from the file. Leave everything unchecked to import all.</li>
-              <li>Click Import. The result panel shows what was created, what themes were resolved, and any per-essay errors.</li>
+              <li>Choose who should own the imported frags (see <a href="#ownership">ownership</a>).</li>
+              <li>Optionally select a subset of frags from the file. Leave everything unchecked to import all.</li>
+              <li>Click Import. The result panel shows what was created, what themes were resolved, and any per-frag errors.</li>
             </ol>
 
             <h3 id="ownership">Ownership</h3>
             <p>
-              Imported essays are <em>always</em> assigned to a user that exists in the
+              Imported frags are <em>always</em> assigned to a user that exists in the
               destination database. The original <code>userId</code> in the envelope is
               used only to label the export &mdash; never to assign ownership. Two
               choices:
             </p>
             <ul class="form-list">
               <li><strong>Me</strong> &mdash; the importing admin. The simplest case. Fine when you&rsquo;re moving your own work between deployments.</li>
-              <li><strong>Another user</strong> &mdash; pick an existing active user from the dropdown. All imported essays will be created under that account. Useful when you&rsquo;re standing up a deployment for someone else and giving them their starter material.</li>
+              <li><strong>Another user</strong> &mdash; pick an existing active user from the dropdown. All imported frags will be created under that account. Useful when you&rsquo;re standing up a deployment for someone else and giving them their starter material.</li>
             </ul>
 
             <h3 id="themes-dedup">Theme dedup</h3>
@@ -149,19 +149,19 @@
               This means importing &ldquo;Grief&rdquo; from one account into another
               account that already has a theme called &ldquo;Grief&rdquo; merges them
               cleanly &mdash; you don&rsquo;t end up with two copies. It also means
-              that if you import the same file twice, you get duplicate essays but
+              that if you import the same file twice, you get duplicate frags but
               not duplicate themes.
             </p>
 
             <h3 id="partial-failure">Partial failure</h3>
             <p>
-              The importer doesn&rsquo;t stop when one essay fails. If essay 7 has a
+              The importer doesn&rsquo;t stop when one frag fails. If frag 7 has a
               missing title, the importer logs that error in the result and continues
-              to essay 8. The result panel groups the errors at the end so you can see
+              to frag 8. The result panel groups the errors at the end so you can see
               what was created and what wasn&rsquo;t.
             </p>
             <p>
-              This is deliberate. A 200-essay envelope failing on a single bad row
+              This is deliberate. A 200-frag envelope failing on a single bad row
               shouldn&rsquo;t cost you the other 199 imports.
             </p>
           </section>
@@ -172,7 +172,7 @@
               Cover images are <strong>references, not data</strong>. The envelope
               includes <code>coverImageUrl</code> as a path string (e.g.
               <code>/uploads/cover/abc123.jpg</code>) but does <em>not</em> embed the
-              actual image bytes. A 50-essay export with embedded base64 images can
+              actual image bytes. A 50-frag export with embedded base64 images can
               easily be 100MB; a JSON-only export is small and forgiving.
             </p>
             <p>
@@ -184,7 +184,7 @@
               <li>Copy the actual image files in <code>/uploads/cover/</code> to the destination&rsquo;s same path. Then import the envelope.</li>
             </ol>
             <p>
-              If you skip step 2, the essays import fine but their cover images will
+              If you skip step 2, the frags import fine but their cover images will
               show as broken thumbnails. The fix is to copy the missing files later
               &mdash; the URLs stored in the database are still correct.
             </p>
@@ -194,12 +194,12 @@
             <h2>Use cases</h2>
             <ul class="form-list">
               <li>
-                <strong>Backup.</strong> Run an export of all essays once a week; archive
+                <strong>Backup.</strong> Run an export of all frags once a week; archive
                 the JSON. Restoring is one click in the Import tab.
               </li>
               <li>
                 <strong>Account migration.</strong> Move one user&rsquo;s work onto a
-                new account. Export their essays, import as that user.
+                new account. Export their frags, import as that user.
               </li>
               <li>
                 <strong>Deployment migration.</strong> Bring up a new deployment,
@@ -218,7 +218,7 @@
             <h2>Payload limits</h2>
             <p>
               The import endpoint accepts envelopes up to <strong>50MB</strong>. That
-              comfortably fits thousands of essays. The general API has a 2MB cap to
+              comfortably fits thousands of frags. The general API has a 2MB cap to
               keep individual write endpoints small &mdash; the import endpoint
               overrides that with its own larger limit.
             </p>
@@ -227,7 +227,7 @@
               ~30MB request body limit. If you need to import an envelope larger than
               that, split it: the importer&rsquo;s <code>onlyEssayIds</code> option
               lets a single envelope file be imported in batches by selecting subsets
-              of essays from the same file.
+              of frags from the same file.
             </p>
           </section>
         </div>

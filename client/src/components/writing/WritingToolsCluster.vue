@@ -84,8 +84,8 @@
     <button
       type="button"
       class="tool-button"
-      aria-label="Exit to essays"
-      title="Exit to essays"
+      aria-label="Exit to frags"
+      title="Exit to frags"
       @click="$emit('exit')"
     >
       <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -929,7 +929,7 @@ const aiTools: AiTool[] = [
   {
     mode: 'factcheck',
     label: 'Fact-check',
-    tooltip: 'Check factual claims (selection or whole essay)',
+    tooltip: 'Check factual claims (selection or whole frag)',
     requiresSelection: false,
   },
 ]

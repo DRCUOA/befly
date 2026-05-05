@@ -9,7 +9,7 @@
               Browse at your pace
             </p>
             <h1 class="text-3xl sm:text-4xl md:text-5xl font-light tracking-tight mb-6 sm:mb-8 leading-tight">
-              Recent Essays
+              Recent Frags
             </h1>
             <p class="text-base sm:text-lg font-light text-ink-light leading-relaxed max-w-xl mx-auto lg:mx-0">
               Titles that read like thoughts, not headlines. No urgency, no pressure—just ideas waiting to be explored.
@@ -20,7 +20,7 @@
               :to="`/read/${featuredWriting.id}`"
               class="block border border-line bg-paper p-6 sm:p-8 hover:border-ink-lighter transition-colors duration-slow group"
             >
-              <span class="text-xs tracking-widest uppercase font-sans text-accent block mb-4">Latest Essay</span>
+              <span class="text-xs tracking-widest uppercase font-sans text-accent block mb-4">Latest Frag</span>
               <h3 class="text-xl sm:text-2xl font-light tracking-tight mb-3 leading-snug group-hover:text-ink-light transition-colors duration-slow">
                 {{ featuredWriting.title }}
               </h3>
@@ -28,7 +28,7 @@
                 {{ featuredPreview }}
               </p>
               <span class="inline-flex items-center gap-2 text-sm font-sans text-ink-lighter group-hover:text-ink transition-colors duration-slow">
-                Read essay
+                Read frag
                 <svg class="w-3.5 h-3.5 transition-transform duration-slow group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                 </svg>
@@ -100,14 +100,14 @@
     <div v-if="!loading && filteredWritings.length > 0 && filteredWritings.length < writings.length" class="w-full px-4 sm:px-6 md:px-8 py-12 sm:py-16 md:py-20 bg-gradient-to-b from-paper to-surface">
       <div class="max-w-4xl mx-auto text-center">
         <p class="text-sm sm:text-base font-light text-ink-lighter mb-6 sm:mb-8">
-          Showing {{ filteredWritings.length }} of {{ writings.length }} essays
+          Showing {{ filteredWritings.length }} of {{ writings.length }} frags
         </p>
         <button
           @click="loadMore"
           class="group relative inline-block"
         >
           <span class="text-sm tracking-widest uppercase font-sans font-light text-ink-lighter transition-colors duration-500 group-hover:text-ink">
-            Load More Essays
+            Load More Frags
           </span>
           <span class="absolute bottom-0 left-0 w-0 h-px bg-ink transition-all duration-500 group-hover:w-full"></span>
         </button>
@@ -120,7 +120,7 @@
         <div class="text-center mb-8 sm:mb-12 md:mb-16">
           <h2 class="text-2xl sm:text-3xl md:text-4xl font-light mb-4 sm:mb-6 tracking-tight">Or browse by theme</h2>
           <p class="text-base sm:text-lg font-light text-ink-light px-4">
-            Essays grouped by theme for a more focused exploration
+            Frags grouped by theme for a more focused exploration
           </p>
         </div>
 
@@ -223,7 +223,7 @@ const getThemeCount = (themeId: string): number => {
 
 const getThemeDescription = (theme: Theme): string => {
   // You could add descriptions to themes or generate them
-  return `Essays exploring ${theme.name.toLowerCase()}`
+  return `Frags exploring ${theme.name.toLowerCase()}`
 }
 
 const handleFilterChange = (value: string) => {

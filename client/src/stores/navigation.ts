@@ -53,9 +53,9 @@ export function useNavigationOrigin(fallback: string = '/home') {
     const path = origin.value
     if (path.startsWith('/themes/') && path !== '/themes/create') return 'Back to theme'
     if (path === '/themes') return 'Back to themes'
-    if (path.startsWith('/read/')) return 'Back to essay'
+    if (path.startsWith('/read/')) return 'Back to frag'
     if (path === '/admin') return 'Back to admin'
-    return 'Back to essays'
+    return 'Back to frags'
   })
 
   function navigateBack() {

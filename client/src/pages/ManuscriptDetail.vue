@@ -121,7 +121,7 @@
               <EditableProse
                 :model-value="manuscript.throughLine"
                 :readonly="!canModify"
-                placeholder="Add a through-line — what holds the essays together?"
+                placeholder="Add a through-line — what holds the frags together?"
                 :rows="4"
                 :on-save="(v) => saveField('throughLine', v)"
               />
@@ -192,7 +192,7 @@
 
             <p class="text-sm text-ink-lighter italic mb-6">
               Drag items to reorder them, or drag them between sections.
-              Sections give the manuscript its macro shape; items are the essays, bridges, and placeholders that fill them.
+              Sections give the manuscript its macro shape; items are the frags, bridges, and placeholders that fill them.
             </p>
 
             <!-- Sections + their items -->
@@ -264,7 +264,7 @@
                         v-if="item.writingBlockId"
                         :to="`/read/${item.writingBlockId}`"
                         class="p-1 text-ink-lighter hover:text-ink"
-                        title="Read essay"
+                        title="Read frag"
                         @click.stop
                       >
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
@@ -541,7 +541,7 @@
             />
             <span class="text-sm">
               <span class="font-medium block">Placeholders</span>
-              <span class="text-ink-light">Show essays not yet written as italic stubs, so the structure is visible.</span>
+              <span class="text-ink-light">Show frags not yet written as italic stubs, so the structure is visible.</span>
             </span>
           </label>
           <label class="flex items-start gap-3 cursor-pointer">
@@ -584,8 +584,8 @@
               class="mt-1 rounded border-line text-ink focus:ring-ink"
             />
             <span class="text-sm">
-              <span class="font-medium block">Number essays</span>
-              <span class="text-ink-light">Prefix essay headings with 1., 2., &hellip; in document order.</span>
+              <span class="font-medium block">Number frags</span>
+              <span class="text-ink-light">Prefix frag headings with 1., 2., &hellip; in document order.</span>
             </span>
           </label>
         </fieldset>
@@ -623,29 +623,29 @@
           <label class="block text-sm font-medium mb-1 inline-flex items-center">
             Type
             <HelpTooltip link="/help/manuscripts#item-types" aria-label="About item types">
-              <strong>Essay</strong> links to a real piece in your library.
-              <strong>Placeholder</strong> represents an essay not yet written.
+              <strong>Frag</strong> links to a real piece in your library.
+              <strong>Placeholder</strong> represents a frag not yet written.
               <strong>Bridge</strong> is connective tissue you write inline.
               <strong>Note</strong> and <strong>Fragment</strong> are working artefacts &mdash;
               excluded from the export by default.
             </HelpTooltip>
           </label>
           <select v-model="newItem.itemType" class="block w-full rounded-md border-line bg-paper text-ink shadow-sm focus:border-ink focus:ring-ink">
-            <option value="essay">Essay (link to one in your library)</option>
-            <option value="placeholder">Placeholder (essay not written yet)</option>
-            <option value="bridge">Bridge (connective tissue between essays)</option>
+            <option value="essay">Frag (link to one in your library)</option>
+            <option value="placeholder">Placeholder (frag not written yet)</option>
+            <option value="bridge">Bridge (connective tissue between frags)</option>
             <option value="note">Note (working note for yourself)</option>
             <option value="fragment">Fragment</option>
           </select>
         </div>
 
         <div v-if="newItem.itemType === 'essay'">
-          <label class="block text-sm font-medium mb-1">Essay</label>
+          <label class="block text-sm font-medium mb-1">Frag</label>
           <select v-model="newItem.writingBlockId" class="block w-full rounded-md border-line bg-paper text-ink shadow-sm focus:border-ink focus:ring-ink">
-            <option :value="null">— pick an essay —</option>
+            <option :value="null">— pick a frag —</option>
             <option v-for="w in availableWritingBlocks" :key="w.id" :value="w.id">{{ w.title }}</option>
           </select>
-          <p class="mt-1 text-xs text-ink-lighter">Title will be filled from the essay.</p>
+          <p class="mt-1 text-xs text-ink-lighter">Title will be filled from the frag.</p>
         </div>
 
         <div v-else>
@@ -849,8 +849,8 @@ const themeName = (id: string) => themes.value.find(t => t.id === id)?.name ?? '
 
 const FORM_LABELS: Record<ManuscriptForm, string> = {
   memoir: 'Memoir',
-  essay_collection: 'Essay collection',
-  long_form_essay: 'Long-form essay',
+  essay_collection: 'Frag collection',
+  long_form_essay: 'Long-form frag',
   creative_nonfiction: 'Creative nonfiction',
   hybrid: 'Hybrid',
   fictionalised_memoir: 'Fictionalised memoir',
@@ -875,7 +875,7 @@ const PURPOSE_LABELS: Record<ManuscriptSectionPurpose, string> = {
   unassigned: 'Section',
 }
 const ITEM_TYPE_LABELS: Record<ManuscriptItemType, string> = {
-  essay: 'Essay',
+  essay: 'Frag',
   bridge: 'Bridge',
   placeholder: 'Placeholder',
   note: 'Note',
@@ -1109,19 +1109,19 @@ async function confirmAddItem() {
 
   if (newItem.value.itemType === 'essay') {
     if (!newItem.value.writingBlockId) {
-      addItemError.value = 'Pick an essay from your library'
+      addItemError.value = 'Pick a frag from your library'
       return
     }
     writingBlockId = newItem.value.writingBlockId
     const block = writingBlocks.value.find(w => w.id === writingBlockId)
     title = block?.title ?? title
     if (!title) {
-      addItemError.value = 'Selected essay has no title'
+      addItemError.value = 'Selected frag has no title'
       return
     }
   } else {
     if (!title) {
-      addItemError.value = 'Title is required for non-essay items'
+      addItemError.value = 'Title is required for non-frag items'
       return
     }
   }
@@ -1144,7 +1144,7 @@ async function confirmAddItem() {
 }
 
 async function deleteItem(item: ManuscriptItem) {
-  if (!confirm(`Remove "${item.title}" from the manuscript?\n\nThe underlying essay (if any) is not deleted.`)) return
+  if (!confirm(`Remove "${item.title}" from the manuscript?\n\nThe underlying frag (if any) is not deleted.`)) return
   try {
     await manuscriptsApi.deleteItem(item.id)
     items.value = items.value.filter(i => i.id !== item.id)

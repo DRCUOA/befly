@@ -77,7 +77,7 @@
             <ul class="form-list">
               <li>A short summary of how the transition currently reads.</li>
               <li>Zero or more <strong>suggestions</strong>, each describing a specific gap, what kind of gap it is, and what could close it.</li>
-              <li>Provenance: short verbatim excerpts from your essays that anchor each suggestion.</li>
+              <li>Provenance: short verbatim excerpts from your frags that anchor each suggestion.</li>
             </ul>
             <p>
               You can run a full pass (every junction) by clicking <strong>Find gaps</strong>
@@ -130,7 +130,7 @@
             <h3 id="provenance">Provenance and grounding</h3>
             <p>
               Every suggestion lists what it was <strong>grounded in</strong> &mdash; short
-              verbatim excerpts from your essays that the model used to anchor its
+              verbatim excerpts from your frags that the model used to anchor its
               reasoning. Click <em>Grounded in</em> on any suggestion in the Find Gaps
               panel to see them.
             </p>
@@ -207,12 +207,12 @@
             <ul class="form-list">
               <li>The manuscript&rsquo;s title and form.</li>
               <li>Your literary direction fields (central question, through-line, emotional arc, narrative promise) when you&rsquo;ve set them.</li>
-              <li>The titles, summaries, and full bodies of the two essays at this junction (bodies are trimmed to ~3500 characters from each end if very long).</li>
+              <li>The titles, summaries, and full bodies of the two frags at this junction (bodies are trimmed to ~3500 characters from each end if very long).</li>
               <li>The titles of any prior <em>accepted</em> gap-analysis artifacts for this manuscript, so the model doesn&rsquo;t repeat itself.</li>
             </ul>
             <p>
               That&rsquo;s the entire payload. No theme list, no other manuscripts, no
-              user identifiers, no other essays. The system prompt forbids inventing
+              user identifiers, no other frags. The system prompt forbids inventing
               facts, so even if the model has training-data knowledge of your topic,
               it&rsquo;s instructed to ignore it and reason only from the supplied
               material.
@@ -246,7 +246,7 @@
             <p>
               By default the app uses <code>gpt-4o-mini</code>, OpenAI&rsquo;s cheapest
               capable model. A typical gap-analysis call sends a few thousand input
-              tokens (the two essay bodies are the bulk) and produces a few hundred
+              tokens (the two frag bodies are the bulk) and produces a few hundred
               output tokens. As of writing, that&rsquo;s a tenth of a cent or so per
               junction. A full pass on a 20-item manuscript is around 19 calls &mdash;
               call it two or three cents at the upper bound.

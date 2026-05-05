@@ -22,19 +22,19 @@
           </div>
           <span class="text-xs tracking-wide font-sans text-ink-whisper hidden sm:inline" aria-hidden="true">&middot;</span>
           <span class="text-xs tracking-wide font-sans text-ink-whisper hidden sm:inline">
-            {{ count }} {{ count === 1 ? 'essay' : 'essays' }}
+            {{ count }} {{ count === 1 ? 'frag' : 'frags' }}
           </span>
         </div>
         <div class="flex items-center gap-3 sm:gap-4">
           <span class="text-xs tracking-wide font-sans text-ink-whisper sm:hidden">
-            {{ count }} {{ count === 1 ? 'essay' : 'essays' }}
+            {{ count }} {{ count === 1 ? 'frag' : 'frags' }}
           </span>
           <div class="relative">
             <select
               :value="currentSort"
               @change="onSortChange"
               class="text-xs sm:text-sm font-sans text-ink-lighter bg-transparent border border-line rounded-none px-3 py-1.5 pr-8 appearance-none cursor-pointer hover:border-ink-lighter transition-colors duration-300"
-              aria-label="Sort essays"
+              aria-label="Sort frags"
             >
               <option v-for="option in sortOptions" :key="option.value" :value="option.value">
                 {{ option.label }}

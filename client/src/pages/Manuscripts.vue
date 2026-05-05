@@ -182,8 +182,8 @@ const themeName = (id: string) => themes.value.find(t => t.id === id)?.name ?? '
 
 const FORM_LABELS: Record<ManuscriptForm, string> = {
   memoir: 'Memoir',
-  essay_collection: 'Essay collection',
-  long_form_essay: 'Long-form essay',
+  essay_collection: 'Frag collection',
+  long_form_essay: 'Long-form frag',
   creative_nonfiction: 'Creative nonfiction',
   hybrid: 'Hybrid',
   fictionalised_memoir: 'Fictionalised memoir',
@@ -235,7 +235,7 @@ async function loadThemes() {
 }
 
 async function handleDelete(m: ManuscriptProject) {
-  if (!confirm(`Delete the manuscript "${m.title}"? Its sections and items will go too. The underlying essays in your library are kept.`)) {
+  if (!confirm(`Delete the manuscript "${m.title}"? Its sections and items will go too. The underlying frags in your library are kept.`)) {
     return
   }
   try {

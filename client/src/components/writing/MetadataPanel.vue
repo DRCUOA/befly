@@ -76,7 +76,7 @@
           </button>
         </div>
         <p class="mt-1 text-xs sm:text-sm text-ink-lighter">
-          Upload an image for the essay card thumbnail. Crop for best framing, or drag to reposition when larger than frame. JPEG, PNG, GIF, WebP up to 10MB.
+          Upload an image for the frag card thumbnail. Crop for best framing, or drag to reposition when larger than frame. JPEG, PNG, GIF, WebP up to 10MB.
         </p>
       </div>
 

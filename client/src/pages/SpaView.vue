@@ -25,7 +25,7 @@
         loading="eager"
       />
       <div v-else class="spa-status spa-status-error">
-        <p>This essay isn't a standalone HTML document.</p>
+        <p>This frag isn't a standalone HTML document.</p>
         <router-link :to="`/read/${writing.id}`" class="spa-back-link">← Read instead</router-link>
       </div>
 
@@ -68,7 +68,7 @@ const error = ref<string | null>(null)
 const isSpa = computed(() => isStandaloneHtmlDoc(writing.value?.body))
 
 const backRoute = computed(() => writing.value ? `/read/${writing.value.id}` : '/home')
-const backLabel = 'Back to essay'
+const backLabel = 'Back to frag'
 
 function goBack() {
   // Prefer browser history when possible (we were opened from /read/:id in a
@@ -91,7 +91,7 @@ onMounted(async () => {
     const res = await api.get<ApiResponse<WritingBlock>>(`/writing/${id}`)
     writing.value = res.data
   } catch (err) {
-    error.value = err instanceof Error ? err.message : 'Failed to load essay'
+    error.value = err instanceof Error ? err.message : 'Failed to load frag'
   } finally {
     loading.value = false
   }

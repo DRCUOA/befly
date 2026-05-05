@@ -29,7 +29,7 @@
           v-model="form.workingSubtitle"
           type="text"
           class="block w-full rounded-md border-line bg-paper text-ink shadow-sm focus:border-ink focus:ring-ink"
-          placeholder="Essays on grief, memory, and the discipline of continuing"
+          placeholder="Frags on grief, memory, and the discipline of continuing"
         />
       </div>
 
@@ -40,7 +40,7 @@
             Form
             <HelpTooltip link="/help/manuscripts#form" aria-label="About form">
               What kind of book this wants to be. Shapes how the AI treats it &mdash; an
-              essay collection allows variation between pieces; a long-form essay
+              frag collection allows variation between pieces; a long-form frag
               expects a single sustained argument.
             </HelpTooltip>
           </label>
@@ -76,13 +76,13 @@
         <label class="block text-sm font-medium mb-2 inline-flex items-center">
           Source themes
           <HelpTooltip link="/help/manuscripts#source-themes" aria-label="About source themes">
-            Themes whose essays seed this manuscript. A manuscript can draw from many
-            themes. Linking a theme doesn&rsquo;t auto-add its essays &mdash; you still
+            Themes whose frags seed this manuscript. A manuscript can draw from many
+            themes. Linking a theme doesn&rsquo;t auto-add its frags &mdash; you still
             choose what goes on the spine.
           </HelpTooltip>
         </label>
         <p class="mt-1 mb-2 text-xs text-ink-lighter">
-          Themes whose essays seed this manuscript. A manuscript can draw from many themes.
+          Themes whose frags seed this manuscript. A manuscript can draw from many themes.
         </p>
         <div v-if="themes.length === 0" class="text-sm text-ink-lighter italic">
           No themes yet. <router-link to="/themes/create" class="underline hover:text-ink">Create a theme first</router-link>.
@@ -132,11 +132,11 @@
           <label for="throughLine" class="block text-sm font-medium mb-1 inline-flex items-center">
             Through-line
             <HelpTooltip link="/help/manuscripts#through-line" aria-label="About through-line">
-              The thread that holds the essays together as one work. Often discovered
+              The thread that holds the frags together as one work. Often discovered
               rather than declared. Leave blank if you can&rsquo;t name it yet.
             </HelpTooltip>
           </label>
-          <p class="mb-2 text-xs text-ink-lighter">What holds the essays together? (Leave blank if not yet clear.)</p>
+          <p class="mb-2 text-xs text-ink-lighter">What holds the frags together? (Leave blank if not yet clear.)</p>
           <textarea
             id="throughLine"
             v-model="form.throughLine"
@@ -230,9 +230,9 @@ const route = useRoute()
 const router = useRouter()
 
 const FORM_OPTIONS: { value: ManuscriptForm; label: string }[] = [
-  { value: 'essay_collection', label: 'Essay collection' },
+  { value: 'essay_collection', label: 'Frag collection' },
   { value: 'memoir', label: 'Memoir' },
-  { value: 'long_form_essay', label: 'Long-form essay' },
+  { value: 'long_form_essay', label: 'Long-form frag' },
   { value: 'creative_nonfiction', label: 'Creative nonfiction' },
   { value: 'hybrid', label: 'Hybrid' },
   { value: 'fictionalised_memoir', label: 'Fictionalised memoir' },

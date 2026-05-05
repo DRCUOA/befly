@@ -11,7 +11,7 @@
         <p class="text-base sm:text-lg font-light text-ink-light leading-relaxed max-w-2xl mx-auto">
           Three guides for the parts of the app that reward a little explanation:
           shaping a manuscript, working with the AI assistant without losing your voice,
-          and moving essays in and out of the system.
+          and moving frags in and out of the system.
         </p>
       </div>
     </div>
@@ -27,7 +27,7 @@
             Manuscripts
           </h2>
           <p class="text-sm font-light text-ink-light leading-relaxed">
-            What a manuscript is in this app, why it&rsquo;s more than a folder of essays,
+            What a manuscript is in this app, why it&rsquo;s more than a folder of frags,
             and how to use the literary direction fields, sections, and the spine to
             shape a body of work.
           </p>
@@ -58,7 +58,7 @@
           </h2>
           <p class="text-sm font-light text-ink-light leading-relaxed">
             The JSON envelope format, theme dedup behaviour, ownership choices,
-            and how to back up or move essays between deployments. Admin only.
+            and how to back up or move frags between deployments. Admin only.
           </p>
         </router-link>
       </div>

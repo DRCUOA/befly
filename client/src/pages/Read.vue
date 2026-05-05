@@ -80,7 +80,7 @@
                 :to="`/write/${writing.id}`"
                 class="inline-flex items-center justify-center w-10 h-10 rounded text-ink-lighter hover:text-ink hover:bg-line transition-colors"
                 :aria-label="`Edit ${writing.title}`"
-                title="Edit essay"
+                title="Edit frag"
               >
                 <svg
                   class="w-5 h-5"
@@ -149,7 +149,7 @@
             loading="lazy"
           />
           <p class="mt-3 px-4 text-xs font-sans text-ink-lighter">
-            Interactive essay rendered in an isolated frame. For best experience,
+            Interactive frag rendered in an isolated frame. For best experience,
             <a
               :href="`/spa/${writing.id}`"
               target="_blank"

@@ -7,7 +7,7 @@
       <header class="px-6 py-4 border-b border-line flex items-center justify-between">
         <div>
           <span class="inline-flex items-center">
-            <h2 class="text-lg font-light tracking-tight">Import &middot; Export Essays</h2>
+            <h2 class="text-lg font-light tracking-tight">Import &middot; Export Frags</h2>
             <HelpTooltip link="/help/import-export" aria-label="About import/export">
               JSON envelope format. Themes travel inline; the importer remaps theme
               IDs by name to the target account. Cover image files are not embedded
@@ -55,14 +55,14 @@
               <label class="flex items-start gap-3 cursor-pointer">
                 <input v-model="exportScope" type="radio" value="all" class="mt-1" />
                 <span class="text-sm">
-                  <span class="font-medium block">All users, all essays</span>
-                  <span class="text-ink-light">Every essay in the database. Use carefully on large data.</span>
+                  <span class="font-medium block">All users, all frags</span>
+                  <span class="text-ink-light">Every frag in the database. Use carefully on large data.</span>
                 </span>
               </label>
               <label class="flex items-start gap-3 cursor-pointer">
                 <input v-model="exportScope" type="radio" value="user" class="mt-1" />
                 <span class="text-sm flex-1">
-                  <span class="font-medium block">A specific user's essays</span>
+                  <span class="font-medium block">A specific user's frags</span>
                   <select
                     v-model="exportUserId"
                     :disabled="exportScope !== 'user'"
@@ -80,7 +80,7 @@
 
           <div v-if="exportScope === 'user' && exportUserId">
             <div class="flex items-center justify-between mb-2">
-              <h3 class="text-base font-medium">Pick essays (optional)</h3>
+              <h3 class="text-base font-medium">Pick frags (optional)</h3>
               <button
                 v-if="userEssays.length > 0"
                 type="button"
@@ -91,11 +91,11 @@
               </button>
             </div>
             <p class="text-xs text-ink-lighter mb-2">
-              Leave none selected to export every essay this user owns.
+              Leave none selected to export every frag this user owns.
             </p>
-            <div v-if="loadingEssays" class="text-sm text-ink-light italic">Loading essays&hellip;</div>
+            <div v-if="loadingEssays" class="text-sm text-ink-light italic">Loading frags&hellip;</div>
             <div v-else-if="userEssays.length === 0" class="text-sm text-ink-lighter italic">
-              This user has no essays.
+              This user has no frags.
             </div>
             <ul v-else class="border border-line rounded max-h-64 overflow-y-auto divide-y divide-line">
               <li v-for="e in userEssays" :key="e.id" class="px-3 py-2">
@@ -149,7 +149,7 @@
             <div class="bg-surface/50 border border-line rounded p-4 text-sm">
               <p class="font-medium">{{ parsedEnvelope.scopeLabel || 'Imported envelope' }}</p>
               <p class="text-ink-light mt-1">
-                {{ parsedEnvelope.essays.length }} essay(s),
+                {{ parsedEnvelope.essays.length }} frag(s),
                 {{ parsedEnvelope.themes.length }} theme(s)
                 · version {{ parsedEnvelope.version }}
                 · exported {{ formatDate(parsedEnvelope.exportedAt) }}
@@ -158,9 +158,9 @@
 
             <div>
               <h3 class="text-base font-medium mb-2 inline-flex items-center">
-                Who should own these essays?
+                Who should own these frags?
                 <HelpTooltip link="/help/import-export#ownership" aria-label="About ownership">
-                  Imported essays are always assigned to a user that exists in the
+                  Imported frags are always assigned to a user that exists in the
                   destination database. The original userId in the envelope is used
                   only to label the export, never to assign ownership.
                 </HelpTooltip>
@@ -170,7 +170,7 @@
                   <input v-model="importOwnership" type="radio" value="self" class="mt-1" />
                   <span class="text-sm">
                     <span class="font-medium block">Me ({{ adminDisplayName }})</span>
-                    <span class="text-ink-light">All imported essays will be created on my account.</span>
+                    <span class="text-ink-light">All imported frags will be created on my account.</span>
                   </span>
                 </label>
                 <label class="flex items-start gap-3 cursor-pointer">
@@ -193,7 +193,7 @@
             </div>
 
             <div>
-              <h3 class="text-base font-medium mb-2">Pick essays to import (optional)</h3>
+              <h3 class="text-base font-medium mb-2">Pick frags to import (optional)</h3>
               <p class="text-xs text-ink-lighter mb-2">
                 Leave none selected to import everything in the file.
               </p>
@@ -236,7 +236,7 @@
               <div class="bg-green-50 border border-green-200 rounded p-3 text-sm">
                 <p class="font-medium text-green-900">Import complete</p>
                 <p class="text-green-800 mt-1">
-                  {{ importResult.created.length }} of {{ importResult.total }} essays created.
+                  {{ importResult.created.length }} of {{ importResult.total }} frags created.
                   {{ importResult.themes.filter(t => t.created).length }} new theme(s).
                   {{ importResult.errors.length }} error(s).
                 </p>
@@ -277,7 +277,7 @@
             <p class="inline-flex items-center">
               The export and import use a single JSON envelope.
               <HelpTooltip link="/help/import-export#envelope" aria-label="About the envelope">
-                The envelope is versioned (currently 1.0). Themes are inline; essay
+                The envelope is versioned (currently 1.0). Themes are inline; frag
                 IDs are advisory and re-generated on import. Importing the same file
                 twice produces duplicates, not collisions.
               </HelpTooltip>
@@ -293,7 +293,7 @@
             </p>
             <ul class="list-disc pl-6 text-ink-light text-sm space-y-1">
               <li>Themes travel inline; the importer finds-or-creates them by name on the target account.</li>
-              <li>Essay IDs are advisory; the importer always assigns fresh UUIDs.</li>
+              <li>Frag IDs are advisory; the importer always assigns fresh UUIDs.</li>
               <li>Cover image URLs are preserved as references. The actual image files are not embedded.</li>
             </ul>
           </div>
@@ -408,11 +408,11 @@ const exportFilename = computed(() => {
 })
 const exportSummaryLabel = computed(() => {
   if (!exportEnabled.value) return 'Choose a scope to enable'
-  if (exportScope.value === 'all') return 'Will export every essay from every user'
+  if (exportScope.value === 'all') return 'Will export every frag from every user'
   if (selectedEssayIds.value.length > 0) {
-    return `Will export ${selectedEssayIds.value.length} selected essay(s)`
+    return `Will export ${selectedEssayIds.value.length} selected frag(s)`
   }
-  return `Will export every essay from this user (${userEssays.value.length})`
+  return `Will export every frag from this user (${userEssays.value.length})`
 })
 function onExportClicked(e: MouseEvent) {
   if (!exportEnabled.value) e.preventDefault()
@@ -449,7 +449,7 @@ function onFileChosen(e: Event) {
       const parsed = JSON.parse(text)
       // Quick shape check before handing to the server.
       if (!parsed || parsed.type !== 'essays' || !Array.isArray(parsed.essays)) {
-        parseError.value = 'This file is not a valid essays export envelope.'
+        parseError.value = 'This file is not a valid frags export envelope.'
         return
       }
       parsedEnvelope.value = parsed as EssayExportEnvelope

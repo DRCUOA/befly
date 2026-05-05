@@ -20,10 +20,10 @@
         <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-3">
           <div>
             <h1 class="text-3xl sm:text-4xl md:text-5xl font-light tracking-tight mb-2">
-              Essay administration
+              Frag administration
             </h1>
             <p class="text-base font-light text-ink-light">
-              Every essay across every user. Search, filter, edit, and prune.
+              Every frag across every user. Search, filter, edit, and prune.
             </p>
           </div>
           <div class="flex items-center gap-2">
@@ -112,14 +112,14 @@
     <!-- Body -->
     <div class="w-full px-4 sm:px-6 md:px-8 py-6 bg-paper min-h-screen">
       <div class="max-w-7xl mx-auto">
-        <p v-if="loading" class="text-center text-ink-light py-16">Loading essays…</p>
+        <p v-if="loading" class="text-center text-ink-light py-16">Loading frags…</p>
         <div v-else-if="error" class="bg-red-50 border border-red-200 rounded-md p-4 text-red-800">
           {{ error }}
           <button @click="load" class="ml-3 underline">Try again</button>
         </div>
 
         <div v-else-if="rows.length === 0" class="text-center py-16 text-ink-light">
-          No essays match these filters.
+          No frags match these filters.
         </div>
 
         <table v-else class="w-full text-sm border-collapse">
@@ -337,7 +337,7 @@ async function load() {
     rows.value = res.data
     total.value = res.meta.total
   } catch (err) {
-    error.value = err instanceof Error ? err.message : 'Failed to load essays'
+    error.value = err instanceof Error ? err.message : 'Failed to load frags'
   } finally {
     loading.value = false
   }
@@ -400,7 +400,7 @@ async function onChangeVisibility(row: AdminEssayRow, visibility: 'private' | 's
 
 async function onDelete(row: AdminEssayRow) {
   const ok = confirm(
-    `Delete this essay?\n\n"${row.title || '(untitled)'}"\nby ${row.authorDisplayName || row.authorEmail}\n\nThis cannot be undone. The essay's comments, appreciations, and any manuscript-spine slots that referenced it will lose the link (slots remain in place).`
+    `Delete this frag?\n\n"${row.title || '(untitled)'}"\nby ${row.authorDisplayName || row.authorEmail}\n\nThis cannot be undone. The frag's comments, appreciations, and any manuscript-spine slots that referenced it will lose the link (slots remain in place).`
   )
   if (!ok) return
   updatingId.value = row.id

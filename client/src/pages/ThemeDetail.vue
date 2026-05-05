@@ -17,7 +17,7 @@
             {{ theme.name }}
           </h1>
           <p class="text-base sm:text-lg font-light text-ink-light leading-relaxed">
-            {{ themeEssays.length }} {{ themeEssays.length === 1 ? 'essay' : 'essays' }} exploring this theme
+            {{ themeEssays.length }} {{ themeEssays.length === 1 ? 'frag' : 'frags' }} exploring this theme
           </p>
 
           <div v-if="canStartManuscript" class="mt-6">
@@ -49,7 +49,7 @@
         </div>
 
         <div v-else-if="themeEssays.length === 0" class="text-center py-16">
-          <p class="text-lg font-light text-ink-light">No essays in this theme yet.</p>
+          <p class="text-lg font-light text-ink-light">No frags in this theme yet.</p>
         </div>
 
         <div v-else class="space-y-0">

@@ -74,7 +74,7 @@ export function useWritingAssist(
   async function run(request: WritingAssistRequest): Promise<WritingAssistResponse> {
     const id = writingId()
     if (!id) {
-      const message = 'Cannot run assist before the essay has been saved.'
+      const message = 'Cannot run assist before the frag has been saved.'
       console.warn('[writing-assist] skipped — no writingId yet', { mode: request.mode })
       status.value = { kind: 'error', mode: request.mode, message, unconfigured: false }
       throw new Error(message)

@@ -42,7 +42,7 @@
         >
           <p class="font-medium text-ink mb-1">Save your draft first</p>
           <p>
-            AI assist works on a saved essay so it can include the right context.
+            AI assist works on a saved frag so it can include the right context.
             Hit <span class="font-medium">Publish</span> (you can leave visibility on
             <span class="font-medium">Private</span> in the Metadata panel) to enable these tools.
           </p>
@@ -121,7 +121,7 @@
             Select some text in the editor first — focus needs a passage to tighten.
           </p>
           <p v-else class="text-sm text-ink-light">
-            Working on the whole essay.
+            Working on the whole frag.
           </p>
         </section>
 
@@ -274,7 +274,7 @@ const AUTO_LABELS: Record<WritingAssistMode, string> = {
 }
 
 const LOADING_LINES: Record<WritingAssistMode, string> = {
-  coherence:             'Reading the essay and any siblings…',
+  coherence:             'Reading the frag and any siblings…',
   define:                'Looking up the term…',
   focus:                 'Tightening without losing voice…',
   expand:                'Looking for substance, not filler…',

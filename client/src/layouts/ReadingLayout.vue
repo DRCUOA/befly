@@ -62,7 +62,7 @@
             @click="menuOpen = false"
             class="block text-sm tracking-wide font-sans text-ink-lighter hover:text-ink"
           >
-            Essays
+            Frags
           </router-link>
           <router-link
             to="/themes"
@@ -113,7 +113,7 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   backRoute: '/home',
-  backLabel: 'Back to essays',
+  backLabel: 'Back to frags',
   siteName: appConfig.appName,
 })
 

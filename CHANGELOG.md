@@ -5,6 +5,15 @@ All notable changes to the Rambulations writing platform are documented in this 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.10] - 2026-05-06
+
+### Changed
+- **Nav redesign** — primary content links (Frags / Themes / Manuscripts) on the left; right cluster groups Write CTA, theme toggle, and an account dropdown (avatar + display name + chevron). Profile, Help, About, Admin, and Sign out moved into the dropdown to declutter the bar. Fixed header height prevents wrapping; dropdown closes on outside-click, Escape, and route change.
+- **Entity rename in UI: "Essay" → "Frag"** (shorthand for fragment) — applied to all user-visible labels, headings, prose, placeholders, aria-labels, titles, confirm/error messages, and display-label maps across the nav, Home, Themes, ThemeDetail, Read, SpaView, Write, Landing, all Help pages, AdminEssays, Admin, Manuscripts, ManuscriptDetail, ManuscriptForm, BookPreviewModal, ImportExportModal, FilterNavigation, CollectionCard, BackNavigation, ReadingLayout, CompletionPage, the navigation store, useWritingAssist, MetadataPanel, WritingAssistPanel, and WritingToolsCluster. Routes, file names, code identifiers, API endpoints, CSS classes, and item-type discriminators are unchanged.
+- Version bump 0.5.9 → 0.5.10
+
+---
+
 ## [0.5.9] - 2026-03-04
 
 ### Added
