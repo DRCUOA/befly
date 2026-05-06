@@ -82,6 +82,29 @@ app.use('/api', (req, res, next) => {
   generalRateLimit(req, res, next)
 })
 
+// Disable HTTP caching on every API response.
+//
+// Why: bafbe.com sits behind Cloudflare. Without an explicit Cache-Control
+// header, both the browser and Cloudflare's edge are free to apply
+// heuristic caching to GET responses. The chat-polling path was hitting
+// this — the client polled GET /chats/:id and got back a stale snapshot
+// of the assistant message (status=pending, content='') AFTER the
+// background worker had already finalised it. The result was a chat
+// that looked like it never replied, even though the server had done
+// the work.
+//
+// Marking every API response as no-store, no-cache, must-revalidate +
+// "private" guarantees neither Cloudflare nor any intermediary serves
+// stale data, and tells the browser not to keep its own copy. The
+// performance cost is negligible — the API responses are personalised
+// per user and not really cacheable to begin with.
+app.use('/api', (_req, res, next) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private')
+  res.setHeader('Pragma', 'no-cache')
+  res.setHeader('Expires', '0')
+  next()
+})
+
 // Serve uploaded images from PostgreSQL (filesystem is ephemeral on Heroku)
 app.get('/uploads/cover/:filename', asyncHandler(uploadsController.serve))
 

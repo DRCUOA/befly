@@ -47,8 +47,15 @@ export const manuscriptChatApi = {
   },
 
   get(manuscriptId: string, chatId: string): Promise<ManuscriptChatWithMessages> {
+    // cache: 'no-store' is defence in depth on top of the server's
+    // Cache-Control: no-store header. The poll path needs the freshest
+    // possible row to detect when a pending placeholder has been
+    // finalised by the background worker.
     return api
-      .get<ApiResponse<ManuscriptChatWithMessages>>(`/manuscripts/${manuscriptId}/chats/${chatId}`)
+      .get<ApiResponse<ManuscriptChatWithMessages>>(
+        `/manuscripts/${manuscriptId}/chats/${chatId}`,
+        { cache: 'no-store' }
+      )
       .then(r => r.data)
   },
 
