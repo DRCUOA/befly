@@ -1,5 +1,6 @@
 import { Router } from 'express'
 import { manuscriptController } from '../controllers/manuscript.controller.js'
+import { manuscriptChatController } from '../controllers/manuscript-chat.controller.js'
 import { validateBody } from '../middleware/validate.middleware.js'
 import { optionalAuthMiddleware, authMiddleware } from '../middleware/auth.middleware.js'
 import { asyncHandler } from '../utils/asyncHandler.js'
@@ -47,5 +48,18 @@ router.put('/:id/items/reorder', authMiddleware, asyncHandler(manuscriptControll
 
 router.put('/items/:itemId', authMiddleware, asyncHandler(manuscriptController.updateItem))
 router.delete('/items/:itemId', authMiddleware, asyncHandler(manuscriptController.deleteItem))
+
+/* ----- Chat (RAG-backed conversational assist) -----
+ * /chats/models is mounted BEFORE /:manuscriptId/chats/:chatId so the
+ * literal "models" segment doesn't get matched as a chatId UUID.
+ */
+router.get('/chats/models', authMiddleware, asyncHandler(manuscriptChatController.listModels))
+
+router.get('/:manuscriptId/chats',                       authMiddleware, asyncHandler(manuscriptChatController.listChats))
+router.post('/:manuscriptId/chats',                      authMiddleware, asyncHandler(manuscriptChatController.createChat))
+router.get('/:manuscriptId/chats/:chatId',               authMiddleware, asyncHandler(manuscriptChatController.getChat))
+router.post('/:manuscriptId/chats/:chatId/messages',     authMiddleware, asyncHandler(manuscriptChatController.sendMessage))
+router.put('/:manuscriptId/chats/:chatId',               authMiddleware, asyncHandler(manuscriptChatController.updateChat))
+router.delete('/:manuscriptId/chats/:chatId',            authMiddleware, asyncHandler(manuscriptChatController.deleteChat))
 
 export default router

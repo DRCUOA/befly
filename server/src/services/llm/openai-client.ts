@@ -17,6 +17,8 @@ import {
   LlmClient,
   LlmJsonRequest,
   LlmJsonResponse,
+  LlmChatRequest,
+  LlmChatResponse,
   LlmConfigurationError,
   LlmRequestError,
 } from './llm-client.js'
@@ -311,6 +313,176 @@ class OpenAIClient implements LlmClient {
         completionTokens: payload.usage.completion_tokens,
         totalTokens: payload.usage.total_tokens,
       },
+    }
+  }
+
+  /**
+   * Free-form (non-JSON-mode) chat completion. Mirrors `chatJson`'s
+   * reasoning-vs-chat branching and ai_exchanges write path, but doesn't
+   * set `response_format` and doesn't try to parse the content as JSON.
+   *
+   * Used by the manuscript chat surface where the model returns markdown
+   * the user reads directly. Other features keep using chatJson because
+   * they consume structured fields downstream and want hard JSON-shape
+   * guarantees.
+   */
+  async chatText(req: LlmChatRequest): Promise<LlmChatResponse> {
+    const model = req.model || this.config.defaultModel
+    const reasoning = isReasoningModel(model)
+
+    const body: Record<string, unknown> = {
+      model,
+      max_completion_tokens: req.maxOutputTokens ?? DEFAULT_MAX_TOKENS,
+      messages: req.messages.map(m => ({ role: m.role, content: m.content })),
+    }
+
+    if (reasoning) {
+      body.reasoning_effort = 'low'
+    } else {
+      body.temperature = req.temperature ?? DEFAULT_TEMPERATURE
+    }
+
+    // Reduce the messages into a flat system/user pair for ai_exchanges
+    // bookkeeping. The diagnostic log expects two text columns; preserving
+    // turn structure here would force a schema migration just for chat.
+    const systemPrompt = req.messages
+      .filter(m => m.role === 'system')
+      .map(m => m.content)
+      .join('\n\n---\n\n')
+    const userPrompt = req.messages
+      .filter(m => m.role !== 'system')
+      .map(m => `[${m.role}]\n${m.content}`)
+      .join('\n\n---\n\n')
+
+    const baseRecord: Omit<CreateAiExchangeParams, 'status' | 'durationMs'> = {
+      userId:          req.context?.userId ?? null,
+      feature:         req.context?.feature ?? 'unknown',
+      mode:            req.context?.mode ?? null,
+      resourceType:    req.context?.resourceType ?? null,
+      resourceId:      req.context?.resourceId ?? null,
+      manuscriptId:    req.context?.manuscriptId ?? null,
+      provider:        'openai',
+      model,
+      temperature:     reasoning ? null : (body.temperature as number),
+      maxOutputTokens: body.max_completion_tokens as number,
+      systemPrompt,
+      userPrompt,
+    }
+
+    const sentAt = Date.now()
+    let response: Response
+    try {
+      response = await fetch(ENDPOINT, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${this.config.apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+      })
+    } catch (networkErr) {
+      const ms = Date.now() - sentAt
+      const message = networkErr instanceof Error ? networkErr.message : String(networkErr)
+      logger.error('[openai.chatText] network error', { model, ms, message })
+      void aiExchangeRepo.record({
+        ...baseRecord,
+        status: 'error',
+        httpStatus: null,
+        responseRaw: null,
+        responseJson: null,
+        durationMs: ms,
+        errorMessage: `network error: ${message}`,
+      })
+      throw new LlmRequestError(`OpenAI request failed: ${message}`)
+    }
+
+    if (!response.ok) {
+      const text = await response.text().catch(() => '')
+      const ms = Date.now() - sentAt
+      logger.error('[openai.chatText] non-2xx response', {
+        model, status: response.status, ms, body: text.slice(0, 500),
+      })
+      void aiExchangeRepo.record({
+        ...baseRecord,
+        status: 'error',
+        httpStatus: response.status,
+        responseRaw: text,
+        responseJson: null,
+        durationMs: ms,
+        errorMessage: `provider returned HTTP ${response.status}`,
+      })
+      throw new LlmRequestError(
+        `OpenAI returned ${response.status}: ${text.slice(0, 500)}`,
+        response.status
+      )
+    }
+
+    const rawBodyText = await response.text()
+    let payload: {
+      choices?: { message?: { content?: string } }[]
+      usage?: { prompt_tokens?: number; completion_tokens?: number; total_tokens?: number }
+    }
+    try {
+      payload = JSON.parse(rawBodyText)
+    } catch (parseErr) {
+      const ms = Date.now() - sentAt
+      void aiExchangeRepo.record({
+        ...baseRecord,
+        status: 'error',
+        httpStatus: response.status,
+        responseRaw: rawBodyText,
+        responseJson: null,
+        durationMs: ms,
+        errorMessage: `provider envelope was not JSON: ${parseErr instanceof Error ? parseErr.message : String(parseErr)}`,
+      })
+      throw new LlmRequestError(
+        `OpenAI returned non-JSON envelope: ${rawBodyText.slice(0, 200)}`
+      )
+    }
+
+    const content = payload.choices?.[0]?.message?.content
+    if (typeof content !== 'string' || content.trim() === '') {
+      const ms = Date.now() - sentAt
+      void aiExchangeRepo.record({
+        ...baseRecord,
+        status: 'error',
+        httpStatus: response.status,
+        responseRaw: rawBodyText,
+        responseJson: null,
+        promptTokens:     payload.usage?.prompt_tokens     ?? null,
+        completionTokens: payload.usage?.completion_tokens ?? null,
+        totalTokens:      payload.usage?.total_tokens      ?? null,
+        durationMs: ms,
+        errorMessage: 'provider returned no message content',
+      })
+      throw new LlmRequestError('OpenAI returned no message content')
+    }
+
+    const ms = Date.now() - sentAt
+    // record() returns the persisted row (with id) so the chat service can
+    // link a stored message back to the diagnostic log. Awaited here on
+    // purpose — chatText callers want the FK on their persisted message.
+    const stored = await aiExchangeRepo.record({
+      ...baseRecord,
+      status: 'ok',
+      httpStatus: response.status,
+      responseRaw: content,
+      responseJson: null,
+      promptTokens:     payload.usage?.prompt_tokens     ?? null,
+      completionTokens: payload.usage?.completion_tokens ?? null,
+      totalTokens:      payload.usage?.total_tokens      ?? null,
+      durationMs: ms,
+    })
+
+    return {
+      content,
+      model,
+      usage: payload.usage && {
+        promptTokens: payload.usage.prompt_tokens,
+        completionTokens: payload.usage.completion_tokens,
+        totalTokens: payload.usage.total_tokens,
+      },
+      exchangeId: stored?.id ?? null,
     }
   }
 }

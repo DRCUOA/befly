@@ -187,10 +187,43 @@ The retrieval helper short-circuits to an empty result if
 
 ## AI prompt integration
 
-Both `manuscript-assist` and `writing-assist` already send
-`LlmRequestContext.manuscriptId` through to the OpenAI client; the
-client persists it on `ai_exchanges.manuscript_id` (migration 021).
-This makes every AI exchange queryable per-manuscript.
+Three call sites use the retrieval layer today:
+
+- `manuscript-assist` — gap-analysis mode (whole-manuscript runs only)
+- `writing-assist` — coherence mode when the essay is part of a manuscript
+- `manuscript-chat` — every turn in the chat drawer
+
+All three send `LlmRequestContext.manuscriptId` through to the OpenAI
+client; the client persists it on `ai_exchanges.manuscript_id`
+(migration 021). This makes every AI exchange queryable per-manuscript.
+
+### Manuscript chat
+
+The chat drawer accessible from each manuscript's detail page is the
+primary consumer of retrieval — it's the only call site that asks
+ad-hoc questions across the whole indexed corpus. Schema in
+[migration 023](../server/src/db/migrations/023_manuscript_chats.sql);
+service in
+[manuscript-chat.service.ts](../server/src/services/manuscript-chat.service.ts);
+UI in
+[ChatDrawer.vue](../client/src/components/manuscripts/ChatDrawer.vue).
+
+Per-turn flow:
+
+1. Persist the user's message to `manuscript_chat_messages` immediately
+   (so the conversation state survives an LLM failure).
+2. Retrieve a fresh manuscript-scoped context pack for the new question.
+3. Send `system + retrieved_pack + last 6 turns + new question` via
+   `LlmClient.chatText` (non-JSON mode — returns markdown).
+4. Persist the assistant reply with `retrieved_chunk_ids` for provenance
+   and `ai_exchange_id` for the diagnostic audit trail.
+
+Chats are private to their author even when the manuscript is shared.
+The per-conversation model is chosen from a curated allow-list
+(`MANUSCRIPT_CHAT_MODELS` in
+[shared/ManuscriptChat.ts](../shared/ManuscriptChat.ts)) so a typo can't
+break a thread. History is capped at the last 6 messages — older turns
+are simply dropped (no summary rollup yet).
 
 The retrieval helper is invoked best-effort:
 
