@@ -97,12 +97,22 @@
             <div class="flex items-start gap-2">
               <span
                 class="text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded mt-0.5"
-                :class="msg.role === 'user' ? 'bg-blue-50 text-blue-700' : 'bg-gray-100 text-ink-light'"
+                :class="msg.role === 'user' ? 'bg-blue-50 text-blue-700' : (msg.status === 'error' ? 'bg-red-50 text-red-700' : 'bg-gray-100 text-ink-light')"
               >{{ msg.role }}</span>
               <div class="flex-1 min-w-0">
+                <!-- Pending assistant placeholder while the background
+                     LLM call is still running. -->
+                <div v-if="msg.role === 'assistant' && msg.status === 'pending'" class="text-sm italic text-ink-lighter">
+                  <span class="inline-flex items-center gap-1">
+                    <span class="dot-pulse">Thinking</span>
+                    <span class="dot-pulse-anim">…</span>
+                  </span>
+                  <span class="ml-1 text-[10px]">({{ msg.model || 'default model' }})</span>
+                </div>
                 <div
+                  v-else
                   class="text-sm whitespace-pre-wrap break-words"
-                  :class="msg.role === 'user' ? 'text-ink' : 'text-ink-light'"
+                  :class="msg.role === 'user' ? 'text-ink' : (msg.status === 'error' ? 'text-red-700' : 'text-ink-light')"
                 >{{ msg.content }}</div>
                 <div v-if="msg.retrievedChunkIds.length > 0" class="mt-1">
                   <details class="text-[11px] text-ink-lighter">
@@ -121,13 +131,12 @@
                     </ul>
                   </details>
                 </div>
-                <p v-if="msg.role === 'assistant' && msg.model" class="text-[10px] text-ink-lighter mt-0.5">
+                <p v-if="msg.role === 'assistant' && msg.status === 'complete' && msg.model" class="text-[10px] text-ink-lighter mt-0.5">
                   {{ msg.model }}<span v-if="msg.completionTokens"> · {{ msg.completionTokens }} tokens out</span>
                 </p>
               </div>
             </div>
           </div>
-          <div v-if="busy" class="text-xs text-ink-lighter italic">Thinking…</div>
           <p v-if="errorMessage" class="text-xs text-red-600 mt-2">{{ errorMessage }}</p>
         </template>
       </div>
@@ -138,21 +147,26 @@
           <textarea
             v-model="draft"
             rows="2"
-            :disabled="!activeChat || busy"
-            placeholder="Ask anything about this manuscript…"
+            :disabled="composerDisabled"
+            :placeholder="hasPending ? 'Waiting for the model to reply…' : 'Ask anything about this manuscript…'"
             class="flex-1 text-sm border border-gray-200 rounded px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-blue-400 resize-none disabled:bg-gray-50"
             @keydown.enter.exact.prevent="onSubmit"
           ></textarea>
           <button
             type="submit"
-            :disabled="!activeChat || busy || !draft.trim()"
+            :disabled="composerDisabled || !draft.trim()"
             class="px-3 py-1.5 text-sm border border-blue-500 text-blue-700 rounded hover:bg-blue-50 disabled:opacity-50"
           >
             {{ busy ? 'Sending…' : 'Send' }}
           </button>
         </form>
         <p class="text-[10px] text-ink-lighter mt-1">
-          Enter to send · Shift+Enter for newline · Replies use indexed manuscript context. Reindex from /admin/rag if results look stale.
+          <template v-if="hasPending">
+            Reasoning models can take 30–60s. The reply will land here automatically — feel free to leave the drawer open.
+          </template>
+          <template v-else>
+            Enter to send · Shift+Enter for newline · Replies use indexed manuscript context. Reindex from /admin/rag if results look stale.
+          </template>
         </p>
       </footer>
     </aside>
@@ -160,7 +174,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, nextTick } from 'vue'
+import { ref, computed, watch, nextTick, onBeforeUnmount } from 'vue'
 import { manuscriptChatApi } from '../../api/manuscriptChat'
 import type {
   ManuscriptChat,
@@ -199,6 +213,60 @@ const messagesEl = ref<HTMLElement | null>(null)
 const activeChat = computed(() =>
   chats.value.find(c => c.id === selectedChatId.value) ?? null
 )
+
+/**
+ * True while any message in the active chat is in 'pending' status —
+ * meaning the server's background worker hasn't finished the LLM call
+ * yet. We poll while this is true and disable the composer so the
+ * writer can't fire a second turn before the first lands.
+ */
+const hasPending = computed(() => messages.value.some(m => m.status === 'pending'))
+
+const composerDisabled = computed(() => !activeChat.value || busy.value || hasPending.value)
+
+// Polling state. Cleared on chat change, drawer close, and unmount so a
+// stale interval can't keep firing against the wrong chat.
+let pollTimer: ReturnType<typeof setInterval> | null = null
+const POLL_INTERVAL_MS = 2000
+const POLL_MAX_MS = 5 * 60 * 1000  // give up after 5 minutes
+let pollStartedAt = 0
+
+const stopPolling = () => {
+  if (pollTimer) {
+    clearInterval(pollTimer)
+    pollTimer = null
+  }
+}
+
+const startPollingIfNeeded = () => {
+  if (pollTimer) return
+  if (!hasPending.value) return
+  pollStartedAt = Date.now()
+  pollTimer = setInterval(async () => {
+    if (!selectedChatId.value || !props.open) {
+      stopPolling()
+      return
+    }
+    if (Date.now() - pollStartedAt > POLL_MAX_MS) {
+      stopPolling()
+      errorMessage.value = 'The model is taking longer than expected. Refresh the chat to check again.'
+      return
+    }
+    try {
+      const r = await manuscriptChatApi.get(props.manuscriptId, selectedChatId.value)
+      messages.value = r.messages
+      if (!hasPending.value) {
+        stopPolling()
+        await scrollToBottom()
+      }
+    } catch (e) {
+      // Network blip — keep polling. If the user closes the drawer or
+      // navigates away, the watch on `props.open` clears the timer.
+      // eslint-disable-next-line no-console
+      console.warn('[chat] poll error', e)
+    }
+  }, POLL_INTERVAL_MS)
+}
 
 const scrollToBottom = async () => {
   await nextTick()
@@ -255,6 +323,9 @@ const loadMessages = async (chatId: string) => {
     messages.value = r.messages
     modelForActive.value = r.chat.model
     await scrollToBottom()
+    // If we landed on a chat whose latest assistant turn is still
+    // pending (e.g. the writer reloaded mid-call), resume polling.
+    if (hasPending.value) startPollingIfNeeded()
   } catch (e) {
     errorMessage.value = e instanceof Error ? e.message : String(e)
   } finally {
@@ -325,16 +396,20 @@ const changeModel = async () => {
 }
 
 const onSubmit = async () => {
-  if (!activeChat.value || busy.value || !draft.value.trim()) return
+  if (composerDisabled.value || !draft.value.trim()) return
+  if (!activeChat.value) return
   const content = draft.value.trim()
   busy.value = true
   errorMessage.value = ''
-  // Optimistic echo of the user message so the UI feels responsive.
+  // Optimistic echo of the user message so the UI feels responsive
+  // while the POST round-trip is in flight (~100ms now that the LLM
+  // call no longer blocks the request).
   const optimistic: ManuscriptChatMessage = {
     id: `optimistic-${Date.now()}`,
     chatId: activeChat.value.id,
     role: 'user',
     content,
+    status: 'complete',
     retrievedChunkIds: [],
     aiExchangeId: null,
     model: null,
@@ -347,17 +422,19 @@ const onSubmit = async () => {
   await scrollToBottom()
   try {
     const result = await manuscriptChatApi.sendMessage(props.manuscriptId, activeChat.value.id, content)
-    // Replace the optimistic message with the persisted one and append
-    // the assistant turn.
+    // The server returned the persisted user message + a 'pending'
+    // assistant placeholder. The actual assistant content arrives via
+    // polling once the background LLM call finishes.
     messages.value = [
       ...messages.value.filter(m => m.id !== optimistic.id),
       result.userMessage,
       result.assistantMessage,
     ]
-    citationsByMessageId.value = {
-      ...citationsByMessageId.value,
-      [result.assistantMessage.id]: result.citations,
-    }
+    // Citations are no longer returned synchronously — they land on
+    // the placeholder row via retrieved_chunk_ids when the background
+    // worker finalises it. The "Grounded in N sources" UI reads the
+    // chunk count off the message; the per-citation excerpts will
+    // populate when we add a chunks-by-id endpoint.
     // Bump the chat to the top of the list (its updatedAt just changed).
     const idx = chats.value.findIndex(c => c.id === result.chat.id)
     if (idx >= 0) {
@@ -365,6 +442,7 @@ const onSubmit = async () => {
       chats.value = [{ ...chat, updatedAt: result.chat.updatedAt }, ...chats.value]
     }
     await scrollToBottom()
+    startPollingIfNeeded()
   } catch (e) {
     errorMessage.value = e instanceof Error ? e.message : String(e)
     // Roll back the optimistic echo on failure so the writer can retry.
@@ -381,14 +459,28 @@ watch(() => props.open, async (open) => {
     await loadModels()
     await loadChats()
     await scrollToBottom()
+  } else {
+    // Stop polling when the drawer closes — we'll resume on reopen if
+    // there's still a pending message.
+    stopPolling()
   }
 })
 
 watch(() => props.manuscriptId, () => {
   // Manuscript changed — drop chat state and reload.
+  stopPolling()
   selectedChatId.value = ''
   messages.value = []
   if (props.open) loadChats()
+})
+
+watch(selectedChatId, () => {
+  // Switching chats invalidates the polling target.
+  stopPolling()
+})
+
+onBeforeUnmount(() => {
+  stopPolling()
 })
 </script>
 
@@ -399,5 +491,14 @@ aside {
 @keyframes slide-in {
   from { transform: translateX(8%); opacity: 0; }
   to   { transform: translateX(0);   opacity: 1; }
+}
+
+.dot-pulse-anim {
+  display: inline-block;
+  animation: dot-pulse 1.2s ease-in-out infinite;
+}
+@keyframes dot-pulse {
+  0%, 80%, 100% { opacity: 0.3; }
+  40%           { opacity: 1; }
 }
 </style>

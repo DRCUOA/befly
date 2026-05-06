@@ -208,15 +208,31 @@ service in
 UI in
 [ChatDrawer.vue](../client/src/components/manuscripts/ChatDrawer.vue).
 
-Per-turn flow:
+Per-turn flow (the HTTP handler returns within ~100ms; the LLM call runs
+in the background):
 
-1. Persist the user's message to `manuscript_chat_messages` immediately
-   (so the conversation state survives an LLM failure).
-2. Retrieve a fresh manuscript-scoped context pack for the new question.
-3. Send `system + retrieved_pack + last 6 turns + new question` via
-   `LlmClient.chatText` (non-JSON mode — returns markdown).
-4. Persist the assistant reply with `retrieved_chunk_ids` for provenance
-   and `ai_exchange_id` for the diagnostic audit trail.
+1. Persist the user's message to `manuscript_chat_messages` (status
+   `complete`).
+2. Persist a placeholder assistant message with status `pending` and
+   empty content (migration 024). Its id is captured so the background
+   worker can finalise it.
+3. Return the response immediately — both rows are included so the
+   client can render the placeholder with a spinner.
+4. **Background worker** (no awaiting in the request handler):
+   - Retrieve a fresh manuscript-scoped context pack for the new question.
+   - Send `system + retrieved_pack + last 6 turns + new question` via
+     `LlmClient.chatText` (non-JSON mode — returns markdown).
+   - UPDATE the placeholder with the final content, `retrieved_chunk_ids`
+     for provenance, `ai_exchange_id` for the diagnostic audit trail,
+     and status `complete`. Failures flip the status to `error` and the
+     content becomes a user-facing error message.
+5. The client polls `GET /api/manuscripts/:id/chats/:chatId` every 2s
+   until the placeholder is no longer pending (timeout 5 min).
+
+This shape exists because Heroku's web dyno has a hard 30s router
+timeout (H12). Reasoning models (gpt-5, gpt-5-mini) routinely take 40+
+seconds; the previous synchronous design dropped those connections
+even though the work itself completed correctly.
 
 Chats are private to their author even when the manuscript is shared.
 The per-conversation model is chosen from a curated allow-list
