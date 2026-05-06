@@ -21,15 +21,17 @@
  */
 import { manuscriptService } from './manuscript.service.js'
 import { manuscriptChatRepo } from '../repositories/manuscript-chat.repo.js'
-import {
+import type {
   ManuscriptChat,
   ManuscriptChatMessage,
   ManuscriptChatWithMessages,
   ChatChunkCitation,
-  MANUSCRIPT_CHAT_MODELS,
-  DEFAULT_MANUSCRIPT_CHAT_MODEL,
   ManuscriptChatModelId,
 } from '../models/ManuscriptChat.js'
+import {
+  DEFAULT_MANUSCRIPT_CHAT_MODEL,
+  ALLOWED_MANUSCRIPT_CHAT_MODEL_IDS,
+} from './manuscript-chat-models.js'
 import {
   LlmClient,
   LlmChatMessage,
@@ -60,13 +62,11 @@ const MAX_TITLE_CHARS = 80
 const RAG_TOP_K = 8
 const RAG_MAX_CONTEXT_TOKENS = 3500
 
-const ALLOWED_MODELS: readonly string[] = MANUSCRIPT_CHAT_MODELS.map(m => m.id)
-
 function validateModel(model: string | undefined): string {
   if (!model || !model.trim()) return DEFAULT_MANUSCRIPT_CHAT_MODEL
-  if (!ALLOWED_MODELS.includes(model)) {
+  if (!ALLOWED_MANUSCRIPT_CHAT_MODEL_IDS.includes(model)) {
     throw new ValidationError(
-      `Unsupported chat model "${model}". Allowed: ${ALLOWED_MODELS.join(', ')}`
+      `Unsupported chat model "${model}". Allowed: ${ALLOWED_MANUSCRIPT_CHAT_MODEL_IDS.join(', ')}`
     )
   }
   return model
