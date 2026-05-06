@@ -67,8 +67,16 @@
       <!-- Messages -->
       <div ref="messagesEl" class="flex-1 overflow-y-auto px-4 py-3 bg-white">
         <div v-if="!activeChat" class="text-sm text-ink-lighter text-center py-10">
-          Pick or start a chat to begin. Every chat is scoped to this manuscript —
-          retrieved context comes only from indexed sources for this project.
+          <p class="mb-3">
+            No chat is open yet. Every chat is scoped to this manuscript —
+            retrieved context comes only from indexed sources for this project.
+          </p>
+          <button
+            type="button"
+            @click="newChat"
+            :disabled="busy"
+            class="px-3 py-1.5 text-sm border border-blue-500 text-blue-700 rounded hover:bg-blue-50 disabled:opacity-50"
+          >Start a new chat</button>
         </div>
         <div v-else-if="messagesLoading && messages.length === 0" class="text-sm text-ink-lighter text-center py-10">
           Loading…
@@ -204,8 +212,20 @@ const loadChats = async () => {
   try {
     chats.value = await manuscriptChatApi.list(props.manuscriptId)
     if (chats.value.length === 0) {
-      selectedChatId.value = ''
+      // Auto-create the first chat so the textarea is immediately
+      // usable. The previous behaviour landed the user in a state
+      // where everything looked disabled (the picker had no options
+      // and the composer was gated on `activeChat`), and the only
+      // way forward was a small "+ New" button — which wasn't
+      // obvious. Creating on open removes that step.
+      const created = await manuscriptChatApi.create(props.manuscriptId, {
+        title: 'New chat',
+        model: defaultModel.value || undefined,
+      })
+      chats.value = [created]
+      selectedChatId.value = created.id
       messages.value = []
+      modelForActive.value = created.model
     } else if (!selectedChatId.value || !chats.value.find(c => c.id === selectedChatId.value)) {
       // Auto-select the most recently updated chat.
       selectedChatId.value = chats.value[0].id
