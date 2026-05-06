@@ -18,7 +18,7 @@ import {
   setLlmClientForTests,
 } from './services/manuscript-assist.service.js'
 import { manuscriptArtifactRepo } from './repositories/manuscript-artifact.repo.js'
-import { LlmClient, LlmJsonRequest, LlmJsonResponse } from './services/llm/llm-client.js'
+import { LlmClient, LlmJsonRequest, LlmJsonResponse, LlmChatRequest, LlmChatResponse } from './services/llm/llm-client.js'
 import { GapAnalysisContent } from './models/Manuscript.js'
 
 const tag = `assist_test_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
@@ -72,6 +72,12 @@ class FakeLlmClient implements LlmClient {
   async chatJson(req: LlmJsonRequest): Promise<LlmJsonResponse> {
     this.requests.push(req)
     return { json: this.response, model: 'fake-model' }
+  }
+
+  // Manuscript-assist tests don't exercise chat — but the interface
+  // requires a stub so the FakeLlmClient typechecks against it.
+  async chatText(_req: LlmChatRequest): Promise<LlmChatResponse> {
+    throw new Error('chatText not implemented in FakeLlmClient (manuscript-assist tests do not need it)')
   }
 }
 

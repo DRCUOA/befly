@@ -66,6 +66,38 @@ export interface LlmJsonResponse {
   usage?: { promptTokens?: number; completionTokens?: number; totalTokens?: number }
 }
 
+/**
+ * Free-form chat request. Same provenance + model knobs as `LlmJsonRequest`,
+ * but we send a list of role-tagged messages (so the chat service can pass
+ * a multi-turn conversation history) and we DO NOT force JSON mode — the
+ * answer is markdown the user reads directly.
+ */
+export interface LlmChatMessage {
+  role: 'system' | 'user' | 'assistant'
+  content: string
+}
+
+export interface LlmChatRequest {
+  model: string
+  messages: LlmChatMessage[]
+  temperature?: number
+  maxOutputTokens?: number
+  context?: LlmRequestContext
+}
+
+export interface LlmChatResponse {
+  /** Plain markdown content from the model. */
+  content: string
+  model: string
+  usage?: { promptTokens?: number; completionTokens?: number; totalTokens?: number }
+  /**
+   * The ai_exchanges row id that captured this exchange, if the implementation
+   * persisted one. Lets the chat service link a stored message back to the
+   * full prompt + raw response in the diagnostic log.
+   */
+  exchangeId?: string | null
+}
+
 export interface LlmClient {
   /**
    * Send a chat completion request that must return parseable JSON.
@@ -73,6 +105,14 @@ export interface LlmClient {
    * service layer never has to defend against malformed strings.
    */
   chatJson(req: LlmJsonRequest): Promise<LlmJsonResponse>
+
+  /**
+   * Send a multi-turn chat completion request and return the markdown
+   * content the model produced. Used by the manuscript chat surface —
+   * other AI features stick to chatJson because they consume structured
+   * fields downstream.
+   */
+  chatText(req: LlmChatRequest): Promise<LlmChatResponse>
 }
 
 export class LlmConfigurationError extends Error {

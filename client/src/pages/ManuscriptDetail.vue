@@ -31,6 +31,15 @@
               </div>
             </div>
             <div class="flex items-center gap-2 shrink-0">
+              <button
+                v-if="canModify"
+                type="button"
+                @click="chatOpen = true"
+                class="px-4 py-2 text-sm tracking-wide font-sans border border-blue-500 text-blue-700 hover:bg-blue-50 transition-colors duration-300"
+                title="Ask anything about this manuscript. Uses the indexed RAG context for grounded answers."
+              >
+                Chat
+              </button>
               <span v-if="canModify" class="inline-flex items-center">
                 <button
                   type="button"
@@ -697,6 +706,15 @@
       :items="items"
       @close="showPreview = false"
     />
+
+    <!-- Chat drawer (RAG-backed). Mounted at the page root so its
+         backdrop+drawer overlay everything else. -->
+    <ChatDrawer
+      v-if="manuscript"
+      :open="chatOpen"
+      :manuscript-id="manuscript.id"
+      @close="chatOpen = false"
+    />
   </div>
 </template>
 
@@ -710,6 +728,7 @@ import EditableProse from '../components/manuscripts/EditableProse.vue'
 import BookPreviewModal from '../components/manuscripts/BookPreviewModal.vue'
 import HelpTooltip from '../components/ui/HelpTooltip.vue'
 import ManuscriptSubNav from '../components/storycraft/ManuscriptSubNav.vue'
+import ChatDrawer from '../components/manuscripts/ChatDrawer.vue'
 import type { ApiResponse } from '@shared/ApiResponses'
 import type { Theme } from '../domain/Theme'
 import type { WritingBlock } from '../domain/WritingBlock'
@@ -736,6 +755,10 @@ const sections = ref<ManuscriptSection[]>([])
 const items = ref<ManuscriptItem[]>([])
 const themes = ref<Theme[]>([])
 const writingBlocks = ref<WritingBlock[]>([])
+
+// Manuscript chat drawer toggle. State held here (not in the drawer itself)
+// so opening + closing doesn't unmount the drawer's chat list.
+const chatOpen = ref(false)
 
 const showAddItem = ref(false)
 const addingItem = ref(false)
