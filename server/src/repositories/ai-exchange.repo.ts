@@ -33,6 +33,7 @@ const COLUMNS = `
   mode,
   resource_type      AS "resourceType",
   resource_id        AS "resourceId",
+  manuscript_id      AS "manuscriptId",
   provider,
   model,
   temperature,
@@ -67,6 +68,7 @@ function rowToAiExchange(row: Record<string, unknown>): AiExchange {
     mode: (row.mode as string | null) ?? null,
     resourceType: (row.resourceType as string | null) ?? null,
     resourceId: (row.resourceId as string | null) ?? null,
+    manuscriptId: (row.manuscriptId as string | null) ?? null,
     provider: row.provider as string,
     model: row.model as string,
     temperature: row.temperature == null ? null : Number(row.temperature),
@@ -105,6 +107,13 @@ export const aiExchangeRepo = {
       const requestChars   = (params.systemPrompt?.length ?? 0) + (params.userPrompt?.length ?? 0)
       const responseChars  = params.responseRaw?.length ?? 0
 
+      // Default manuscriptId from resource_type='manuscript' so any older
+      // call site that hasn't been updated still gets a usable manuscript_id
+      // on the row. New call sites set manuscriptId explicitly.
+      const manuscriptId = params.manuscriptId
+        ?? (params.resourceType === 'manuscript' ? params.resourceId : null)
+        ?? null
+
       const result = await pool.query(
         `
         INSERT INTO ai_exchanges (
@@ -113,6 +122,7 @@ export const aiExchangeRepo = {
           mode,
           resource_type,
           resource_id,
+          manuscript_id,
           provider,
           model,
           temperature,
@@ -131,12 +141,12 @@ export const aiExchangeRepo = {
           duration_ms,
           error_message
         ) VALUES (
-          $1,$2,$3,$4,$5,
-          $6,$7,$8,$9,
-          $10,$11,$12,
-          $13,$14,$15,$16,$17,
-          $18,$19,$20,
-          $21,$22
+          $1,$2,$3,$4,$5,$6,
+          $7,$8,$9,$10,
+          $11,$12,$13,
+          $14,$15,$16,$17,$18,
+          $19,$20,$21,
+          $22,$23
         )
         RETURNING ${COLUMNS}
         `,
@@ -146,6 +156,7 @@ export const aiExchangeRepo = {
           params.mode ?? null,
           params.resourceType ?? null,
           params.resourceId ?? null,
+          manuscriptId,
           params.provider ?? 'openai',
           params.model,
           params.temperature ?? null,
@@ -204,6 +215,10 @@ export const aiExchangeRepo = {
       params.push(filter.resourceId)
       where.push(`resource_id = $${params.length}`)
     }
+    if (filter.manuscriptId) {
+      params.push(filter.manuscriptId)
+      where.push(`manuscript_id = $${params.length}`)
+    }
     const whereSql = where.length ? `WHERE ${where.join(' AND ')}` : ''
 
     params.push(limit)
@@ -242,6 +257,10 @@ export const aiExchangeRepo = {
     if (filter.resourceId) {
       params.push(filter.resourceId)
       where.push(`resource_id = $${params.length}`)
+    }
+    if (filter.manuscriptId) {
+      params.push(filter.manuscriptId)
+      where.push(`manuscript_id = $${params.length}`)
     }
     const whereSql = where.length ? `WHERE ${where.join(' AND ')}` : ''
 

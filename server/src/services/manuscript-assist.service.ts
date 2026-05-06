@@ -31,6 +31,8 @@ import { LlmClient, LlmConfigurationError } from './llm/llm-client.js'
 import { getOpenAIClient } from './llm/openai-client.js'
 import { ASSIST_SYSTEM_PROMPT, buildGapAnalysisPrompt, GapPromptItem } from './llm/prompts.js'
 import { ValidationError } from '../utils/errors.js'
+import { retrieveManuscriptContext } from './rag/index.js'
+import { logger } from '../utils/logger.js'
 
 /* ----- LLM client injection (for tests) ----- */
 
@@ -72,6 +74,35 @@ export interface RunAssistResult {
   /** Number of junctions skipped because either side had no body content. */
   skipped: number
   model?: string
+}
+
+/* ----- RAG retrieval helper (best-effort) -----
+ *
+ * The RAG layer is additive: if it isn't configured (no OPENAI_API_KEY,
+ * pgvector missing, no chunks indexed yet) the call falls back to
+ * "no retrieved context" rather than failing the assist run. This keeps
+ * the assist surface usable in dev/test environments where embedding
+ * infrastructure may not be set up, and means existing prompts
+ * deterministically work with or without retrieval.
+ */
+async function tryRetrieveContextPack(
+  manuscriptId: string,
+  query: string,
+  maxContextTokens = 2000
+): Promise<string> {
+  try {
+    const result = await retrieveManuscriptContext(manuscriptId, query, {
+      topK: 8,
+      maxContextTokens,
+    })
+    return result.chunks.length > 0 ? result.contextPack : ''
+  } catch (err) {
+    logger.warn('[manuscript-assist] retrieval skipped', {
+      manuscriptId,
+      message: err instanceof Error ? err.message : String(err),
+    })
+    return ''
+  }
 }
 
 /* ----- Helpers ----- */
@@ -298,7 +329,7 @@ async function runGapAnalysis(input: GapRunInput): Promise<RunAssistResult> {
       continue
     }
 
-    const prompt = buildGapAnalysisPrompt({
+    let prompt = buildGapAnalysisPrompt({
       manuscript,
       sectionTitle: findSectionTitle(sections, from, to),
       from,
@@ -306,17 +337,38 @@ async function runGapAnalysis(input: GapRunInput): Promise<RunAssistResult> {
       priorAcceptedNotes: priorNotes,
     })
 
+    // Augment with retrieved manuscript context UNLESS the caller targeted
+    // a specific junction — when they did, they've already narrowed scope
+    // and don't want the broader manuscript bleeding into the prompt.
+    // Best-effort: silently skipped if RAG isn't configured.
+    if (!junction) {
+      const query = `Junction: "${from.title}" -> "${to.title}". ` +
+        (manuscript.centralQuestion ? `Central question: ${manuscript.centralQuestion}. ` : '') +
+        (manuscript.throughLine ? `Through-line: ${manuscript.throughLine}.` : '')
+      const pack = await tryRetrieveContextPack(manuscript.id, query)
+      if (pack) {
+        prompt =
+          'Use the retrieved manuscript context below as authoritative project memory unless the user explicitly overrides it.\n\n' +
+          '<retrieved_manuscript_context>\n' +
+          pack + '\n' +
+          '</retrieved_manuscript_context>\n\n' +
+          prompt
+      }
+    }
+
     const response = await llm.chatJson({
       model: process.env.OPENAI_MODEL?.trim() || 'gpt-4o-mini',
       system: ASSIST_SYSTEM_PROMPT,
       user: prompt,
-      // Provenance for the diagnostic ai_exchanges log — see migration 019.
+      // Provenance for the diagnostic ai_exchanges log — see migration 019
+      // and migration 021 for the explicit manuscript_id column.
       context: {
         feature: 'manuscript-assist',
         mode: 'gaps',
         userId,
         resourceType: 'manuscript',
         resourceId: manuscript.id,
+        manuscriptId: manuscript.id,
       },
     })
     lastModel = response.model
