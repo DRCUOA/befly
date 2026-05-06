@@ -24,6 +24,14 @@ export interface AiExchange {
   resourceType: string | null
   resourceId: string | null
 
+  /**
+   * The manuscript the AI exchange relates to, if any. Stored as a real FK
+   * so the diagnostic log is queryable per-manuscript without parsing
+   * resource_type/resource_id. NULL for feature surfaces that are not
+   * manuscript-scoped (e.g. admin tooling).
+   */
+  manuscriptId: string | null
+
   /** Provider details. */
   provider: string
   model: string
@@ -63,6 +71,8 @@ export interface CreateAiExchangeParams {
   mode?: string | null
   resourceType?: string | null
   resourceId?: string | null
+  /** Optional explicit manuscript pointer — see AiExchange.manuscriptId. */
+  manuscriptId?: string | null
 
   provider?: string
   model: string
@@ -90,4 +100,5 @@ export interface AiExchangeListFilter {
   status?: AiExchangeStatus
   userId?: string
   resourceId?: string
+  manuscriptId?: string
 }

@@ -50,6 +50,7 @@ import {
 } from './llm/prompts.js'
 import { ValidationError } from '../utils/errors.js'
 import { logger } from '../utils/logger.js'
+import { retrieveManuscriptContext } from './rag/index.js'
 import type {
   WritingAssistRequest,
   WritingAssistResponse,
@@ -67,6 +68,35 @@ export function setLlmClientForTests(client: LlmClient | null): void {
 
 function client(): LlmClient {
   return activeClient ?? getOpenAIClient()
+}
+
+/* ----- RAG retrieval helper (best-effort) ----- */
+
+/**
+ * Try to retrieve a manuscript-scoped context pack. Returns '' when the
+ * RAG layer isn't configured, when the manuscript hasn't been indexed,
+ * or when retrieval errors out for any other reason — coherence is
+ * useful with or without retrieval, so we never fail the assist call
+ * because retrieval was unavailable.
+ */
+async function tryRetrieveContextPack(
+  manuscriptId: string,
+  query: string,
+  maxContextTokens = 2000
+): Promise<string> {
+  try {
+    const result = await retrieveManuscriptContext(manuscriptId, query, {
+      topK: 8,
+      maxContextTokens,
+    })
+    return result.chunks.length > 0 ? result.contextPack : ''
+  } catch (err) {
+    logger.warn('[writing-assist] retrieval skipped', {
+      manuscriptId,
+      message: err instanceof Error ? err.message : String(err),
+    })
+    return ''
+  }
 }
 
 /* ----- Limits ----- */
@@ -203,6 +233,15 @@ export const writingAssistService = {
       bodyLen: writing.body?.length ?? 0,
     })
 
+    // Find the containing manuscript (if any) once up-front. The result is
+    // reused below for the coherence mode AND for tagging the LLM exchange
+    // with manuscript_id — every AI exchange that relates to a manuscript
+    // must carry that pointer (see migration 021 / RAG layer spec).
+    const manuscriptCtx = userId
+      ? await manuscriptRepo.findContextForWriting(writing.id, userId, isAdmin)
+      : null
+    const manuscriptId = manuscriptCtx?.manuscript.id ?? null
+
     // 2. Refuse early if the LLM client isn't configured. We do this AFTER
     //    access checks but BEFORE building any prompt, so misconfigured
     //    deploys give a clean 5xx with a useful message at the front door.
@@ -234,11 +273,9 @@ export const writingAssistService = {
         const selection = (request.args.selection ?? '').slice(0, MAX_SELECTION_CHARS)
 
         // Optional manuscript context — sibling titles + short summaries,
-        // plus literary direction. Falls back gracefully when this essay
-        // isn't in any manuscript the user can read.
-        const ctx = userId
-          ? await manuscriptRepo.findContextForWriting(writing.id, userId, isAdmin)
-          : null
+        // plus literary direction. Reuses the up-front lookup above so we
+        // don't go to the DB twice.
+        const ctx = manuscriptCtx
 
         const siblings: CoherenceSiblingItem[] = (ctx?.siblings ?? [])
           .slice(0, MAX_SIBLINGS)
@@ -263,6 +300,23 @@ export const writingAssistService = {
           siblings,
           direction,
         })
+
+        // Augment with manuscript-scoped retrieved context if the essay
+        // belongs to a manuscript. Best-effort — silently skipped if the
+        // RAG layer isn't configured, the manuscript hasn't been indexed,
+        // or pgvector isn't available.
+        if (manuscriptId) {
+          const pack = await tryRetrieveContextPack(manuscriptId, `${question}\n${selection ?? ''}`)
+          if (pack) {
+            userPrompt =
+              'Use the retrieved manuscript context below as authoritative project memory unless the user explicitly overrides it.\n\n' +
+              '<retrieved_manuscript_context>\n' +
+              pack + '\n' +
+              '</retrieved_manuscript_context>\n\n' +
+              userPrompt
+          }
+        }
+
         // Slightly higher temperature so coherence answers don't read as
         // template responses. Still bounded so the model stays grounded.
         temperature = 0.6
@@ -415,12 +469,15 @@ export const writingAssistService = {
       temperature,
       maxOutputTokens,
       // Provenance for the diagnostic ai_exchanges log — see migration 019.
+      // manuscriptId is set when the writing block belongs to a manuscript
+      // the caller can read; NULL otherwise (the block is standalone).
       context: {
         feature: 'writing-assist',
         mode: request.mode,
         userId,
         resourceType: 'writing_block',
         resourceId: writing.id,
+        manuscriptId,
       },
     })
     logger.info('[writing-assist] LLM response received', {

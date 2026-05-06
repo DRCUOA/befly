@@ -29,6 +29,14 @@ export interface LlmRequestContext {
   /** Resource the call is about (e.g. writing_block id, manuscript id). */
   resourceType?: string | null
   resourceId?: string | null
+  /**
+   * Manuscript whose context the call relates to. Set this on every
+   * manuscript-scoped feature surface (manuscript-assist, writing-assist
+   * when the writing block belongs to a manuscript, story-craft, etc.) so
+   * the diagnostic log and any future per-manuscript audit can find the
+   * row without resolving resourceType/resourceId.
+   */
+  manuscriptId?: string | null
 }
 
 export interface LlmJsonRequest {

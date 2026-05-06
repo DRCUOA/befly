@@ -147,6 +147,7 @@ class OpenAIClient implements LlmClient {
       mode:            req.context?.mode ?? null,
       resourceType:    req.context?.resourceType ?? null,
       resourceId:      req.context?.resourceId ?? null,
+      manuscriptId:    req.context?.manuscriptId ?? null,
       provider:        'openai',
       model,
       temperature:     reasoning ? null : (body.temperature as number),
