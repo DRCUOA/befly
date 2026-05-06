@@ -2,6 +2,7 @@ import { Router, json as expressJson } from 'express'
 import { adminController } from '../controllers/admin.controller.js'
 import { typographyController } from '../controllers/typography.controller.js'
 import { uploadsController, uploadSingle } from '../controllers/uploads.controller.js'
+import { ragAdminController } from '../controllers/rag-admin.controller.js'
 import { authMiddleware } from '../middleware/auth.middleware.js'
 import { requireAdmin } from '../middleware/authorize.middleware.js'
 import { asyncHandler } from '../utils/asyncHandler.js'
@@ -58,5 +59,21 @@ router.post(
   expressJson({ limit: '50mb' }),
   asyncHandler(adminController.importEssays)
 )
+
+// Manuscript-scoped RAG admin (compile/chunk/embed/reindex/search/sources/uploads)
+// All ops require admin and operate on a single manuscript_id at a time.
+// See docs/rag.md for the architecture.
+router.get(   '/rag/manuscripts',                                       asyncHandler(ragAdminController.listManuscripts))
+router.get(   '/rag/manuscripts/:id/stats',                             asyncHandler(ragAdminController.getStats))
+router.get(   '/rag/manuscripts/:id/sources',                           asyncHandler(ragAdminController.listSources))
+router.delete('/rag/sources/:sourceId',                                 asyncHandler(ragAdminController.deleteSource))
+router.post(  '/rag/manuscripts/:id/compile',                           asyncHandler(ragAdminController.compile))
+router.post(  '/rag/manuscripts/:id/chunk',                             asyncHandler(ragAdminController.chunk))
+router.post(  '/rag/manuscripts/:id/embed',                             asyncHandler(ragAdminController.embed))
+router.post(  '/rag/manuscripts/:id/reindex',                           asyncHandler(ragAdminController.reindex))
+router.post(  '/rag/manuscripts/:id/search',                            asyncHandler(ragAdminController.search))
+router.get(   '/rag/manuscripts/:id/uploaded-files',                    asyncHandler(ragAdminController.listUploadedFiles))
+router.post(  '/rag/manuscripts/:id/uploaded-files/:fileId',            asyncHandler(ragAdminController.attachUploadedFile))
+router.delete('/rag/manuscripts/:id/uploaded-files/:fileId',            asyncHandler(ragAdminController.detachUploadedFile))
 
 export default router
