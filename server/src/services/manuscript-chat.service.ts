@@ -220,13 +220,19 @@ export const manuscriptChatService = {
   },
 
   /**
-   * Send one user message and synchronously generate the assistant
-   * reply. Both messages are persisted (the user message first, before
-   * the LLM call, so the conversation state survives a model failure).
+   * Persist one user message + a 'pending' assistant placeholder, then
+   * RETURN IMMEDIATELY. The retrieval + LLM call runs as a background
+   * promise that finalises the placeholder when it completes.
    *
-   * If the model call throws, the user's message stays in the log and
-   * the error bubbles up — the UI shows the error inline; the writer
-   * can retry by sending again.
+   * Why this shape: Heroku's web dyno has a hard 30s router timeout.
+   * Reasoning models (gpt-5, gpt-5-mini) routinely take 40+ seconds.
+   * Awaiting the LLM call inside the request handler used to produce
+   * H12 timeouts even though the work itself completed correctly.
+   *
+   * The client polls GET /chats/:id until the placeholder transitions
+   * to 'complete' or 'error'. Citations for an answer are no longer
+   * returned synchronously — the client reads them out of the
+   * placeholder's retrieved_chunk_ids on the next poll cycle.
    */
   async sendMessage(
     chatId: string,
@@ -243,17 +249,16 @@ export const manuscriptChatService = {
     const chat = await manuscriptChatRepo.findById(chatId, userId)
     const manuscript = await manuscriptService.get(chat.manuscriptId, userId, isAdmin)
 
-    // Persist the user turn FIRST so it's durable even if the LLM call
-    // later fails. The drawer relies on this — a network blip mid-call
-    // shouldn't lose what the writer typed.
+    // 1. Persist the user turn so it's durable.
     const userMessage = await manuscriptChatRepo.appendMessage({
       chatId,
       role: 'user',
       content: trimmed,
     })
 
-    // Refuse the call cleanly if the LLM client isn't configured. We do
-    // this AFTER persisting the user turn so the writer's text is saved.
+    // 2. Refuse the call cleanly if the LLM client isn't configured.
+    //    Surfaced now (before the placeholder) so the writer sees a
+    //    real error instead of a placeholder that times out.
     let llm: LlmClient
     try {
       llm = client()
@@ -262,56 +267,94 @@ export const manuscriptChatService = {
       throw err
     }
 
-    // Pull a fresh context pack for the latest question. (We do not
-    // try to merge with prior turns' retrievals — every turn gets its
-    // own retrieval, scoped by the new query.)
-    const retrieved = await tryRetrieve(chat.manuscriptId, trimmed)
+    // 3. Insert the assistant placeholder with status='pending' and
+    //    capture its id so the background worker can finalise it.
+    const pendingAssistant = await manuscriptChatRepo.appendPendingAssistant(chatId, chat.model)
 
-    // Last N prior messages (excluding the one we just inserted, since
-    // it would duplicate the new user turn).
-    const allMessages = await manuscriptChatRepo.listMessages(chatId)
+    // 4. Kick off the long-running work. We DO NOT await this — the
+    //    HTTP handler returns within ~100ms regardless of how long
+    //    the LLM call takes. The promise updates the placeholder when
+    //    it finishes; any failure is recorded as an 'error' state on
+    //    the same row.
+    void runTurnInBackground({
+      chatId,
+      manuscriptId: chat.manuscriptId,
+      manuscriptTitle: manuscript.title,
+      userId,
+      userQuery: trimmed,
+      pendingAssistantId: pendingAssistant.id,
+      model: chat.model,
+      llm,
+    })
+
+    const refreshedChat = await manuscriptChatRepo.findById(chatId, userId)
+    return {
+      chat: refreshedChat,
+      userMessage,
+      assistantMessage: pendingAssistant,
+      // Citations land on the placeholder row when the background
+      // worker finalises it — the client reads them from the polled
+      // message rather than from this synchronous response.
+      citations: [],
+    }
+  },
+}
+
+/* ----- Background worker -----
+ *
+ * Runs outside any HTTP request lifecycle. It must not throw — every
+ * failure path is captured as an 'error' state on the placeholder so
+ * the client can render a clean message instead of polling forever.
+ */
+interface BackgroundTurnInput {
+  chatId: string
+  manuscriptId: string
+  manuscriptTitle: string
+  userId: string
+  userQuery: string
+  pendingAssistantId: string
+  model: string
+  llm: LlmClient
+}
+
+async function runTurnInBackground(input: BackgroundTurnInput): Promise<void> {
+  const start = Date.now()
+  try {
+    const retrieved = await tryRetrieve(input.manuscriptId, input.userQuery)
+
+    // Pull the trimmed history window — excluding the placeholder we
+    // just inserted (which is empty) and the just-persisted user
+    // message (which is appended explicitly below).
+    const allMessages = await manuscriptChatRepo.listMessages(input.chatId)
     const priorWindow = allMessages
-      .filter(m => m.id !== userMessage.id)
+      .filter(m => m.id !== input.pendingAssistantId && m.status === 'complete')
       .slice(-HISTORY_TURN_WINDOW)
 
     const messages = buildMessages({
-      manuscriptTitle: manuscript.title,
-      manuscriptId: chat.manuscriptId,
+      manuscriptTitle: input.manuscriptTitle,
+      manuscriptId: input.manuscriptId,
       contextPack: retrieved.contextPack,
       history: priorWindow,
-      userMessage: trimmed,
+      userMessage: input.userQuery,
     })
 
-    const start = Date.now()
-    const response = await llm.chatText({
-      model: chat.model,
+    const response = await input.llm.chatText({
+      model: input.model,
       messages,
-      // Slightly higher than the JSON modes — chat answers are ok being
-      // a touch more varied. Bounded so the model still grounds.
       temperature: 0.5,
       maxOutputTokens: 1500,
       context: {
         feature: 'manuscript-chat',
         mode: 'turn',
-        userId,
+        userId: input.userId,
         resourceType: 'manuscript_chat',
-        resourceId: chatId,
-        manuscriptId: chat.manuscriptId,
+        resourceId: input.chatId,
+        manuscriptId: input.manuscriptId,
       },
     })
-    logger.info('[manuscript-chat] turn completed', {
-      chatId,
-      manuscriptId: chat.manuscriptId,
-      model: response.model,
-      ms: Date.now() - start,
-      retrievedChunks: retrieved.chunkIds.length,
-      promptTokens: response.usage?.promptTokens,
-      completionTokens: response.usage?.completionTokens,
-    })
 
-    const assistantMessage = await manuscriptChatRepo.appendMessage({
-      chatId,
-      role: 'assistant',
+    await manuscriptChatRepo.finalizeAssistantMessage({
+      id: input.pendingAssistantId,
       content: response.content,
       retrievedChunkIds: retrieved.chunkIds,
       aiExchangeId: response.exchangeId ?? null,
@@ -320,13 +363,37 @@ export const manuscriptChatService = {
       completionTokens: response.usage?.completionTokens ?? null,
     })
 
-    const refreshedChat = await manuscriptChatRepo.findById(chatId, userId)
-
-    return {
-      chat: refreshedChat,
-      userMessage,
-      assistantMessage,
-      citations: retrieved.citations,
+    logger.info('[manuscript-chat] background turn completed', {
+      chatId: input.chatId,
+      manuscriptId: input.manuscriptId,
+      model: response.model,
+      ms: Date.now() - start,
+      retrievedChunks: retrieved.chunkIds.length,
+      promptTokens: response.usage?.promptTokens,
+      completionTokens: response.usage?.completionTokens,
+    })
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err)
+    logger.error('[manuscript-chat] background turn failed', {
+      chatId: input.chatId,
+      manuscriptId: input.manuscriptId,
+      pendingAssistantId: input.pendingAssistantId,
+      ms: Date.now() - start,
+      message,
+    })
+    // Best-effort. If even this update fails the placeholder will stay
+    // 'pending' forever — the polling client gives up after the timeout
+    // and the writer can resend.
+    try {
+      await manuscriptChatRepo.errorAssistantMessage(
+        input.pendingAssistantId,
+        `The model call failed. ${message}`
+      )
+    } catch (writeErr) {
+      logger.error('[manuscript-chat] could not record error on placeholder', {
+        pendingAssistantId: input.pendingAssistantId,
+        message: writeErr instanceof Error ? writeErr.message : String(writeErr),
+      })
     }
-  },
+  }
 }

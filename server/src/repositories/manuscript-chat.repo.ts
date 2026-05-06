@@ -31,6 +31,7 @@ const MESSAGE_COLUMNS = `
   chat_id              AS "chatId",
   role,
   content,
+  status,
   retrieved_chunk_ids  AS "retrievedChunkIds",
   ai_exchange_id       AS "aiExchangeId",
   model,
@@ -151,10 +152,10 @@ export const manuscriptChatRepo = {
   }): Promise<ManuscriptChatMessage> {
     const r = await pool.query(
       `INSERT INTO manuscript_chat_messages (
-         chat_id, role, content,
+         chat_id, role, content, status,
          retrieved_chunk_ids, ai_exchange_id, model,
          prompt_tokens, completion_tokens
-       ) VALUES ($1, $2, $3, $4::uuid[], $5, $6, $7, $8)
+       ) VALUES ($1, $2, $3, 'complete', $4::uuid[], $5, $6, $7, $8)
        RETURNING ${MESSAGE_COLUMNS}`,
       [
         input.chatId,
@@ -168,6 +169,74 @@ export const manuscriptChatRepo = {
       ]
     )
     await this.touch(input.chatId)
+    return r.rows[0]
+  },
+
+  /**
+   * Insert a placeholder assistant message in the 'pending' state. The
+   * background LLM worker later calls finalizeAssistantMessage() or
+   * errorAssistantMessage() to flip it to a terminal state. Empty content
+   * + pending status is what the polling client uses as the spinner cue.
+   */
+  async appendPendingAssistant(chatId: string, model: string): Promise<ManuscriptChatMessage> {
+    const r = await pool.query(
+      `INSERT INTO manuscript_chat_messages (
+         chat_id, role, content, status, model
+       ) VALUES ($1, 'assistant', '', 'pending', $2)
+       RETURNING ${MESSAGE_COLUMNS}`,
+      [chatId, model]
+    )
+    await this.touch(chatId)
+    return r.rows[0]
+  },
+
+  async finalizeAssistantMessage(input: {
+    id: string
+    content: string
+    retrievedChunkIds: string[]
+    aiExchangeId: string | null
+    model: string
+    promptTokens: number | null
+    completionTokens: number | null
+  }): Promise<ManuscriptChatMessage> {
+    const r = await pool.query(
+      `UPDATE manuscript_chat_messages
+          SET content             = $2,
+              status              = 'complete',
+              retrieved_chunk_ids = $3::uuid[],
+              ai_exchange_id      = $4,
+              model               = $5,
+              prompt_tokens       = $6,
+              completion_tokens   = $7
+        WHERE id = $1
+        RETURNING ${MESSAGE_COLUMNS}`,
+      [
+        input.id,
+        input.content,
+        input.retrievedChunkIds,
+        input.aiExchangeId,
+        input.model,
+        input.promptTokens,
+        input.completionTokens,
+      ]
+    )
+    if (r.rows.length > 0) {
+      await this.touch(r.rows[0].chatId)
+    }
+    return r.rows[0]
+  },
+
+  async errorAssistantMessage(id: string, errorContent: string): Promise<ManuscriptChatMessage | null> {
+    const r = await pool.query(
+      `UPDATE manuscript_chat_messages
+          SET content = $2,
+              status  = 'error'
+        WHERE id = $1
+        RETURNING ${MESSAGE_COLUMNS}`,
+      [id, errorContent]
+    )
+    if (r.rows.length === 0) return null
+    await this.touch(r.rows[0].chatId)
     return r.rows[0]
   },
 }

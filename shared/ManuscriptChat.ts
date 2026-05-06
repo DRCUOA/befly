@@ -23,6 +23,15 @@
 
 export type ChatMessageRole = 'user' | 'assistant'
 
+/**
+ * Lifecycle of a chat message:
+ *   - 'complete'  — terminal state for user turns and finished assistant turns
+ *   - 'pending'   — assistant placeholder while the LLM call is still running
+ *                   in the background (see migration 024 for the why)
+ *   - 'error'     — assistant turn failed; `content` holds a user-facing message
+ */
+export type ChatMessageStatus = 'pending' | 'complete' | 'error'
+
 export interface ManuscriptChat {
   id: string
   manuscriptId: string
@@ -38,7 +47,13 @@ export interface ManuscriptChatMessage {
   id: string
   chatId: string
   role: ChatMessageRole
+  /**
+   * Final assistant message text, or the user's prompt. Empty string while
+   * an assistant message is in `status='pending'` (the placeholder the
+   * server inserts before the LLM call completes).
+   */
   content: string
+  status: ChatMessageStatus
   /** chunk ids the assistant was shown for this turn. Empty for user turns. */
   retrievedChunkIds: string[]
   /** Diagnostic ai_exchanges.id for this turn. NULL for user turns. */
