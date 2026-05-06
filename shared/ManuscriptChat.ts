@@ -1,8 +1,21 @@
 /**
- * Manuscript-scoped chat — shared contract between server and client.
+ * Manuscript-scoped chat — shared TYPES between server and client.
+ *
+ * IMPORTANT: this file is types-only.
+ *
+ * The server imports `@shared/...` via a tsconfig path alias that is
+ * resolved at compile time but NOT preserved at runtime. The Heroku
+ * image copies shared/ as raw TypeScript (no compile step on the
+ * shared workspace), so any RUNTIME export here would emit an import
+ * the production Node process can't resolve. (Mirror of the warning
+ * comment in server/src/models/StoryCraft.ts.)
+ *
+ * Concrete runtime constants — model allow-list, defaults — live
+ * server-side in services/manuscript-chat-models.ts and are surfaced
+ * to the client via the GET /chats/models endpoint.
  *
  * One conversation = one row in manuscript_chats, pinned to a manuscript.
- * Each turn = one row in manuscript_chat_messages. The assistant turns
+ * Each turn = one row in manuscript_chat_messages. Assistant turns
  * carry provenance (which retrieved chunks the model saw, which
  * ai_exchanges row captured the wire-level request) so the UI can render
  * "answer grounded in: ..." links.
@@ -55,17 +68,8 @@ export interface ChatChunkCitation {
 }
 
 /**
- * Curated allow-list of chat models. Free-text would let a typo nuke a
- * conversation; the dropdown locks the writer to known-good options.
- * The default is the same as the rest of the app's assist surfaces.
+ * Discriminated string for the chat model id. Concrete list of allowed
+ * ids lives server-side; this type keeps the wire contract tight without
+ * forcing the client to import a runtime const.
  */
-export const MANUSCRIPT_CHAT_MODELS = [
-  { id: 'gpt-4o-mini', label: 'gpt-4o-mini (fast, low cost — default)' },
-  { id: 'gpt-4o',      label: 'gpt-4o (mid quality)' },
-  { id: 'gpt-5-mini',  label: 'gpt-5-mini (newer reasoning, balanced)' },
-  { id: 'gpt-5',       label: 'gpt-5 (newer reasoning, highest quality)' },
-] as const
-
-export type ManuscriptChatModelId = typeof MANUSCRIPT_CHAT_MODELS[number]['id']
-
-export const DEFAULT_MANUSCRIPT_CHAT_MODEL: ManuscriptChatModelId = 'gpt-4o-mini'
+export type ManuscriptChatModelId = string

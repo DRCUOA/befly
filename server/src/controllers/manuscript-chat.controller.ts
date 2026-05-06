@@ -16,7 +16,10 @@
 import { Request, Response } from 'express'
 import { manuscriptChatService } from '../services/manuscript-chat.service.js'
 import { ValidationError } from '../utils/errors.js'
-import { MANUSCRIPT_CHAT_MODELS, DEFAULT_MANUSCRIPT_CHAT_MODEL } from '../models/ManuscriptChat.js'
+import {
+  MANUSCRIPT_CHAT_MODELS,
+  DEFAULT_MANUSCRIPT_CHAT_MODEL,
+} from '../services/manuscript-chat-models.js'
 
 function requireUserId(req: Request): string {
   const userId = (req as Request & { userId?: string }).userId
