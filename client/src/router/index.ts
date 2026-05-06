@@ -26,6 +26,7 @@ import Admin from '../pages/Admin.vue'
 import AdminRules from '../pages/AdminRules.vue'
 import AdminAiExchanges from '../pages/AdminAiExchanges.vue'
 import AdminEssays from '../pages/AdminEssays.vue'
+import AdminRag from '../pages/AdminRag.vue'
 import BaselineTest from '../pages/BaselineTest.vue'
 
 const router = createRouter({
@@ -171,6 +172,12 @@ const router = createRouter({
       path: '/admin/essays',
       name: 'AdminEssays',
       component: AdminEssays,
+      meta: { requiresAuth: true, requiresAdmin: true }
+    },
+    {
+      path: '/admin/rag',
+      name: 'AdminRag',
+      component: AdminRag,
       meta: { requiresAuth: true, requiresAdmin: true }
     },
     {

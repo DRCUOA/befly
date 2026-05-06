@@ -25,6 +25,12 @@
           >
             AI exchanges
           </router-link>
+          <router-link
+            to="/admin/rag"
+            class="text-sm text-blue-600 hover:text-blue-800 hover:underline"
+          >
+            Manuscript RAG
+          </router-link>
           <button
             type="button"
             @click="showImportExport = true"
