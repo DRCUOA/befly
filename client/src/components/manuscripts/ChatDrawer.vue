@@ -42,23 +42,34 @@
             title="Start a new chat"
           >+ New</button>
         </div>
-        <div v-if="activeChat" class="flex items-center gap-2 mt-2">
-          <label class="text-xs text-ink-lighter">Model</label>
+        <!-- Model picker: prominent its own row so the writer can swap
+             models before sending the next turn. Rename/Delete moved
+             below into a quieter "options" row. -->
+        <div v-if="activeChat" class="mt-3">
+          <label class="block text-[11px] uppercase tracking-wider text-ink-lighter mb-1">
+            AI model
+          </label>
           <select
             v-model="modelForActive"
-            class="flex-1 text-xs border border-gray-200 rounded px-2 py-1 bg-white"
+            class="w-full text-sm border border-gray-300 rounded px-2 py-1.5 bg-white focus:outline-none focus:ring-1 focus:ring-blue-400"
             @change="changeModel"
           >
             <option v-for="m in models" :key="m.id" :value="m.id">{{ m.label }}</option>
           </select>
+          <p class="text-[10px] text-ink-lighter mt-1">
+            Applies to your next turn. Earlier turns keep the model they were sent with.
+          </p>
+        </div>
+        <div v-if="activeChat" class="mt-2 flex items-center gap-3 text-[11px]">
           <button
             @click="renameActive"
-            class="text-xs text-ink-lighter hover:text-ink"
+            class="text-ink-lighter hover:text-ink"
             title="Rename chat"
           >Rename</button>
+          <span class="text-ink-lighter">·</span>
           <button
             @click="deleteActive"
-            class="text-xs text-red-600 hover:text-red-800"
+            class="text-red-600 hover:text-red-800"
             title="Delete chat"
           >Delete</button>
         </div>
