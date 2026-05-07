@@ -2,7 +2,7 @@
   <footer class="w-full border-t border-line bg-paper py-4 px-4 sm:px-6 md:px-8">
     <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-0">
       <div class="text-xs sm:text-sm text-ink-lighter font-sans">
-        Copyrighted Material 2026 All rights reserved
+        &copy; NZWEBAPPS 2026 &mdash; All rights reserved
       </div>
       <div class="text-xs sm:text-sm text-ink-lighter font-sans">
         Build Nbr: {{ buildNumber }}
