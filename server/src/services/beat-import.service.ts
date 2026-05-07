@@ -248,18 +248,50 @@ function resolveBeat(
 
   const povCharacterId = resolveCharRef(input.povCharacterId ?? null, 'povCharacterId')
 
-  // Enum checks
-  const sceneFunctionCheck = checkEnum(input.sceneFunctionType, SCENE_FUNCTION_SET, 'sceneFunctionType')
-  const sceneFunctionType: string | null = sceneFunctionCheck.ok ? sceneFunctionCheck.value : null
-  if (!sceneFunctionCheck.ok) {
+  // sceneFunctionType is permissive: the DB column is VARCHAR(64) with no
+  // CHECK constraint, so we let new values through. Out-of-canonical values
+  // are surfaced as 'new_enum_value' warnings carrying the canonical set
+  // as suggestions, so the UI can offer a remap dropdown — but the
+  // imported value stays the resolver's default.
+  let sceneFunctionType: string | null = null
+  const rawSft = input.sceneFunctionType
+  if (rawSft === null || rawSft === undefined || rawSft === '') {
+    sceneFunctionType = null
+  } else if (typeof rawSft !== 'string') {
+    // Non-string is structurally invalid; drop and warn.
     warnings.push({
       field: 'sceneFunctionType',
       kind: 'unknown_enum',
-      reason: sceneFunctionCheck.reason,
-      inputValue: sceneFunctionCheck.input,
+      reason: `sceneFunctionType: expected string, got ${typeof rawSft}`,
+      inputValue: rawSft,
       resolvedValue: null,
     })
+    sceneFunctionType = null
+  } else if (rawSft.length > 64) {
+    // VARCHAR(64) hard cap. Truncating silently would be worse than
+    // refusing; surface as a hard warning so the user can decide.
+    warnings.push({
+      field: 'sceneFunctionType',
+      kind: 'unknown_enum',
+      reason: `sceneFunctionType: "${rawSft.slice(0, 30)}…" exceeds the 64-character column limit`,
+      inputValue: rawSft,
+      resolvedValue: null,
+    })
+    sceneFunctionType = null
+  } else {
+    sceneFunctionType = rawSft
+    if (!SCENE_FUNCTION_SET.has(rawSft)) {
+      warnings.push({
+        field: 'sceneFunctionType',
+        kind: 'new_enum_value',
+        reason: `sceneFunctionType: "${rawSft}" is new — not in the app's canonical list. The value will be imported as-is; you can remap it to a canonical type in the review panel.`,
+        inputValue: rawSft,
+        resolvedValue: rawSft,
+        suggestions: [...SCENE_FUNCTION_TYPES],
+      })
+    }
   }
+
   const withholdingCheck = checkEnum(input.withholdingLevel, WITHHOLDING_SET, 'withholdingLevel')
   const withholdingLevel: string | null = withholdingCheck.ok ? withholdingCheck.value : null
   if (!withholdingCheck.ok) {
@@ -649,6 +681,17 @@ export async function applyBeatsImport(
     }
 
     try {
+      // Apply user remaps first. Today only sceneFunctionType is
+      // remappable (the only permissive enum field). The user picks
+      // either "keep imported", a canonical value, or "" (= null).
+      const remapSft = decision.fieldRemaps?.sceneFunctionType
+      const finalSceneFunctionType: string | null =
+        remapSft === undefined
+          ? item.resolved.sceneFunctionType
+          : remapSft === null || remapSft === ''
+            ? null
+            : remapSft
+
       if (item.action === 'create') {
         const created = await storyCraftRepo.createBeat(
           manuscriptId,
@@ -665,7 +708,7 @@ export async function applyBeatsImport(
             innerTurn: item.resolved.innerTurn,
             voiceConstraint: item.resolved.voiceConstraint,
             finalImage: item.resolved.finalImage,
-            sceneFunctionType: item.resolved.sceneFunctionType as SceneFunctionType | null,
+            sceneFunctionType: finalSceneFunctionType as SceneFunctionType | null,
             withholdingLevel: item.resolved.withholdingLevel as WithholdingLevel | null,
             uniquePerception: item.resolved.uniquePerception,
             blindSpot: item.resolved.blindSpot,
@@ -686,14 +729,27 @@ export async function applyBeatsImport(
       } else if (item.action === 'update' && item.matchedBeatId) {
         // Build the update patch field-by-field. For null_overwrite cases
         // (resolved=null, existing=non-null) only write null when the user
-        // opted in via decision.allowOverwriteWithNull.
+        // opted in via decision.allowOverwriteWithNull. For sceneFunctionType
+        // we substitute any user remap into the diff before deciding.
         const allowNullOverwrite = decision.allowOverwriteWithNull === true
         const updates: Record<string, unknown> = {}
         let fieldsChanged = 0
         for (const d of item.diff) {
-          const isNullOverwrite = d.to === null && d.from !== null
+          const writeValue = d.field === 'sceneFunctionType' ? finalSceneFunctionType : d.to
+          if (writeValue === d.from) continue // remap landed on existing value — nothing to do
+          const isNullOverwrite = writeValue === null && d.from !== null
           if (isNullOverwrite && !allowNullOverwrite) continue
-          updates[d.field] = d.to
+          updates[d.field] = writeValue
+          fieldsChanged++
+        }
+        // Edge case: the diff didn't include sceneFunctionType (resolver
+        // value matched existing) but the user remapped it anyway. Surface
+        // that as an additional update.
+        if (
+          remapSft !== undefined &&
+          !item.diff.some(d => d.field === 'sceneFunctionType')
+        ) {
+          updates.sceneFunctionType = finalSceneFunctionType
           fieldsChanged++
         }
         if (fieldsChanged > 0) {

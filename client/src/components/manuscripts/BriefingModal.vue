@@ -389,17 +389,50 @@
                   </div>
 
                   <!-- Warnings -->
-                  <ul v-if="item.warnings.length" class="mt-2 space-y-1">
+                  <ul v-if="item.warnings.length" class="mt-2 space-y-1.5">
                     <li
                       v-for="(w, i) in item.warnings"
                       :key="i"
                       :class="[
-                        'text-xs flex gap-1.5',
-                        w.kind === 'null_overwrite' ? 'text-amber-700' : 'text-ink-light',
+                        'text-xs',
+                        w.kind === 'null_overwrite'
+                          ? 'text-amber-700'
+                          : w.kind === 'new_enum_value'
+                            ? 'text-sky-800'
+                            : 'text-ink-light',
                       ]"
                     >
-                      <span class="shrink-0">{{ warningIcon(w.kind) }}</span>
-                      <span>{{ w.reason }}</span>
+                      <div class="flex gap-1.5">
+                        <span class="shrink-0">{{ warningIcon(w.kind) }}</span>
+                        <span>{{ w.reason }}</span>
+                      </div>
+                      <!-- Remap dropdown for new sceneFunctionType values -->
+                      <div
+                        v-if="w.kind === 'new_enum_value' && w.field === 'sceneFunctionType' && w.suggestions"
+                        class="mt-1 ml-5 flex flex-wrap items-center gap-2"
+                      >
+                        <label class="flex items-center gap-1.5">
+                          <span class="text-ink-lighter">Remap to:</span>
+                          <select
+                            :value="remapValueFor(item.sourceId)"
+                            @change="onRemapSceneFunction(item.sourceId, ($event.target as HTMLSelectElement).value)"
+                            class="text-xs px-1 py-0.5 border border-line rounded-sm bg-paper focus:outline-none focus:ring-1 focus:ring-ink"
+                          >
+                            <option value="__keep__">Keep "{{ w.inputValue }}" (new)</option>
+                            <option
+                              v-for="opt in (w.suggestions as string[])"
+                              :key="opt"
+                              :value="opt"
+                            >
+                              {{ opt }}
+                            </option>
+                            <option value="__null__">— set to none —</option>
+                          </select>
+                        </label>
+                        <span class="text-ink-lighter italic">
+                          Will write: <strong>{{ formatRemapPreview(item, w) }}</strong>
+                        </span>
+                      </div>
                     </li>
                   </ul>
 
@@ -1049,8 +1082,65 @@ function onOverwriteNullToggle(sourceId: string, allow: boolean) {
   if (cur.action === 'skip') return
   decisions.value = {
     ...decisions.value,
-    [sourceId]: { action: 'apply', allowOverwriteWithNull: allow },
+    [sourceId]: {
+      action: 'apply',
+      allowOverwriteWithNull: allow,
+      // Preserve any remaps the user already chose.
+      fieldRemaps: cur.fieldRemaps,
+    },
   }
+}
+
+/**
+ * Translate the dropdown's current selection into the value stored on the
+ * decision. Three sentinel option values:
+ *   '__keep__' — no remap; the imported value is written as-is.
+ *   '__null__' — explicit null override.
+ *   any other  — a canonical remap value.
+ */
+function remapValueFor(sourceId: string): string {
+  const remap = decisions.value[sourceId]?.fieldRemaps?.sceneFunctionType
+  if (remap === undefined) return '__keep__'
+  if (remap === null) return '__null__'
+  return remap
+}
+
+function onRemapSceneFunction(sourceId: string, selection: string) {
+  const cur = decisions.value[sourceId] ?? { action: 'apply' }
+  let remapValue: string | null | undefined
+  if (selection === '__keep__') remapValue = undefined
+  else if (selection === '__null__') remapValue = null
+  else remapValue = selection
+
+  const next: BeatImportDecision = {
+    action: cur.action,
+    allowOverwriteWithNull: cur.allowOverwriteWithNull,
+    fieldRemaps: { ...cur.fieldRemaps },
+  }
+  if (remapValue === undefined) {
+    // User chose "keep imported" — drop the remap entry entirely so the
+    // server's resolver value is used.
+    if (next.fieldRemaps) delete next.fieldRemaps.sceneFunctionType
+  } else {
+    next.fieldRemaps = { ...next.fieldRemaps, sceneFunctionType: remapValue }
+  }
+  // Tidy: if the remap object is now empty, drop it.
+  if (next.fieldRemaps && Object.keys(next.fieldRemaps).length === 0) {
+    delete next.fieldRemaps
+  }
+  decisions.value = { ...decisions.value, [sourceId]: next }
+}
+
+/**
+ * What the apply phase will actually write for sceneFunctionType, given
+ * the current decision. Used to render a "Will write: X" hint next to the
+ * remap dropdown so the user can see the consequence of their choice.
+ */
+function formatRemapPreview(item: BeatImportPlanItem, w: { inputValue: unknown }): string {
+  const remap = decisions.value[item.sourceId]?.fieldRemaps?.sceneFunctionType
+  if (remap === undefined) return String(w.inputValue ?? '∅')
+  if (remap === null) return '∅ (none)'
+  return remap
 }
 
 /* ---- Plan summary ---- */

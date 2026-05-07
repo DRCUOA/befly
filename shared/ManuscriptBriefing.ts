@@ -409,20 +409,28 @@ export interface CausalLinkImportInput {
 /* ----- Beat import: preview + apply ----- */
 
 /**
- * One field-level issue surfaced by the resolver. Three kinds:
+ * One field-level issue surfaced by the resolver. Five kinds:
  *
- *   - 'unknown_enum'    — incoming value isn't in the schema's whitelist
- *                         (e.g. sceneFunctionType: "frame_contract").
- *   - 'unmatched_name'  — incoming reference points at a name the target
- *                         manuscript doesn't have (character / motif).
- *   - 'missing_lookup'  — incoming reference is an id but the envelope had
- *                         no name lookup to translate it. Common when a
- *                         model returns the trimmed Beats-tab shape but
- *                         loses the *NamesById blocks.
- *   - 'null_overwrite'  — for update actions only: the incoming resolved
- *                         value is null and the existing field is non-null.
- *                         By default the importer preserves the existing
- *                         value; the user must opt in to overwrite.
+ *   - 'unknown_enum'     — incoming value isn't in the schema's whitelist
+ *                          AND the schema rejects it (e.g. linkType
+ *                          "reframing"). The resolved value drops to null.
+ *   - 'new_enum_value'   — incoming value isn't in the canonical set but
+ *                          the schema accepts arbitrary strings (today:
+ *                          sceneFunctionType only — VARCHAR(64), no CHECK).
+ *                          The value passes through; the UI gets a
+ *                          dropdown of canonical suggestions so the user
+ *                          can optionally remap to a known one.
+ *   - 'unmatched_name'   — incoming reference points at a name the target
+ *                          manuscript doesn't have (character / motif).
+ *   - 'missing_lookup'   — incoming reference is an id but the envelope
+ *                          had no name lookup to translate it. Common
+ *                          when a model returns the trimmed Beats-tab
+ *                          shape but loses the *NamesById blocks.
+ *   - 'null_overwrite'   — for update actions only: the incoming resolved
+ *                          value is null and the existing field is
+ *                          non-null. By default the importer preserves
+ *                          the existing value; the user must opt in to
+ *                          overwrite.
  *
  * Each warning carries the original input, the resolved value, and a
  * human-readable reason so the UI can render a clear explanation per
@@ -430,6 +438,7 @@ export interface CausalLinkImportInput {
  */
 export type BeatFieldWarningKind =
   | 'unknown_enum'
+  | 'new_enum_value'
   | 'unmatched_name'
   | 'missing_lookup'
   | 'null_overwrite'
@@ -444,6 +453,11 @@ export interface BeatFieldWarning {
   resolvedValue: unknown
   /** For 'null_overwrite' only: the existing value the importer would otherwise preserve. */
   existingValue?: unknown
+  /**
+   * For 'new_enum_value' only: canonical alternatives the UI should offer
+   * as remap options in a dropdown alongside "keep imported value".
+   */
+  suggestions?: string[]
 }
 
 /**
@@ -556,6 +570,21 @@ export interface BeatsImportPlan {
   }
 }
 
+/**
+ * Per-field overrides chosen by the user during review. Lets the user
+ * remap an unfamiliar enum value (e.g. sceneFunctionType: "frame_contract")
+ * to a canonical one before the import writes. The import writes the
+ * imported value as-is unless an override is set.
+ *
+ * Only fields with permissive DB storage are remappable here; fields with
+ * CHECK constraints (withholdingLevel, knowledgeKind, linkType) are
+ * already strict at the resolver and can't reach this map.
+ */
+export interface BeatFieldRemaps {
+  /** Override for sceneFunctionType. null = explicit "write null". */
+  sceneFunctionType?: string | null
+}
+
 /** What the user decides to do per beat in the apply phase. */
 export interface BeatImportDecision {
   /** 'apply' = persist the resolved values; 'skip' = leave this beat alone. */
@@ -568,6 +597,13 @@ export interface BeatImportDecision {
    * preserve.
    */
   allowOverwriteWithNull?: boolean
+  /**
+   * Per-field remaps the user chose during review. Values here override
+   * what the resolver produced; missing keys mean "use the resolver's
+   * value". Used today only for sceneFunctionType remapping; extensible
+   * to other permissive fields later.
+   */
+  fieldRemaps?: BeatFieldRemaps
 }
 
 /**

@@ -34,6 +34,7 @@ export type {
   CausalLinkPlanItem,
   BeatsImportPlan,
   BeatImportDecision,
+  BeatFieldRemaps,
   BeatsImportApplyRequest,
 } from '@shared/ManuscriptBriefing'
 
