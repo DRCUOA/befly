@@ -12,9 +12,9 @@
       role="dialog"
       aria-label="Manuscript chat"
     >
-      <!-- Header -->
+      <!-- Header: drawer title + close -->
       <header class="px-4 py-3 border-b border-gray-100 bg-paper">
-        <div class="flex items-center gap-2 mb-2">
+        <div class="flex items-center gap-2">
           <p class="text-xs uppercase tracking-widest text-ink-lighter flex-1">
             Manuscript chat
           </p>
@@ -24,43 +24,54 @@
             aria-label="Close drawer"
           >✕</button>
         </div>
-        <div class="flex items-center gap-2">
-          <select
-            v-model="selectedChatId"
-            class="flex-1 text-sm border border-gray-200 rounded px-2 py-1 bg-white focus:outline-none focus:ring-1 focus:ring-blue-400"
-            @change="onChatChange"
-          >
-            <option value="" disabled>Select a chat…</option>
-            <option v-for="c in chats" :key="c.id" :value="c.id">
-              {{ c.title }}
-            </option>
-          </select>
-          <button
-            @click="newChat"
-            :disabled="busy"
-            class="text-xs px-2 py-1 border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50"
-            title="Start a new chat"
-          >+ New</button>
-        </div>
-        <!-- Model picker: prominent its own row so the writer can swap
-             models before sending the next turn. Rename/Delete moved
-             below into a quieter "options" row. -->
-        <div v-if="activeChat" class="mt-3">
-          <label class="block text-[11px] uppercase tracking-wider text-ink-lighter mb-1">
-            AI model
-          </label>
-          <select
-            v-model="modelForActive"
-            class="w-full text-sm border border-gray-300 rounded px-2 py-1.5 bg-white focus:outline-none focus:ring-1 focus:ring-blue-400"
-            @change="changeModel"
-          >
-            <option v-for="m in models" :key="m.id" :value="m.id">{{ m.label }}</option>
-          </select>
-          <p class="text-[10px] text-ink-lighter mt-1">
-            Applies to your next turn. Earlier turns keep the model they were sent with.
-          </p>
-        </div>
-        <div v-if="activeChat" class="mt-2 flex items-center gap-3 text-[11px]">
+      </header>
+
+      <!-- Toolbar: list-view ↔ active-chat navigation.
+           - "← Chats" goes back to the list view (closes the active
+             chat without closing the drawer).
+           - The active chat title sits in the middle as an anchor.
+           - "+ New chat" is always visible so a fresh thread is one
+             click away from either view. -->
+      <div class="px-4 py-2 border-b border-gray-100 bg-paper flex items-center gap-2">
+        <button
+          v-if="activeChat"
+          @click="showChatList"
+          class="text-xs px-2 py-1 border border-gray-300 rounded hover:bg-gray-50"
+          title="Back to the list of saved chats"
+        >← Chats</button>
+        <span
+          v-if="activeChat"
+          class="flex-1 text-sm font-medium truncate"
+          :title="activeChat.title"
+        >{{ activeChat.title }}</span>
+        <span v-else class="flex-1 text-xs uppercase tracking-wider text-ink-lighter">
+          Saved chats
+        </span>
+        <button
+          @click="newChat"
+          :disabled="busy"
+          class="text-xs px-2 py-1 border border-blue-500 text-blue-700 rounded hover:bg-blue-50 disabled:opacity-50"
+          title="Start a new chat"
+        >+ New chat</button>
+      </div>
+
+      <!-- Model picker + per-chat actions (only when an active chat
+           is open). Hidden in the list view. -->
+      <div v-if="activeChat" class="px-4 py-2 border-b border-gray-100 bg-paper">
+        <label class="block text-[11px] uppercase tracking-wider text-ink-lighter mb-1">
+          AI model
+        </label>
+        <select
+          v-model="modelForActive"
+          class="w-full text-sm border border-gray-300 rounded px-2 py-1.5 bg-white focus:outline-none focus:ring-1 focus:ring-blue-400"
+          @change="changeModel"
+        >
+          <option v-for="m in models" :key="m.id" :value="m.id">{{ m.label }}</option>
+        </select>
+        <p class="text-[10px] text-ink-lighter mt-1">
+          Applies to your next turn. Earlier turns keep the model they were sent with.
+        </p>
+        <div class="mt-2 flex items-center gap-3 text-[11px]">
           <button
             @click="renameActive"
             class="text-ink-lighter hover:text-ink"
@@ -73,22 +84,42 @@
             title="Delete chat"
           >Delete</button>
         </div>
-      </header>
+      </div>
 
-      <!-- Messages -->
+      <!-- Body: chat list view OR message log -->
       <div ref="messagesEl" class="flex-1 overflow-y-auto px-4 py-3 bg-white">
-        <div v-if="!activeChat" class="text-sm text-ink-lighter text-center py-10">
-          <p class="mb-3">
-            No chat is open yet. Every chat is scoped to this manuscript —
-            retrieved context comes only from indexed sources for this project.
-          </p>
-          <button
-            type="button"
-            @click="newChat"
-            :disabled="busy"
-            class="px-3 py-1.5 text-sm border border-blue-500 text-blue-700 rounded hover:bg-blue-50 disabled:opacity-50"
-          >Start a new chat</button>
-        </div>
+        <!-- List view: shown when no chat is active. Lists every saved
+             chat with its model and last-updated time. -->
+        <template v-if="!activeChat">
+          <div v-if="chats.length === 0" class="text-sm text-ink-lighter text-center py-10">
+            <p class="mb-3">
+              No chats yet. Every chat is scoped to this manuscript —
+              retrieved context comes only from indexed sources for this project.
+            </p>
+            <button
+              type="button"
+              @click="newChat"
+              :disabled="busy"
+              class="px-3 py-1.5 text-sm border border-blue-500 text-blue-700 rounded hover:bg-blue-50 disabled:opacity-50"
+            >Start a new chat</button>
+          </div>
+          <ul v-else class="space-y-1.5">
+            <li v-for="c in chats" :key="c.id">
+              <button
+                type="button"
+                @click="openChat(c.id)"
+                class="w-full text-left p-2.5 rounded border border-gray-100 hover:border-blue-300 hover:bg-blue-50/40 transition-colors"
+              >
+                <div class="text-sm font-medium text-ink truncate">{{ c.title }}</div>
+                <div class="text-[11px] text-ink-lighter mt-0.5">
+                  {{ c.model }} · updated {{ formatRelativeTime(c.updatedAt) }}
+                </div>
+              </button>
+            </li>
+          </ul>
+        </template>
+
+        <!-- Active-chat view: messages + (later) composer in the footer. -->
         <div v-else-if="messagesLoading && messages.length === 0" class="text-sm text-ink-lighter text-center py-10">
           Loading…
         </div>
@@ -141,8 +172,8 @@
         </template>
       </div>
 
-      <!-- Composer -->
-      <footer class="border-t border-gray-100 px-4 py-3 bg-paper">
+      <!-- Composer (hidden in list view — pick or start a chat first) -->
+      <footer v-if="activeChat" class="border-t border-gray-100 px-4 py-3 bg-paper">
         <form @submit.prevent="onSubmit" class="flex items-end gap-2">
           <textarea
             v-model="draft"
@@ -275,6 +306,19 @@ const scrollToBottom = async () => {
   }
 }
 
+/** Compact "Nm ago" / "Nh ago" / fallback to short date for chat-list rows. */
+const formatRelativeTime = (iso: string): string => {
+  const diff = Date.now() - new Date(iso).getTime()
+  const m = Math.floor(diff / 60000)
+  if (m < 1) return 'just now'
+  if (m < 60) return `${m}m ago`
+  const h = Math.floor(m / 60)
+  if (h < 24) return `${h}h ago`
+  const d = Math.floor(h / 24)
+  if (d < 7) return `${d}d ago`
+  return new Date(iso).toLocaleDateString()
+}
+
 const loadModels = async () => {
   if (models.value.length > 0) return
   try {
@@ -291,12 +335,9 @@ const loadChats = async () => {
   try {
     chats.value = await manuscriptChatApi.list(props.manuscriptId)
     if (chats.value.length === 0) {
-      // Auto-create the first chat so the textarea is immediately
-      // usable. The previous behaviour landed the user in a state
-      // where everything looked disabled (the picker had no options
-      // and the composer was gated on `activeChat`), and the only
-      // way forward was a small "+ New" button — which wasn't
-      // obvious. Creating on open removes that step.
+      // No saved chats yet: auto-create one so the composer is
+      // immediately usable, instead of landing on an empty list view
+      // with only a "Start a new chat" button.
       const created = await manuscriptChatApi.create(props.manuscriptId, {
         title: 'New chat',
         model: defaultModel.value || undefined,
@@ -305,11 +346,16 @@ const loadChats = async () => {
       selectedChatId.value = created.id
       messages.value = []
       modelForActive.value = created.model
-    } else if (!selectedChatId.value || !chats.value.find(c => c.id === selectedChatId.value)) {
-      // Auto-select the most recently updated chat.
-      selectedChatId.value = chats.value[0].id
-      await loadMessages(selectedChatId.value)
+    } else if (selectedChatId.value && !chats.value.find(c => c.id === selectedChatId.value)) {
+      // The previously-active chat was deleted or no longer accessible;
+      // drop back to the list view so the user can pick another.
+      selectedChatId.value = ''
+      messages.value = []
     }
+    // Otherwise: leave selectedChatId as-is. If it's empty, the body
+    // renders the list view (the writer can pick a chat or start a
+    // new one). If it's set, the active-chat view stays put across
+    // drawer opens.
   } catch (e) {
     errorMessage.value = e instanceof Error ? e.message : String(e)
   }
@@ -333,8 +379,22 @@ const loadMessages = async (chatId: string) => {
   }
 }
 
-const onChatChange = () => {
-  if (selectedChatId.value) loadMessages(selectedChatId.value)
+/** Open a chat from the list view. Loads its messages and resumes
+ *  polling if the latest assistant turn is still pending. */
+const openChat = async (chatId: string) => {
+  selectedChatId.value = chatId
+  await loadMessages(chatId)
+}
+
+/** Close the active chat without closing the drawer. The writer is
+ *  returned to the list view; the chat itself is preserved (this is
+ *  not a delete — to delete, use the per-chat Delete button in the
+ *  active-chat header). */
+const showChatList = () => {
+  stopPolling()
+  selectedChatId.value = ''
+  messages.value = []
+  errorMessage.value = ''
 }
 
 const newChat = async () => {
