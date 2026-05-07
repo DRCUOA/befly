@@ -23,20 +23,50 @@
           </h1>
           <p v-if="subtitle" class="text-sm font-light italic text-ink-light mt-1">{{ subtitle }}</p>
         </div>
-        <div v-if="$slots.actions" class="flex items-center gap-2 shrink-0">
+        <div v-if="$slots.actions || showBriefingButton" class="flex items-center gap-2 shrink-0">
           <slot name="actions" />
+          <button
+            v-if="showBriefingButton"
+            type="button"
+            @click="briefingOpen = true"
+            class="px-3 py-2 text-sm tracking-wide font-sans border border-line text-ink-light hover:text-ink hover:border-ink-lighter transition-colors duration-300"
+            title="Open the structured AI briefing for this manuscript."
+          >
+            Briefing
+          </button>
         </div>
       </div>
     </div>
+
+    <BriefingModal
+      :open="briefingOpen"
+      :manuscript-id="manuscriptId"
+      :manuscript-title="manuscriptTitle"
+      @close="briefingOpen = false"
+    />
   </header>
 </template>
 
 <script setup lang="ts">
-defineProps<{
+import { ref } from 'vue'
+import BriefingModal from '../manuscripts/BriefingModal.vue'
+
+interface Props {
   manuscriptId: string
   manuscriptTitle: string
   /** Small label above the title, e.g. "Character Studio". */
   eyebrow?: string
   subtitle?: string
-}>()
+  /**
+   * Show the Briefing button next to the page-specific actions. Default
+   * true so every storycraft view that uses this header inherits the entry
+   * point. Pages that surface their own Briefing button (e.g. ManuscriptDetail)
+   * can pass :show-briefing-button="false".
+   */
+  showBriefingButton?: boolean
+}
+
+withDefaults(defineProps<Props>(), { showBriefingButton: true })
+
+const briefingOpen = ref(false)
 </script>

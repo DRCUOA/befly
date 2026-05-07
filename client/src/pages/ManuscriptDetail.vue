@@ -69,6 +69,22 @@
               >
                 Export
               </button>
+              <span class="inline-flex items-center">
+                <button
+                  type="button"
+                  @click="showBriefing = true"
+                  class="px-4 py-2 text-sm tracking-wide font-sans border border-line text-ink-light hover:text-ink hover:border-ink-lighter transition-colors duration-300"
+                >
+                  Briefing
+                </button>
+                <HelpTooltip placement="left" aria-label="About the AI briefing">
+                  A structured snapshot &mdash; literary direction, spine,
+                  beats, characters, causal links, recent AI artifacts &mdash;
+                  intended for another model (or a human collaborator) to
+                  review the current state without reading every word.
+                  Complements the manuscript Markdown export.
+                </HelpTooltip>
+              </span>
               <router-link
                 v-if="canModify"
                 :to="`/manuscripts/edit/${manuscript.id}`"
@@ -707,6 +723,16 @@
       @close="showPreview = false"
     />
 
+    <!-- AI briefing modal. Pulls a structured state snapshot from the server
+         on open, with prose-level and artifact-cap controls. -->
+    <BriefingModal
+      v-if="manuscript"
+      :open="showBriefing"
+      :manuscript-id="manuscript.id"
+      :manuscript-title="manuscript.title"
+      @close="showBriefing = false"
+    />
+
     <!-- Chat drawer (RAG-backed). Mounted at the page root so its
          backdrop+drawer overlay everything else. -->
     <ChatDrawer
@@ -726,6 +752,7 @@ import { api } from '../api/client'
 import { useAuth } from '../stores/auth'
 import EditableProse from '../components/manuscripts/EditableProse.vue'
 import BookPreviewModal from '../components/manuscripts/BookPreviewModal.vue'
+import BriefingModal from '../components/manuscripts/BriefingModal.vue'
 import HelpTooltip from '../components/ui/HelpTooltip.vue'
 import ManuscriptSubNav from '../components/storycraft/ManuscriptSubNav.vue'
 import ChatDrawer from '../components/manuscripts/ChatDrawer.vue'
@@ -779,6 +806,9 @@ const dragOverItemId = ref<string | null>(null)
 
 // ---- preview ----
 const showPreview = ref(false)
+
+// ---- briefing (structured AI handoff) ----
+const showBriefing = ref(false)
 
 // ---- export ----
 const showExport = ref(false)

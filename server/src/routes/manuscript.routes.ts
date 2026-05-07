@@ -18,6 +18,13 @@ router.get('/:id/spine', optionalAuthMiddleware, asyncHandler(manuscriptControll
 // Currently Markdown only; format query param is forward-looking.
 router.get('/:id/export', optionalAuthMiddleware, asyncHandler(manuscriptController.exportFile))
 
+// State snapshot / "briefing pack" intended for AI consumption or fast
+// human review. Complements the full Markdown export — prose is excluded
+// by default (proseLevel=none|digest|full), and the envelope adds the
+// planning layer the export file doesn't carry: beats, knowledge ledger,
+// causal links, characters, motifs, silences, recent AI artifacts.
+router.get('/:id/briefing', optionalAuthMiddleware, asyncHandler(manuscriptController.briefing))
+
 /* ----- Assist & Artifacts ----- */
 // Run an AI assist mode (currently: gaps). Owner-only.
 router.post('/:id/assist', authMiddleware, asyncHandler(manuscriptController.runAssist))

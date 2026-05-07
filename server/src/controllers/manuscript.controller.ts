@@ -6,6 +6,13 @@ import {
   suggestFilename,
   MarkdownExportOptions,
 } from '../services/manuscript-export.service.js'
+import {
+  buildManuscriptBriefing,
+  briefingToJson,
+  briefingToMarkdown,
+  suggestBriefingFilename,
+} from '../services/manuscript-briefing.service.js'
+import type { ProseLevel } from '../models/ManuscriptBriefing.js'
 import { manuscriptAssistService } from '../services/manuscript-assist.service.js'
 import { manuscriptArtifactRepo } from '../repositories/manuscript-artifact.repo.js'
 import { LlmConfigurationError } from '../services/llm/llm-client.js'
@@ -231,6 +238,85 @@ export const manuscriptController = {
     res.setHeader('Content-Type', 'text/markdown; charset=utf-8')
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`)
     res.send(markdown)
+  },
+
+  /**
+   * GET /api/manuscripts/:id/briefing?format=json|markdown&prose=none|digest|full&artifactLimit=10&download=0
+   *
+   * Builds a "state snapshot" of the manuscript intended for AI consumption
+   * or fast human review. Complements (does not replace) the full Markdown
+   * export and the admin essay-export.
+   *
+   * - format=json (default): returns the canonical envelope as application/json.
+   * - format=markdown:        returns a human-readable rendering of the same envelope.
+   * - prose=digest (default): per-item first/last sentence; 'none' omits prose;
+   *                           'full' includes whole bodies (heavy).
+   * - artifactLimit=N:        cap on most-recent AI artifacts included. Default 10.
+   * - download=1:             set Content-Disposition to attachment so the
+   *                           browser saves the file. Default is inline so the
+   *                           UI can preview it in a modal.
+   */
+  async briefing(req: Request, res: Response) {
+    const { id } = req.params
+    const userId = (req as any).userId || null
+    const admin = isAdminRequest(req)
+
+    const format = String(req.query.format ?? 'json').toLowerCase()
+    if (format !== 'json' && format !== 'markdown' && format !== 'md') {
+      throw new ValidationError(`Unsupported briefing format: ${format}. Supported: json, markdown`)
+    }
+
+    const proseRaw = String(req.query.prose ?? 'digest').toLowerCase()
+    if (proseRaw !== 'none' && proseRaw !== 'digest' && proseRaw !== 'full') {
+      throw new ValidationError(`Unsupported prose level: ${proseRaw}. Supported: none, digest, full`)
+    }
+    const proseLevel = proseRaw as ProseLevel
+
+    let artifactLimit: number | undefined
+    if (req.query.artifactLimit !== undefined) {
+      const n = Number(req.query.artifactLimit)
+      if (!Number.isFinite(n) || n < 0 || n > 200) {
+        throw new ValidationError('artifactLimit must be a non-negative integer up to 200')
+      }
+      artifactLimit = Math.floor(n)
+    }
+
+    const wantsDownload = asBool(req.query.download) ?? false
+
+    const envelope = await buildManuscriptBriefing(id, userId, admin, {
+      proseLevel,
+      artifactLimit,
+    })
+
+    await activityService.logManuscript('export', id, userId, getClientIp(req), getUserAgent(req), {
+      format: format === 'md' ? 'briefing-markdown' : `briefing-${format}`,
+      proseLevel,
+      artifactLimit: artifactLimit ?? null,
+    })
+
+    if (format === 'markdown' || format === 'md') {
+      const md = briefingToMarkdown(envelope)
+      res.setHeader('Content-Type', 'text/markdown; charset=utf-8')
+      if (wantsDownload) {
+        res.setHeader(
+          'Content-Disposition',
+          `attachment; filename="${suggestBriefingFilename(envelope.project.title, 'md')}"`
+        )
+      }
+      res.send(md)
+      return
+    }
+
+    // JSON
+    const json = briefingToJson(envelope)
+    res.setHeader('Content-Type', 'application/json; charset=utf-8')
+    if (wantsDownload) {
+      res.setHeader(
+        'Content-Disposition',
+        `attachment; filename="${suggestBriefingFilename(envelope.project.title, 'json')}"`
+      )
+    }
+    res.send(json)
   },
 
   /* ----- Assist & Artifacts ----- */

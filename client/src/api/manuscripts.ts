@@ -22,6 +22,16 @@ import type {
   ManuscriptArtifactStatus,
   ManuscriptArtifactType,
 } from '@shared/Manuscript'
+import type {
+  ManuscriptBriefingEnvelope,
+  ProseLevel,
+} from '@shared/ManuscriptBriefing'
+
+export interface GetBriefingOptions {
+  proseLevel?: ProseLevel
+  /** Cap on most-recent AI artifacts. Pass 0 to exclude artifacts entirely. */
+  artifactLimit?: number
+}
 
 export interface AssistRunResult {
   mode: string
@@ -99,4 +109,59 @@ export const manuscriptsApi = {
       .then(r => r.data),
 
   deleteArtifact: (artifactId: string) => api.delete(`/manuscripts/artifacts/${artifactId}`),
+
+  /**
+   * Fetch the structured "briefing" envelope as JSON. The envelope is intended
+   * for AI consumption or a fast human review — it carries literary direction,
+   * spine, beats, knowledge ledger, characters, causal links, silences, and
+   * recent AI artifacts. By default prose is included as per-item digests
+   * (first/last sentence). Pass proseLevel='none' for the lightest payload or
+   * 'full' for a deep critique.
+   *
+   * Note: the briefing endpoint returns the bare envelope (no ApiResponse
+   * wrapper), so we type the response as the envelope itself.
+   */
+  getBriefing: (manuscriptId: string, opts: GetBriefingOptions = {}) => {
+    const params: Record<string, string> = { format: 'json' }
+    if (opts.proseLevel) params.prose = opts.proseLevel
+    if (opts.artifactLimit !== undefined) params.artifactLimit = String(opts.artifactLimit)
+    return api.get<ManuscriptBriefingEnvelope>(`/manuscripts/${manuscriptId}/briefing`, { params })
+  },
+
+  /**
+   * Fetch the briefing rendered as Markdown. The shared `api` wrapper only
+   * parses application/json bodies, so we go through plain fetch here.
+   */
+  getBriefingMarkdown: async (manuscriptId: string, opts: GetBriefingOptions = {}): Promise<string> => {
+    const params = new URLSearchParams({ format: 'markdown' })
+    if (opts.proseLevel) params.set('prose', opts.proseLevel)
+    if (opts.artifactLimit !== undefined) params.set('artifactLimit', String(opts.artifactLimit))
+    const res = await fetch(`/api/manuscripts/${manuscriptId}/briefing?${params.toString()}`, {
+      credentials: 'include',
+    })
+    if (!res.ok) {
+      let msg: string | undefined
+      try {
+        const body = await res.json()
+        msg = body?.error
+      } catch { /* not JSON */ }
+      throw new Error(msg || `Briefing request failed (${res.status})`)
+    }
+    return res.text()
+  },
+
+  /**
+   * Build a download URL for the briefing in the given format. Used by the
+   * modal's "Download" link so the browser handles the save dialog itself.
+   */
+  briefingDownloadUrl: (
+    manuscriptId: string,
+    format: 'json' | 'markdown',
+    opts: GetBriefingOptions = {}
+  ) => {
+    const params = new URLSearchParams({ format, download: '1' })
+    if (opts.proseLevel) params.set('prose', opts.proseLevel)
+    if (opts.artifactLimit !== undefined) params.set('artifactLimit', String(opts.artifactLimit))
+    return `/api/manuscripts/${manuscriptId}/briefing?${params.toString()}`
+  },
 }
