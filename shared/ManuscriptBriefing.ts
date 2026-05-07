@@ -406,30 +406,208 @@ export interface CausalLinkImportInput {
   note?: string | null
 }
 
-/** Result returned by the import endpoint. */
-export interface BeatsImportResult {
-  /** Total beats seen in the envelope (including any that failed). */
+/* ----- Beat import: preview + apply ----- */
+
+/**
+ * One field-level issue surfaced by the resolver. Three kinds:
+ *
+ *   - 'unknown_enum'    — incoming value isn't in the schema's whitelist
+ *                         (e.g. sceneFunctionType: "frame_contract").
+ *   - 'unmatched_name'  — incoming reference points at a name the target
+ *                         manuscript doesn't have (character / motif).
+ *   - 'missing_lookup'  — incoming reference is an id but the envelope had
+ *                         no name lookup to translate it. Common when a
+ *                         model returns the trimmed Beats-tab shape but
+ *                         loses the *NamesById blocks.
+ *   - 'null_overwrite'  — for update actions only: the incoming resolved
+ *                         value is null and the existing field is non-null.
+ *                         By default the importer preserves the existing
+ *                         value; the user must opt in to overwrite.
+ *
+ * Each warning carries the original input, the resolved value, and a
+ * human-readable reason so the UI can render a clear explanation per
+ * field.
+ */
+export type BeatFieldWarningKind =
+  | 'unknown_enum'
+  | 'unmatched_name'
+  | 'missing_lookup'
+  | 'null_overwrite'
+
+export interface BeatFieldWarning {
+  field: string
+  kind: BeatFieldWarningKind
+  reason: string
+  /** What the envelope said. Often a string like "frame_contract" or a UUID. */
+  inputValue: unknown
+  /** What the resolver landed on after validation/lookup. Usually null. */
+  resolvedValue: unknown
+  /** For 'null_overwrite' only: the existing value the importer would otherwise preserve. */
+  existingValue?: unknown
+}
+
+/**
+ * Resolved beat fields ready to write. Mirrors BriefingBeat but motifs use
+ * the canonical {motifId, variantNote} shape (after string[] shorthand has
+ * been expanded), and ids in povCharacterId / knowledge[].characterId /
+ * motifs[].motifId have already been mapped to target-manuscript ids.
+ */
+export interface ResolvedBeat {
+  itemId: string | null
+  povCharacterId: string | null
+  label: string | null
+  title: string | null
+  timelinePoint: string | null
+  movement: string | null
+  outerEvent: string | null
+  innerTurn: string | null
+  voiceConstraint: string | null
+  finalImage: string | null
+  sceneFunctionType: string | null
+  withholdingLevel: string | null
+  uniquePerception: string | null
+  blindSpot: string | null
+  misreading: string | null
+  readerInference: string | null
+  reasonForNextPovSwitch: string | null
+  knowledge: {
+    characterId: string | null
+    knowledgeKind: string
+    text: string
+  }[]
+  motifs: {
+    motifId: string
+    variantNote: string | null
+  }[]
+}
+
+/** Per-field diff entry (only populated for action='update'). */
+export interface BeatFieldDiff {
+  field: string
+  /** Existing value in the target manuscript. */
+  from: unknown
+  /** Value the importer would write if the user accepts. */
+  to: unknown
+}
+
+export type BeatImportAction = 'create' | 'update' | 'no_change'
+
+/** A single beat in the preview plan. */
+export interface BeatImportPlanItem {
+  /** Source id from the envelope. Falls back to "__index_N" when missing. */
+  sourceId: string
+  /** Action the resolver intends to take if the user accepts. */
+  action: BeatImportAction
+  /**
+   * Existing beat id in the target manuscript that this incoming beat
+   * matched, if any. Null for fresh creates.
+   */
+  matchedBeatId: string | null
+  /** How the match was found, for the UI to explain itself. */
+  matchedBy: 'id' | 'label' | null
+  /** Display label used in the UI: "P00 — Title…" */
+  display: string
+  /** Resolved fields ready to write. */
+  resolved: ResolvedBeat
+  /** Per-field warnings — invalid enum values, unmatched names, etc. */
+  warnings: BeatFieldWarning[]
+  /** Field-by-field diff against the existing beat. Empty for create. */
+  diff: BeatFieldDiff[]
+}
+
+/** Causal-link entry in the plan. */
+export interface CausalLinkPlanItem {
+  /** Source ids as they appeared in the envelope. */
+  fromSourceId: string
+  toSourceId: string
+  linkType: string
+  note: string | null
+  /**
+   * Whether both endpoints will resolve given the current decisions. The
+   * preview computes this assuming all beats with action != 'skip' will go
+   * through; the apply phase recomputes against the user's final choices.
+   */
+  willResolve: boolean
+  reason?: string
+}
+
+export interface BeatsImportPlan {
   total: number
-  /** Beats successfully created, with fresh ids for client-side updates. */
+  beats: BeatImportPlanItem[]
+  causalLinks: CausalLinkPlanItem[]
+  /**
+   * Names referenced by the envelope that don't exist in the target
+   * manuscript. These cause 'unmatched_name' warnings on individual beats;
+   * the deduplicated rollup here is for the summary panel.
+   */
+  unmatched: {
+    characterNames: string[]
+    motifNames: string[]
+  }
+  /**
+   * True when the envelope had no characterNamesById or motifNamesById and
+   * the resolver derived them from a `characters[]` / `motifs[]` block on
+   * the envelope. Lets the UI explain why some refs may have unmatched
+   * names that look like UUIDs in older payloads.
+   */
+  derivedLookups: {
+    characters: boolean
+    motifs: boolean
+  }
+}
+
+/** What the user decides to do per beat in the apply phase. */
+export interface BeatImportDecision {
+  /** 'apply' = persist the resolved values; 'skip' = leave this beat alone. */
+  action: 'apply' | 'skip'
+  /**
+   * For 'update' actions only: when true, fields whose resolved value is
+   * null are written as null (overwriting the existing value). When false
+   * (the default), those fields preserve their existing value. Has no
+   * effect on 'create' actions because there's no existing value to
+   * preserve.
+   */
+  allowOverwriteWithNull?: boolean
+}
+
+/**
+ * Apply-phase request body. The envelope is sent again so the server can
+ * re-run resolution end-to-end (avoiding stale-plan races) and apply the
+ * user's decisions.
+ */
+export interface BeatsImportApplyRequest {
+  envelope: BeatsImportEnvelope
+  decisions: Record<string, BeatImportDecision>
+}
+
+/** Final result returned by the apply endpoint. */
+export interface BeatsImportResult {
+  total: number
+  /** Beats freshly created. */
   created: {
     sourceId: string
     newId: string
     label: string | null
     title: string | null
   }[]
+  /** Beats matched to existing rows and updated. */
+  updated: {
+    sourceId: string
+    beatId: string
+    label: string | null
+    title: string | null
+    /** Number of fields written in the update. */
+    fieldsChanged: number
+  }[]
+  /** Beats explicitly skipped by the user. */
+  skipped: { sourceId: string; reason: string }[]
   /** Per-beat errors that didn't stop the import. */
   errors: { sourceId: string; error: string }[]
-  /** Causal-link summary. Skipped links had at least one endpoint that didn't map. */
   causalLinks: {
     created: number
+    updated: number
     skipped: number
   }
-  /**
-   * Names referenced by povCharacterId / knowledge / motifs that did NOT
-   * match any character or motif in the target manuscript. Surfaced so the
-   * writer can create them and re-import (the original beats still
-   * imported, just with the offending refs resolved to null).
-   */
   unmatched: {
     characterNames: string[]
     motifNames: string[]

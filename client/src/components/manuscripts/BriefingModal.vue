@@ -229,89 +229,241 @@
                 Import beats from JSON
               </h3>
               <p class="text-xs text-ink-light mt-1">
-                Accepts the same envelope shape produced by the JSON export above. Imported beats
-                are appended after your existing ones &mdash; nothing is overwritten. Character
-                and motif references resolve by name against this manuscript;
-                names that don't match are reported below so you can create them and re-import.
+                Accepts both the full briefing envelope and the trimmed Beats-tab JSON export.
+                Imports are reviewed before any write happens. Beats matched to existing rows by
+                id (or label, as a fallback) are <strong>updated, not duplicated</strong>.
+                Fields that would overwrite an existing value with null are preserved by default
+                &mdash; you opt in per beat to allow nulls.
               </p>
             </div>
 
-            <!-- File picker + paste box -->
-            <div class="grid sm:grid-cols-2 gap-3">
-              <label class="block">
-                <span class="text-xs uppercase tracking-widest text-ink-lighter font-sans">
-                  Choose a JSON file
-                </span>
-                <input
-                  type="file"
-                  accept="application/json,.json"
-                  @change="onImportFile"
-                  class="block text-xs mt-1"
-                />
-                <span v-if="importFilename" class="text-xs text-ink-lighter italic">
-                  Loaded: {{ importFilename }}
-                </span>
-              </label>
+            <!-- File picker + textarea: source for the buffer -->
+            <div v-if="!importPlan && !importResult">
+              <div class="grid sm:grid-cols-2 gap-3">
+                <label class="block">
+                  <span class="text-xs uppercase tracking-widest text-ink-lighter font-sans">
+                    Choose a JSON file
+                  </span>
+                  <input
+                    type="file"
+                    accept="application/json,.json"
+                    @change="onImportFile"
+                    class="block text-xs mt-1"
+                  />
+                  <span v-if="importFilename" class="text-xs text-ink-lighter italic">
+                    Loaded: {{ importFilename }}
+                  </span>
+                </label>
 
-              <label class="block">
-                <span class="text-xs uppercase tracking-widest text-ink-lighter font-sans">
-                  Or paste below
-                </span>
-                <span class="text-xs text-ink-lighter italic block mt-1">
-                  Either source updates the same buffer.
-                </span>
-              </label>
+                <label class="block">
+                  <span class="text-xs uppercase tracking-widest text-ink-lighter font-sans">
+                    Or paste below
+                  </span>
+                  <span class="text-xs text-ink-lighter italic block mt-1">
+                    Either source updates the same buffer.
+                  </span>
+                </label>
+              </div>
+
+              <textarea
+                v-model="importText"
+                placeholder='{ "beats": [ ... ], "causalLinks": [ ... ], "characterNamesById": { ... } }'
+                rows="6"
+                class="block w-full px-2 py-2 text-xs font-mono border border-line rounded-sm bg-paper focus:outline-none focus:ring-1 focus:ring-ink resize-y mt-3"
+                spellcheck="false"
+              ></textarea>
+
+              <!-- Client-side validation summary -->
+              <p
+                v-if="importValidation.kind === 'empty'"
+                class="text-xs text-ink-lighter italic mt-2"
+              >Paste a JSON envelope or pick a file to begin.</p>
+              <p
+                v-else-if="importValidation.kind === 'invalid'"
+                class="text-xs text-rose-700 mt-2"
+              >Cannot parse: {{ importValidation.message }}</p>
+              <p
+                v-else-if="importValidation.kind === 'valid'"
+                class="text-xs text-ink-light mt-2"
+              >
+                {{ importValidation.beatCount }} beat(s){{
+                  importValidation.causalLinkCount
+                    ? `, ${importValidation.causalLinkCount} causal link(s)`
+                    : ''
+                }} found in the buffer.
+              </p>
+
+              <div class="flex items-center gap-3 mt-3">
+                <button
+                  type="button"
+                  :disabled="importValidation.kind !== 'valid' || previewing"
+                  @click="runPreview"
+                  class="px-3 py-1.5 text-xs tracking-wide font-sans bg-ink text-paper hover:bg-ink-light transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  {{ previewing ? 'Previewing…' : 'Preview import' }}
+                </button>
+                <button
+                  v-if="importText"
+                  type="button"
+                  @click="resetImport"
+                  class="px-3 py-1.5 text-xs tracking-wide font-sans text-ink-light hover:text-ink"
+                >
+                  Reset
+                </button>
+              </div>
             </div>
 
-            <textarea
-              v-model="importText"
-              placeholder='{ "beats": [ ... ], "causalLinks": [ ... ], "characterNamesById": { ... } }'
-              rows="6"
-              class="block w-full px-2 py-2 text-xs font-mono border border-line rounded-sm bg-paper focus:outline-none focus:ring-1 focus:ring-ink resize-y"
-              spellcheck="false"
-            ></textarea>
+            <!-- Plan review panel -->
+            <div v-if="importPlan && !importResult" class="space-y-3">
+              <!-- Summary bar -->
+              <div class="border border-line rounded-sm p-3 bg-surface/40 text-xs space-y-1.5">
+                <p>
+                  <span class="font-medium">{{ planSummary.create }}</span> to create,
+                  <span class="font-medium">{{ planSummary.update }}</span> to update,
+                  <span class="font-medium">{{ planSummary.noChange }}</span> unchanged
+                  <span v-if="planSummary.skipped" class="text-ink-lighter">
+                    · {{ planSummary.skipped }} marked skip
+                  </span>
+                </p>
+                <p v-if="importPlan.derivedLookups.characters || importPlan.derivedLookups.motifs"
+                   class="text-ink-lighter italic">
+                  Derived
+                  <span v-if="importPlan.derivedLookups.characters">character</span>
+                  <span v-if="importPlan.derivedLookups.characters && importPlan.derivedLookups.motifs"> and </span>
+                  <span v-if="importPlan.derivedLookups.motifs">motif</span>
+                  name lookup{{ importPlan.derivedLookups.characters && importPlan.derivedLookups.motifs ? 's' : '' }}
+                  from the envelope's full
+                  <span v-if="importPlan.derivedLookups.characters">characters[]</span>
+                  <span v-if="importPlan.derivedLookups.characters && importPlan.derivedLookups.motifs"> / </span>
+                  <span v-if="importPlan.derivedLookups.motifs">motifs[]</span> block.
+                </p>
+                <p v-if="importPlan.unmatched.characterNames.length" class="text-amber-700">
+                  Unmatched characters: {{ importPlan.unmatched.characterNames.join(', ') }}
+                </p>
+                <p v-if="importPlan.unmatched.motifNames.length" class="text-amber-700">
+                  Unmatched motifs: {{ importPlan.unmatched.motifNames.join(', ') }}
+                </p>
+                <p class="text-ink-lighter">
+                  Causal links: {{ resolvableCausalLinkCount }} of {{ importPlan.causalLinks.length }} will resolve
+                  <span v-if="resolvableCausalLinkCount < importPlan.causalLinks.length">
+                    ({{ importPlan.causalLinks.length - resolvableCausalLinkCount }} skipped — see beats below).
+                  </span>
+                </p>
+              </div>
 
-            <!-- Validation summary -->
-            <p
-              v-if="importValidation.kind === 'empty'"
-              class="text-xs text-ink-lighter italic"
-            >Paste a JSON envelope or pick a file to begin.</p>
-            <p
-              v-else-if="importValidation.kind === 'invalid'"
-              class="text-xs text-rose-700"
-            >Cannot parse: {{ importValidation.message }}</p>
-            <p
-              v-else-if="importValidation.kind === 'valid'"
-              class="text-xs text-ink-light"
-            >
-              Ready to import {{ importValidation.beatCount }} beat(s){{
-                importValidation.causalLinkCount
-                  ? ` and ${importValidation.causalLinkCount} causal link(s)`
-                  : ''
-              }}.
-            </p>
+              <!-- Per-beat cards -->
+              <ul class="space-y-2 max-h-[28rem] overflow-y-auto pr-1">
+                <li
+                  v-for="item in importPlan.beats"
+                  :key="item.sourceId"
+                  class="border border-line rounded-sm p-3 bg-paper"
+                >
+                  <div class="flex items-start justify-between gap-3">
+                    <div class="flex-1 min-w-0">
+                      <div class="flex items-center gap-2 flex-wrap">
+                        <span
+                          :class="[
+                            'inline-flex items-center px-1.5 py-0.5 text-[10px] uppercase tracking-widest font-sans rounded',
+                            actionChipClass(item.action),
+                          ]"
+                        >{{ item.action.replace('_', ' ') }}</span>
+                        <span class="font-medium text-sm truncate">{{ item.display }}</span>
+                      </div>
+                      <p class="text-xs text-ink-lighter mt-0.5">
+                        <span v-if="item.matchedBy">
+                          Matched existing beat by {{ item.matchedBy }}{{ item.matchedBeatId ? ` (${shortId(item.matchedBeatId)})` : '' }} ·
+                        </span>
+                        Source id: <code>{{ shortId(item.sourceId) }}</code>
+                      </p>
+                    </div>
 
-            <!-- Import action -->
-            <div class="flex items-center gap-3">
-              <button
-                type="button"
-                :disabled="importValidation.kind !== 'valid' || importing"
-                @click="runImport"
-                class="px-3 py-1.5 text-xs tracking-wide font-sans bg-ink text-paper hover:bg-ink-light transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-              >
-                {{ importing ? 'Importing…' : 'Import beats' }}
-              </button>
-              <button
-                v-if="importText || importResult"
-                type="button"
-                @click="resetImport"
-                class="px-3 py-1.5 text-xs tracking-wide font-sans text-ink-light hover:text-ink"
-              >
-                Reset
-              </button>
+                    <label class="flex items-center gap-1.5 text-xs whitespace-nowrap shrink-0">
+                      <input
+                        type="checkbox"
+                        :checked="(decisions[item.sourceId]?.action ?? 'apply') === 'skip'"
+                        @change="onSkipToggle(item.sourceId, ($event.target as HTMLInputElement).checked)"
+                        class="rounded border-line text-ink focus:ring-ink"
+                      />
+                      Skip
+                    </label>
+                  </div>
+
+                  <!-- Warnings -->
+                  <ul v-if="item.warnings.length" class="mt-2 space-y-1">
+                    <li
+                      v-for="(w, i) in item.warnings"
+                      :key="i"
+                      :class="[
+                        'text-xs flex gap-1.5',
+                        w.kind === 'null_overwrite' ? 'text-amber-700' : 'text-ink-light',
+                      ]"
+                    >
+                      <span class="shrink-0">{{ warningIcon(w.kind) }}</span>
+                      <span>{{ w.reason }}</span>
+                    </li>
+                  </ul>
+
+                  <!-- Diff (update only) -->
+                  <div
+                    v-if="item.action === 'update' && item.diff.length"
+                    class="mt-2 text-xs"
+                  >
+                    <p class="text-ink-lighter mb-1">Field changes:</p>
+                    <ul class="space-y-0.5 font-mono">
+                      <li v-for="(d, i) in item.diff" :key="i" class="break-words">
+                        <span class="font-medium">{{ d.field }}</span>:
+                        <span class="text-ink-lighter">{{ formatDiffValue(d.from) }}</span>
+                        <span class="text-ink-light">→</span>
+                        <span :class="d.to === null && d.from !== null ? 'text-amber-700' : ''">
+                          {{ formatDiffValue(d.to) }}
+                        </span>
+                      </li>
+                    </ul>
+                  </div>
+
+                  <!-- Allow-null-overwrite toggle for updates with null_overwrite warnings -->
+                  <label
+                    v-if="item.action === 'update' && hasNullOverwriteWarnings(item)"
+                    class="flex items-start gap-2 text-xs mt-2 cursor-pointer"
+                  >
+                    <input
+                      type="checkbox"
+                      :checked="decisions[item.sourceId]?.allowOverwriteWithNull === true"
+                      @change="onOverwriteNullToggle(item.sourceId, ($event.target as HTMLInputElement).checked)"
+                      class="mt-0.5 rounded border-line text-ink focus:ring-ink"
+                    />
+                    <span>
+                      <span class="font-medium block">Overwrite existing values with nulls</span>
+                      <span class="text-ink-lighter">
+                        Off (default): existing field values are preserved where the import has nothing.
+                        On: the import's nulls overwrite — irreversible.
+                      </span>
+                    </span>
+                  </label>
+                </li>
+              </ul>
+
+              <!-- Plan actions -->
+              <div class="flex items-center gap-3 pt-2 border-t border-line">
+                <button
+                  type="button"
+                  @click="runApply"
+                  :disabled="applying || planSummary.toApply === 0"
+                  class="px-3 py-1.5 text-xs tracking-wide font-sans bg-ink text-paper hover:bg-ink-light transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  {{ applying ? 'Applying…' : `Apply ${planSummary.toApply} change${planSummary.toApply === 1 ? '' : 's'}` }}
+                </button>
+                <button
+                  type="button"
+                  @click="cancelPreview"
+                  class="px-3 py-1.5 text-xs tracking-wide font-sans text-ink-light hover:text-ink"
+                >
+                  Back to JSON
+                </button>
+              </div>
             </div>
 
-            <!-- Import result -->
+            <!-- Error -->
             <div
               v-if="importError"
               class="text-xs text-rose-700 bg-rose-50 border border-rose-200 rounded p-3"
@@ -319,27 +471,30 @@
               {{ importError }}
             </div>
 
+            <!-- Result panel (after apply) -->
             <div
               v-if="importResult"
               class="text-xs space-y-2 border border-line rounded p-3 bg-surface/40"
             >
               <p>
-                <span class="font-medium">Imported {{ importResult.created.length }}</span>
-                of {{ importResult.total }} beat(s).
+                <span class="font-medium">{{ importResult.created.length }} created,
+                {{ importResult.updated.length }} updated</span>
+                of {{ importResult.total }} beat(s) reviewed.
+                <span v-if="importResult.skipped.length" class="text-ink-light">
+                  {{ importResult.skipped.length }} skipped.
+                </span>
                 <span v-if="importResult.errors.length" class="text-rose-700">
                   {{ importResult.errors.length }} failed.
                 </span>
               </p>
-              <p v-if="importResult.causalLinks.created || importResult.causalLinks.skipped">
+              <p v-if="importResult.causalLinks.created || importResult.causalLinks.updated || importResult.causalLinks.skipped">
                 Causal links: {{ importResult.causalLinks.created }} created,
-                {{ importResult.causalLinks.skipped }} skipped (endpoints didn't both map).
+                {{ importResult.causalLinks.updated }} updated,
+                {{ importResult.causalLinks.skipped }} skipped.
               </p>
               <div v-if="importResult.unmatched.characterNames.length">
                 <span class="text-ink-light">Unmatched character names:</span>
                 <span class="text-ink">{{ importResult.unmatched.characterNames.join(', ') }}</span>
-                <p class="text-ink-lighter italic">
-                  Pov / knowledge refs to these resolved to null. Create the character then re-import to wire them up.
-                </p>
               </div>
               <div v-if="importResult.unmatched.motifNames.length">
                 <span class="text-ink-light">Unmatched motif names:</span>
@@ -349,10 +504,17 @@
                 <span class="text-ink-light">Per-beat errors:</span>
                 <ul class="list-disc list-inside">
                   <li v-for="(e, i) in importResult.errors" :key="i">
-                    <code class="text-ink-lighter">{{ e.sourceId }}</code>: {{ e.error }}
+                    <code class="text-ink-lighter">{{ shortId(e.sourceId) }}</code>: {{ e.error }}
                   </li>
                 </ul>
               </div>
+              <button
+                type="button"
+                @click="resetImport"
+                class="px-3 py-1.5 text-xs tracking-wide font-sans text-ink-light hover:text-ink underline"
+              >
+                Import another file
+              </button>
             </div>
           </section>
         </div>
@@ -406,6 +568,9 @@ import type {
   ProseLevel,
   BeatsImportEnvelope,
   BeatsImportResult,
+  BeatsImportPlan,
+  BeatImportPlanItem,
+  BeatImportDecision,
 } from '@shared/ManuscriptBriefing'
 
 const props = defineProps<{
@@ -434,14 +599,24 @@ const selectedBeatIds = ref<string[]>([])
 const beatsFormat = ref<BeatsFormat>('markdown')
 
 // ---- Beats-tab import state ----
-// `importText` is the source-of-truth buffer the user is editing; the file
-// picker just stuffs file contents into it. Validation runs reactively over
-// this string so the user sees parse errors as they type.
+// Two-phase flow:
+//   1. user pastes / uploads JSON into `importText`
+//   2. clicks Preview → server returns a BeatsImportPlan, stored in `importPlan`
+//   3. reviews per-beat actions, marks skips, toggles allow-null-overwrite
+//   4. clicks Apply → server runs the import with the user's decisions,
+//      returns BeatsImportResult, stored in `importResult`
+//
+// Editing the textarea after a preview invalidates the plan: the user has
+// to re-preview before applying so what they review and what they apply
+// are guaranteed to be the same payload.
 const importText = ref<string>('')
 const importFilename = ref<string | null>(null)
-const importing = ref(false)
+const previewing = ref(false)
+const applying = ref(false)
 const importError = ref<string | null>(null)
+const importPlan = ref<BeatsImportPlan | null>(null)
 const importResult = ref<BeatsImportResult | null>(null)
+const decisions = ref<Record<string, BeatImportDecision>>({})
 
 type ImportValidation =
   | { kind: 'empty' }
@@ -756,9 +931,11 @@ async function onImportFile(ev: Event) {
   importFilename.value = file.name
   try {
     importText.value = await file.text()
-    // Reset any prior import result/error so the panel reflects the new buffer.
+    // Loading new content invalidates any prior preview/result.
+    importPlan.value = null
     importResult.value = null
     importError.value = null
+    decisions.value = {}
   } catch (err) {
     importError.value = err instanceof Error ? err.message : 'Failed to read file'
   } finally {
@@ -767,31 +944,170 @@ async function onImportFile(ev: Event) {
   }
 }
 
-async function runImport() {
+/**
+ * Editing the textarea after a preview invalidates the plan — what the
+ * user reviewed and what they apply must be the same payload.
+ */
+watch(importText, (_new, _old) => {
+  if (importPlan.value) {
+    importPlan.value = null
+    decisions.value = {}
+  }
+})
+
+/** Phase 1: ask the server what would happen on apply, render the plan. */
+async function runPreview() {
   const v = importValidation.value
   if (v.kind !== 'valid') return
-
-  importing.value = true
+  previewing.value = true
   importError.value = null
+  importPlan.value = null
   importResult.value = null
   try {
-    const res = await manuscriptsApi.importBeats(props.manuscriptId, v.payload)
+    const plan = await manuscriptsApi.previewBeatsImport(props.manuscriptId, v.payload)
+    importPlan.value = plan
+    decisions.value = defaultDecisions(plan)
+  } catch (err) {
+    importError.value = err instanceof Error ? err.message : 'Preview failed'
+  } finally {
+    previewing.value = false
+  }
+}
+
+/**
+ * Default decision per beat:
+ *   - 'no_change': skip (nothing to do)
+ *   - 'create' or 'update': apply, allowOverwriteWithNull=false
+ *
+ * The user can flip skip/null-overwrite per beat before clicking Apply.
+ */
+function defaultDecisions(plan: BeatsImportPlan): Record<string, BeatImportDecision> {
+  const out: Record<string, BeatImportDecision> = {}
+  for (const item of plan.beats) {
+    if (item.action === 'no_change') {
+      out[item.sourceId] = { action: 'skip' }
+    } else {
+      out[item.sourceId] = { action: 'apply', allowOverwriteWithNull: false }
+    }
+  }
+  return out
+}
+
+/** Phase 2: write the plan with the user's decisions. */
+async function runApply() {
+  const v = importValidation.value
+  if (v.kind !== 'valid' || !importPlan.value) return
+  applying.value = true
+  importError.value = null
+  try {
+    const res = await manuscriptsApi.applyBeatsImport(
+      props.manuscriptId,
+      v.payload,
+      decisions.value
+    )
     importResult.value = res
-    // Refresh the envelope so the freshly imported beats appear in the
-    // export checklist below — same fetch path used at modal open.
+    importPlan.value = null
+    // Refresh the envelope so the updated/new beats appear in the export
+    // checklist above and the counts in the Summary tab are right.
     await loadEnvelope()
   } catch (err) {
-    importError.value = err instanceof Error ? err.message : 'Import failed'
+    importError.value = err instanceof Error ? err.message : 'Apply failed'
   } finally {
-    importing.value = false
+    applying.value = false
   }
+}
+
+function cancelPreview() {
+  importPlan.value = null
+  decisions.value = {}
+  importError.value = null
 }
 
 function resetImport() {
   importText.value = ''
   importFilename.value = null
   importError.value = null
+  importPlan.value = null
   importResult.value = null
+  decisions.value = {}
+}
+
+/* ---- Per-beat decision mutations ---- */
+
+function onSkipToggle(sourceId: string, skip: boolean) {
+  const cur = decisions.value[sourceId] ?? { action: 'apply' }
+  decisions.value = {
+    ...decisions.value,
+    [sourceId]: skip
+      ? { action: 'skip' }
+      : { action: 'apply', allowOverwriteWithNull: cur.allowOverwriteWithNull ?? false },
+  }
+}
+
+function onOverwriteNullToggle(sourceId: string, allow: boolean) {
+  const cur = decisions.value[sourceId] ?? { action: 'apply' }
+  if (cur.action === 'skip') return
+  decisions.value = {
+    ...decisions.value,
+    [sourceId]: { action: 'apply', allowOverwriteWithNull: allow },
+  }
+}
+
+/* ---- Plan summary ---- */
+
+const planSummary = computed(() => {
+  const out = { create: 0, update: 0, noChange: 0, skipped: 0, toApply: 0 }
+  if (!importPlan.value) return out
+  for (const item of importPlan.value.beats) {
+    if (item.action === 'create') out.create++
+    else if (item.action === 'update') out.update++
+    else out.noChange++
+    const d = decisions.value[item.sourceId]?.action ?? 'apply'
+    if (d === 'skip') out.skipped++
+    else if (item.action !== 'no_change') out.toApply++
+  }
+  return out
+})
+
+const resolvableCausalLinkCount = computed(() => {
+  if (!importPlan.value) return 0
+  return importPlan.value.causalLinks.filter(l => l.willResolve).length
+})
+
+/* ---- UI helpers for the plan view ---- */
+
+function actionChipClass(action: 'create' | 'update' | 'no_change'): string {
+  if (action === 'create') return 'bg-emerald-100 text-emerald-800'
+  if (action === 'update') return 'bg-amber-100 text-amber-800'
+  return 'bg-surface text-ink-lighter'
+}
+
+function warningIcon(kind: string): string {
+  if (kind === 'null_overwrite') return '⚠'
+  if (kind === 'unknown_enum') return '✗'
+  if (kind === 'unmatched_name') return '?'
+  if (kind === 'missing_lookup') return '?'
+  return '·'
+}
+
+function hasNullOverwriteWarnings(item: BeatImportPlanItem): boolean {
+  return item.warnings.some(w => w.kind === 'null_overwrite')
+}
+
+function shortId(id: string): string {
+  if (!id) return ''
+  if (id.length <= 12) return id
+  return id.slice(0, 8) + '…'
+}
+
+function formatDiffValue(v: unknown): string {
+  if (v === null || v === undefined) return '∅'
+  if (typeof v === 'string') {
+    if (v.length === 0) return '""'
+    if (v.length > 60) return JSON.stringify(v.slice(0, 60) + '…')
+    return JSON.stringify(v)
+  }
+  return JSON.stringify(v)
 }
 
 /** Heading shown next to each beat's checkbox. */

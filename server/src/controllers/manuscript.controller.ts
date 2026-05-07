@@ -12,7 +12,10 @@ import {
   briefingToMarkdown,
   suggestBriefingFilename,
 } from '../services/manuscript-briefing.service.js'
-import { importBeats as importBeatsService } from '../services/beat-import.service.js'
+import {
+  previewBeatsImport as previewBeatsImportService,
+  applyBeatsImport as applyBeatsImportService,
+} from '../services/beat-import.service.js'
 import type { ProseLevel } from '../models/ManuscriptBriefing.js'
 import { manuscriptAssistService } from '../services/manuscript-assist.service.js'
 import { manuscriptArtifactRepo } from '../repositories/manuscript-artifact.repo.js'
@@ -321,31 +324,77 @@ export const manuscriptController = {
   },
 
   /**
-   * POST /api/manuscripts/:id/beats/import
-   * Body: BeatsImportEnvelope — { beats, causalLinks?, characterNamesById?, motifNamesById? }
+   * POST /api/manuscripts/:id/beats/import/preview
+   * Body: BeatsImportEnvelope
    *
-   * Append the supplied beats to this manuscript. Owner-only (or admin).
-   * Returns a BeatsImportResult describing what was created, what failed,
-   * and which character/motif names couldn't be matched in the target.
+   * Resolves every beat in the envelope against this manuscript and
+   * returns a BeatsImportPlan describing what would happen on apply:
+   * per-beat action (create / update / no_change), warnings, diff against
+   * matched existing beats, plus a causal-link summary. No writes happen.
    *
-   * Beat ids in the payload are advisory: the server always assigns fresh
-   * UUIDs, so re-importing the same payload yields duplicates rather than
-   * collisions. Causal links are remapped to the new ids; any whose
-   * endpoints didn't both map are counted as skipped, not failed.
+   * Owner-only — the same write-access rule as the apply endpoint, so the
+   * preview can't be used to fish for state of a manuscript the caller
+   * couldn't otherwise see.
    */
-  async importBeats(req: Request, res: Response) {
+  async previewBeatsImport(req: Request, res: Response) {
     const { id } = req.params
     const userId = (req as any).userId
     if (!userId) throw new UnauthorizedError('Authentication required')
     const admin = isAdminRequest(req)
 
-    const result = await importBeatsService(id, userId, admin, req.body)
+    const plan = await previewBeatsImportService(id, userId, admin, req.body)
 
-    await activityService.logManuscript('beats_import', id, userId, getClientIp(req), getUserAgent(req), {
+    await activityService.logManuscript('beats_import_preview', id, userId, getClientIp(req), getUserAgent(req), {
+      total: plan.total,
+      creates: plan.beats.filter(b => b.action === 'create').length,
+      updates: plan.beats.filter(b => b.action === 'update').length,
+      noChange: plan.beats.filter(b => b.action === 'no_change').length,
+      derivedCharLookup: plan.derivedLookups.characters,
+      derivedMotifLookup: plan.derivedLookups.motifs,
+    })
+
+    res.json({ data: plan })
+  },
+
+  /**
+   * POST /api/manuscripts/:id/beats/import/apply
+   * Body: { envelope: BeatsImportEnvelope, decisions: Record<sourceId, BeatImportDecision> }
+   *
+   * Re-runs resolution from the envelope and applies the user's decisions.
+   * Each beat decision is { action: 'apply' | 'skip',
+   * allowOverwriteWithNull?: boolean }. Update beats whose resolved
+   * value would null an existing non-null field preserve the existing
+   * value by default; the user must opt in via allowOverwriteWithNull to
+   * overwrite.
+   *
+   * Dedup: incoming beats matched to existing rows by id (then label
+   * fallback, case-insensitive) are updated, not duplicated.
+   */
+  async applyBeatsImport(req: Request, res: Response) {
+    const { id } = req.params
+    const userId = (req as any).userId
+    if (!userId) throw new UnauthorizedError('Authentication required')
+    const admin = isAdminRequest(req)
+
+    const body = (req.body ?? {}) as { envelope?: unknown; decisions?: Record<string, unknown> }
+    if (!body.envelope || typeof body.envelope !== 'object') {
+      throw new ValidationError('Body must include an "envelope" object')
+    }
+    const decisions =
+      body.decisions && typeof body.decisions === 'object' && !Array.isArray(body.decisions)
+        ? (body.decisions as Record<string, import('../models/ManuscriptBriefing.js').BeatImportDecision>)
+        : {}
+
+    const result = await applyBeatsImportService(id, userId, admin, body.envelope, decisions)
+
+    await activityService.logManuscript('beats_import_apply', id, userId, getClientIp(req), getUserAgent(req), {
       total: result.total,
       created: result.created.length,
+      updated: result.updated.length,
+      skipped: result.skipped.length,
       errors: result.errors.length,
       causalLinksCreated: result.causalLinks.created,
+      causalLinksUpdated: result.causalLinks.updated,
       causalLinksSkipped: result.causalLinks.skipped,
       unmatchedCharacters: result.unmatched.characterNames.length,
       unmatchedMotifs: result.unmatched.motifNames.length,

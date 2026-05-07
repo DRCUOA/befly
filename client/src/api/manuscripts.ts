@@ -27,6 +27,8 @@ import type {
   ProseLevel,
   BeatsImportEnvelope,
   BeatsImportResult,
+  BeatsImportPlan,
+  BeatImportDecision,
 } from '@shared/ManuscriptBriefing'
 
 export interface GetBriefingOptions {
@@ -168,12 +170,37 @@ export const manuscriptsApi = {
   },
 
   /**
-   * Append beats to this manuscript from a JSON payload. The server is the
-   * authority on validation and reference resolution — the client just
-   * forwards the parsed envelope. Owner-only (or admin).
+   * Preview a beats import. Returns a plan that describes, per beat, what
+   * would happen on apply: action (create / update / no_change), warnings,
+   * diff against matched existing beats. No DB writes occur. Used by the
+   * modal to render the human-review UI before the user commits.
    */
-  importBeats: (manuscriptId: string, payload: BeatsImportEnvelope) =>
+  previewBeatsImport: (manuscriptId: string, payload: BeatsImportEnvelope) =>
     api
-      .post<ApiResponse<BeatsImportResult>>(`/manuscripts/${manuscriptId}/beats/import`, payload)
+      .post<ApiResponse<BeatsImportPlan>>(
+        `/manuscripts/${manuscriptId}/beats/import/preview`,
+        payload
+      )
+      .then(r => r.data),
+
+  /**
+   * Apply a beats import the user has reviewed. The server re-runs
+   * resolution from the envelope and applies the user's per-beat decisions
+   * — { action: 'apply' | 'skip', allowOverwriteWithNull?: boolean } keyed
+   * by sourceId.
+   *
+   * Dedup is by id then label, so re-imports update existing beats instead
+   * of duplicating.
+   */
+  applyBeatsImport: (
+    manuscriptId: string,
+    envelope: BeatsImportEnvelope,
+    decisions: Record<string, BeatImportDecision>
+  ) =>
+    api
+      .post<ApiResponse<BeatsImportResult>>(
+        `/manuscripts/${manuscriptId}/beats/import/apply`,
+        { envelope, decisions }
+      )
       .then(r => r.data),
 }

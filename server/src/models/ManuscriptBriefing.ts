@@ -25,6 +25,16 @@ export type {
   BeatImportInput,
   CausalLinkImportInput,
   BeatsImportResult,
+  BeatFieldWarning,
+  BeatFieldWarningKind,
+  BeatFieldDiff,
+  ResolvedBeat,
+  BeatImportAction,
+  BeatImportPlanItem,
+  CausalLinkPlanItem,
+  BeatsImportPlan,
+  BeatImportDecision,
+  BeatsImportApplyRequest,
 } from '@shared/ManuscriptBriefing'
 
 import type { ManuscriptBriefingVersion } from '@shared/ManuscriptBriefing'

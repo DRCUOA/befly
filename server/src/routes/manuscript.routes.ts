@@ -25,11 +25,18 @@ router.get('/:id/export', optionalAuthMiddleware, asyncHandler(manuscriptControl
 // causal links, characters, motifs, silences, recent AI artifacts.
 router.get('/:id/briefing', optionalAuthMiddleware, asyncHandler(manuscriptController.briefing))
 
-// Import beats from a JSON payload (the same shape produced by the Beats
-// tab's JSON download). Owner-only — uses the manuscript's normal write
-// access rule via storyCraftRepo. Beats are appended after the highest
-// existing orderIndex so they don't disturb the writer's current ordering.
-router.post('/:id/beats/import', authMiddleware, asyncHandler(manuscriptController.importBeats))
+// Beats import — two-phase: preview then apply.
+//
+// /preview returns a plan: per-beat action (create/update/no_change),
+// warnings, diff against matched existing beats, causal-link summary.
+// No writes happen on preview.
+//
+// /apply takes the envelope plus a decisions map and writes through.
+// Update beats with would-null fields preserve existing values by default;
+// the user opts in per-beat to overwrite. Dedup is by id then label, so
+// re-importing edited content updates instead of duplicating.
+router.post('/:id/beats/import/preview', authMiddleware, asyncHandler(manuscriptController.previewBeatsImport))
+router.post('/:id/beats/import/apply',   authMiddleware, asyncHandler(manuscriptController.applyBeatsImport))
 
 /* ----- Assist & Artifacts ----- */
 // Run an AI assist mode (currently: gaps). Owner-only.
