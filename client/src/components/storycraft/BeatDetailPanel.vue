@@ -1,7 +1,7 @@
 <template>
   <div
     v-if="open && beat"
-    class="fixed inset-0 bg-black/30 flex justify-end z-40"
+    class="fixed inset-0 bg-black/30 flex justify-end z-40 pt-16 md:pt-[4.5rem]"
     @click.self="$emit('close')"
   >
     <div class="bg-paper w-full sm:max-w-2xl h-full overflow-y-auto shadow-lg flex flex-col">
