@@ -145,75 +145,216 @@
         >{{ markdownText }}</pre>
 
         <!-- Beats tab — pick one, some, or all beats and grab them on their own. -->
-        <div v-else-if="activeTab === 'beats' && envelope" class="space-y-3 text-sm">
-          <div v-if="envelope.beats.length === 0" class="italic text-ink-light py-8 text-center">
-            No beats yet on this manuscript. Add some on the Polyphonic or Plot Causality view.
-          </div>
-          <div v-else class="space-y-3">
-            <!-- Toolbar: select all / clear / count / format toggle -->
-            <div class="flex flex-wrap items-center justify-between gap-3">
-              <div class="flex items-center gap-3 text-xs">
-                <button
-                  type="button"
-                  class="text-ink-light hover:text-ink underline"
-                  @click="selectAllBeats"
-                >Select all</button>
-                <span class="text-ink-lighter">·</span>
-                <button
-                  type="button"
-                  class="text-ink-light hover:text-ink underline"
-                  @click="clearBeats"
-                >Clear</button>
-                <span class="text-ink-lighter">{{ selectedBeatIds.length }} of {{ envelope.beats.length }} selected</span>
+        <div v-else-if="activeTab === 'beats' && envelope" class="space-y-6 text-sm">
+          <!-- ─── Export selected beats ─────────────────────────── -->
+          <section class="space-y-3">
+            <h3 class="text-xs uppercase tracking-widest text-ink-lighter font-sans">
+              Export selected beats
+            </h3>
+
+            <div v-if="envelope.beats.length === 0" class="italic text-ink-light py-2">
+              No beats yet on this manuscript. Add some on the Polyphonic or Plot Causality view, or import a JSON payload below.
+            </div>
+            <div v-else class="space-y-3">
+              <!-- Toolbar: select all / clear / count / format toggle -->
+              <div class="flex flex-wrap items-center justify-between gap-3">
+                <div class="flex items-center gap-3 text-xs">
+                  <button
+                    type="button"
+                    class="text-ink-light hover:text-ink underline"
+                    @click="selectAllBeats"
+                  >Select all</button>
+                  <span class="text-ink-lighter">·</span>
+                  <button
+                    type="button"
+                    class="text-ink-light hover:text-ink underline"
+                    @click="clearBeats"
+                  >Clear</button>
+                  <span class="text-ink-lighter">{{ selectedBeatIds.length }} of {{ envelope.beats.length }} selected</span>
+                </div>
+
+                <fieldset class="inline-flex border border-line rounded-sm overflow-hidden text-xs">
+                  <legend class="sr-only">Beat output format</legend>
+                  <button
+                    v-for="f in beatsFormats"
+                    :key="f.value"
+                    type="button"
+                    @click="beatsFormat = f.value"
+                    :class="[
+                      'px-3 py-1 transition-colors',
+                      beatsFormat === f.value
+                        ? 'bg-ink text-paper'
+                        : 'bg-paper text-ink-light hover:text-ink',
+                    ]"
+                  >
+                    {{ f.label }}
+                  </button>
+                </fieldset>
               </div>
 
-              <fieldset class="inline-flex border border-line rounded-sm overflow-hidden text-xs">
-                <legend class="sr-only">Beat output format</legend>
-                <button
-                  v-for="f in beatsFormats"
-                  :key="f.value"
-                  type="button"
-                  @click="beatsFormat = f.value"
-                  :class="[
-                    'px-3 py-1 transition-colors',
-                    beatsFormat === f.value
-                      ? 'bg-ink text-paper'
-                      : 'bg-paper text-ink-light hover:text-ink',
-                  ]"
-                >
-                  {{ f.label }}
-                </button>
-              </fieldset>
+              <!-- Beat checklist -->
+              <ul class="border border-line rounded-sm divide-y divide-line max-h-60 overflow-y-auto bg-paper">
+                <li v-for="b in sortedBeats" :key="b.id" class="px-3 py-2">
+                  <label class="flex items-start gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      v-model="selectedBeatIds"
+                      :value="b.id"
+                      class="mt-1 rounded border-line text-ink focus:ring-ink"
+                    />
+                    <span class="flex-1 min-w-0">
+                      <span class="font-medium block truncate">{{ beatHeading(b) }}</span>
+                      <span class="text-xs text-ink-lighter">{{ beatMeta(b) }}</span>
+                    </span>
+                  </label>
+                </li>
+              </ul>
+
+              <!-- Preview pane -->
+              <div>
+                <p class="text-xs uppercase tracking-widest text-ink-lighter font-sans mb-1">
+                  Preview ({{ beatsFormat }})
+                </p>
+                <pre
+                  class="text-xs font-mono whitespace-pre-wrap bg-surface/60 border border-line rounded p-3 overflow-x-auto max-h-72"
+                >{{ beatsOutput || '(no beats selected)' }}</pre>
+              </div>
             </div>
+          </section>
 
-            <!-- Beat checklist -->
-            <ul class="border border-line rounded-sm divide-y divide-line max-h-60 overflow-y-auto bg-paper">
-              <li v-for="b in sortedBeats" :key="b.id" class="px-3 py-2">
-                <label class="flex items-start gap-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    v-model="selectedBeatIds"
-                    :value="b.id"
-                    class="mt-1 rounded border-line text-ink focus:ring-ink"
-                  />
-                  <span class="flex-1 min-w-0">
-                    <span class="font-medium block truncate">{{ beatHeading(b) }}</span>
-                    <span class="text-xs text-ink-lighter">{{ beatMeta(b) }}</span>
-                  </span>
-                </label>
-              </li>
-            </ul>
-
-            <!-- Preview pane -->
+          <!-- ─── Import beats from JSON ────────────────────────── -->
+          <section class="space-y-3 border-t border-line pt-5">
             <div>
-              <p class="text-xs uppercase tracking-widest text-ink-lighter font-sans mb-1">
-                Preview ({{ beatsFormat }})
+              <h3 class="text-xs uppercase tracking-widest text-ink-lighter font-sans">
+                Import beats from JSON
+              </h3>
+              <p class="text-xs text-ink-light mt-1">
+                Accepts the same envelope shape produced by the JSON export above. Imported beats
+                are appended after your existing ones &mdash; nothing is overwritten. Character
+                and motif references resolve by name against this manuscript;
+                names that don't match are reported below so you can create them and re-import.
               </p>
-              <pre
-                class="text-xs font-mono whitespace-pre-wrap bg-surface/60 border border-line rounded p-3 overflow-x-auto max-h-72"
-              >{{ beatsOutput || '(no beats selected)' }}</pre>
             </div>
-          </div>
+
+            <!-- File picker + paste box -->
+            <div class="grid sm:grid-cols-2 gap-3">
+              <label class="block">
+                <span class="text-xs uppercase tracking-widest text-ink-lighter font-sans">
+                  Choose a JSON file
+                </span>
+                <input
+                  type="file"
+                  accept="application/json,.json"
+                  @change="onImportFile"
+                  class="block text-xs mt-1"
+                />
+                <span v-if="importFilename" class="text-xs text-ink-lighter italic">
+                  Loaded: {{ importFilename }}
+                </span>
+              </label>
+
+              <label class="block">
+                <span class="text-xs uppercase tracking-widest text-ink-lighter font-sans">
+                  Or paste below
+                </span>
+                <span class="text-xs text-ink-lighter italic block mt-1">
+                  Either source updates the same buffer.
+                </span>
+              </label>
+            </div>
+
+            <textarea
+              v-model="importText"
+              placeholder='{ "beats": [ ... ], "causalLinks": [ ... ], "characterNamesById": { ... } }'
+              rows="6"
+              class="block w-full px-2 py-2 text-xs font-mono border border-line rounded-sm bg-paper focus:outline-none focus:ring-1 focus:ring-ink resize-y"
+              spellcheck="false"
+            ></textarea>
+
+            <!-- Validation summary -->
+            <p
+              v-if="importValidation.kind === 'empty'"
+              class="text-xs text-ink-lighter italic"
+            >Paste a JSON envelope or pick a file to begin.</p>
+            <p
+              v-else-if="importValidation.kind === 'invalid'"
+              class="text-xs text-rose-700"
+            >Cannot parse: {{ importValidation.message }}</p>
+            <p
+              v-else-if="importValidation.kind === 'valid'"
+              class="text-xs text-ink-light"
+            >
+              Ready to import {{ importValidation.beatCount }} beat(s){{
+                importValidation.causalLinkCount
+                  ? ` and ${importValidation.causalLinkCount} causal link(s)`
+                  : ''
+              }}.
+            </p>
+
+            <!-- Import action -->
+            <div class="flex items-center gap-3">
+              <button
+                type="button"
+                :disabled="importValidation.kind !== 'valid' || importing"
+                @click="runImport"
+                class="px-3 py-1.5 text-xs tracking-wide font-sans bg-ink text-paper hover:bg-ink-light transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                {{ importing ? 'Importing…' : 'Import beats' }}
+              </button>
+              <button
+                v-if="importText || importResult"
+                type="button"
+                @click="resetImport"
+                class="px-3 py-1.5 text-xs tracking-wide font-sans text-ink-light hover:text-ink"
+              >
+                Reset
+              </button>
+            </div>
+
+            <!-- Import result -->
+            <div
+              v-if="importError"
+              class="text-xs text-rose-700 bg-rose-50 border border-rose-200 rounded p-3"
+            >
+              {{ importError }}
+            </div>
+
+            <div
+              v-if="importResult"
+              class="text-xs space-y-2 border border-line rounded p-3 bg-surface/40"
+            >
+              <p>
+                <span class="font-medium">Imported {{ importResult.created.length }}</span>
+                of {{ importResult.total }} beat(s).
+                <span v-if="importResult.errors.length" class="text-rose-700">
+                  {{ importResult.errors.length }} failed.
+                </span>
+              </p>
+              <p v-if="importResult.causalLinks.created || importResult.causalLinks.skipped">
+                Causal links: {{ importResult.causalLinks.created }} created,
+                {{ importResult.causalLinks.skipped }} skipped (endpoints didn't both map).
+              </p>
+              <div v-if="importResult.unmatched.characterNames.length">
+                <span class="text-ink-light">Unmatched character names:</span>
+                <span class="text-ink">{{ importResult.unmatched.characterNames.join(', ') }}</span>
+                <p class="text-ink-lighter italic">
+                  Pov / knowledge refs to these resolved to null. Create the character then re-import to wire them up.
+                </p>
+              </div>
+              <div v-if="importResult.unmatched.motifNames.length">
+                <span class="text-ink-light">Unmatched motif names:</span>
+                <span class="text-ink">{{ importResult.unmatched.motifNames.join(', ') }}</span>
+              </div>
+              <div v-if="importResult.errors.length">
+                <span class="text-ink-light">Per-beat errors:</span>
+                <ul class="list-disc list-inside">
+                  <li v-for="(e, i) in importResult.errors" :key="i">
+                    <code class="text-ink-lighter">{{ e.sourceId }}</code>: {{ e.error }}
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </section>
         </div>
 
         <div v-else class="text-sm font-light text-ink-light italic py-12 text-center">
@@ -263,6 +404,8 @@ import type {
   ManuscriptBriefingEnvelope,
   BriefingBeat,
   ProseLevel,
+  BeatsImportEnvelope,
+  BeatsImportResult,
 } from '@shared/ManuscriptBriefing'
 
 const props = defineProps<{
@@ -289,6 +432,26 @@ const copyLabel = ref('Copy')
 // ---- Beats tab state ----
 const selectedBeatIds = ref<string[]>([])
 const beatsFormat = ref<BeatsFormat>('markdown')
+
+// ---- Beats-tab import state ----
+// `importText` is the source-of-truth buffer the user is editing; the file
+// picker just stuffs file contents into it. Validation runs reactively over
+// this string so the user sees parse errors as they type.
+const importText = ref<string>('')
+const importFilename = ref<string | null>(null)
+const importing = ref(false)
+const importError = ref<string | null>(null)
+const importResult = ref<BeatsImportResult | null>(null)
+
+type ImportValidation =
+  | { kind: 'empty' }
+  | { kind: 'invalid'; message: string }
+  | {
+      kind: 'valid'
+      payload: BeatsImportEnvelope
+      beatCount: number
+      causalLinkCount: number
+    }
 
 const tabs: { value: Tab; label: string }[] = [
   { value: 'summary', label: 'Summary' },
@@ -549,6 +712,88 @@ function clearBeats() {
   selectedBeatIds.value = []
 }
 
+/* ---- Beat import ---- */
+
+/**
+ * Reactive validation over the textarea buffer. We parse the JSON each time
+ * the buffer changes; if parsing succeeds we shape-check the envelope at
+ * the same level the server does (beats must be an array, etc.). Anything
+ * stricter — enum values, character/motif ref resolution — happens
+ * server-side so the importer remains the single source of truth.
+ */
+const importValidation = computed<ImportValidation>(() => {
+  const text = importText.value.trim()
+  if (!text) return { kind: 'empty' }
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(text)
+  } catch (err) {
+    return { kind: 'invalid', message: err instanceof Error ? err.message : 'Not valid JSON' }
+  }
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+    return { kind: 'invalid', message: 'Payload must be a JSON object' }
+  }
+  const obj = parsed as Record<string, unknown>
+  if (!Array.isArray(obj.beats)) {
+    return { kind: 'invalid', message: 'Payload must contain a "beats" array' }
+  }
+  return {
+    kind: 'valid',
+    // The shape check above (object + beats array) is enough for the server
+    // to accept; the cast through `unknown` tells TS we've handled the gap
+    // between the broad runtime type (Record<string, unknown>) and the
+    // narrower shared type. The server is the authority on full validation.
+    payload: obj as unknown as BeatsImportEnvelope,
+    beatCount: obj.beats.length,
+    causalLinkCount: Array.isArray(obj.causalLinks) ? obj.causalLinks.length : 0,
+  }
+})
+
+async function onImportFile(ev: Event) {
+  const target = ev.target as HTMLInputElement
+  const file = target.files?.[0]
+  if (!file) return
+  importFilename.value = file.name
+  try {
+    importText.value = await file.text()
+    // Reset any prior import result/error so the panel reflects the new buffer.
+    importResult.value = null
+    importError.value = null
+  } catch (err) {
+    importError.value = err instanceof Error ? err.message : 'Failed to read file'
+  } finally {
+    // Allow re-selecting the same file (browsers don't fire change otherwise).
+    target.value = ''
+  }
+}
+
+async function runImport() {
+  const v = importValidation.value
+  if (v.kind !== 'valid') return
+
+  importing.value = true
+  importError.value = null
+  importResult.value = null
+  try {
+    const res = await manuscriptsApi.importBeats(props.manuscriptId, v.payload)
+    importResult.value = res
+    // Refresh the envelope so the freshly imported beats appear in the
+    // export checklist below — same fetch path used at modal open.
+    await loadEnvelope()
+  } catch (err) {
+    importError.value = err instanceof Error ? err.message : 'Import failed'
+  } finally {
+    importing.value = false
+  }
+}
+
+function resetImport() {
+  importText.value = ''
+  importFilename.value = null
+  importError.value = null
+  importResult.value = null
+}
+
 /** Heading shown next to each beat's checkbox. */
 function beatHeading(b: BriefingBeat): string {
   const head = [b.label, b.title].filter(Boolean).join(' · ')
@@ -619,9 +864,24 @@ function renderBeatsJson(env: ManuscriptBriefingEnvelope, beats: BriefingBeat[])
 }
 
 /**
- * Render the selected beats as Markdown. Mirrors the beat-section style used
- * by the server's full-briefing Markdown renderer so the two outputs feel
- * the same to a reader.
+ * Placeholder for an empty value in the Markdown output. Rendered in italics
+ * so a downstream reader (model or human) can immediately tell that the
+ * field exists but has not been filled in — silence here is information,
+ * not noise.
+ */
+const BLANK = '_(blank)_'
+
+function or(v: string | null | undefined): string {
+  return v && v.trim() ? v : BLANK
+}
+
+/**
+ * Render the selected beats as Markdown. Every field on BriefingBeat is
+ * included for every beat, regardless of whether it's filled in — blank
+ * fields show as _(blank)_ so a consumer can see at a glance which beats
+ * are partially developed.
+ *
+ * Mirrors the field set used by the server-side briefing Markdown renderer.
  */
 function renderBeatsMarkdown(env: ManuscriptBriefingEnvelope, beats: BriefingBeat[]): string {
   const charNameById = new Map(env.characters.map(c => [c.id, c.name]))
@@ -660,46 +920,68 @@ function renderBeatsMarkdown(env: ManuscriptBriefingEnvelope, beats: BriefingBea
   for (const b of beats) {
     const head = [b.label, b.title].filter(Boolean).join(' · ') || `Beat ${b.orderIndex + 1}`
     lines.push(`## ${head}`)
-
-    const meta: string[] = []
-    if (b.povCharacterId) meta.push(`POV: ${charNameById.get(b.povCharacterId) ?? b.povCharacterId}`)
-    if (b.sceneFunctionType) meta.push(sceneFunctionLabels[b.sceneFunctionType] ?? b.sceneFunctionType)
-    if (b.withholdingLevel) meta.push(`withholding: ${b.withholdingLevel}`)
-    if (b.timelinePoint) meta.push(`when: ${b.timelinePoint}`)
-    if (b.movement) meta.push(`movement: ${b.movement}`)
-    if (meta.length > 0) lines.push(`*${meta.join(' · ')}*`)
     lines.push('')
 
-    if (b.outerEvent) lines.push(`**Outer event.** ${b.outerEvent}`, '')
-    if (b.innerTurn) lines.push(`**Inner turn.** ${b.innerTurn}`, '')
-    if (b.voiceConstraint) lines.push(`**Voice constraint.** ${b.voiceConstraint}`, '')
-    if (b.finalImage) lines.push(`**Final image.** ${b.finalImage}`, '')
-    if (b.uniquePerception) lines.push(`**Unique perception.** ${b.uniquePerception}`, '')
-    if (b.blindSpot) lines.push(`**Blind spot.** ${b.blindSpot}`, '')
-    if (b.misreading) lines.push(`**Misreading.** ${b.misreading}`, '')
-    if (b.readerInference) lines.push(`**Reader inference.** ${b.readerInference}`, '')
-    if (b.reasonForNextPovSwitch) lines.push(`**Reason for next POV switch.** ${b.reasonForNextPovSwitch}`, '')
+    // Identification + structural metadata
+    lines.push(`**ID.** ${b.id}`)
+    lines.push(`**Order index.** ${b.orderIndex}`)
+    lines.push(`**Item ID.** ${b.itemId ?? BLANK}`)
+    lines.push(`**Label.** ${or(b.label)}`)
+    lines.push(`**Title.** ${or(b.title)}`)
 
-    if (b.knowledge.length > 0) {
-      lines.push('**Knowledge ledger.**')
+    // Setting
+    lines.push(`**POV character.** ${
+      b.povCharacterId ? (charNameById.get(b.povCharacterId) ?? b.povCharacterId) : BLANK
+    }`)
+    lines.push(`**Timeline point.** ${or(b.timelinePoint)}`)
+    lines.push(`**Movement.** ${or(b.movement)}`)
+    lines.push(`**Scene function.** ${
+      b.sceneFunctionType ? (sceneFunctionLabels[b.sceneFunctionType] ?? b.sceneFunctionType) : BLANK
+    }`)
+    lines.push(`**Withholding level.** ${b.withholdingLevel ?? BLANK}`)
+
+    // Narrative content
+    lines.push(`**Outer event.** ${or(b.outerEvent)}`)
+    lines.push(`**Inner turn.** ${or(b.innerTurn)}`)
+    lines.push(`**Voice constraint.** ${or(b.voiceConstraint)}`)
+    lines.push(`**Final image.** ${or(b.finalImage)}`)
+
+    // POV-perception fields
+    lines.push(`**Unique perception.** ${or(b.uniquePerception)}`)
+    lines.push(`**Blind spot.** ${or(b.blindSpot)}`)
+    lines.push(`**Misreading.** ${or(b.misreading)}`)
+    lines.push(`**Reader inference.** ${or(b.readerInference)}`)
+    lines.push(`**Reason for next POV switch.** ${or(b.reasonForNextPovSwitch)}`)
+    lines.push('')
+
+    // Knowledge ledger — always present, even when empty.
+    lines.push('**Knowledge ledger.**')
+    if (b.knowledge.length === 0) {
+      lines.push(`- ${BLANK}`)
+    } else {
       for (const k of b.knowledge) {
         const who = k.characterId ? (charNameById.get(k.characterId) ?? k.characterId) : 'Reader'
         lines.push(`- _${who} (${k.knowledgeKind})_: ${k.text}`)
       }
-      lines.push('')
     }
+    lines.push('')
 
-    if (b.motifs.length > 0) {
-      lines.push('**Motifs touched.**')
+    // Motifs touched — always present, even when empty.
+    lines.push('**Motifs touched.**')
+    if (b.motifs.length === 0) {
+      lines.push(`- ${BLANK}`)
+    } else {
       for (const bm of b.motifs) {
         const name = motifNameById.get(bm.motifId) ?? bm.motifId
         lines.push(`- ${name}${bm.variantNote ? ` — ${bm.variantNote}` : ''}`)
       }
-      lines.push('')
     }
+    lines.push('')
   }
 
-  // Causal links between the selected beats only.
+  // Causal links between the selected beats only. Always render the section
+  // header so the file shape is consistent across selections; show a blank
+  // placeholder when there are no internal links.
   const selectedSet = new Set(beats.map(b => b.id))
   const beatLabel = new Map<string, string>()
   for (const b of beats) {
@@ -708,8 +990,10 @@ function renderBeatsMarkdown(env: ManuscriptBriefingEnvelope, beats: BriefingBea
   const internalLinks = env.causalLinks.filter(
     l => selectedSet.has(l.fromBeatId) && selectedSet.has(l.toBeatId)
   )
-  if (internalLinks.length > 0) {
-    lines.push('## Causality (within selection)', '')
+  lines.push('## Causality (within selection)', '')
+  if (internalLinks.length === 0) {
+    lines.push(BLANK, '')
+  } else {
     for (const link of internalLinks) {
       const from = beatLabel.get(link.fromBeatId) ?? link.fromBeatId
       const to = beatLabel.get(link.toBeatId) ?? link.toBeatId

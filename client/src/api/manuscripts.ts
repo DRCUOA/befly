@@ -25,6 +25,8 @@ import type {
 import type {
   ManuscriptBriefingEnvelope,
   ProseLevel,
+  BeatsImportEnvelope,
+  BeatsImportResult,
 } from '@shared/ManuscriptBriefing'
 
 export interface GetBriefingOptions {
@@ -164,4 +166,14 @@ export const manuscriptsApi = {
     if (opts.artifactLimit !== undefined) params.set('artifactLimit', String(opts.artifactLimit))
     return `/api/manuscripts/${manuscriptId}/briefing?${params.toString()}`
   },
+
+  /**
+   * Append beats to this manuscript from a JSON payload. The server is the
+   * authority on validation and reference resolution — the client just
+   * forwards the parsed envelope. Owner-only (or admin).
+   */
+  importBeats: (manuscriptId: string, payload: BeatsImportEnvelope) =>
+    api
+      .post<ApiResponse<BeatsImportResult>>(`/manuscripts/${manuscriptId}/beats/import`, payload)
+      .then(r => r.data),
 }

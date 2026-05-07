@@ -469,6 +469,18 @@ export function briefingToJson(envelope: ManuscriptBriefingEnvelope): string {
 
 /* ----- Markdown renderer ----- */
 
+/**
+ * Placeholder for a blank string field in the Markdown output. Rendered in
+ * italics so the absence of content is visible to a downstream reader —
+ * silence is information, not noise.
+ */
+const BLANK = '_(blank)_'
+
+/** Returns the value if it is a non-empty string, otherwise the BLANK marker. */
+function or(v: string | null | undefined): string {
+  return v && v.trim() ? v : BLANK
+}
+
 const SCENE_FUNCTION_LABELS: Record<string, string> = {
   establishing_voice: 'Establishing voice',
   counterpoint: 'Counterpoint',
@@ -573,32 +585,73 @@ export function briefingToMarkdown(env: ManuscriptBriefingEnvelope): string {
     }
   }
 
-  /* Beats */
+  /* Beats — every field on each beat is rendered, blank or not. A missing
+     value is information for a downstream model: it signals which beats are
+     fully developed and which are stubs. */
   if (env.beats.length > 0) {
     lines.push('## Beats', '')
     const charNameById = new Map(env.characters.map(c => [c.id, c.name]))
+    const motifNameById = new Map(env.motifs.map(m => [m.id, m.name]))
     for (const b of [...env.beats].sort((a, b) => a.orderIndex - b.orderIndex)) {
       const head = [b.label, b.title].filter(Boolean).join(' · ') || `Beat ${b.orderIndex + 1}`
       lines.push(`### ${head}`)
-      const meta: string[] = []
-      if (b.povCharacterId) meta.push(`POV: ${charNameById.get(b.povCharacterId) ?? b.povCharacterId}`)
-      if (b.sceneFunctionType) meta.push(SCENE_FUNCTION_LABELS[b.sceneFunctionType] ?? b.sceneFunctionType)
-      if (b.withholdingLevel) meta.push(`withholding: ${b.withholdingLevel}`)
-      if (b.timelinePoint) meta.push(`when: ${b.timelinePoint}`)
-      if (meta.length > 0) lines.push(`*${meta.join(' · ')}*`)
       lines.push('')
-      if (b.outerEvent) lines.push(`**Outer event.** ${b.outerEvent}`, '')
-      if (b.innerTurn) lines.push(`**Inner turn.** ${b.innerTurn}`, '')
-      if (b.voiceConstraint) lines.push(`**Voice constraint.** ${b.voiceConstraint}`, '')
-      if (b.finalImage) lines.push(`**Final image.** ${b.finalImage}`, '')
-      if (b.knowledge.length > 0) {
-        lines.push('**Knowledge ledger.**')
+
+      // Identification + structural metadata
+      lines.push(`**ID.** ${b.id}`)
+      lines.push(`**Order index.** ${b.orderIndex}`)
+      lines.push(`**Item ID.** ${b.itemId ?? BLANK}`)
+      lines.push(`**Label.** ${or(b.label)}`)
+      lines.push(`**Title.** ${or(b.title)}`)
+
+      // Setting
+      lines.push(`**POV character.** ${
+        b.povCharacterId ? (charNameById.get(b.povCharacterId) ?? b.povCharacterId) : BLANK
+      }`)
+      lines.push(`**Timeline point.** ${or(b.timelinePoint)}`)
+      lines.push(`**Movement.** ${or(b.movement)}`)
+      lines.push(`**Scene function.** ${
+        b.sceneFunctionType ? (SCENE_FUNCTION_LABELS[b.sceneFunctionType] ?? b.sceneFunctionType) : BLANK
+      }`)
+      lines.push(`**Withholding level.** ${b.withholdingLevel ?? BLANK}`)
+
+      // Narrative content
+      lines.push(`**Outer event.** ${or(b.outerEvent)}`)
+      lines.push(`**Inner turn.** ${or(b.innerTurn)}`)
+      lines.push(`**Voice constraint.** ${or(b.voiceConstraint)}`)
+      lines.push(`**Final image.** ${or(b.finalImage)}`)
+
+      // POV-perception fields
+      lines.push(`**Unique perception.** ${or(b.uniquePerception)}`)
+      lines.push(`**Blind spot.** ${or(b.blindSpot)}`)
+      lines.push(`**Misreading.** ${or(b.misreading)}`)
+      lines.push(`**Reader inference.** ${or(b.readerInference)}`)
+      lines.push(`**Reason for next POV switch.** ${or(b.reasonForNextPovSwitch)}`)
+      lines.push('')
+
+      // Knowledge ledger — always shown.
+      lines.push('**Knowledge ledger.**')
+      if (b.knowledge.length === 0) {
+        lines.push(`- ${BLANK}`)
+      } else {
         for (const k of b.knowledge) {
           const who = k.characterId ? (charNameById.get(k.characterId) ?? k.characterId) : 'Reader'
           lines.push(`- _${who} (${k.knowledgeKind})_: ${k.text}`)
         }
-        lines.push('')
       }
+      lines.push('')
+
+      // Motifs touched — always shown.
+      lines.push('**Motifs touched.**')
+      if (b.motifs.length === 0) {
+        lines.push(`- ${BLANK}`)
+      } else {
+        for (const bm of b.motifs) {
+          const name = motifNameById.get(bm.motifId) ?? bm.motifId
+          lines.push(`- ${name}${bm.variantNote ? ` — ${bm.variantNote}` : ''}`)
+        }
+      }
+      lines.push('')
     }
   }
 

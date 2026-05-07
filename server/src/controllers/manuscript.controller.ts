@@ -12,6 +12,7 @@ import {
   briefingToMarkdown,
   suggestBriefingFilename,
 } from '../services/manuscript-briefing.service.js'
+import { importBeats as importBeatsService } from '../services/beat-import.service.js'
 import type { ProseLevel } from '../models/ManuscriptBriefing.js'
 import { manuscriptAssistService } from '../services/manuscript-assist.service.js'
 import { manuscriptArtifactRepo } from '../repositories/manuscript-artifact.repo.js'
@@ -317,6 +318,40 @@ export const manuscriptController = {
       )
     }
     res.send(json)
+  },
+
+  /**
+   * POST /api/manuscripts/:id/beats/import
+   * Body: BeatsImportEnvelope — { beats, causalLinks?, characterNamesById?, motifNamesById? }
+   *
+   * Append the supplied beats to this manuscript. Owner-only (or admin).
+   * Returns a BeatsImportResult describing what was created, what failed,
+   * and which character/motif names couldn't be matched in the target.
+   *
+   * Beat ids in the payload are advisory: the server always assigns fresh
+   * UUIDs, so re-importing the same payload yields duplicates rather than
+   * collisions. Causal links are remapped to the new ids; any whose
+   * endpoints didn't both map are counted as skipped, not failed.
+   */
+  async importBeats(req: Request, res: Response) {
+    const { id } = req.params
+    const userId = (req as any).userId
+    if (!userId) throw new UnauthorizedError('Authentication required')
+    const admin = isAdminRequest(req)
+
+    const result = await importBeatsService(id, userId, admin, req.body)
+
+    await activityService.logManuscript('beats_import', id, userId, getClientIp(req), getUserAgent(req), {
+      total: result.total,
+      created: result.created.length,
+      errors: result.errors.length,
+      causalLinksCreated: result.causalLinks.created,
+      causalLinksSkipped: result.causalLinks.skipped,
+      unmatchedCharacters: result.unmatched.characterNames.length,
+      unmatchedMotifs: result.unmatched.motifNames.length,
+    })
+
+    res.status(201).json({ data: result })
   },
 
   /* ----- Assist & Artifacts ----- */

@@ -314,3 +314,124 @@ export interface BriefingRequestOptions {
    */
   artifactLimit?: number
 }
+
+/* ----- Beat import ----- */
+
+/**
+ * Import payload accepted by POST /api/manuscripts/:id/beats/import.
+ *
+ * Designed to round-trip with the Beats-tab JSON export but lenient enough
+ * to accept hand-edited or model-generated payloads. Every field on a beat
+ * is optional — a beat with only a title is valid; downstream nullable
+ * fields just default to null in the database.
+ *
+ * Reference resolution:
+ *
+ *   - povCharacterId, knowledge[].characterId, motifs[].motifId travel as
+ *     ids in the payload, but the importer resolves them by NAME against
+ *     the target manuscript using the optional `characterNamesById` /
+ *     `motifNamesById` lookups. If a referenced id has no entry in the
+ *     lookup, or the name doesn't match a character/motif in the target,
+ *     the reference resolves to null and the beat still imports.
+ *
+ *   - causalLinks reference beats by source id. The importer remaps each
+ *     to the freshly-inserted beat's new id; links whose endpoints didn't
+ *     both map (e.g. one beat failed validation) are skipped, not failed.
+ *
+ * Beat ids and causalLink ids in the payload are advisory. The importer
+ * always assigns fresh UUIDs on insert, so the same payload imported twice
+ * produces duplicates rather than collisions — the same idempotency
+ * contract the essay importer offers.
+ */
+export interface BeatsImportEnvelope {
+  /** Optional. Preserved for future format checks; not used today. */
+  version?: string
+  /** Optional sanity check; the importer accepts any value or absence. */
+  type?: string
+
+  /** The beat list. The only structurally-required field on the envelope. */
+  beats: BeatImportInput[]
+
+  /** Causal links by source-id reference. Optional. */
+  causalLinks?: CausalLinkImportInput[]
+
+  /**
+   * Source-side character lookup: { [oldCharacterId]: name }. Used to map
+   * povCharacterId and knowledge[].characterId to characters in the target
+   * manuscript by NAME.
+   */
+  characterNamesById?: Record<string, string>
+
+  /** Source-side motif lookup: { [oldMotifId]: name }. */
+  motifNamesById?: Record<string, string>
+}
+
+/** A beat in the import payload. Every field is optional. */
+export interface BeatImportInput {
+  /** Source-side id. Advisory only — used for causal-link remapping. */
+  id?: string
+  itemId?: string | null
+  povCharacterId?: string | null
+  orderIndex?: number
+  label?: string | null
+  title?: string | null
+  timelinePoint?: string | null
+  movement?: string | null
+  outerEvent?: string | null
+  innerTurn?: string | null
+  voiceConstraint?: string | null
+  finalImage?: string | null
+  sceneFunctionType?: string | null
+  withholdingLevel?: string | null
+  uniquePerception?: string | null
+  blindSpot?: string | null
+  misreading?: string | null
+  readerInference?: string | null
+  reasonForNextPovSwitch?: string | null
+  knowledge?: {
+    characterId?: string | null
+    knowledgeKind?: string
+    text?: string
+  }[]
+  motifs?: {
+    motifId?: string
+    variantNote?: string | null
+  }[]
+}
+
+export interface CausalLinkImportInput {
+  fromBeatId?: string
+  toBeatId?: string
+  linkType?: string
+  note?: string | null
+}
+
+/** Result returned by the import endpoint. */
+export interface BeatsImportResult {
+  /** Total beats seen in the envelope (including any that failed). */
+  total: number
+  /** Beats successfully created, with fresh ids for client-side updates. */
+  created: {
+    sourceId: string
+    newId: string
+    label: string | null
+    title: string | null
+  }[]
+  /** Per-beat errors that didn't stop the import. */
+  errors: { sourceId: string; error: string }[]
+  /** Causal-link summary. Skipped links had at least one endpoint that didn't map. */
+  causalLinks: {
+    created: number
+    skipped: number
+  }
+  /**
+   * Names referenced by povCharacterId / knowledge / motifs that did NOT
+   * match any character or motif in the target manuscript. Surfaced so the
+   * writer can create them and re-import (the original beats still
+   * imported, just with the offending refs resolved to null).
+   */
+  unmatched: {
+    characterNames: string[]
+    motifNames: string[]
+  }
+}

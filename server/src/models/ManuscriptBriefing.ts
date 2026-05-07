@@ -21,6 +21,10 @@ export type {
   BriefingCounts,
   BriefingFreshness,
   BriefingRequestOptions,
+  BeatsImportEnvelope,
+  BeatImportInput,
+  CausalLinkImportInput,
+  BeatsImportResult,
 } from '@shared/ManuscriptBriefing'
 
 import type { ManuscriptBriefingVersion } from '@shared/ManuscriptBriefing'
