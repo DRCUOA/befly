@@ -671,10 +671,16 @@
               </p>
               <div class="flex flex-wrap gap-2">
                 <button type="button" class="bp-btn-primary" @click="openBook">Open on-screen book</button>
-                <button type="button" class="bp-btn-ghost" @click="onPrint('a5_single')">Print as A5 (single-up)</button>
-                <button type="button" class="bp-btn-ghost" @click="onPrint('a4_booklet_2up')">Print A4 booklet (2-up, book order)</button>
+                <button type="button" class="bp-btn-ghost" @click="onPrint('a5_single')">Print as A5 (reading order)</button>
+                <button type="button" class="bp-btn-ghost" @click="onPrint('a4_booklet_2up')">Print as A5 + booklet hint</button>
                 <button type="button" class="bp-btn-ghost" @click="onExportJson">Export settings (JSON)</button>
               </div>
+              <p class="text-xs text-ink-lighter">
+                For saddle-stitch booklet printing, choose "A5 + booklet hint",
+                then in the system Print dialog enable Layout → Booklet (or
+                Pages-per-sheet → 2). The OS imposition engine reorders pages
+                in book order automatically.
+              </p>
 
               <h4 class="text-sm font-medium uppercase tracking-widest text-ink-lighter">Warnings &amp; recommended fixes</h4>
               <ul v-if="!validation.errors.length && !validation.warnings.length" class="text-sm text-ink-light italic">
@@ -891,7 +897,7 @@
         </div>
         <div class="flex gap-2">
           <button type="button" class="bp-btn" @click="onPrint('a5_single')">Print A5</button>
-          <button type="button" class="bp-btn" @click="onPrint('a4_booklet_2up')">Print booklet</button>
+          <button type="button" class="bp-btn" @click="onPrint('a4_booklet_2up')" title="Open print dialog for booklet (use OS booklet/2-up option)">Print booklet</button>
           <button type="button" class="bp-btn" @click="emit('close')">Close</button>
         </div>
       </div>
@@ -1051,7 +1057,7 @@ import {
 } from './bookPreview/defaults'
 import { validateConfig } from './bookPreview/validation'
 import { spoofIsbn, barcodeSvg } from './bookPreview/isbn'
-import { buildPrintHtml, openPrintWindow, type PrintLayout } from './bookPreview/print'
+import { buildNaturalPrintHtml, openPrintWindow, type PrintLayout } from './bookPreview/print'
 
 // ---- Props / emits ----
 const props = defineProps<{
@@ -1329,6 +1335,19 @@ const loadingBodies = ref(false)
 const loadError = ref<string | null>(null)
 const bodyById = ref<Map<string, string>>(new Map())
 
+// Cache rendered markdown by writingBlockId. renderMarkdown can be slow for
+// long essays, and bookFlowHtml depends on enough fields that even unrelated
+// settings (chapter title style, scene break symbol, author name keystrokes)
+// would otherwise re-run renderMarkdown for every essay each time. Caching
+// here means renderMarkdown only runs when the underlying body changes.
+const renderedHtmlById = computed<Map<string, string>>(() => {
+  const map = new Map<string, string>()
+  for (const [id, body] of bodyById.value) {
+    map.set(id, body ? renderMarkdown(body) : '<p><em>(Body not loaded.)</em></p>')
+  }
+  return map
+})
+
 async function loadBodiesForSelected(): Promise<void> {
   loadingBodies.value = true
   loadError.value = null
@@ -1474,8 +1493,7 @@ const bookFlowHtml = computed(() => {
       const it = c.items[ii]
       let body = ''
       if (it.itemType === 'essay' && it.writingBlockId) {
-        const md = bodyById.value.get(it.writingBlockId) || ''
-        body = md ? renderMarkdown(md) : '<p><em>(Body not loaded.)</em></p>'
+        body = renderedHtmlById.value.get(it.writingBlockId) || '<p><em>(Body not loaded.)</em></p>'
       } else if (it.itemType === 'placeholder') {
         body = `<p class="bp-placeholder"><em>${escapeHtml(it.summary || 'Placeholder — not yet written.')}</em></p>`
       } else if (it.itemType === 'bridge') {
@@ -1513,8 +1531,15 @@ const bookFlowHtml = computed(() => {
 })
 
 // ---- Pagination via CSS columns ----
+//
+// We don't store rendered HTML per page — that would mean N copies of the
+// full bookFlowHtml in memory (one per page, with translateX picking out a
+// different column each time). Instead each Page records just the column
+// index it represents, and pageHtml() builds the column-translated div on
+// demand from a SINGLE shared flow snapshot. For a 200-page novel this
+// changes pages-array memory from "200 × full book HTML" to "200 × ~80
+// bytes of metadata", and rendering one screen page is still O(1).
 type Page = {
-  html: string
   blank?: boolean
   /** True for chapter-opening / front-matter pages that must land on a recto. */
   mustRecto?: boolean
@@ -1522,12 +1547,26 @@ type Page = {
   chapterIndex?: number
   /** True for chapter-opening pages specifically. */
   isChapterOpening?: boolean
+  /** Column index into the shared paginatedFlow.html. -1 for blanks. */
+  columnIndex: number
+}
+
+interface PaginatedFlow {
+  /** The bookFlowHtml string captured at pagination time. */
+  html: string
+  /** Total column count produced for that flow at the current geometry. */
+  columnCount: number
+  /** Column width in CSS px. */
+  columnWidth: number
+  /** Column height in CSS px. */
+  columnHeight: number
 }
 
 const RECTO_SELECTOR = '.bp-frontmatter, .bp-titlepage, .bp-toc, .bp-chapter-opening'
 
 const measureContainer = ref<HTMLElement | null>(null)
 const pages = ref<Page[]>([])
+const paginatedFlow = ref<PaginatedFlow | null>(null)
 const currentSpreadIndex = ref(0)
 
 const totalPages = computed(() => Math.max(0, pages.value.length - 1))
@@ -1598,42 +1637,34 @@ async function paginate() {
 
   el.style.width = originalWidth
 
-  const flowWidth = count * cw
-  const flowHtml = el.innerHTML
-
-  type RawPage = { html: string; mustRecto: boolean; chapterIndex: number; isChapterOpening: boolean }
-  const rawPages: RawPage[] = []
-  for (let i = 0; i < count; i++) {
-    rawPages.push({
-      html:
-        `<div class="bp-page-flow" style="width:${flowWidth}px;height:${ch}px;column-width:${cw}px;column-gap:0;column-fill:auto;transform:translateX(-${i * cw}px);">` +
-        flowHtml +
-        `</div>`,
-      mustRecto: rectoColumns.has(i),
-      chapterIndex: colToChapter.get(i) ?? -1,
-      isChapterOpening: chapterColumns.some(c => c.col === i && c.isOpening),
-    })
+  // Capture the shared flow once; pageHtml() reuses it for every page.
+  paginatedFlow.value = {
+    html: el.innerHTML,
+    columnCount: count,
+    columnWidth: cw,
+    columnHeight: ch,
   }
 
   // Recto-aware page list. Index 0 is the inside-front-cover blank.
   const finalPages: Page[] = []
-  finalPages.push({ html: '', blank: true })
+  finalPages.push({ blank: true, columnIndex: -1 })
   const wantRectoForChapters = config.value.chapters.chapterStart === 'right_hand_page'
 
-  for (const rp of rawPages) {
-    const needsRecto = rp.mustRecto || (rp.isChapterOpening && wantRectoForChapters)
+  for (let i = 0; i < count; i++) {
+    const isOpening = chapterColumns.some(c => c.col === i && c.isOpening)
+    const needsRecto = rectoColumns.has(i) || (isOpening && wantRectoForChapters)
     if (needsRecto && finalPages.length % 2 === 0) {
-      finalPages.push({ html: '', blank: true })
+      finalPages.push({ blank: true, columnIndex: -1 })
     }
     finalPages.push({
-      html: rp.html,
       mustRecto: needsRecto,
-      chapterIndex: rp.chapterIndex,
-      isChapterOpening: rp.isChapterOpening,
+      chapterIndex: colToChapter.get(i) ?? -1,
+      isChapterOpening: isOpening,
+      columnIndex: i,
     })
   }
 
-  if (finalPages.length % 2 !== 0) finalPages.push({ html: '', blank: true })
+  if (finalPages.length % 2 !== 0) finalPages.push({ blank: true, columnIndex: -1 })
   pages.value = finalPages
 
   if (currentSpreadIndex.value > totalSpreads.value - 1) {
@@ -1642,7 +1673,24 @@ async function paginate() {
 }
 
 function pageAt(idx: number): Page | null { return pages.value[idx] || null }
-function pageHtml(idx: number): string { return pageAt(idx)?.html || '' }
+
+/**
+ * Build the column-translated flow div for a given page on demand. The
+ * heavy `flowHtml` string is shared across every page — we only create the
+ * wrapper div with the right `translateX` offset for the column.
+ */
+function pageHtml(idx: number): string {
+  const p = pageAt(idx)
+  const flow = paginatedFlow.value
+  if (!p || p.blank || !flow || p.columnIndex < 0) return ''
+  const { columnWidth, columnHeight, columnCount, html } = flow
+  const flowWidth = columnCount * columnWidth
+  return (
+    `<div class="bp-page-flow" style="width:${flowWidth}px;height:${columnHeight}px;column-width:${columnWidth}px;column-gap:0;column-fill:auto;transform:translateX(-${p.columnIndex * columnWidth}px);">` +
+    html +
+    `</div>`
+  )
+}
 function isContentPage(idx: number): boolean { const p = pageAt(idx); return !!p && !p.blank }
 
 function showFolio(idx: number): boolean {
@@ -1692,17 +1740,66 @@ const progressLabel = computed(() => {
   return ''
 })
 
+// ---- Pagination scheduler ----
+//
+// Pagination is the single most expensive thing in the wizard — it walks
+// every element in the measurement DOM to compute column boundaries — so
+// running it on every keystroke or slider tick is what makes the preview
+// feel sluggish. We debounce: any number of rapid changes within the wait
+// window collapse into a single paginate() call once the user pauses.
+//
+// We also coalesce across the watcher's flush phases: if a watcher fires
+// while a paginate is already in flight, we re-queue rather than
+// interleaving, so we never measure a half-stable DOM.
+let paginateTimer: number | null = null
+let paginateInFlight = false
+let paginateQueued = false
+const PAGINATE_DEBOUNCE_MS = 150
+
+async function runPaginate() {
+  if (paginateInFlight) {
+    paginateQueued = true
+    return
+  }
+  paginateInFlight = true
+  try {
+    await paginate()
+  } finally {
+    paginateInFlight = false
+    if (paginateQueued) {
+      paginateQueued = false
+      schedulePaginate(0)
+    }
+  }
+}
+
+function schedulePaginate(delayMs: number = PAGINATE_DEBOUNCE_MS) {
+  if (paginateTimer !== null) {
+    clearTimeout(paginateTimer)
+  }
+  paginateTimer = window.setTimeout(() => {
+    paginateTimer = null
+    void runPaginate()
+  }, delayMs)
+}
+
 watch(
   [bookFlowHtml, () => stage.value, contentWidth, contentHeight, flowTypographyStyle],
-  async () => {
-    await paginate()
+  () => {
+    schedulePaginate()
   },
   { flush: 'post' },
 )
 
 onMounted(() => {
-  // Trigger the first pagination after the measurement container has mounted.
-  void paginate()
+  // Trigger the first pagination after the measurement container has
+  // mounted. Use a short delay so the initial layout settles before we
+  // measure column boundaries.
+  schedulePaginate(0)
+})
+
+onBeforeUnmount(() => {
+  if (paginateTimer !== null) clearTimeout(paginateTimer)
 })
 
 // ---- Validation & summary ----
@@ -1962,157 +2059,37 @@ function onRootKeydown(ev: KeyboardEvent) {
 
 // ---- Print ----
 //
-// Strategy: take the on-screen pagination as the source of truth, then for
-// each Page emit a *snapshot* HTML block sized in screen pixels. The print
-// stylesheet wraps each snapshot in an A5 cell (or half-A4 cell, for the
-// booklet 2-up layout) and applies a CSS scale so the screen-px content
-// fills the printable area exactly. This preserves the line-breaks and
-// recto/verso margin mirroring we already computed without re-paginating
-// at print time.
+// Natural CSS pagination. The print document contains the bookFlowHtml ONCE
+// — the browser's print engine handles page splitting via @page rules,
+// `break-before` on chapter sections, and `@page :left` / `:right` for
+// mirrored margins, running headers and folios.
+//
+// Why this matters: the old snapshot pipeline embedded the entire book
+// content once per paginated page. For a 200-page novel that's 200×
+// duplication, which made print HTML enormous and stalled the print dialog
+// for several seconds. The natural approach scales linearly with manuscript
+// length, so the dialog opens almost instantly even on long books.
 async function onPrint(layout: PrintLayout) {
   await loadBodiesForSelected()
   if (loadError.value) { alert(loadError.value); return }
-  await paginate()
-  await nextTick()
 
   const cfg = config.value
-  const screenW = pageWidth.value
-  const screenH = pageHeight.value
+  const docTitle = `${props.manuscript.title || 'Book'} — ${layout === 'a4_booklet_2up' ? 'A5 (booklet 2-up via OS print dialog)' : 'A5 (reading order)'}`
 
-  const pageInners = pages.value.map((_p, idx) => renderPrintPageSnapshot(idx, screenW, screenH))
-  const frontCoverHtml = buildPrintCoverHtml('front', cfg, frontCoverUrl.value)
-  const backCoverHtml = buildPrintCoverHtml('back', cfg, backCoverUrl.value, barcodeMarkup.value)
-  const baseCss = printBaseCss(cfg, screenW, screenH)
-  const docTitle = `${props.manuscript.title || 'Book'} — ${layout === 'a4_booklet_2up' ? 'A4 booklet (book order)' : 'A5 (reading order)'}`
-
-  const html = buildPrintHtml(layout, {
-    pages: pageInners,
-    frontCoverHtml,
-    backCoverHtml,
-    baseCss,
+  const html = buildNaturalPrintHtml({
+    cfg,
+    bookFlowHtml: bookFlowHtml.value,
+    frontCoverHtml: buildPrintCoverHtml('front', cfg, frontCoverUrl.value),
+    backCoverHtml: buildPrintCoverHtml('back', cfg, backCoverUrl.value, barcodeMarkup.value),
+    bookTitle: props.manuscript.title || '',
+    authorName: cfg.cover.authorName || '',
     documentTitle: docTitle,
-  }, cfg)
+    layout,
+  })
 
   if (!openPrintWindow(html)) {
     alert('Could not open the print window. Please allow pop-ups for this site.')
   }
-}
-
-/** Render one paginated page as a self-contained HTML snapshot sized in
- *  screen pixels. The print stylesheet scales it to fit the target sheet. */
-function renderPrintPageSnapshot(idx: number, screenW: number, screenH: number): string {
-  const p = pages.value[idx]
-  if (!p || p.blank) {
-    return `<div class="pp-snapshot pp-snapshot-blank" style="width:${screenW}px;height:${screenH}px;"></div>`
-  }
-  const isLeft = idx % 2 === 0
-  const side: 'left' | 'right' = isLeft ? 'left' : 'right'
-  const headerText = headerFor(idx, side)
-  const showHdr = showHeaderFor(idx)
-  const showPg = showFolio(idx)
-  const folio = folioFor(idx)
-
-  const m = marginPx.value
-  const padLeft = isLeft ? m.outside : m.gutter
-  const padRight = isLeft ? m.gutter : m.outside
-
-  const pgPos = config.value.headersAndFooters.pageNumberPosition
-  const folioStyle = (() => {
-    const bottom = `bottom:${Math.max(8, m.bottom * 0.45)}px;`
-    const top = `top:${Math.max(6, m.top * 0.45)}px;`
-    switch (pgPos) {
-      case 'bottom_center': return `left:0;right:0;text-align:center;${bottom}`
-      case 'outer_top': return isLeft
-        ? `left:${m.outside}px;${top}`
-        : `right:${m.outside}px;${top}`
-      case 'outer_bottom':
-      default: return isLeft
-        ? `left:${m.outside}px;${bottom}`
-        : `right:${m.outside}px;${bottom}`
-    }
-  })()
-
-  const hdrTop = Math.max(6, m.top * 0.4)
-  const hdrEl = (showHdr && headerText)
-    ? `<div class="pp-snap-header" style="position:absolute;left:0;right:0;top:${hdrTop}px;text-align:center;">${escapeHtml(headerText)}</div>`
-    : ''
-  const folioEl = showPg
-    ? `<div class="pp-snap-folio" style="position:absolute;${folioStyle}">${folio}</div>`
-    : ''
-
-  const f = flowTypographyStyle.value as Record<string, string>
-  const flowInline =
-    `font-family:${f.fontFamily};` +
-    `font-size:${f.fontSize};` +
-    `line-height:${f.lineHeight};` +
-    `text-align:${f.textAlign};` +
-    `hyphens:${f.hyphens};` +
-    `--bp-indent:${f['--bp-indent']};` +
-    `--bp-para-space:${f['--bp-para-space']};`
-
-  return `
-    <div class="pp-snapshot" style="width:${screenW}px;height:${screenH}px;">
-      ${hdrEl}
-      <div class="pp-snap-inner" style="position:absolute;top:${m.top}px;bottom:${m.bottom}px;left:${padLeft}px;right:${padRight}px;overflow:hidden;${flowInline}">
-        ${p.html}
-      </div>
-      ${folioEl}
-    </div>
-  `
-}
-
-function printBaseCss(cfg: PreviewConfig, screenW: number, screenH: number): string {
-  // Each printed page (A5 single-up or half-A4 booklet cell) wraps a
-  // pp-snapshot div sized in *screen* pixels. The trim aspect almost never
-  // matches A5 exactly, so we use a fit-to-page scale: the smaller of the
-  // width or height ratios. The unused axis becomes white space on the
-  // sheet (effectively a printer-side margin), which is preferable to
-  // clipping the content.
-  const A5_W_PX = (148 * 96) / 25.4    // ≈ 559.37
-  const A5_H_PX = (210 * 96) / 25.4    // ≈ 793.70
-  const A4_HALF_W_PX = ((297 / 2) * 96) / 25.4 // ≈ 561.26
-  const A4_HALF_H_PX = (210 * 96) / 25.4
-  const scaleA5 = Math.min(A5_W_PX / screenW, A5_H_PX / screenH)
-  const scaleHalf = Math.min(A4_HALF_W_PX / screenW, A4_HALF_H_PX / screenH)
-  const paperColor = cfg.paper.color === 'white' ? '#ffffff' : '#f4ecdd'
-  return `
-    :root { --paper-color: ${paperColor}; }
-    body { color: #1a160f; }
-
-    .pp-snapshot { position: relative; background: ${paperColor}; }
-    .pp-snap-header { font-family: inherit; font-size: 9pt; color: #5a4f3f; letter-spacing: 0.04em; }
-    .pp-snap-folio { font-family: inherit; font-size: 9pt; color: #5a4f3f; }
-
-    .pp-sheet > .pp-sheet-inner > .pp-snapshot { transform: scale(${scaleA5}); transform-origin: top left; }
-    .pp-half > .pp-snapshot { transform: scale(${scaleHalf}); transform-origin: top left; }
-
-    .pp-snap-inner { color: #1f1a14; }
-    .pp-snap-inner .bp-page-flow { padding: 0; }
-    .pp-snap-inner p { margin: 0; text-indent: var(--bp-indent, 0.25in); padding-bottom: var(--bp-para-space, 0); }
-    .pp-snap-inner .bp-item > p:first-child { text-indent: 0; }
-    .pp-snap-inner .bp-item-opening > p:first-child { text-indent: 0; }
-    .pp-snap-inner .bp-scene-break { text-indent: 0; text-align: center; margin: 1.2em 0; font-style: italic; letter-spacing: 0.4em; }
-    .pp-snap-inner .bp-scene-break-blank { color: transparent; }
-    .pp-snap-inner .bp-chapter-heading { text-align: center; font-size: 1.6em; font-weight: 300; margin: 0 0 1em 0; letter-spacing: 0.04em; }
-    .pp-snap-inner .bp-half-title { text-align: center; margin-top: 40%; font-size: 1.2em; letter-spacing: 0.06em; }
-    .pp-snap-inner .bp-titlepage { text-align: center; padding-top: 18%; }
-    .pp-snap-inner .bp-book-title { font-size: 1.8em; font-weight: 300; margin: 0 0 0.4em 0; }
-    .pp-snap-inner .bp-book-subtitle { font-style: italic; }
-    .pp-snap-inner .bp-book-author { margin-top: 1.5em; font-style: italic; }
-    .pp-snap-inner .bp-fm-line { text-align: center; font-size: 0.85em; margin: 0.4em 0; text-indent: 0; }
-    .pp-snap-inner .bp-dedication { text-align: center; margin-top: 40%; text-indent: 0; }
-    .pp-snap-inner .bp-epigraph { text-align: center; margin: 30% 1.5em 0; font-style: italic; }
-    .pp-snap-inner .bp-h2 { text-align: center; font-size: 1.4em; margin: 8% 0 1em 0; }
-    .pp-snap-inner .bp-toc-list { list-style: none; padding: 0; margin: 1em 0; font-size: 0.95em; }
-    .pp-snap-inner .bp-toc-list li { margin: 0.35em 0; }
-    .pp-snap-inner .bp-toc-num { display: inline-block; width: 1.6em; }
-    .pp-snap-inner .bp-bridge { margin: 0.6em 1.2em; padding: 0.6em 0; border-top: 1px solid #c7bfae; border-bottom: 1px solid #c7bfae; text-align: center; font-style: italic; }
-    .pp-snap-inner em { font-style: italic; }
-    .pp-snap-inner strong { font-weight: 600; }
-    .pp-snap-inner blockquote { margin: 0.6em 1.2em; font-style: italic; color: #3a3022; }
-
-    .pp-snapshot-blank { background: ${paperColor}; }
-  `
 }
 
 function buildPrintCoverHtml(
