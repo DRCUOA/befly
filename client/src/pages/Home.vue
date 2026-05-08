@@ -43,10 +43,14 @@
     <FilterNavigation
       :filters="filters"
       :current-filter="filter"
-      :count="filteredWritings.length"
+      :count="totalMatchedCount"
       :current-sort="sort"
+      :enable-search="true"
+      :search-query="searchQuery"
+      search-placeholder="Search frags by title or text…"
       @filter-change="handleFilterChange"
       @sort-change="handleSortChange"
+      @search-change="handleSearchChange"
     />
 
     <!-- Essay List -->
@@ -60,14 +64,23 @@
           <p class="text-red-800 dark:text-red-300">{{ error }}</p>
         </div>
         
-        <div v-else-if="filteredWritings.length === 0" class="text-center py-16">
+        <div v-else-if="totalMatchedCount === 0" class="text-center py-16">
           <p class="text-lg font-light text-ink-light mb-4">
-            <span v-if="filter === 'mine'">You haven't written anything yet.</span>
+            <span v-if="searchQuery">No frags match &ldquo;{{ searchQuery }}&rdquo;.</span>
+            <span v-else-if="filter === 'mine'">You haven't written anything yet.</span>
             <span v-else-if="filter === 'shared'">No shared writing available.</span>
             <span v-else>No writing yet. Start writing!</span>
           </p>
+          <button
+            v-if="searchQuery"
+            type="button"
+            @click="handleSearchChange('')"
+            class="inline-block px-6 py-3 border border-ink-lighter text-ink hover:border-ink transition-colors duration-500 text-sm tracking-wide font-sans"
+          >
+            Clear search
+          </button>
           <router-link
-            v-if="isAuthenticated"
+            v-else-if="isAuthenticated"
             to="/write"
             class="inline-block px-6 py-3 bg-ink text-paper hover:bg-ink-light transition-colors duration-500 text-sm tracking-wide font-sans"
           >
@@ -81,7 +94,7 @@
             Sign Up to Start Writing
           </router-link>
         </div>
-        
+
         <div v-else class="space-y-0">
           <WritingCard
             v-for="(writing, index) in filteredWritings"
@@ -92,25 +105,34 @@
             :reaction-summary="getReactionSummary(writing.id)"
             @deleted="handleWritingDeleted"
           />
-        </div>
-      </div>
-    </div>
 
-    <!-- Load More Section -->
-    <div v-if="!loading && filteredWritings.length > 0 && filteredWritings.length < writings.length" class="w-full px-4 sm:px-6 md:px-8 py-12 sm:py-16 md:py-20 bg-gradient-to-b from-paper to-surface">
-      <div class="max-w-4xl mx-auto text-center">
-        <p class="text-sm sm:text-base font-light text-ink-lighter mb-6 sm:mb-8">
-          Showing {{ filteredWritings.length }} of {{ writings.length }} frags
-        </p>
-        <button
-          @click="loadMore"
-          class="group relative inline-block"
-        >
-          <span class="text-sm tracking-widest uppercase font-sans font-light text-ink-lighter transition-colors duration-500 group-hover:text-ink">
-            Load More Frags
-          </span>
-          <span class="absolute bottom-0 left-0 w-0 h-px bg-ink transition-all duration-500 group-hover:w-full"></span>
-        </button>
+          <!-- Infinite-scroll sentinel. The IntersectionObserver in onMounted
+               watches this element; when it enters the viewport we extend
+               displayedCount, which in turn shows more cards above. The
+               sentinel renders only while there are more frags to load. -->
+          <div
+            v-if="hasMore"
+            ref="scrollSentinel"
+            class="py-12 text-center"
+            aria-live="polite"
+          >
+            <p class="text-xs tracking-widest uppercase font-sans font-light text-ink-lighter">
+              Loading more frags…
+            </p>
+            <p class="text-xs tracking-wide font-sans text-ink-whisper mt-2">
+              {{ filteredWritings.length }} of {{ totalMatchedCount }}
+            </p>
+          </div>
+          <div
+            v-else-if="filteredWritings.length > 6"
+            class="py-12 text-center"
+          >
+            <p class="text-xs tracking-widest uppercase font-sans font-light text-ink-whisper">
+              {{ totalMatchedCount }} {{ totalMatchedCount === 1 ? 'frag' : 'frags' }} —
+              you&rsquo;ve reached the end.
+            </p>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -145,7 +167,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
 import { api } from '../api/client'
 import { useAuth } from '../stores/auth'
 import type { WritingBlock } from '../domain/WritingBlock'
@@ -166,7 +188,10 @@ const loading = ref(true)
 const error = ref<string | null>(null)
 const filter = ref<'all' | 'mine' | 'shared'>('all')
 const sort = ref<string>('newest')
-const displayedCount = ref(6)
+const searchQuery = ref('')
+const debouncedSearchQuery = ref('')
+const PAGE_SIZE = 6
+const displayedCount = ref(PAGE_SIZE)
 
 const filters = [
   { value: 'all', label: 'All' },
@@ -174,13 +199,38 @@ const filters = [
   { value: 'shared', label: 'Shared' },
 ]
 
-const filteredWritings = computed(() => {
+// Plain-text body cache. We compute markdownToText once per body so the
+// search comparator doesn't strip markdown on every keystroke for every
+// frag — important once the list is several hundred items long.
+const bodyTextCache = new Map<string, string>()
+function bodyTextFor(w: WritingBlock): string {
+  const cacheKey = `${w.id}:${w.updatedAt || w.createdAt}`
+  let v = bodyTextCache.get(cacheKey)
+  if (v === undefined) {
+    v = markdownToText(w.body || '').toLowerCase()
+    bodyTextCache.set(cacheKey, v)
+  }
+  return v
+}
+
+/** Apply filter + sort + search but NOT slicing. Used for the displayed
+ *  list (sliced by displayedCount) and the total-match count. */
+const matchedWritings = computed(() => {
   let filtered = writings.value
 
   if (filter.value === 'mine' && user.value) {
     filtered = filtered.filter(w => w.userId === user.value!.id)
   } else if (filter.value === 'shared') {
     filtered = filtered.filter(w => w.visibility === 'shared' || w.visibility === 'public')
+  }
+
+  const q = debouncedSearchQuery.value.trim().toLowerCase()
+  if (q) {
+    filtered = filtered.filter(w => {
+      const title = (w.title || '').toLowerCase()
+      if (title.includes(q)) return true
+      return bodyTextFor(w).includes(q)
+    })
   }
 
   filtered = [...filtered].sort((a, b) => {
@@ -194,8 +244,12 @@ const filteredWritings = computed(() => {
     }
   })
 
-  return filtered.slice(0, displayedCount.value)
+  return filtered
 })
+
+const totalMatchedCount = computed(() => matchedWritings.value.length)
+const filteredWritings = computed(() => matchedWritings.value.slice(0, displayedCount.value))
+const hasMore = computed(() => displayedCount.value < totalMatchedCount.value)
 
 const featuredThemes = computed(() => {
   return themes.value.slice(0, 3)
@@ -228,16 +282,67 @@ const getThemeDescription = (theme: Theme): string => {
 
 const handleFilterChange = (value: string) => {
   filter.value = value as 'all' | 'mine' | 'shared'
-  displayedCount.value = 6
+  displayedCount.value = PAGE_SIZE
 }
 
 const handleSortChange = (value: string) => {
   sort.value = value
+  displayedCount.value = PAGE_SIZE
 }
 
-const loadMore = () => {
-  displayedCount.value += 6
+// Search debouncing. The user can type quickly through a long list; we
+// reflect their input in the input box immediately (searchQuery) but only
+// re-filter the list ~180ms after they pause (debouncedSearchQuery). That
+// keeps every keystroke from re-running the filter+sort over every frag.
+let searchTimer: number | null = null
+const handleSearchChange = (value: string) => {
+  searchQuery.value = value
+  if (searchTimer !== null) clearTimeout(searchTimer)
+  searchTimer = window.setTimeout(() => {
+    searchTimer = null
+    debouncedSearchQuery.value = value
+    displayedCount.value = PAGE_SIZE
+  }, 180)
 }
+
+// Infinite scroll. We watch a sentinel element near the bottom of the
+// list; when the user scrolls it into view the observer fires and we load
+// the next page. Using IntersectionObserver (rather than scroll-event
+// math) means we don't run JS on every scroll frame.
+const scrollSentinel = ref<HTMLElement | null>(null)
+let infiniteObserver: IntersectionObserver | null = null
+
+function ensureObserver() {
+  if (infiniteObserver || typeof IntersectionObserver === 'undefined') return
+  infiniteObserver = new IntersectionObserver(
+    entries => {
+      for (const entry of entries) {
+        if (entry.isIntersecting && hasMore.value) {
+          // Extend by one page. Reading from the computed first prevents an
+          // out-of-range count if the user has filtered down the list.
+          displayedCount.value = Math.min(
+            totalMatchedCount.value,
+            displayedCount.value + PAGE_SIZE,
+          )
+        }
+      }
+    },
+    { rootMargin: '400px 0px' },
+  )
+}
+
+// Re-attach the observer whenever the sentinel is mounted/remounted (it
+// disappears when the list is fully shown and reappears when more matches
+// are discovered, e.g. after clearing the search).
+watch(scrollSentinel, async (el, prev) => {
+  if (prev && infiniteObserver) infiniteObserver.unobserve(prev)
+  if (!el) return
+  ensureObserver()
+  infiniteObserver?.observe(el)
+  // After clearing the search the user often expects the new top of the
+  // list; nextTick lets the layout settle before any auto-paging trigger.
+  await nextTick()
+})
 
 const handleWritingDeleted = (writingId: string) => {
   writings.value = writings.value.filter(w => w.id !== writingId)
@@ -284,8 +389,17 @@ const loadReactionSummaries = async () => {
 }
 
 onMounted(async () => {
+  ensureObserver()
   await Promise.all([loadWritings(), loadThemes()])
   loadReactionSummaries()
+})
+
+onBeforeUnmount(() => {
+  if (searchTimer !== null) clearTimeout(searchTimer)
+  if (infiniteObserver) {
+    infiniteObserver.disconnect()
+    infiniteObserver = null
+  }
 })
 </script>
 

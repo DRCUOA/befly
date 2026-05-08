@@ -407,35 +407,141 @@
 
             <!-- ============ Step: front_back_matter ============ -->
             <div v-else-if="currentStep.id === 'front_back_matter'" class="space-y-4">
+              <p class="text-sm text-ink-light">
+                Toggle a section to include it. When ticked, a text editor
+                appears so you can write the actual dedication, epigraph,
+                acknowledgements, and so on.
+              </p>
               <fieldset class="bp-fieldset">
                 <legend class="bp-legend">Front matter</legend>
-                <label v-for="opt in frontMatterOptions" :key="opt.key" class="bp-checkbox">
-                  <input
-                    type="checkbox"
-                    :value="opt.key"
-                    :checked="config.frontMatter.includes(opt.key)"
-                    @change="toggleFrontMatter(opt.key, ($event.target as HTMLInputElement).checked)"
-                  />
-                  <span>
-                    <strong>{{ opt.label }}</strong>
-                    <span class="text-ink-lighter"> — {{ opt.description }}</span>
-                  </span>
-                </label>
+                <div v-for="opt in frontMatterOptions" :key="opt.key" class="bp-matter-item">
+                  <label class="bp-checkbox">
+                    <input
+                      type="checkbox"
+                      :value="opt.key"
+                      :checked="config.frontMatter.includes(opt.key)"
+                      @change="toggleFrontMatter(opt.key, ($event.target as HTMLInputElement).checked)"
+                    />
+                    <span>
+                      <strong>{{ opt.label }}</strong>
+                      <span class="text-ink-lighter"> — {{ opt.description }}</span>
+                    </span>
+                  </label>
+                  <!-- Editable text body for items that have one. -->
+                  <div v-if="config.frontMatter.includes(opt.key)" class="bp-matter-body">
+                    <template v-if="opt.key === 'also_by_author'">
+                      <textarea
+                        v-model="config.matterContent.alsoByFront"
+                        rows="3"
+                        class="bp-text-input"
+                        placeholder="One title per line — e.g. The Other Book"
+                        :aria-label="'Also-by-author list (front matter)'"
+                      ></textarea>
+                    </template>
+                    <template v-else-if="opt.key === 'dedication'">
+                      <textarea
+                        v-model="config.matterContent.dedication"
+                        rows="2"
+                        class="bp-text-input"
+                        placeholder="For…"
+                        aria-label="Dedication"
+                      ></textarea>
+                    </template>
+                    <template v-else-if="opt.key === 'epigraph'">
+                      <textarea
+                        v-model="config.matterContent.epigraph"
+                        rows="3"
+                        class="bp-text-input"
+                        placeholder="The quotation that opens the book."
+                        aria-label="Epigraph"
+                      ></textarea>
+                      <input
+                        v-model="config.matterContent.epigraphAttribution"
+                        type="text"
+                        class="bp-text-input mt-1"
+                        placeholder="Attribution (e.g. — Marilynne Robinson)"
+                        aria-label="Epigraph attribution"
+                      />
+                    </template>
+                    <p v-else class="text-xs text-ink-lighter">
+                      No text input — generated from the manuscript title.
+                    </p>
+                  </div>
+                </div>
               </fieldset>
+
               <fieldset class="bp-fieldset">
                 <legend class="bp-legend">Back matter</legend>
-                <label v-for="opt in backMatterOptions" :key="opt.key" class="bp-checkbox">
-                  <input
-                    type="checkbox"
-                    :value="opt.key"
-                    :checked="config.backMatter.includes(opt.key)"
-                    @change="toggleBackMatter(opt.key, ($event.target as HTMLInputElement).checked)"
-                  />
-                  <span>
-                    <strong>{{ opt.label }}</strong>
-                    <span class="text-ink-lighter"> — {{ opt.description }}</span>
-                  </span>
-                </label>
+                <div v-for="opt in backMatterOptions" :key="opt.key" class="bp-matter-item">
+                  <label class="bp-checkbox">
+                    <input
+                      type="checkbox"
+                      :value="opt.key"
+                      :checked="config.backMatter.includes(opt.key)"
+                      @change="toggleBackMatter(opt.key, ($event.target as HTMLInputElement).checked)"
+                    />
+                    <span>
+                      <strong>{{ opt.label }}</strong>
+                      <span class="text-ink-lighter"> — {{ opt.description }}</span>
+                    </span>
+                  </label>
+                  <div v-if="config.backMatter.includes(opt.key)" class="bp-matter-body">
+                    <template v-if="opt.key === 'acknowledgements'">
+                      <textarea
+                        v-model="config.matterContent.acknowledgements"
+                        rows="5"
+                        class="bp-text-input"
+                        placeholder="Thanks and credits."
+                        aria-label="Acknowledgements"
+                      ></textarea>
+                    </template>
+                    <template v-else-if="opt.key === 'author_note'">
+                      <textarea
+                        v-model="config.matterContent.authorNote"
+                        rows="5"
+                        class="bp-text-input"
+                        placeholder="A few words from the author."
+                        aria-label="Author note"
+                      ></textarea>
+                    </template>
+                    <template v-else-if="opt.key === 'discussion_questions'">
+                      <textarea
+                        v-model="config.matterContent.discussionQuestions"
+                        rows="6"
+                        class="bp-text-input"
+                        placeholder="One question per line."
+                        aria-label="Discussion questions"
+                      ></textarea>
+                    </template>
+                    <template v-else-if="opt.key === 'also_by_author'">
+                      <textarea
+                        v-model="config.matterContent.alsoByBack"
+                        rows="3"
+                        class="bp-text-input"
+                        placeholder="One title per line."
+                        aria-label="Also-by-author list (back matter)"
+                      ></textarea>
+                    </template>
+                    <template v-else-if="opt.key === 'preview_chapter'">
+                      <textarea
+                        v-model="config.matterContent.previewChapter"
+                        rows="6"
+                        class="bp-text-input"
+                        placeholder="A short teaser for the next book."
+                        aria-label="Preview chapter"
+                      ></textarea>
+                    </template>
+                    <template v-else-if="opt.key === 'author_bio'">
+                      <textarea
+                        v-model="config.matterContent.authorBio"
+                        rows="5"
+                        class="bp-text-input"
+                        placeholder="Short biography."
+                        aria-label="About the author"
+                      ></textarea>
+                    </template>
+                  </div>
+                </div>
               </fieldset>
             </div>
 
@@ -1053,6 +1159,7 @@ import {
   BACK_MATTER_OPTIONS as backMatterOptions,
   WIZARD_STEPS,
   defaultPaperbackProfile,
+  emptyMatterContent,
   trimInches,
 } from './bookPreview/defaults'
 import { validateConfig } from './bookPreview/validation'
@@ -1093,9 +1200,14 @@ function loadConfig(): PreviewConfig {
     if (typeof localStorage !== 'undefined') {
       const raw = localStorage.getItem(STORAGE_KEY.value)
       if (raw) {
-        const parsed = JSON.parse(raw) as PreviewConfig
+        const parsed = JSON.parse(raw) as Partial<PreviewConfig>
+        const fresh = defaultPaperbackProfile(props.manuscript.id)
         // Spread over a fresh default to backfill any missing keys.
-        return { ...defaultPaperbackProfile(props.manuscript.id), ...parsed }
+        const merged: PreviewConfig = { ...fresh, ...parsed }
+        // Older saves may not have matterContent; back-fill it to avoid
+        // undefined-property crashes when the wizard binds textareas.
+        merged.matterContent = { ...emptyMatterContent(), ...(parsed.matterContent || {}) }
+        return merged
       }
     }
   } catch { /* fall through to default */ }
@@ -1384,6 +1496,26 @@ function escapeHtml(s: string): string {
     .replace(/"/g, '&quot;')
 }
 
+/** HTML-escape, then turn newlines into <br> for short single-block fields
+ *  (dedication, epigraph) where line breaks are meaningful but full
+ *  paragraphing would over-format. */
+function escapeMultilineHtml(s: string): string {
+  return escapeHtml(s).replace(/\n/g, '<br>')
+}
+
+/** HTML-escape and split blank-line-separated text into <p> blocks. Used
+ *  for back-matter sections (acknowledgements, author note, bio) where the
+ *  user typically writes multi-paragraph content. */
+function paragraphsFromText(s: string): string {
+  if (!s.trim()) return ''
+  return s
+    .split(/\n\s*\n/)
+    .map(block => block.trim())
+    .filter(Boolean)
+    .map(block => `<p>${escapeHtml(block).replace(/\n/g, '<br>')}</p>`)
+    .join('')
+}
+
 function chapterHeaderText(ci: number, title: string): string {
   switch (config.value.chapters.chapterTitleStyle) {
     case 'chapter_number': return String(ci + 1)
@@ -1431,11 +1563,16 @@ const bookFlowHtml = computed(() => {
   const parts: string[] = []
 
   // ---- Front matter (in conventional order) ----
+  const matter = config.value.matterContent
   if (fm.has('half_title')) {
     parts.push(`<section class="bp-frontmatter bp-page-break-before bp-page-break-after"><div class="bp-half-title">${escapeHtml(m.title)}</div></section>`)
   }
   if (fm.has('also_by_author')) {
-    parts.push(`<section class="bp-frontmatter bp-page-break-before bp-page-break-after"><h3 class="bp-fm-h">Also by the author</h3><p class="bp-fm-line">—</p></section>`)
+    const lines = (matter.alsoByFront || '').split(/\r?\n/).filter(s => s.trim())
+    const inner = lines.length
+      ? lines.map(l => `<p class="bp-fm-line">${escapeHtml(l)}</p>`).join('')
+      : `<p class="bp-fm-line">—</p>`
+    parts.push(`<section class="bp-frontmatter bp-page-break-before bp-page-break-after"><h3 class="bp-fm-h">Also by the author</h3>${inner}</section>`)
   }
   if (fm.has('title_page')) {
     parts.push(
@@ -1458,10 +1595,18 @@ const bookFlowHtml = computed(() => {
     )
   }
   if (fm.has('dedication')) {
-    parts.push(`<section class="bp-frontmatter bp-page-break-before bp-page-break-after"><p class="bp-dedication"><em>For…</em></p></section>`)
+    const text = matter.dedication.trim() || 'For…'
+    parts.push(`<section class="bp-frontmatter bp-page-break-before bp-page-break-after"><p class="bp-dedication">${escapeMultilineHtml(text)}</p></section>`)
   }
   if (fm.has('epigraph')) {
-    parts.push(`<section class="bp-frontmatter bp-page-break-before bp-page-break-after"><blockquote class="bp-epigraph"><em>An epigraph would sit here.</em></blockquote></section>`)
+    const text = matter.epigraph.trim() || 'An epigraph would sit here.'
+    const attribution = matter.epigraphAttribution.trim()
+    parts.push(
+      `<section class="bp-frontmatter bp-page-break-before bp-page-break-after">
+         <blockquote class="bp-epigraph">${escapeMultilineHtml(text)}</blockquote>
+         ${attribution ? `<p class="bp-epigraph-attribution">${escapeHtml(attribution)}</p>` : ''}
+       </section>`,
+    )
   }
   if (fm.has('contents') && chapters.value.length) {
     const lis = chapters.value.map((c, i) => `<li><span class="bp-toc-num">${i + 1}.</span> ${escapeHtml(c.title)}</li>`).join('')
@@ -1509,22 +1654,32 @@ const bookFlowHtml = computed(() => {
 
   // ---- Back matter ----
   if (bm.has('acknowledgements')) {
-    parts.push(`<section class="bp-backmatter bp-page-break-before"><h2 class="bp-h2">Acknowledgements</h2><p>—</p></section>`)
+    const text = matter.acknowledgements.trim() || '—'
+    parts.push(`<section class="bp-backmatter bp-page-break-before"><h2 class="bp-h2">Acknowledgements</h2>${paragraphsFromText(text)}</section>`)
   }
   if (bm.has('author_note')) {
-    parts.push(`<section class="bp-backmatter bp-page-break-before"><h2 class="bp-h2">Author's note</h2><p>—</p></section>`)
+    const text = matter.authorNote.trim() || '—'
+    parts.push(`<section class="bp-backmatter bp-page-break-before"><h2 class="bp-h2">Author's note</h2>${paragraphsFromText(text)}</section>`)
   }
   if (bm.has('discussion_questions')) {
-    parts.push(`<section class="bp-backmatter bp-page-break-before"><h2 class="bp-h2">Discussion questions</h2><ol><li>—</li></ol></section>`)
+    const lines = (matter.discussionQuestions || '').split(/\r?\n/).map(s => s.trim()).filter(Boolean)
+    const lis = lines.length ? lines.map(l => `<li>${escapeHtml(l)}</li>`).join('') : `<li>—</li>`
+    parts.push(`<section class="bp-backmatter bp-page-break-before"><h2 class="bp-h2">Discussion questions</h2><ol>${lis}</ol></section>`)
   }
   if (bm.has('also_by_author')) {
-    parts.push(`<section class="bp-backmatter bp-page-break-before"><h2 class="bp-h2">Also by the author</h2><p>—</p></section>`)
+    const lines = (matter.alsoByBack || '').split(/\r?\n/).filter(s => s.trim())
+    const inner = lines.length
+      ? lines.map(l => `<p class="bp-fm-line">${escapeHtml(l)}</p>`).join('')
+      : `<p class="bp-fm-line">—</p>`
+    parts.push(`<section class="bp-backmatter bp-page-break-before"><h2 class="bp-h2">Also by the author</h2>${inner}</section>`)
   }
   if (bm.has('preview_chapter')) {
-    parts.push(`<section class="bp-backmatter bp-page-break-before"><h2 class="bp-h2">Coming next</h2><p>—</p></section>`)
+    const text = matter.previewChapter.trim() || '—'
+    parts.push(`<section class="bp-backmatter bp-page-break-before"><h2 class="bp-h2">Coming next</h2>${paragraphsFromText(text)}</section>`)
   }
   if (bm.has('author_bio')) {
-    parts.push(`<section class="bp-backmatter bp-page-break-before"><h2 class="bp-h2">About the author</h2><p>${author ? escapeHtml(author) + ' ' : ''}—</p></section>`)
+    const text = matter.authorBio.trim() || (author ? escapeHtml(author) + ' …' : '—')
+    parts.push(`<section class="bp-backmatter bp-page-break-before"><h2 class="bp-h2">About the author</h2>${paragraphsFromText(text)}</section>`)
   }
 
   return parts.join('\n')
@@ -2098,34 +2253,42 @@ function buildPrintCoverHtml(
   imgUrl: string | null,
   barcode?: string,
 ): string {
+  // We render artwork as an explicit <img> rather than a CSS background-image
+  // because some browser print engines drop large data: URLs from background
+  // properties under @page rules, but render <img> reliably. The img also
+  // exposes a Promise via .decode() so the print window can wait for it
+  // before opening the system print dialog.
   const cover = cfg.cover
   const title = props.manuscript.title || ''
   const subtitle = props.manuscript.workingSubtitle || ''
   const author = cover.authorName || ''
+  const fallbackBg = '#3a2f24'
+
+  const imgEl = imgUrl
+    ? `<img src="${imgUrl}" class="pp-cover-art" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:${cover.coverOpacity};" />`
+    : ''
+  const bgFill = `<div style="position:absolute;inset:0;background:${fallbackBg};"></div>`
+
   if (side === 'front') {
-    const bgStyle = imgUrl
-      ? `background-image:url('${imgUrl}');background-size:cover;background-position:center;opacity:${cover.coverOpacity};`
-      : 'background:#3a2f24;'
     return `
-      <div style="position:absolute;inset:0;${bgStyle}"></div>
+      ${bgFill}
+      ${imgEl}
       <div style="position:absolute;inset:0;text-align:center;padding:8mm;color:#f4ecdd;text-shadow:0 1px 4px rgba(0,0,0,0.55);">
         <div style="position:absolute;left:50%;top:${cover.titleY}%;transform:translate(-50%,-50%);width:calc(100% - 16mm);text-align:${cover.titleAlign};color:${cover.titleColor};">
-          <h2 style="font-family:'${cfg.typography.bodyFont}',Georgia,serif;font-size:${cover.titleSize}pt;font-weight:300;margin:0;letter-spacing:0.04em;">${escapeHtml(title)}</h2>
-          ${subtitle ? `<p style="font-style:italic;margin-top:2mm;">${escapeHtml(subtitle)}</p>` : ''}
+          <h2 style="font-family:'${cfg.typography.bodyFont}',Georgia,serif;font-size:${cover.titleSize}pt;font-weight:300;margin:0;letter-spacing:0.04em;line-height:1.15;">${escapeHtml(title)}</h2>
+          ${subtitle ? `<p style="font-style:italic;margin:2mm 0 0 0;">${escapeHtml(subtitle)}</p>` : ''}
         </div>
         ${author ? `<div style="position:absolute;left:50%;top:${cover.authorY}%;transform:translate(-50%,-50%);width:calc(100% - 16mm);font-family:'${cfg.typography.bodyFont}',Georgia,serif;font-style:italic;font-size:${cover.authorSize}pt;color:${cover.authorColor};text-align:${cover.authorAlign};letter-spacing:0.08em;">${escapeHtml(author)}</div>` : ''}
       </div>
     `
   }
   // back
-  const bgStyle = imgUrl
-    ? `background-image:url('${imgUrl}');background-size:cover;background-position:center;opacity:${cover.coverOpacity};`
-    : 'background:#3a2f24;'
   return `
-    <div style="position:absolute;inset:0;${bgStyle}"></div>
+    ${bgFill}
+    ${imgEl}
     <div style="position:absolute;inset:0;padding:10mm;color:#f4ecdd;display:flex;flex-direction:column;align-items:center;justify-content:space-between;text-align:center;">
-      <p style="font-family:'${cfg.typography.bodyFont}',Georgia,serif;font-style:italic;font-size:14pt;letter-spacing:0.04em;margin:0;">${escapeHtml(title)}</p>
-      <p style="font-family:'${cfg.typography.bodyFont}',Georgia,serif;font-size:11pt;line-height:1.5;color:${cover.backTextColor};max-width:90mm;white-space:pre-wrap;">${escapeHtml(cover.backText || '')}</p>
+      <p style="font-family:'${cfg.typography.bodyFont}',Georgia,serif;font-style:italic;font-size:14pt;letter-spacing:0.04em;margin:0;line-height:1.2;">${escapeHtml(title)}</p>
+      <p style="font-family:'${cfg.typography.bodyFont}',Georgia,serif;font-size:11pt;line-height:1.5;color:${cover.backTextColor};max-width:90mm;white-space:pre-wrap;margin:0;">${escapeHtml(cover.backText || '')}</p>
       <div style="display:flex;flex-direction:column;align-items:center;gap:3mm;">
         ${author ? `<p style="font-family:'${cfg.typography.bodyFont}',Georgia,serif;font-size:9pt;letter-spacing:0.12em;text-transform:uppercase;margin:0;">${escapeHtml(author)}</p>` : ''}
         ${cover.showBarcode && cover.isbn && barcode ? `
@@ -2361,6 +2524,15 @@ const NumberField = defineComponent({
 .bp-issue.is-error .bp-issue-tag { background: #6a1a1a; color: #fff; }
 .bp-issue.is-warn .bp-issue-tag { background: #b07520; color: #fff; }
 
+.bp-matter-item { padding: 0.25rem 0; }
+.bp-matter-body {
+  margin: 0.4rem 0 0.6rem 1.6rem;
+  padding-left: 0.6rem;
+  border-left: 2px solid var(--line, #e6dfd0);
+}
+.bp-matter-body textarea { font-family: ui-serif, Georgia, serif; font-size: 0.88rem; line-height: 1.4; }
+.bp-matter-body .mt-1 { margin-top: 0.4rem; }
+
 .bp-summary { display: grid; grid-template-columns: max-content 1fr; gap: 0.3rem 1rem; font-size: 0.88rem; }
 .bp-summary > div { display: contents; }
 .bp-summary dt { color: var(--ink-light, #5a4f3f); }
@@ -2524,6 +2696,7 @@ const NumberField = defineComponent({
 .bp-page-inner :deep(.bp-fm-line) { text-align: center; font-size: 0.85em; margin: 0.4em 0; text-indent: 0; }
 .bp-page-inner :deep(.bp-dedication) { text-align: center; margin-top: 40%; text-indent: 0; }
 .bp-page-inner :deep(.bp-epigraph) { text-align: center; margin: 30% 1.5em 0; font-style: italic; }
+.bp-page-inner :deep(.bp-epigraph-attribution) { text-align: center; margin: 0.6em 1.5em 0; font-style: normal; font-size: 0.85em; text-indent: 0; }
 .bp-page-inner :deep(.bp-toc) { padding-top: 8%; }
 .bp-page-inner :deep(.bp-h2) { text-align: center; font-size: 1.4em; margin: 8% 0 1em 0; }
 .bp-page-inner :deep(.bp-toc-list) { list-style: none; padding: 0; margin: 1em 0; font-size: 0.95em; }

@@ -25,10 +25,36 @@
             {{ count }} {{ count === 1 ? 'frag' : 'frags' }}
           </span>
         </div>
-        <div class="flex items-center gap-3 sm:gap-4">
+        <div class="flex items-center gap-3 sm:gap-4 w-full sm:w-auto">
           <span class="text-xs tracking-wide font-sans text-ink-whisper sm:hidden">
             {{ count }} {{ count === 1 ? 'frag' : 'frags' }}
           </span>
+          <!-- Search input: opt-in via the `enableSearch` prop. Hidden when
+               not enabled to keep pages that haven't migrated unchanged. -->
+          <div v-if="enableSearch" class="relative flex-1 sm:flex-none sm:w-64">
+            <input
+              :value="searchQuery"
+              @input="onSearchInput"
+              type="search"
+              :placeholder="searchPlaceholder"
+              class="w-full text-xs sm:text-sm font-sans text-ink bg-transparent border border-line rounded-none pl-8 pr-3 py-1.5 placeholder:text-ink-whisper focus:border-ink-lighter focus:outline-none transition-colors duration-300"
+              :aria-label="searchPlaceholder"
+            />
+            <svg class="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-ink-lighter pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m21 21-4.3-4.3M11 19a8 8 0 1 1 0-16 8 8 0 0 1 0 16Z" />
+            </svg>
+            <button
+              v-if="searchQuery"
+              type="button"
+              @click="emit('search-change', '')"
+              class="absolute right-2 top-1/2 -translate-y-1/2 text-ink-lighter hover:text-ink transition-colors duration-300"
+              aria-label="Clear search"
+            >
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18 18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
           <div class="relative">
             <select
               :value="currentSort"
@@ -68,6 +94,13 @@ interface Props {
   sortOptions?: SortOption[]
   currentSort?: string
   showSettings?: boolean
+  /** Show a search input. Defaults to false so pages that don't pass it stay
+   *  visually identical. */
+  enableSearch?: boolean
+  /** Current search query (controlled). */
+  searchQuery?: string
+  /** Placeholder shown inside the search input. */
+  searchPlaceholder?: string
 }
 
 withDefaults(defineProps<Props>(), {
@@ -78,15 +111,23 @@ withDefaults(defineProps<Props>(), {
     { value: 'updated', label: 'Recently Updated' },
   ],
   currentSort: 'newest',
+  enableSearch: false,
+  searchQuery: '',
+  searchPlaceholder: 'Search frags…',
 })
 
 const emit = defineEmits<{
   'filter-change': [value: string]
   'sort-change': [value: string]
+  'search-change': [value: string]
 }>()
 
 const onSortChange = (event: Event) => {
   emit('sort-change', (event.target as HTMLSelectElement).value)
+}
+
+const onSearchInput = (event: Event) => {
+  emit('search-change', (event.target as HTMLInputElement).value)
 }
 </script>
 

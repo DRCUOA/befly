@@ -102,12 +102,18 @@ export function buildNaturalPrintHtml(args: PrintBuildArgs): string {
 
   const chapterStartBreak = cfg.chapters.chapterStart === 'right_hand_page' ? 'right' : 'page'
 
-  const openingPaddingCss = (() => {
+  // Absolute padding above the chapter heading, in mm. The screen path
+  // uses % heights inside CSS columns (which have a defined parent height),
+  // but in print the chapter section sits in normal flow on an A5 page —
+  // % heights collapse to 0 because no ancestor has an explicit height.
+  // Fixed mm values work in both contexts and produce the right visual
+  // proportions on A5 (210mm tall, ~175mm printable area after margins).
+  const openingPaddingMm = (() => {
     switch (cfg.chapters.chapterOpeningPosition) {
-      case 'top': return '0%'
-      case 'centered_high': return '20%'
+      case 'top': return 0
+      case 'centered_high': return 35
       case 'upper_third':
-      default: return '32%'
+      default: return 55
     }
   })()
 
@@ -206,35 +212,51 @@ export function buildNaturalPrintHtml(args: PrintBuildArgs): string {
   strong { font-weight: 600; }
   blockquote { margin: 0.6em 1.2em; font-style: italic; color: #3a3022; }
 
-  /* ===== Chapter openings ===== */
+  /* ===== Chapter openings =====
+     The screen-mode .bp-chapter-spacer uses a percentage height that only
+     works inside CSS columns. In print we hide it and apply mm padding to
+     the section directly so the heading lands at the right vertical
+     position on the A5 page. */
   .bp-chapter-opening, .bp-chapter {
     break-before: ${chapterStartBreak};
     break-inside: avoid-page;
     page: chapter-opening;
     text-align: center;
+    padding-top: ${openingPaddingMm}mm;
   }
-  .bp-chapter-opening > .bp-chapter-spacer { display: block; height: ${openingPaddingCss}; }
+  .bp-chapter-opening > .bp-chapter-spacer { display: none; }
   .bp-chapter-heading {
     font-size: 1.6em; font-weight: 300; letter-spacing: 0.04em;
     margin: 0 0 1em 0;
+    line-height: 1.2;
   }
+  /* Front-matter sections that get their own page also need explicit
+     top spacing — the % values inside their inline styles collapse to 0
+     in print, leaving the heading flush against the top margin. */
+  .bp-half-title { margin-top: 70mm; padding-top: 0; }
+  .bp-titlepage { padding-top: 38mm; margin-top: 0; }
+  .bp-toc { padding-top: 18mm; }
+  .bp-fm-h { margin-top: 55mm; padding-top: 0; }
+  .bp-dedication { margin-top: 70mm; }
+  .bp-epigraph { margin-top: 55mm; }
+  .bp-h2 { margin: 18mm 0 6mm 0; padding-top: 0; }
 
   /* ===== Front matter ===== */
   .bp-frontmatter, .bp-titlepage, .bp-toc {
     break-before: ${chapterStartBreak};
     page: chapter-opening;
+    text-align: center;
   }
-  .bp-half-title { text-align: center; margin-top: 40%; font-size: 1.2em; letter-spacing: 0.06em; }
-  .bp-titlepage { text-align: center; padding-top: 18%; }
-  .bp-book-title { font-size: 1.8em; font-weight: 300; margin: 0 0 0.4em 0; }
-  .bp-book-subtitle { font-style: italic; }
-  .bp-book-author { margin-top: 1.5em; font-style: italic; }
-  .bp-fm-line { text-align: center; font-size: 0.85em; margin: 0.4em 0; text-indent: 0; }
-  .bp-fm-h { text-align: center; font-size: 1.2em; margin-top: 30%; }
-  .bp-dedication { text-align: center; margin-top: 40%; text-indent: 0; }
-  .bp-epigraph { text-align: center; margin: 30% 1.5em 0; font-style: italic; }
-  .bp-toc { padding-top: 8%; }
-  .bp-h2 { text-align: center; font-size: 1.4em; margin: 8% 0 1em 0; }
+  .bp-half-title { font-size: 1.2em; letter-spacing: 0.06em; }
+  .bp-book-title { font-size: 1.8em; font-weight: 300; margin: 0 0 0.4em 0; line-height: 1.2; }
+  .bp-book-subtitle { font-style: italic; margin: 0 0 1.5em 0; }
+  .bp-book-author { font-style: italic; margin: 1.5em 0 0 0; }
+  .bp-fm-line { font-size: 0.85em; margin: 0.4em 0; text-indent: 0; }
+  .bp-fm-h { font-size: 1.2em; }
+  .bp-dedication { text-indent: 0; font-style: italic; }
+  .bp-epigraph { margin-left: 12mm; margin-right: 12mm; font-style: italic; text-indent: 0; }
+  .bp-epigraph-attribution { text-align: center; margin: 4mm 12mm 0; font-size: 0.85em; text-indent: 0; }
+  .bp-h2 { font-size: 1.4em; }
   .bp-toc-list { list-style: none; padding: 0; margin: 1em 0; font-size: 0.95em; }
   .bp-toc-list li { margin: 0.35em 0; }
   .bp-toc-num { display: inline-block; width: 1.6em; }
@@ -286,8 +308,23 @@ export function buildNaturalPrintHtml(args: PrintBuildArgs): string {
   <div class="pp-cover-page">${backCoverHtml}</div>
 
   <script>
+    // Wait for cover artwork to fully decode before opening the print
+    // dialog — without this the browser can snapshot the page while the
+    // images are still loading and they end up missing on the printed PDF.
+    function waitForCoverImages() {
+      var imgs = Array.from(document.querySelectorAll('img.pp-cover-art'));
+      if (!imgs.length) return Promise.resolve();
+      return Promise.all(imgs.map(function (img) {
+        if (img.complete && img.naturalWidth > 0) return Promise.resolve();
+        if (typeof img.decode === 'function') return img.decode().catch(function () {});
+        return new Promise(function (res) { img.addEventListener('load', res, { once: true }); img.addEventListener('error', res, { once: true }); });
+      }));
+    }
     window.addEventListener('load', function () {
-      setTimeout(function () { try { window.focus(); window.print(); } catch (e) {} }, 250);
+      waitForCoverImages().then(function () {
+        // Small extra tick for the layout engine to flush after image decode.
+        setTimeout(function () { try { window.focus(); window.print(); } catch (e) {} }, 100);
+      });
     });
   </script>
 </body>

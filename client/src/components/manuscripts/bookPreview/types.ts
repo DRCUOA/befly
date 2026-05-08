@@ -119,6 +119,35 @@ export interface PaperConfig {
 }
 
 /**
+ * Editable text bodies for the front- and back-matter sections. Each
+ * key corresponds to a checkbox in the Front & Back Matter wizard step;
+ * leaving a value empty produces a placeholder dash on the rendered page,
+ * matching the convention used by trade-paperback templates.
+ */
+export interface MatterContent {
+  /** Front matter — list of "Also by" titles, one per line. */
+  alsoByFront: string
+  /** Front matter — short dedication, set in italics. */
+  dedication: string
+  /** Front matter — quotation that opens the book. */
+  epigraph: string
+  /** Front matter — attribution for the epigraph. */
+  epigraphAttribution: string
+  /** Back matter — acknowledgements text. */
+  acknowledgements: string
+  /** Back matter — author note. */
+  authorNote: string
+  /** Back matter — discussion questions, one per line. */
+  discussionQuestions: string
+  /** Back matter — list of "Also by" titles, one per line. */
+  alsoByBack: string
+  /** Back matter — preview chapter teaser. */
+  previewChapter: string
+  /** Back matter — about-the-author bio. */
+  authorBio: string
+}
+
+/**
  * Cover-design state. Not part of the spec's print-interior conventions, but
  * the application has historically supported a cover designer with title /
  * author position, colour and alignment, plus a back-cover blurb. We carry
@@ -163,6 +192,7 @@ export interface PreviewConfig {
   headersAndFooters: HeadersFootersConfig
   frontMatter: FrontMatterKey[]
   backMatter: BackMatterKey[]
+  matterContent: MatterContent
   paper: PaperConfig
   cover: CoverConfig
   /** ISO-8601 timestamps. */

@@ -6,6 +6,7 @@
 import type {
   BackMatterKey,
   FrontMatterKey,
+  MatterContent,
   PreviewConfig,
   TrimSize,
   WizardStepId,
@@ -124,6 +125,7 @@ export function defaultPaperbackProfile(projectId: string): PreviewConfig {
     },
     frontMatter: ['half_title', 'title_page', 'copyright_page', 'dedication'],
     backMatter: ['acknowledgements', 'author_bio'],
+    matterContent: emptyMatterContent(),
     paper: { color: 'cream', ink: 'black', binding: 'perfect_bound' },
     cover: {
       authorName: '',
@@ -143,6 +145,23 @@ export function defaultPaperbackProfile(projectId: string): PreviewConfig {
     },
     createdAt: now,
     updatedAt: now,
+  }
+}
+
+/** A fresh blank-string MatterContent used by the default profile and as a
+ *  back-fill when loading an older saved configuration that didn't carry it. */
+export function emptyMatterContent(): MatterContent {
+  return {
+    alsoByFront: '',
+    dedication: '',
+    epigraph: '',
+    epigraphAttribution: '',
+    acknowledgements: '',
+    authorNote: '',
+    discussionQuestions: '',
+    alsoByBack: '',
+    previewChapter: '',
+    authorBio: '',
   }
 }
 
