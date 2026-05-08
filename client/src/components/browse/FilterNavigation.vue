@@ -88,6 +88,47 @@
               >Anywhere</button>
             </div>
           </div>
+          <!-- View-mode toggle: opt-in via `enableViewMode`. Switches the
+               consumer page between detail cards and a single-line list.
+               Visually styled like the search-scope toggle for consistency. -->
+          <div
+            v-if="enableViewMode"
+            role="group"
+            aria-label="View mode"
+            class="inline-flex border border-line rounded-none text-xs font-sans"
+          >
+            <button
+              type="button"
+              @click="emit('view-change', 'detail')"
+              :class="[
+                'px-2 py-1 transition-colors duration-200 inline-flex items-center gap-1',
+                viewMode === 'detail' ? 'bg-ink text-paper' : 'text-ink-lighter hover:text-ink',
+              ]"
+              :aria-pressed="viewMode === 'detail' ? 'true' : 'false'"
+              title="Detail cards"
+            >
+              <svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+                <rect x="3" y="4" width="14" height="5" rx="0.5" />
+                <rect x="3" y="11" width="14" height="5" rx="0.5" />
+              </svg>
+              <span class="hidden md:inline">Detail</span>
+            </button>
+            <button
+              type="button"
+              @click="emit('view-change', 'list')"
+              :class="[
+                'px-2 py-1 transition-colors duration-200 border-l border-line inline-flex items-center gap-1',
+                viewMode === 'list' ? 'bg-ink text-paper' : 'text-ink-lighter hover:text-ink',
+              ]"
+              :aria-pressed="viewMode === 'list' ? 'true' : 'false'"
+              title="Simple list"
+            >
+              <svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
+                <path d="M5 6h12M5 10h12M5 14h12" />
+              </svg>
+              <span class="hidden md:inline">List</span>
+            </button>
+          </div>
           <div class="relative">
             <select
               :value="currentSort"
@@ -121,6 +162,7 @@ interface SortOption {
 }
 
 export type SearchScope = 'title' | 'anywhere'
+export type ViewMode = 'detail' | 'list'
 
 interface Props {
   filters: Filter[]
@@ -139,6 +181,10 @@ interface Props {
   /** Where to look when filtering: "title" matches only the title field;
    *  "anywhere" also matches the body text. */
   searchScope?: SearchScope
+  /** Show the Detail / List view-mode toggle. Defaults to false. */
+  enableViewMode?: boolean
+  /** Current view mode (controlled). */
+  viewMode?: ViewMode
 }
 
 withDefaults(defineProps<Props>(), {
@@ -153,6 +199,8 @@ withDefaults(defineProps<Props>(), {
   searchQuery: '',
   searchPlaceholder: 'Search frags…',
   searchScope: 'anywhere',
+  enableViewMode: false,
+  viewMode: 'detail',
 })
 
 const emit = defineEmits<{
@@ -160,6 +208,7 @@ const emit = defineEmits<{
   'sort-change': [value: string]
   'search-change': [value: string]
   'scope-change': [value: SearchScope]
+  'view-change': [value: ViewMode]
 }>()
 
 const onSortChange = (event: Event) => {

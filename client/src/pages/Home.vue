@@ -49,10 +49,13 @@
       :search-query="searchQuery"
       :search-scope="searchScope"
       :search-placeholder="searchScope === 'title' ? 'Search frag titles…' : 'Search title or text…'"
+      :enable-view-mode="true"
+      :view-mode="viewMode"
       @filter-change="handleFilterChange"
       @sort-change="handleSortChange"
       @search-change="handleSearchChange"
       @scope-change="handleSearchScopeChange"
+      @view-change="handleViewChange"
     />
 
     <!-- Essay List -->
@@ -97,16 +100,27 @@
           </router-link>
         </div>
 
-        <div v-else class="space-y-0">
-          <WritingCard
-            v-for="(writing, index) in filteredWritings"
-            :key="writing.id"
-            :writing="writing"
-            :themes="getThemesForWriting(writing)"
-            :show-image="index < 3 || !!writing.coverImageUrl"
-            :reaction-summary="getReactionSummary(writing.id)"
-            @deleted="handleWritingDeleted"
-          />
+        <div v-else :class="viewMode === 'list' ? 'frag-list' : 'space-y-0'">
+          <template v-if="viewMode === 'detail'">
+            <WritingCard
+              v-for="(writing, index) in filteredWritings"
+              :key="writing.id"
+              :writing="writing"
+              :themes="getThemesForWriting(writing)"
+              :show-image="index < 3 || !!writing.coverImageUrl"
+              :reaction-summary="getReactionSummary(writing.id)"
+              @deleted="handleWritingDeleted"
+            />
+          </template>
+          <template v-else>
+            <WritingListRow
+              v-for="writing in filteredWritings"
+              :key="writing.id"
+              :writing="writing"
+              :themes="getThemesForWriting(writing)"
+              @deleted="handleWritingDeleted"
+            />
+          </template>
 
           <!-- Infinite-scroll sentinel. The IntersectionObserver in onMounted
                watches this element; when it enters the viewport we extend
@@ -176,7 +190,8 @@ import type { WritingBlock } from '../domain/WritingBlock'
 import type { Theme } from '../domain/Theme'
 import type { WritingReactionSummary } from '../domain/Appreciation'
 import WritingCard from '../components/writing/WritingCard.vue'
-import FilterNavigation, { type SearchScope } from '../components/browse/FilterNavigation.vue'
+import WritingListRow from '../components/writing/WritingListRow.vue'
+import FilterNavigation, { type SearchScope, type ViewMode } from '../components/browse/FilterNavigation.vue'
 import CollectionCard from '../components/browse/CollectionCard.vue'
 import { markdownToText } from '../utils/markdown'
 import type { ApiResponse } from '@shared/ApiResponses'
@@ -193,6 +208,22 @@ const sort = ref<string>('newest')
 const searchQuery = ref('')
 const debouncedSearchQuery = ref('')
 const searchScope = ref<SearchScope>('anywhere')
+
+// View mode is persisted across visits — once a user picks the list view
+// they tend to want it next time too. Stored under a stable key so future
+// list pages can share the same preference if we like.
+const VIEW_MODE_STORAGE_KEY = 'frag:viewMode'
+function loadViewMode(): ViewMode {
+  try {
+    if (typeof localStorage !== 'undefined') {
+      const v = localStorage.getItem(VIEW_MODE_STORAGE_KEY)
+      if (v === 'list' || v === 'detail') return v
+    }
+  } catch { /* ignore — fall back to default */ }
+  return 'detail'
+}
+const viewMode = ref<ViewMode>(loadViewMode())
+
 const PAGE_SIZE = 6
 const displayedCount = ref(PAGE_SIZE)
 
@@ -318,6 +349,12 @@ const handleSearchScopeChange = (value: SearchScope) => {
   displayedCount.value = PAGE_SIZE
 }
 
+const handleViewChange = (value: ViewMode) => {
+  viewMode.value = value
+  // Persist so the user's preference survives reloads.
+  try { localStorage.setItem(VIEW_MODE_STORAGE_KEY, value) } catch { /* ignore */ }
+}
+
 // Infinite scroll. We watch a sentinel element near the bottom of the
 // list; when the user scrolls it into view the observer fires and we load
 // the next page. Using IntersectionObserver (rather than scroll-event
@@ -419,5 +456,12 @@ onBeforeUnmount(() => {
 <style scoped>
 .browse-page {
   min-height: 100vh;
+}
+
+/* List view: each WritingListRow has its own border-bottom. The container
+   gets a leading border-top so the first row reads as part of a stacked
+   list rather than floating in space. */
+.frag-list {
+  border-top: 1px solid rgb(var(--color-line));
 }
 </style>
