@@ -47,10 +47,12 @@
       :current-sort="sort"
       :enable-search="true"
       :search-query="searchQuery"
-      search-placeholder="Search frags by title or text…"
+      :search-scope="searchScope"
+      :search-placeholder="searchScope === 'title' ? 'Search frag titles…' : 'Search title or text…'"
       @filter-change="handleFilterChange"
       @sort-change="handleSortChange"
       @search-change="handleSearchChange"
+      @scope-change="handleSearchScopeChange"
     />
 
     <!-- Essay List -->
@@ -174,7 +176,7 @@ import type { WritingBlock } from '../domain/WritingBlock'
 import type { Theme } from '../domain/Theme'
 import type { WritingReactionSummary } from '../domain/Appreciation'
 import WritingCard from '../components/writing/WritingCard.vue'
-import FilterNavigation from '../components/browse/FilterNavigation.vue'
+import FilterNavigation, { type SearchScope } from '../components/browse/FilterNavigation.vue'
 import CollectionCard from '../components/browse/CollectionCard.vue'
 import { markdownToText } from '../utils/markdown'
 import type { ApiResponse } from '@shared/ApiResponses'
@@ -190,6 +192,7 @@ const filter = ref<'all' | 'mine' | 'shared'>('all')
 const sort = ref<string>('newest')
 const searchQuery = ref('')
 const debouncedSearchQuery = ref('')
+const searchScope = ref<SearchScope>('anywhere')
 const PAGE_SIZE = 6
 const displayedCount = ref(PAGE_SIZE)
 
@@ -229,6 +232,9 @@ const matchedWritings = computed(() => {
     filtered = filtered.filter(w => {
       const title = (w.title || '').toLowerCase()
       if (title.includes(q)) return true
+      // "title" scope skips the body comparison entirely. "anywhere" falls
+      // through to the cached plain-text body.
+      if (searchScope.value === 'title') return false
       return bodyTextFor(w).includes(q)
     })
   }
@@ -303,6 +309,13 @@ const handleSearchChange = (value: string) => {
     debouncedSearchQuery.value = value
     displayedCount.value = PAGE_SIZE
   }, 180)
+}
+
+// Switching the scope re-filters immediately — no need to wait, since this
+// only fires when the user clicks a toggle, not while typing.
+const handleSearchScopeChange = (value: SearchScope) => {
+  searchScope.value = value
+  displayedCount.value = PAGE_SIZE
 }
 
 // Infinite scroll. We watch a sentinel element near the bottom of the

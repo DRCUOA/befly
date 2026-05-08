@@ -278,6 +278,23 @@
             <!-- ============ Step: chapters ============ -->
             <div v-else-if="currentStep.id === 'chapters'" class="space-y-4">
               <fieldset class="bp-fieldset">
+                <legend class="bp-legend">What counts as a chapter?</legend>
+                <label class="bp-radio">
+                  <input type="radio" :value="true" :checked="config.chapters.chaptersFromItems" @change="config.chapters.chaptersFromItems = true" />
+                  <span>
+                    <strong>Each essay is a chapter</strong>
+                    <span class="text-ink-lighter"> — every item starts on its own page with its own heading. Recommended for essay collections.</span>
+                  </span>
+                </label>
+                <label class="bp-radio">
+                  <input type="radio" :value="false" :checked="!config.chapters.chaptersFromItems" @change="config.chapters.chaptersFromItems = false" />
+                  <span>
+                    <strong>Each section is a chapter</strong>
+                    <span class="text-ink-lighter"> — items within a section flow together, separated by scene breaks.</span>
+                  </span>
+                </label>
+              </fieldset>
+              <fieldset class="bp-fieldset">
                 <legend class="bp-legend">Chapter starts on</legend>
                 <label class="bp-radio">
                   <input type="radio" name="chapterStart" value="new_page" v-model="config.chapters.chapterStart" />
@@ -1202,11 +1219,23 @@ function loadConfig(): PreviewConfig {
       if (raw) {
         const parsed = JSON.parse(raw) as Partial<PreviewConfig>
         const fresh = defaultPaperbackProfile(props.manuscript.id)
-        // Spread over a fresh default to backfill any missing keys.
-        const merged: PreviewConfig = { ...fresh, ...parsed }
-        // Older saves may not have matterContent; back-fill it to avoid
-        // undefined-property crashes when the wizard binds textareas.
-        merged.matterContent = { ...emptyMatterContent(), ...(parsed.matterContent || {}) }
+        // Shallow-merge top-level keys, then re-merge each nested object
+        // against its fresh default so any new fields added to the schema
+        // since the save was written get sensible defaults rather than
+        // becoming `undefined`.
+        const merged: PreviewConfig = {
+          ...fresh,
+          ...parsed,
+          margins: { ...fresh.margins, ...(parsed.margins || {}) },
+          typography: { ...fresh.typography, ...(parsed.typography || {}) },
+          paragraphs: { ...fresh.paragraphs, ...(parsed.paragraphs || {}) },
+          chapters: { ...fresh.chapters, ...(parsed.chapters || {}) },
+          sceneBreaks: { ...fresh.sceneBreaks, ...(parsed.sceneBreaks || {}) },
+          headersAndFooters: { ...fresh.headersAndFooters, ...(parsed.headersAndFooters || {}) },
+          paper: { ...fresh.paper, ...(parsed.paper || {}) },
+          cover: { ...fresh.cover, ...(parsed.cover || {}) },
+          matterContent: { ...emptyMatterContent(), ...(parsed.matterContent || {}) },
+        }
         return merged
       }
     }
@@ -1546,12 +1575,34 @@ const openingPaddingTop = computed(() => {
 const chapters = computed(() => {
   const selSet = new Set(selectedItemIds.value)
   const chList: { title: string; items: ManuscriptItem[] }[] = []
-  for (const s of sortedSections.value) {
-    const list = (itemsBySection.value.get(s.id) || []).filter(i => selSet.has(i.id))
-    if (list.length) chList.push({ title: s.title || 'Untitled', items: list })
+
+  if (config.value.chapters.chaptersFromItems) {
+    // Per-item chapters. Each essay (or placeholder / bridge) becomes its
+    // own chapter, with the item's title used as the chapter title. The
+    // section structure is preserved in the order — items keep their
+    // section's order — but sections themselves are no longer rendered
+    // as chapter containers. This is the right model for essay
+    // collections, where each piece is a standalone chapter.
+    for (const s of sortedSections.value) {
+      const list = (itemsBySection.value.get(s.id) || []).filter(i => selSet.has(i.id))
+      for (const item of list) {
+        chList.push({ title: item.title || 'Untitled', items: [item] })
+      }
+    }
+    for (const item of unassignedItems.value.filter(i => selSet.has(i.id))) {
+      chList.push({ title: item.title || 'Untitled', items: [item] })
+    }
+  } else {
+    // Section-based chapters (legacy). Each section is one chapter;
+    // multiple items within flow with scene breaks between them.
+    for (const s of sortedSections.value) {
+      const list = (itemsBySection.value.get(s.id) || []).filter(i => selSet.has(i.id))
+      if (list.length) chList.push({ title: s.title || 'Untitled', items: list })
+    }
+    const orphans = unassignedItems.value.filter(i => selSet.has(i.id))
+    if (orphans.length) chList.push({ title: 'Other', items: orphans })
   }
-  const orphans = unassignedItems.value.filter(i => selSet.has(i.id))
-  if (orphans.length) chList.push({ title: 'Other', items: orphans })
+
   return chList
 })
 

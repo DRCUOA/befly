@@ -114,6 +114,7 @@ export function defaultPaperbackProfile(projectId: string): PreviewConfig {
       chapterOpeningPosition: 'upper_third',
       dropCap: false,
       smallCapsOpening: false,
+      chaptersFromItems: true,
     },
     sceneBreaks: { style: 'centered_asterisks', symbol: '* * *' },
     headersAndFooters: {

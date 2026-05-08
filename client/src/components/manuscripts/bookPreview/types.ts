@@ -63,6 +63,14 @@ export interface ChaptersConfig {
   chapterOpeningPosition: ChapterOpeningPosition
   dropCap: boolean
   smallCapsOpening: boolean
+  /**
+   * When true, every manuscript item (essay) becomes its own chapter with a
+   * fresh page break and chapter heading. When false (legacy behaviour),
+   * sections are chapters and items inside a section flow with scene
+   * breaks between them. True is the default for essay collections, where
+   * each piece stands alone.
+   */
+  chaptersFromItems: boolean
 }
 
 export type SceneBreakStyle =

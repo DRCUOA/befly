@@ -174,13 +174,25 @@
       :metadata-open="metadataPanelOpen"
       :cursor-y="cursorViewportY"
       :model="selectedModel"
+      :find-open="findOpen"
       @select="openAssist"
       @save="handleSubmit"
       @metadata="metadataPanelOpen = true"
       @exit="handleExit"
+      @find="findOpen = !findOpen"
       @font-up="bumpFontSize(+1)"
       @font-down="bumpFontSize(-1)"
       @update:model="onModelChange"
+    />
+
+    <FindReplacePanel
+      :open="findOpen"
+      :body="form.body"
+      :writing-block-id="writingId"
+      :textarea-ref="bodyTextareaRef"
+      @close="findOpen = false"
+      @update:body="onBodyReplaced"
+      @status="onFindStatus"
     />
 
     <!-- Tiny bottom-left status pill — only visible briefly after save success
@@ -272,6 +284,7 @@ import MetadataPanel from '../components/writing/MetadataPanel.vue'
 import CoverImageCropModal from '../components/writing/CoverImageCropModal.vue'
 import WritingToolsCluster from '../components/writing/WritingToolsCluster.vue'
 import WritingAssistPanel from '../components/writing/WritingAssistPanel.vue'
+import FindReplacePanel from '../components/writing/FindReplacePanel.vue'
 import { useBreathingCaret } from '../composables/useBreathingCaret'
 import { useWritingAssist } from '../composables/useWritingAssist'
 import type { WritingAssistMode } from '@shared/WritingAssist'
@@ -312,6 +325,7 @@ const submitting = ref(false)
 const error = ref<string | null>(null)
 const showCropModal = ref(false)
 const metadataPanelOpen = ref(false)
+const findOpen = ref(false)
 
 // Non-blocking typography suggestions (P1-uix-03: progressive reveal on pause/blur)
 // Rules from API with fallback to bundled defaults (cni-07)
@@ -935,6 +949,23 @@ function flashZenStatus(kind: 'success' | 'error' | 'info', message: string, ms:
  *  handles that). */
 function handleExit() {
   navigateBack()
+}
+
+/** The Find & Replace panel emits `update:body` after an in-essay replace.
+ *  We treat it like any other body edit so the autosave/draft and word-count
+ *  pipelines pick it up. */
+function onBodyReplaced(next: string) {
+  form.value.body = next
+  // Re-run the same plumbing the textarea's @input handler triggers — body
+ // mirror, draft autosave, typography scan, etc.
+  onBodyInput()
+}
+
+/** The Find & Replace panel emits status messages (match counts, errors,
+ *  replace receipts). Surface them through the same zen status pill that
+ *  save/error states use, so we don't introduce a second toast system. */
+function onFindStatus(status: { kind: 'info' | 'success' | 'error'; message: string }) {
+  flashZenStatus(status.kind, status.message, status.kind === 'error' ? 4000 : 2600)
 }
 
 /* ============================================================

@@ -84,6 +84,21 @@
     <button
       type="button"
       class="tool-button"
+      :class="{ 'is-active': findOpen }"
+      aria-label="Find and replace"
+      title="Find and replace (in essay or across the manuscript)"
+      @click="$emit('find')"
+    >
+      <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="8.5" cy="8.5" r="5" />
+        <path d="M12.5 12.5l4.5 4.5" />
+      </svg>
+      <span class="tool-label">Find</span>
+    </button>
+
+    <button
+      type="button"
+      class="tool-button"
       aria-label="Exit to frags"
       title="Exit to frags"
       @click="$emit('exit')"
@@ -413,6 +428,8 @@ interface Props {
   cursorY: number | null
   /** Currently-selected OpenAI model id. v-model:model from the parent. */
   model: string
+  /** True when the Find & Replace panel is open. Highlights the icon. */
+  findOpen?: boolean
 }
 
 const props = defineProps<Props>()
@@ -808,6 +825,8 @@ const emit = defineEmits<{
   metadata: []
   /** Exit icon clicked — return to the writer's previous page. */
   exit: []
+  /** Find icon clicked — open the Find & Replace panel. */
+  find: []
   /** Bump the body font size up by one step. */
   'font-up': []
   /** Bump the body font size down by one step. */

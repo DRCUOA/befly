@@ -31,29 +31,62 @@
           </span>
           <!-- Search input: opt-in via the `enableSearch` prop. Hidden when
                not enabled to keep pages that haven't migrated unchanged. -->
-          <div v-if="enableSearch" class="relative flex-1 sm:flex-none sm:w-64">
-            <input
-              :value="searchQuery"
-              @input="onSearchInput"
-              type="search"
-              :placeholder="searchPlaceholder"
-              class="w-full text-xs sm:text-sm font-sans text-ink bg-transparent border border-line rounded-none pl-8 pr-3 py-1.5 placeholder:text-ink-whisper focus:border-ink-lighter focus:outline-none transition-colors duration-300"
-              :aria-label="searchPlaceholder"
-            />
-            <svg class="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-ink-lighter pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m21 21-4.3-4.3M11 19a8 8 0 1 1 0-16 8 8 0 0 1 0 16Z" />
-            </svg>
-            <button
-              v-if="searchQuery"
-              type="button"
-              @click="emit('search-change', '')"
-              class="absolute right-2 top-1/2 -translate-y-1/2 text-ink-lighter hover:text-ink transition-colors duration-300"
-              aria-label="Clear search"
-            >
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18 18 6M6 6l12 12" />
+          <div v-if="enableSearch" class="flex flex-1 sm:flex-none items-center gap-2">
+            <div class="relative flex-1 sm:w-64">
+              <input
+                :value="searchQuery"
+                @input="onSearchInput"
+                type="search"
+                :placeholder="searchPlaceholder"
+                class="w-full text-xs sm:text-sm font-sans text-ink bg-transparent border border-line rounded-none pl-8 pr-7 py-1.5 placeholder:text-ink-whisper focus:border-ink-lighter focus:outline-none transition-colors duration-300"
+                :aria-label="searchPlaceholder"
+              />
+              <svg class="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-ink-lighter pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m21 21-4.3-4.3M11 19a8 8 0 1 1 0-16 8 8 0 0 1 0 16Z" />
               </svg>
-            </button>
+              <button
+                v-if="searchQuery"
+                type="button"
+                @click="emit('search-change', '')"
+                class="absolute right-2 top-1/2 -translate-y-1/2 text-ink-lighter hover:text-ink transition-colors duration-300"
+                aria-label="Clear search"
+              >
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18 18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <!-- Title-only / Anywhere toggle. Title-only matches just w.title;
+                 Anywhere also matches the rendered body text. The toggle is
+                 disabled when no query is present, since it has no effect. -->
+            <div
+              role="group"
+              aria-label="Search scope"
+              class="inline-flex border border-line rounded-none text-xs font-sans"
+            >
+              <button
+                type="button"
+                @click="emit('scope-change', 'title')"
+                :class="[
+                  'px-2 py-1 transition-colors duration-200',
+                  searchScope === 'title'
+                    ? 'bg-ink text-paper'
+                    : 'text-ink-lighter hover:text-ink',
+                ]"
+                :aria-pressed="searchScope === 'title' ? 'true' : 'false'"
+              >Title</button>
+              <button
+                type="button"
+                @click="emit('scope-change', 'anywhere')"
+                :class="[
+                  'px-2 py-1 transition-colors duration-200 border-l border-line',
+                  searchScope === 'anywhere'
+                    ? 'bg-ink text-paper'
+                    : 'text-ink-lighter hover:text-ink',
+                ]"
+                :aria-pressed="searchScope === 'anywhere' ? 'true' : 'false'"
+              >Anywhere</button>
+            </div>
           </div>
           <div class="relative">
             <select
@@ -87,6 +120,8 @@ interface SortOption {
   label: string
 }
 
+export type SearchScope = 'title' | 'anywhere'
+
 interface Props {
   filters: Filter[]
   currentFilter: string
@@ -101,6 +136,9 @@ interface Props {
   searchQuery?: string
   /** Placeholder shown inside the search input. */
   searchPlaceholder?: string
+  /** Where to look when filtering: "title" matches only the title field;
+   *  "anywhere" also matches the body text. */
+  searchScope?: SearchScope
 }
 
 withDefaults(defineProps<Props>(), {
@@ -114,12 +152,14 @@ withDefaults(defineProps<Props>(), {
   enableSearch: false,
   searchQuery: '',
   searchPlaceholder: 'Search frags…',
+  searchScope: 'anywhere',
 })
 
 const emit = defineEmits<{
   'filter-change': [value: string]
   'sort-change': [value: string]
   'search-change': [value: string]
+  'scope-change': [value: SearchScope]
 }>()
 
 const onSortChange = (event: Event) => {
