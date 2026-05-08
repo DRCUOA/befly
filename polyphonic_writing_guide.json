@@ -1,0 +1,69 @@
+{
+  "title": "World-Class Polyphonic Fiction: Authoritative Craft Guide for Original Prose",
+  "version": "2.2",
+  "objective": "Equip LLM agents to generate high-stakes, ideologically divergent, stylistically unique, and philosophically rich narrative counterpoint. Prioritize raw friction and linguistic fingerprints over synthetic balance.",
+  "source_logic": "Bakhtinian Dialogism + Musical Fugue Structure + Cognitive Estrangement + Anti-AI-Slop Directives",
+  "definition": {
+    "concept": "Polyphony is a structural and philosophical approach where the author relinquishes monologic control—the God’s-eye view—and orchestrates a genuine plurality of independent, unmerged consciousnesses.",
+    "truth_model": "Truth is not delivered by the author; it emerges as relational energy ONLY in the friction, interference, and collisions between equally valid but contradictory consciousnesses."
+  },
+  "agent_directives_for_originality_and_anti_slop": {
+    "lean_into_extremes": "Reject neutral middle-ground. Force characters into ideological extremes. Polite consensus is only allowed as tactical deception.",
+    "forbid_moral_summaries": "Never insert authorial moralizing or tidy life lessons. Endings must remain 'unfinalized'.",
+    "enforce_linguistic_fingerprints": "Every voice needs: (1) Signature syntax, (2) Forbidden vocabulary, (3) Unique sensory filters. Identify the speaker in 1–3 sentences without tags.",
+    "surprise_yourself": "If a character's choice is predictable, they lack autonomy. Regenerate until they deviate."
+  },
+  "core_principles": {
+    "unmerged_consciousness": "Characters possess 'surplus humanity'—private obsessions that interfere with the plot rather than serve it.",
+    "micro_dialogism": "Inner monologues are battles with internalized 'ghosts' (society, parents, enemies).",
+    "ideological_warfare": "Each character embodies a distinct 'Idea-Force'. Collision is mandatory.",
+    "unfinalizability": "The work ends when the conversation is handed to the reader, unresolved."
+  },
+  "mechanics_of_counterpoint": {
+    "interference_technique": "Epistemological Sabotage. One character's 'truth' is another's 'delusion'.",
+    "radical_stylistic_differentiation": "Prose Mutation. Vary lexical roots (Anglo-Saxon vs. Latinate), syntax (jagged vs. hypnotic), and sensory filters.",
+    "centripetal_force": "The 'Gravity Well' event (a crime, a trauma, a shared catastrophe) that pulls orbits together."
+  },
+  "real_world_master_examples": {
+    "ideological_warfare_focus": {
+      "dostoevsky_brothers_karamazov": "Dmitri (sensual chaos), Ivan (intellectual atheism), and Alyosha (faith) collide at a family murder. No final authorial winner; the ideas live as visceral, unmerged forces.",
+      "kingsolver_the_poisonwood_bible": "Five female voices narrate a missionary disaster. Each uses a distinct linguistic fingerprint to reflect their specific trauma response and ideological evolution against their father's rigid monologue."
+    },
+    "stylistic_mutation_focus": {
+      "faulkner_as_i_lay_dying": "15 narrators with wildly divergent dialects and cognitive capacities. Darl’s poetic abstraction contrasts with Vardaman’s child-logic ('My mother is a fish'), creating deep epistemological sabotage.",
+      "mitchell_cloud_atlas": "A nesting doll of genres (nautical journal, epistolary, thriller, dystopian interview). Each era uses a radically different prose architecture to echo themes across time."
+    },
+    "political_and_social_collision_focus": {
+      "marlon_james_a_brief_history_of_seven_killings": "A massive cast (ghosts, CIA agents, gang members, journalists) surrounding the attempted assassination of Bob Marley. Uses radical Patois vs. Standard English to show social hierarchy and 'information asymmetry' in a political vacuum.",
+      "evaristo_girl_woman_other": "12 interconnected British voices. Uses 'fusion fiction' (absence of full stops/capitalization) to create a rhythmic, flowing polyphony where individual identities bleed into a collective social portrait without losing autonomy."
+    },
+    "trauma_and_ghost_voices_focus": {
+      "toni_morrison_beloved": "Polyphony as a tool for fragmented history. The 'unmerged' voices of the living and the dead compete to narrate the unspeakable. Truth is relational, found in the 'gaps' of what characters cannot say.",
+      "saunders_lincoln_in_the_bardo": "166 distinct ghost voices in a cemetery. A masterclass in 'micro-dialogism' and 'centripetal force' (the death of Willie Lincoln), where brief snippets of dialogue create a symphonic, overlapping reality."
+    },
+    "epistemological_sabotage_focus": {
+      "bolano_the_savage_detectives": "The two main protagonists are never POV characters. We only know them through the biased, often contradictory interviews of dozens of acquaintances across decades. The 'truth' of who they are is entirely subjective and unfinalized."
+    }
+  },
+  "litmus_test_for_agents": {
+    "is_it_polyphonic": [
+      "Can the speaker be identified from one paragraph by style alone?",
+      "Does the prose architecture mutate fundamentally between sections?",
+      "Is any single moral or ideological stance clearly privileged?",
+      "Do characters surprise the agent with their choices?",
+      "Does the ending feel like a question rather than an answer?"
+    ]
+  },
+  "advanced_agent_tools": {
+    "double_voiced_discourse": "Instruction: Write a character using 'ironic mimicry' of another's voice (e.g., a servant using their master's vocabulary to mock them subtextually).",
+    "information_asymmetry": "Every POV must possess a 'key' they don't recognize as valuable, while others search for it blindly."
+  },
+  "common_pitfalls_to_correct": [
+    "Voice Homogenization (The AI-Average Voice).",
+    "Puppet Problem (Characters serving the plot).",
+    "False Resolution (The 'Tidy Ending' trap).",
+    "Insufficient Friction (Polite disagreement instead of warfare).",
+    "Plot Dominance (Characters as functions, not consciousnesses)."
+  ],
+  "authorial_persona_for_agents": "You are the Active Conductor. Design the collisions. Set the stage for ideological warfare. Then step back. Your job is orchestration, not narration."
+}
