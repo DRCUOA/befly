@@ -109,16 +109,24 @@
               :themes="getThemesForWriting(writing)"
               :show-image="index < 3 || !!writing.coverImageUrl"
               :reaction-summary="getReactionSummary(writing.id)"
+              :can-move-up="index > 0"
+              :can-move-down="index < filteredWritings.length - 1"
               @deleted="handleWritingDeleted"
+              @move-up="handleMoveUp"
+              @move-down="handleMoveDown"
             />
           </template>
           <template v-else>
             <WritingListRow
-              v-for="writing in filteredWritings"
+              v-for="(writing, index) in filteredWritings"
               :key="writing.id"
               :writing="writing"
               :themes="getThemesForWriting(writing)"
+              :can-move-up="index > 0"
+              :can-move-down="index < filteredWritings.length - 1"
               @deleted="handleWritingDeleted"
+              @move-up="handleMoveUp"
+              @move-down="handleMoveDown"
             />
           </template>
 
@@ -224,6 +232,46 @@ function loadViewMode(): ViewMode {
 }
 const viewMode = ref<ViewMode>(loadViewMode())
 
+// Custom user-defined ordering. Map of writing id → rank (lower = higher in
+// list). When non-empty it overrides the date-based sort below for the ids
+// it covers; ids not in the map fall through to the regular sort and are
+// appended after the custom-ordered items. Persisted to localStorage so a
+// user's hand-arranged list survives reloads.
+const CUSTOM_ORDER_STORAGE_KEY = 'frag:customOrder'
+function loadCustomOrder(): Map<string, number> {
+  const map = new Map<string, number>()
+  try {
+    if (typeof localStorage !== 'undefined') {
+      const raw = localStorage.getItem(CUSTOM_ORDER_STORAGE_KEY)
+      if (raw) {
+        const ids = JSON.parse(raw)
+        if (Array.isArray(ids)) {
+          ids.forEach((id, i) => {
+            if (typeof id === 'string') map.set(id, i)
+          })
+        }
+      }
+    }
+  } catch { /* ignore — fall through to empty map */ }
+  return map
+}
+const customOrder = ref<Map<string, number>>(loadCustomOrder())
+function saveCustomOrder() {
+  try {
+    if (typeof localStorage === 'undefined') return
+    if (customOrder.value.size === 0) {
+      localStorage.removeItem(CUSTOM_ORDER_STORAGE_KEY)
+      return
+    }
+    // Serialize as a flat list of ids in rank order — compact and trivially
+    // re-loadable.
+    const ids = [...customOrder.value.entries()]
+      .sort((a, b) => a[1] - b[1])
+      .map(([id]) => id)
+    localStorage.setItem(CUSTOM_ORDER_STORAGE_KEY, JSON.stringify(ids))
+  } catch { /* ignore */ }
+}
+
 const PAGE_SIZE = 6
 const displayedCount = ref(PAGE_SIZE)
 
@@ -271,6 +319,17 @@ const matchedWritings = computed(() => {
   }
 
   filtered = [...filtered].sort((a, b) => {
+    // Custom user ordering wins. Items present in customOrder are ranked by
+    // their stored rank; items not in the map fall back to the date sort and
+    // are placed AFTER any custom-ordered items.
+    const co = customOrder.value
+    if (co.size > 0) {
+      const aRank = co.get(a.id)
+      const bRank = co.get(b.id)
+      if (aRank !== undefined && bRank !== undefined) return aRank - bRank
+      if (aRank !== undefined) return -1
+      if (bRank !== undefined) return 1
+    }
     switch (sort.value) {
       case 'oldest':
         return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
@@ -325,7 +384,49 @@ const handleFilterChange = (value: string) => {
 const handleSortChange = (value: string) => {
   sort.value = value
   displayedCount.value = PAGE_SIZE
+  // Picking a sort is an explicit "use this ordering" — drop any prior
+  // hand-arranged order so the chosen sort actually takes effect.
+  if (customOrder.value.size > 0) {
+    customOrder.value = new Map()
+    saveCustomOrder()
+  }
 }
+
+// Up/down arrow handlers from WritingCard / WritingListRow. Swap the target
+// writing with its neighbour in the currently-displayed (matched + sorted)
+// list, then bake that order into customOrder so it sticks across reloads
+// and across filter/search changes.
+function applyMove(writingId: string, direction: 'up' | 'down') {
+  const list = matchedWritings.value
+  const idx = list.findIndex(w => w.id === writingId)
+  if (idx === -1) return
+  const targetIdx = direction === 'up' ? idx - 1 : idx + 1
+  if (targetIdx < 0 || targetIdx >= list.length) return
+
+  const visibleIds = list.map(w => w.id)
+  const tmp = visibleIds[idx]
+  visibleIds[idx] = visibleIds[targetIdx]
+  visibleIds[targetIdx] = tmp
+
+  // Off-screen items that the user has previously hand-arranged (but are
+  // currently filtered out by search/filter) keep their relative order;
+  // they're appended after the visible block so the visible arrangement
+  // stays at the top of any list that includes both.
+  const visibleSet = new Set(visibleIds)
+  const preservedIds = [...customOrder.value.entries()]
+    .filter(([id]) => !visibleSet.has(id))
+    .sort((a, b) => a[1] - b[1])
+    .map(([id]) => id)
+
+  const next = new Map<string, number>()
+  let rank = 0
+  for (const id of visibleIds) next.set(id, rank++)
+  for (const id of preservedIds) next.set(id, rank++)
+  customOrder.value = next
+  saveCustomOrder()
+}
+const handleMoveUp = (writingId: string) => applyMove(writingId, 'up')
+const handleMoveDown = (writingId: string) => applyMove(writingId, 'down')
 
 // Search debouncing. The user can type quickly through a long list; we
 // reflect their input in the input box immediately (searchQuery) but only
