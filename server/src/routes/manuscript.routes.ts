@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import { manuscriptController } from '../controllers/manuscript.controller.js'
 import { manuscriptChatController } from '../controllers/manuscript-chat.controller.js'
+import { bookPrintingController } from '../controllers/book-printing.controller.js'
 import { validateBody } from '../middleware/validate.middleware.js'
 import { optionalAuthMiddleware, authMiddleware } from '../middleware/auth.middleware.js'
 import { asyncHandler } from '../utils/asyncHandler.js'
@@ -74,6 +75,13 @@ router.delete('/items/:itemId', authMiddleware, asyncHandler(manuscriptControlle
  * literal "models" segment doesn't get matched as a chatId UUID.
  */
 router.get('/chats/models', authMiddleware, asyncHandler(manuscriptChatController.listModels))
+
+/* ----- Book preview wizard printings (saved drafts/versions) ----- */
+router.get('/:manuscriptId/printings',                    authMiddleware, asyncHandler(bookPrintingController.list))
+router.post('/:manuscriptId/printings',                   authMiddleware, asyncHandler(bookPrintingController.create))
+router.get('/:manuscriptId/printings/:printingId',        authMiddleware, asyncHandler(bookPrintingController.get))
+router.put('/:manuscriptId/printings/:printingId',        authMiddleware, asyncHandler(bookPrintingController.update))
+router.delete('/:manuscriptId/printings/:printingId',     authMiddleware, asyncHandler(bookPrintingController.delete))
 
 router.get('/:manuscriptId/chats',                       authMiddleware, asyncHandler(manuscriptChatController.listChats))
 router.post('/:manuscriptId/chats',                      authMiddleware, asyncHandler(manuscriptChatController.createChat))
