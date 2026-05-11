@@ -8,6 +8,69 @@
     @keydown="onRootKeydown"
   >
     <!-- =================================================================
+         STAGE: chooser — pick a saved draft or start a fresh wizard run.
+         Only renders when there are saved printings; on a clean
+         manuscript the watcher skips straight to 'wizard'.
+         ================================================================= -->
+    <section
+      v-if="stage === 'chooser'"
+      class="bp-chooser bg-paper text-ink w-full h-full flex flex-col items-center justify-center px-8"
+      aria-label="Choose a saved printing or start a new wizard run"
+    >
+      <div class="bp-chooser-card max-w-2xl w-full">
+        <header class="flex items-center justify-between mb-6">
+          <h2 class="text-xl font-light tracking-tight">Printed book preview</h2>
+          <button
+            type="button"
+            class="bp-btn-ghost"
+            @click="emit('close')"
+            aria-label="Close preview wizard"
+          >Close</button>
+        </header>
+        <p class="text-sm text-ink-light mb-4">
+          You have <strong>{{ drafts.length }}</strong>
+          saved {{ drafts.length === 1 ? 'printing' : 'printings' }} for this manuscript.
+          Load one to keep working, or start a fresh wizard run from
+          paperback defaults.
+        </p>
+
+        <div v-if="draftsLoading" class="text-sm italic text-ink-lighter">
+          Loading saved printings…
+        </div>
+
+        <ul v-else class="bp-chooser-list space-y-2 mb-6">
+          <li v-for="d in drafts" :key="d.id">
+            <button
+              type="button"
+              class="bp-chooser-row w-full text-left rounded border border-line hover:border-ink transition-colors p-3 flex items-baseline justify-between gap-4"
+              @click="chooseDraft(d.id)"
+            >
+              <span>
+                <span class="font-medium">v{{ d.versionNumber }}</span>
+                <span v-if="d.draftLabel" class="ml-2">{{ d.draftLabel }}</span>
+                <span v-else class="ml-2 italic text-ink-lighter">(no label)</span>
+              </span>
+              <span class="text-xs text-ink-lighter">
+                {{ d.profileName }} · saved {{ new Date(d.updatedAt).toLocaleString() }}
+              </span>
+            </button>
+          </li>
+        </ul>
+
+        <div class="flex items-center gap-3 pt-2 border-t border-line">
+          <button
+            type="button"
+            class="bp-btn-primary"
+            @click="chooseNewWizard"
+          >Start a new wizard run</button>
+          <p class="text-xs text-ink-lighter">
+            Starts from the Modern Trade Paperback Fiction defaults.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- =================================================================
          STAGE: wizard — step-by-step configuration with live preview
          ================================================================= -->
     <section
@@ -24,7 +87,39 @@
             <strong class="font-medium">{{ currentStep.title }}</strong>
           </p>
         </div>
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-2 flex-wrap">
+          <!-- Drafts / versions picker. Each row in book_printings is one
+               named draft for this manuscript; the dropdown switches the
+               wizard between them. "New draft" abandons the loaded id so
+               the next save creates a new version_number. -->
+          <label class="text-xs text-ink-light flex items-center gap-1">
+            Draft
+            <select
+              class="bp-select bp-select-sm"
+              :value="currentPrintingId ?? ''"
+              :disabled="draftsLoading"
+              @change="onDraftSelect"
+            >
+              <option value="">— New draft —</option>
+              <option v-for="d in drafts" :key="d.id" :value="d.id">
+                v{{ d.versionNumber }}{{ d.draftLabel ? ` · ${d.draftLabel}` : '' }}
+              </option>
+            </select>
+          </label>
+          <button
+            type="button"
+            class="bp-link"
+            @click="newDraft"
+            :disabled="!currentPrintingId && lastSavedAt === null"
+            title="Start a new draft from the current settings (will create a new version on next save)"
+          >New draft</button>
+          <button
+            v-if="currentPrintingId"
+            type="button"
+            class="bp-link text-red-600"
+            @click="deleteCurrentDraft"
+            title="Delete the currently-loaded draft"
+          >Delete draft</button>
           <button
             type="button"
             class="bp-link"
@@ -979,6 +1074,12 @@
           </span>
           <span class="text-xs text-ink-light">
             {{ estimatedPageCount }} pages · {{ config.profileName }}
+            <template v-if="currentVersionNumber !== null">
+              · Draft v{{ currentVersionNumber }}<template v-if="currentDraftLabel"> ({{ currentDraftLabel }})</template>
+            </template>
+            <template v-else>
+              · Unsaved draft
+            </template>
           </span>
           <span v-if="lastSavedAt" class="text-xs text-ink-lighter">Saved {{ lastSavedAt }}</span>
         </div>
@@ -992,8 +1093,9 @@
           <button
             type="button"
             class="bp-btn-ghost"
-            @click="saveConfig"
-          >Save</button>
+            @click="openSavePrompt"
+            :disabled="isSaving"
+          >{{ isSaving ? 'Saving…' : 'Save…' }}</button>
           <button
             type="button"
             class="bp-btn-primary"
@@ -1001,6 +1103,82 @@
           >{{ primaryActionLabel }}</button>
         </div>
       </footer>
+
+      <!-- ===========================================================
+           Save-prompt dialog. Appears on Save; collects the user's
+           draft label and version number. The version field defaults
+           to (next available) for new drafts or the loaded draft's
+           current number for updates. Errors from the server (e.g.
+           version collision) surface inline.
+           =========================================================== -->
+      <div
+        v-if="showSavePrompt"
+        class="bp-save-prompt-overlay fixed inset-0 z-[60] bg-black/50 flex items-center justify-center"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Save printing"
+        @click.self="cancelSavePrompt"
+      >
+        <form
+          class="bp-save-prompt bg-paper text-ink rounded shadow-lg p-6 w-full max-w-md"
+          @submit.prevent="confirmSavePrompt"
+        >
+          <h3 class="text-lg font-light tracking-tight mb-4">
+            {{ currentPrintingId ? 'Update saved printing' : 'Save printing' }}
+          </h3>
+
+          <label class="block mb-3">
+            <span class="block text-xs uppercase tracking-wide text-ink-light mb-1">
+              Draft name / label
+            </span>
+            <input
+              type="text"
+              class="bp-input w-full"
+              v-model="savePromptLabel"
+              maxlength="120"
+              placeholder="e.g. First galley, Final cover, Trial"
+              autofocus
+            />
+          </label>
+
+          <label class="block mb-3">
+            <span class="block text-xs uppercase tracking-wide text-ink-light mb-1">
+              Version number
+            </span>
+            <input
+              type="number"
+              class="bp-input w-full"
+              v-model.number="savePromptVersion"
+              min="1"
+              step="1"
+              required
+            />
+            <span class="block text-xs text-ink-lighter mt-1">
+              Must be unique within this manuscript's printings for your account.
+            </span>
+          </label>
+
+          <p
+            v-if="savePromptError"
+            class="text-sm text-red-600 mb-3"
+            role="alert"
+          >{{ savePromptError }}</p>
+
+          <div class="flex items-center justify-end gap-2 pt-2 border-t border-line">
+            <button
+              type="button"
+              class="bp-btn-ghost"
+              @click="cancelSavePrompt"
+              :disabled="isSaving"
+            >Cancel</button>
+            <button
+              type="submit"
+              class="bp-btn-primary"
+              :disabled="isSaving"
+            >{{ isSaving ? 'Saving…' : (currentPrintingId ? 'Update' : 'Save') }}</button>
+          </div>
+        </form>
+      </div>
     </section>
 
     <!-- =================================================================
@@ -1155,6 +1333,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount, h, defineComponent, type PropType } from 'vue'
 import { api } from '../../api/client'
+import { bookPrintingApi } from '../../api/bookPrinting'
 import { renderMarkdown } from '../../utils/markdown'
 import type { ApiResponse } from '@shared/ApiResponses'
 import type {
@@ -1162,6 +1341,11 @@ import type {
   ManuscriptSection,
   ManuscriptItem,
 } from '@shared/Manuscript'
+import type {
+  BookPrinting,
+  BookPrintingInput,
+  BookPrintingSummary,
+} from '@shared/BookPrinting'
 import type { WritingBlock } from '../../domain/WritingBlock'
 import type {
   PreviewConfig,
@@ -1176,7 +1360,6 @@ import {
   BACK_MATTER_OPTIONS as backMatterOptions,
   WIZARD_STEPS,
   defaultPaperbackProfile,
-  emptyMatterContent,
   trimInches,
 } from './bookPreview/defaults'
 import { validateConfig } from './bookPreview/validation'
@@ -1194,7 +1377,7 @@ const props = defineProps<{
 const emit = defineEmits<{ (e: 'close'): void }>()
 
 // ---- Top-level stage state ----
-const stage = ref<'wizard' | 'book'>('wizard')
+const stage = ref<'chooser' | 'wizard' | 'book'>('wizard')
 const bookState = ref<'closed-front' | 'open' | 'closed-back'>('closed-front')
 
 // ---- Wizard step state ----
@@ -1210,46 +1393,78 @@ function prevStep() { if (currentStepIndex.value > 0) currentStepIndex.value-- }
 function nextStep() { if (currentStepIndex.value < steps.length - 1) currentStepIndex.value++ }
 
 // ---- Configuration (single source of truth) ----
-const STORAGE_KEY = computed(() => `bp:cfg:${props.manuscript.id}`)
+//
+// The wizard works with a deeply-nested PreviewConfig in memory. Persistence
+// goes through the /api/manuscripts/:id/printings endpoints, which save each
+// setting to its own column in the book_printings table (no JSON blob).
+// Each saved row is one "printing" — a user-defined draft identified by a
+// version_number plus an optional draftLabel. The drafts picker at the top
+// of the wizard switches between them.
 
-function loadConfig(): PreviewConfig {
-  try {
-    if (typeof localStorage !== 'undefined') {
-      const raw = localStorage.getItem(STORAGE_KEY.value)
-      if (raw) {
-        const parsed = JSON.parse(raw) as Partial<PreviewConfig>
-        const fresh = defaultPaperbackProfile(props.manuscript.id)
-        // Shallow-merge top-level keys, then re-merge each nested object
-        // against its fresh default so any new fields added to the schema
-        // since the save was written get sensible defaults rather than
-        // becoming `undefined`.
-        const merged: PreviewConfig = {
-          ...fresh,
-          ...parsed,
-          margins: { ...fresh.margins, ...(parsed.margins || {}) },
-          typography: { ...fresh.typography, ...(parsed.typography || {}) },
-          paragraphs: { ...fresh.paragraphs, ...(parsed.paragraphs || {}) },
-          chapters: { ...fresh.chapters, ...(parsed.chapters || {}) },
-          sceneBreaks: { ...fresh.sceneBreaks, ...(parsed.sceneBreaks || {}) },
-          headersAndFooters: { ...fresh.headersAndFooters, ...(parsed.headersAndFooters || {}) },
-          paper: { ...fresh.paper, ...(parsed.paper || {}) },
-          cover: { ...fresh.cover, ...(parsed.cover || {}) },
-          matterContent: { ...emptyMatterContent(), ...(parsed.matterContent || {}) },
-        }
-        return merged
-      }
-    }
-  } catch { /* fall through to default */ }
-  return defaultPaperbackProfile(props.manuscript.id)
+/** Strip wizard-only fields from PreviewConfig down to the wire input shape. */
+function configToInput(c: PreviewConfig, draftLabel: string): BookPrintingInput {
+  return {
+    draftLabel,
+    profileName: c.profileName,
+    trimSize: c.trimSize,
+    margins: {
+      top: c.margins.top,
+      bottom: c.margins.bottom,
+      outside: c.margins.outside,
+      insideGutter: c.margins.insideGutter,
+    },
+    typography: c.typography,
+    paragraphs: c.paragraphs,
+    chapters: c.chapters,
+    sceneBreaks: c.sceneBreaks,
+    headersAndFooters: c.headersAndFooters,
+    frontMatter: c.frontMatter,
+    backMatter: c.backMatter,
+    matterContent: c.matterContent,
+    paper: c.paper,
+    cover: c.cover,
+  }
 }
 
-const config = ref<PreviewConfig>(loadConfig())
-const lastSavedAt = ref<string | null>(null)
+/** Hydrate a saved BookPrinting back into a PreviewConfig the wizard understands. */
+function printingToConfig(p: BookPrinting): PreviewConfig {
+  return {
+    id: p.id,
+    projectId: p.manuscriptId,
+    profileName: p.profileName,
+    trimSize: p.trimSize,
+    margins: { ...p.margins, unit: 'in' as const },
+    typography: p.typography,
+    paragraphs: p.paragraphs,
+    chapters: p.chapters,
+    sceneBreaks: p.sceneBreaks,
+    headersAndFooters: p.headersAndFooters,
+    frontMatter: p.frontMatter,
+    backMatter: p.backMatter,
+    matterContent: p.matterContent,
+    paper: p.paper,
+    cover: p.cover,
+    createdAt: p.createdAt,
+    updatedAt: p.updatedAt,
+  }
+}
 
+const config = ref<PreviewConfig>(defaultPaperbackProfile(props.manuscript.id))
 // Spoof an ISBN deterministically on first load if missing.
 if (!config.value.cover.isbn) {
   config.value.cover.isbn = spoofIsbn(props.manuscript.title || props.manuscript.id)
 }
+
+const lastSavedAt = ref<string | null>(null)
+const isSaving = ref(false)
+
+// ---- Drafts / versions state ----
+const drafts = ref<BookPrintingSummary[]>([])
+/** id of the currently-loaded printing, or null when this is unsaved (new). */
+const currentPrintingId = ref<string | null>(null)
+const currentDraftLabel = ref<string>('')
+const currentVersionNumber = ref<number | null>(null)
+const draftsLoading = ref(false)
 
 function regenerateIsbn() {
   config.value.cover.isbn = spoofIsbn(`${props.manuscript.title || props.manuscript.id}#${Date.now()}`)
@@ -1264,13 +1479,143 @@ function resetToDefaults() {
   backCoverUrl.value = null
 }
 
-function saveConfig() {
-  config.value.updatedAt = new Date().toISOString()
+async function refreshDrafts(): Promise<BookPrintingSummary[]> {
+  draftsLoading.value = true
   try {
-    localStorage.setItem(STORAGE_KEY.value, JSON.stringify(config.value))
+    drafts.value = await bookPrintingApi.list(props.manuscript.id)
+    return drafts.value
+  } finally {
+    draftsLoading.value = false
+  }
+}
+
+/**
+ * Load the printing for the given id. If `id` is null, leave the wizard
+ * with its current in-memory config and clear the "currently-loaded"
+ * marker so the next save creates a new draft.
+ */
+async function loadDraft(id: string | null) {
+  if (!id) {
+    currentPrintingId.value = null
+    currentVersionNumber.value = null
+    currentDraftLabel.value = ''
+    return
+  }
+  const printing = await bookPrintingApi.get(props.manuscript.id, id)
+  config.value = printingToConfig(printing)
+  currentPrintingId.value = printing.id
+  currentVersionNumber.value = printing.versionNumber
+  currentDraftLabel.value = printing.draftLabel
+  if (!config.value.cover.isbn) {
+    config.value.cover.isbn = spoofIsbn(props.manuscript.title || props.manuscript.id)
+  }
+}
+
+function onDraftSelect(ev: Event) {
+  const value = (ev.target as HTMLSelectElement).value
+  void loadDraft(value || null)
+}
+
+// ---- Save prompt state ----
+//
+// Save always goes through a confirm dialog that asks for a draft label
+// and a version number. When updating an existing draft the dialog
+// pre-fills with that draft's current values; when creating, the
+// version number defaults to (highest existing + 1) so most writers
+// can accept the suggestion without thinking.
+const showSavePrompt = ref(false)
+const savePromptLabel = ref('')
+const savePromptVersion = ref<number>(1)
+const savePromptError = ref<string | null>(null)
+
+function nextSuggestedVersion(): number {
+  const highest = drafts.value.reduce((max, d) => Math.max(max, d.versionNumber), 0)
+  return highest + 1
+}
+
+function openSavePrompt() {
+  savePromptError.value = null
+  if (currentPrintingId.value && currentVersionNumber.value !== null) {
+    savePromptLabel.value = currentDraftLabel.value
+    savePromptVersion.value = currentVersionNumber.value
+  } else {
+    savePromptLabel.value = currentDraftLabel.value
+    savePromptVersion.value = nextSuggestedVersion()
+  }
+  showSavePrompt.value = true
+}
+
+function cancelSavePrompt() {
+  showSavePrompt.value = false
+  savePromptError.value = null
+}
+
+/**
+ * Commit the save from the dialog. Sends the user-supplied label and
+ * version number; if either field is invalid (empty version, collides
+ * with another draft, etc.) the server responds with a 400 and we
+ * surface the error inline.
+ */
+async function confirmSavePrompt() {
+  if (isSaving.value) return
+  const versionNumber = Math.floor(Number(savePromptVersion.value))
+  if (!Number.isFinite(versionNumber) || versionNumber < 1) {
+    savePromptError.value = 'Version number must be a whole number, 1 or greater.'
+    return
+  }
+  const label = savePromptLabel.value.trim()
+  isSaving.value = true
+  savePromptError.value = null
+  try {
+    const input: BookPrintingInput = {
+      ...configToInput(config.value, label),
+      versionNumber,
+    }
+    let printing: BookPrinting
+    if (currentPrintingId.value) {
+      printing = await bookPrintingApi.update(
+        props.manuscript.id,
+        currentPrintingId.value,
+        input
+      )
+    } else {
+      printing = await bookPrintingApi.create(props.manuscript.id, input)
+      currentPrintingId.value = printing.id
+    }
+    currentVersionNumber.value = printing.versionNumber
+    currentDraftLabel.value = printing.draftLabel
+    config.value.updatedAt = printing.updatedAt
     lastSavedAt.value = new Date().toLocaleTimeString()
-  } catch (e) {
-    alert('Could not save settings to local storage.')
+    await refreshDrafts()
+    showSavePrompt.value = false
+  } catch (err) {
+    savePromptError.value = err instanceof Error ? err.message : String(err)
+  } finally {
+    isSaving.value = false
+  }
+}
+
+/** Start a fresh draft from the current settings — next save creates a new version. */
+function newDraft() {
+  currentPrintingId.value = null
+  currentVersionNumber.value = null
+  currentDraftLabel.value = ''
+  lastSavedAt.value = null
+}
+
+async function deleteCurrentDraft() {
+  if (!currentPrintingId.value) return
+  if (!confirm(`Delete draft v${currentVersionNumber.value}? This cannot be undone.`)) return
+  try {
+    await bookPrintingApi.delete(props.manuscript.id, currentPrintingId.value)
+    currentPrintingId.value = null
+    currentVersionNumber.value = null
+    currentDraftLabel.value = ''
+    lastSavedAt.value = null
+    await refreshDrafts()
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err)
+    alert(`Could not delete printing: ${message}`)
   }
 }
 
@@ -1342,9 +1687,17 @@ function toggleBackMatter(key: BackMatterKey, on: boolean) {
   config.value.backMatter = [...cur]
 }
 
+/**
+ * Pick up where the writer left off. On open we always check what's
+ * already saved for this manuscript before deciding which stage to
+ * show:
+ *   - If there are saved printings → show the chooser so the writer
+ *     decides between loading one and starting a fresh wizard run.
+ *   - If none exist → drop straight into the wizard with factory
+ *     defaults; there is nothing to choose between.
+ */
 watch(() => props.open, (isOpen) => {
   if (isOpen) {
-    stage.value = 'wizard'
     bookState.value = 'closed-front'
     currentSpreadIndex.value = 0
     if (!selectedItemIds.value.length) {
@@ -1353,8 +1706,35 @@ watch(() => props.open, (isOpen) => {
     // Pre-fetch chapter bodies so the live preview shows real content
     // instead of "(Body not loaded.)" placeholders.
     void loadBodiesForSelected()
+    // Show the chooser stage while drafts load; on result, either keep
+    // the chooser open (drafts exist — writer picks) or go straight to
+    // the wizard with factory defaults.
+    stage.value = 'chooser'
+    void refreshDrafts().then(list => {
+      if (list.length === 0) {
+        stage.value = 'wizard'
+      }
+    })
   }
 }, { immediate: true })
+
+/** Chooser → wizard: load the picked draft, then enter the wizard. */
+async function chooseDraft(printingId: string) {
+  await loadDraft(printingId)
+  stage.value = 'wizard'
+}
+
+/** Chooser → wizard: discard any in-flight load, start from defaults. */
+function chooseNewWizard() {
+  const fresh = defaultPaperbackProfile(props.manuscript.id)
+  fresh.cover.isbn = spoofIsbn(props.manuscript.title || props.manuscript.id)
+  config.value = fresh
+  currentPrintingId.value = null
+  currentVersionNumber.value = null
+  currentDraftLabel.value = ''
+  lastSavedAt.value = null
+  stage.value = 'wizard'
+}
 
 // When the user changes the included items mid-wizard, fetch any newly
 // selected bodies so the preview keeps up.
