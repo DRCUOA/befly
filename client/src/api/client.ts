@@ -10,6 +10,26 @@ export interface RequestOptions extends RequestInit {
   params?: Record<string, string>
 }
 
+/**
+ * Structured error returned by the API client. Carries the HTTP status,
+ * the server-supplied `code` field (when present), and any `details`
+ * payload (used by 409 optimistic-lock conflicts to carry the current
+ * server-side version). UI code can branch on `status === 409` or
+ * `code === 'CONFLICT'` to drive merge/retry flows.
+ */
+export class ApiError extends Error {
+  status: number
+  code?: string
+  details?: Record<string, unknown>
+  constructor(message: string, status: number, code?: string, details?: Record<string, unknown>) {
+    super(message)
+    this.name = 'ApiError'
+    this.status = status
+    this.code = code
+    this.details = details
+  }
+}
+
 // Get CSRF token from cookie (set by server)
 function getCsrfToken(): string | null {
   const cookies = document.cookie.split(';')
@@ -66,13 +86,22 @@ async function request<T>(
 
   if (!response.ok) {
     let serverMessage: string | undefined
+    let serverCode: string | undefined
+    let serverDetails: Record<string, unknown> | undefined
     try {
       const body = await response.json()
       serverMessage = body?.error
+      serverCode = body?.code
+      serverDetails = body?.details
     } catch {
       // Response body was not valid JSON (e.g. proxy HTML error page)
     }
-    throw new Error(serverMessage || `Request failed (${response.status} ${response.statusText})`)
+    throw new ApiError(
+      serverMessage || `Request failed (${response.status} ${response.statusText})`,
+      response.status,
+      serverCode,
+      serverDetails
+    )
   }
 
   // Handle empty responses (204 No Content, etc.)
@@ -119,6 +148,13 @@ export const api = {
     request<T>(endpoint, {
       ...options,
       method: 'PUT',
+      body: JSON.stringify(data)
+    }),
+
+  patch: <T>(endpoint: string, data?: unknown, options?: RequestOptions) =>
+    request<T>(endpoint, {
+      ...options,
+      method: 'PATCH',
       body: JSON.stringify(data)
     }),
 

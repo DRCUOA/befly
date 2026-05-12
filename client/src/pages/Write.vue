@@ -163,6 +163,39 @@
       @cancel="showCropModal = false"
     />
 
+    <!-- Collaboration panels. Only meaningful for existing frags. Server
+         enforces who's allowed to manage editors or restore history; we
+         deliberately don't gate the buttons by role so admin/manager
+         editors can also reach them without an extra round-trip. -->
+    <EditorsPanel
+      v-if="isEditing && writingId"
+      v-model="editorsPanelOpen"
+      :writing-id="writingId"
+    />
+    <RevisionHistoryPanel
+      v-if="isEditing && writingId"
+      v-model="historyPanelOpen"
+      :writing-id="writingId"
+      :can-restore="true"
+      @restored="loadWriting"
+    />
+
+    <div
+      v-if="isEditing"
+      class="fixed top-4 right-4 z-30 flex gap-2 print:hidden"
+    >
+      <button
+        type="button"
+        class="px-2 py-1 text-xs rounded border border-line bg-paper text-ink hover:bg-line"
+        @click="editorsPanelOpen = true"
+      >Editors</button>
+      <button
+        type="button"
+        class="px-2 py-1 text-xs rounded border border-line bg-paper text-ink hover:bg-line"
+        @click="historyPanelOpen = true"
+      >History</button>
+    </div>
+
     <!-- Floating zen cluster — page actions on top, AI tools below. This is
          the ONLY persistent UI on the editor surface. Nothing else.  -->
     <WritingToolsCluster
@@ -285,6 +318,9 @@ import CoverImageCropModal from '../components/writing/CoverImageCropModal.vue'
 import WritingToolsCluster from '../components/writing/WritingToolsCluster.vue'
 import WritingAssistPanel from '../components/writing/WritingAssistPanel.vue'
 import FindReplacePanel from '../components/writing/FindReplacePanel.vue'
+import EditorsPanel from '../components/writing/EditorsPanel.vue'
+import RevisionHistoryPanel from '../components/writing/RevisionHistoryPanel.vue'
+import { ApiError } from '../api/client'
 import { useBreathingCaret } from '../composables/useBreathingCaret'
 import { useWritingAssist } from '../composables/useWritingAssist'
 import type { WritingAssistMode } from '@shared/WritingAssist'
@@ -299,6 +335,18 @@ const { navigateBack } = useNavigationOrigin('/home')
 
 const writingId = computed(() => route.params.id as string | undefined)
 const isEditing = computed(() => !!writingId.value)
+
+// Optimistic-lock version of the loaded frag. We refresh this on load and
+// on every successful save; the server bumps it on its side, so any other
+// editor's save between our load and our save will trigger a 409 which
+// we surface as a "merge" prompt rather than silently overwriting.
+const currentVersion = ref<number | null>(null)
+
+// Collaboration panels. We show the buttons unconditionally on existing
+// frags; the server enforces who's actually allowed to manage editors or
+// restore revisions, so unauthorized users just see a friendly error.
+const editorsPanelOpen = ref(false)
+const historyPanelOpen = ref(false)
 
 const form = ref({
   title: '',
@@ -530,6 +578,7 @@ const loadWriting = async () => {
     error.value = null
     const response = await api.get<ApiResponse<WritingBlock>>(`/writing/${writingId.value}`)
     setFormState(response.data)
+    currentVersion.value = (response.data as WritingBlock & { currentVersion?: number }).currentVersion ?? null
   } catch (err) {
     error.value = err instanceof Error ? err.message : 'Failed to load writing'
   } finally {
@@ -607,14 +656,16 @@ const doSubmit = async () => {
     error.value = null
 
     if (isEditing.value && writingId.value) {
-      await api.put<ApiResponse<any>>(`/writing/${writingId.value}`, {
+      const res = await api.put<ApiResponse<WritingBlock>>(`/writing/${writingId.value}`, {
         title: form.value.title,
         body: form.value.body,
         themeIds: form.value.themeIds,
         visibility: form.value.visibility,
         coverImageUrl: form.value.coverImageUrl || undefined,
-      coverImagePosition: form.value.coverImagePosition || undefined
+        coverImagePosition: form.value.coverImagePosition || undefined,
+        expectedVersion: currentVersion.value ?? undefined,
       })
+      currentVersion.value = (res.data as WritingBlock & { currentVersion?: number })?.currentVersion ?? currentVersion.value
     } else {
       await api.post<ApiResponse<any>>('/writing', {
         title: form.value.title,
@@ -631,6 +682,16 @@ const doSubmit = async () => {
     flashZenStatus('success', isEditing.value ? 'Updated' : 'Published', 1200)
     navigateBack()
   } catch (err) {
+    if (err instanceof ApiError && err.status === 409) {
+      const reload = confirm(
+        'Another editor has updated this frag since you loaded it. ' +
+        'Reload their changes? (Your current edits will be discarded — ' +
+        'cancel to keep them and copy them out manually.)'
+      )
+      if (reload) await loadWriting()
+      flashZenStatus('error', 'Save blocked: frag was updated by another editor', 4000)
+      return
+    }
     const msg = err instanceof Error ? err.message : (isEditing.value ? 'Failed to update writing' : 'Failed to publish writing')
     error.value = msg
     flashZenStatus('error', msg, 4000)
