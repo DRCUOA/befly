@@ -235,9 +235,6 @@ import {
 const route = useRoute()
 const { isAuthenticated, user, isAdmin } = useAuth()
 const myGrants = useMyGrants()
-if (isAuthenticated.value) {
-  myGrants.loadOnce()
-}
 const readingStore = useReadingStore()
 const { origin: navOrigin, originLabel } = useNavigationOrigin('/home')
 

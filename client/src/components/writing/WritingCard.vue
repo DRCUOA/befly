@@ -162,13 +162,6 @@ const myGrants = useMyGrants()
 const deleting = ref(false)
 const imageError = ref(false)
 
-// Load the current user's editor grants once, then resolve cheaply via
-// the in-memory set. Safe to call unguarded — the composable no-ops on
-// repeat calls and on signed-out 401s.
-if (isAuthenticated.value) {
-  myGrants.loadOnce()
-}
-
 const isOwner = computed(() => {
   return user.value && props.writing.userId === user.value.id
 })
