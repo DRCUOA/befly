@@ -79,7 +79,10 @@
       </ol>
     </div>
 
-    <!-- Preview modal -->
+    <!-- Preview modal — shows the chosen revision with insertions and
+         deletions vs. the immediately prior revision highlighted inline.
+         For v1 (no prior) the whole body is shown as "ins" so the reader
+         still gets a colour cue that this was the first state. -->
     <div
       v-if="previewRev"
       class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
@@ -93,16 +96,43 @@
               {{ previewRev.editorDisplayName || 'unknown' }} ·
               {{ formatDate(previewRev.editedAt) }}
             </span>
+            <span
+              v-if="previewRev.versionNumber > 1"
+              class="text-ink-lighter font-normal"
+            >· diff vs v{{ previewRev.versionNumber - 1 }}</span>
           </div>
           <button
             type="button"
             class="text-ink-lighter hover:text-ink"
-            @click="previewRev = null"
+            @click="closePreview"
           >Close</button>
         </div>
+        <div class="px-4 pt-2 pb-1 flex items-center gap-3 text-xs border-b border-line">
+          <span class="inline-flex items-center gap-1 text-ink-lighter">
+            <span class="inline-block w-3 h-3 rounded-sm bg-green-100 border border-green-300"></span>
+            added
+          </span>
+          <span class="inline-flex items-center gap-1 text-ink-lighter">
+            <span class="inline-block w-3 h-3 rounded-sm bg-red-100 border border-red-300"></span>
+            removed
+          </span>
+          <span v-if="previewLoading" class="ml-auto text-ink-lighter">Loading…</span>
+        </div>
         <div class="overflow-y-auto px-4 py-3">
-          <h3 class="font-serif text-lg text-ink mb-2">{{ previewRev.title }}</h3>
-          <div class="whitespace-pre-wrap text-sm text-ink">{{ previewRev.body }}</div>
+          <h3 class="font-serif text-lg text-ink mb-2">
+            <template v-for="(seg, i) in titleDiff" :key="`t-${i}`">
+              <span v-if="seg.type === 'ins'" class="bg-green-100 text-green-900 rounded px-0.5">{{ seg.text }}</span>
+              <span v-else-if="seg.type === 'del'" class="bg-red-100 text-red-900 line-through rounded px-0.5">{{ seg.text }}</span>
+              <span v-else>{{ seg.text }}</span>
+            </template>
+          </h3>
+          <div class="whitespace-pre-wrap text-sm text-ink leading-relaxed">
+            <template v-for="(seg, i) in bodyDiff" :key="`b-${i}`">
+              <span v-if="seg.type === 'ins'" class="bg-green-100 text-green-900 rounded px-0.5">{{ seg.text }}</span>
+              <span v-else-if="seg.type === 'del'" class="bg-red-100 text-red-900 line-through rounded px-0.5">{{ seg.text }}</span>
+              <span v-else>{{ seg.text }}</span>
+            </template>
+          </div>
         </div>
       </div>
     </div>
@@ -110,8 +140,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { writingApi } from '@/api/writing'
+import { wordDiff, type DiffSegment } from '@/utils/word-diff'
 import type {
   WritingBlockRevision,
   WritingBlockRevisionSummary,
@@ -133,6 +164,27 @@ const loading = ref(false)
 const busy = ref(false)
 const error = ref('')
 const previewRev = ref<WritingBlockRevision | null>(null)
+// The immediately prior revision (versionNumber - 1) loaded alongside
+// the preview so we can render a word-level diff. Null when previewing
+// v1 (treated as all-insertions) or while still fetching.
+const previewPrev = ref<WritingBlockRevision | null>(null)
+const previewLoading = ref(false)
+
+const titleDiff = computed<DiffSegment[]>(() => {
+  if (!previewRev.value) return []
+  const before = previewPrev.value?.title ?? ''
+  const after = previewRev.value.title
+  if (!before) return [{ type: 'ins', text: after }]
+  return wordDiff(before, after)
+})
+
+const bodyDiff = computed<DiffSegment[]>(() => {
+  if (!previewRev.value) return []
+  const before = previewPrev.value?.body ?? ''
+  const after = previewRev.value.body
+  if (!before) return [{ type: 'ins', text: after }]
+  return wordDiff(before, after)
+})
 
 function close() {
   emit('update:modelValue', false)
@@ -161,13 +213,33 @@ watch(
 
 async function preview(versionNumber: number) {
   busy.value = true
+  previewLoading.value = true
+  previewPrev.value = null
   try {
-    previewRev.value = await writingApi.getRevision(props.writingId, versionNumber)
+    const current = await writingApi.getRevision(props.writingId, versionNumber)
+    previewRev.value = current
+    // Fetch v(N-1) in parallel with rendering so the diff snaps in as
+    // soon as it's available. If the prior fetch fails, fall back to
+    // treating the whole body as an insertion (handled in the diff
+    // computed).
+    if (versionNumber > 1) {
+      try {
+        previewPrev.value = await writingApi.getRevision(props.writingId, versionNumber - 1)
+      } catch {
+        previewPrev.value = null
+      }
+    }
   } catch (e: any) {
     error.value = e?.message || 'Failed to load revision'
   } finally {
     busy.value = false
+    previewLoading.value = false
   }
+}
+
+function closePreview() {
+  previewRev.value = null
+  previewPrev.value = null
 }
 
 async function restore(versionNumber: number) {
