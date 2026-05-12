@@ -24,6 +24,24 @@ function getUserIdOrThrow(req: Request): string {
 }
 
 export const writingEditorController = {
+  /**
+   * GET /api/writing/my-grants
+   *
+   * Returns the editor grants held by the current user — one row per frag
+   * they've been invited to edit. The client uses this on app load to
+   * decide whether to surface the edit affordance on each card / row.
+   * Cheap: a single indexed lookup, returns just (writingBlockId,
+   * permission) pairs.
+   */
+  async myGrants(req: Request, res: Response) {
+    const userId = getUserIdOrThrow(req)
+    // We don't bypass for admins here: admins already see the edit
+    // affordance via the role check on the client. This endpoint is
+    // strictly "what was I personally invited to."
+    const grants = await writingEditorRepo.listFragsForUser(userId, 'edit')
+    res.json({ data: grants })
+  },
+
   async list(req: Request, res: Response) {
     const { id } = req.params
     const userId = getUserIdOrThrow(req)

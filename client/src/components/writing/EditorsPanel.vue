@@ -122,6 +122,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import { writingApi, userSearchApi, type UserSearchHit } from '@/api/writing'
+import { useMyGrants } from '@/composables/useMyGrants'
 import type {
   WritingBlockEditor,
   WritingBlockEditorPermission,
@@ -140,6 +141,8 @@ const editors = ref<WritingBlockEditor[]>([])
 const loading = ref(false)
 const error = ref('')
 const inviteError = ref('')
+
+const myGrants = useMyGrants()
 
 const searchQuery = ref('')
 const searchResults = ref<UserSearchHit[]>([])
@@ -197,6 +200,11 @@ async function invite(hit: UserSearchHit) {
     searchQuery.value = ''
     searchResults.value = []
     await refresh()
+    // The invitee's edit-icon affordance depends on the in-memory grant
+    // set; refresh it so a multi-tab same-user session sees the change
+    // on next mount. (The viewer is the granter, not the grantee, so
+    // this is a no-op for them, but keeps the contract consistent.)
+    await myGrants.refresh()
   } catch (e: any) {
     inviteError.value = e?.message || 'Failed to grant access'
   }
@@ -208,6 +216,7 @@ async function onChangePermission(ed: WritingBlockEditor, perm: string) {
   try {
     await writingApi.changeEditor(props.writingId, ed.userId, perm)
     await refresh()
+    await myGrants.refresh()
   } catch (e: any) {
     error.value = e?.message || 'Failed to update permission'
   }
@@ -219,6 +228,7 @@ async function onRemove(ed: WritingBlockEditor) {
   try {
     await writingApi.removeEditor(props.writingId, ed.userId)
     await refresh()
+    await myGrants.refresh()
   } catch (e: any) {
     error.value = e?.message || 'Failed to remove editor'
   }

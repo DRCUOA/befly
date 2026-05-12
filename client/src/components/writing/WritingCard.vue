@@ -97,27 +97,27 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
         </svg>
       </button>
-      <template v-if="canModify">
-        <router-link
-          :to="`/write/${writing.id}`"
-          class="p-2 text-ink-lighter hover:text-ink"
-          title="Edit"
-        >
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-          </svg>
-        </router-link>
-        <button
-          @click="handleDelete"
-          :disabled="deleting"
-          class="p-2 text-ink-lighter hover:text-red-600 disabled:opacity-50"
-          title="Delete"
-        >
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-          </svg>
-        </button>
-      </template>
+      <router-link
+        v-if="canEdit"
+        :to="`/write/${writing.id}`"
+        class="p-2 text-ink-lighter hover:text-ink"
+        :title="isOwner || isAdmin ? 'Edit' : 'Edit (granted)'"
+      >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+        </svg>
+      </router-link>
+      <button
+        v-if="canDelete"
+        @click="handleDelete"
+        :disabled="deleting"
+        class="p-2 text-ink-lighter hover:text-red-600 disabled:opacity-50"
+        title="Delete"
+      >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+        </svg>
+      </button>
     </div>
   </article>
 </template>
@@ -127,6 +127,7 @@ import { computed, ref, watch } from 'vue'
 import { api } from '../../api/client'
 import { useAuth } from '../../stores/auth'
 import { useReadingStore } from '../../stores/reading'
+import { useMyGrants } from '../../composables/useMyGrants'
 import type { WritingBlock } from '../../domain/WritingBlock'
 import type { Theme } from '../../domain/Theme'
 import type { WritingReactionSummary } from '../../domain/Appreciation'
@@ -155,19 +156,33 @@ const props = withDefaults(defineProps<Props>(), {
   canMoveDown: false,
 })
 
-const { user, isAdmin } = useAuth()
+const { user, isAdmin, isAuthenticated } = useAuth()
 const readingStore = useReadingStore()
+const myGrants = useMyGrants()
 const deleting = ref(false)
 const imageError = ref(false)
+
+// Load the current user's editor grants once, then resolve cheaply via
+// the in-memory set. Safe to call unguarded — the composable no-ops on
+// repeat calls and on signed-out 401s.
+if (isAuthenticated.value) {
+  myGrants.loadOnce()
+}
 
 const isOwner = computed(() => {
   return user.value && props.writing.userId === user.value.id
 })
 
 /**
- * Can edit/delete: owner or admin
+ * Can open the editor: owner, admin, or someone who's been invited as
+ * a named editor. Delete is still owner/admin only (see canDelete).
  */
-const canModify = computed(() => {
+const canEdit = computed(() => {
+  if (!isAuthenticated.value) return false
+  return isOwner.value || isAdmin.value || myGrants.hasEditGrant(props.writing.id)
+})
+
+const canDelete = computed(() => {
   return isOwner.value || isAdmin.value
 })
 

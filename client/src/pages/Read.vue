@@ -213,6 +213,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { api } from '../api/client'
 import { useAuth } from '../stores/auth'
+import { useMyGrants } from '../composables/useMyGrants'
 import { useReadingStore } from '../stores/reading'
 import { useNavigationOrigin } from '../stores/navigation'
 import ReadingLayout from '../layouts/ReadingLayout.vue'
@@ -233,6 +234,10 @@ import {
 
 const route = useRoute()
 const { isAuthenticated, user, isAdmin } = useAuth()
+const myGrants = useMyGrants()
+if (isAuthenticated.value) {
+  myGrants.loadOnce()
+}
 const readingStore = useReadingStore()
 const { origin: navOrigin, originLabel } = useNavigationOrigin('/home')
 
@@ -275,11 +280,13 @@ const excerpt = computed(() => {
   return text.substring(0, cut) + '...'
 })
 
-// Show the edit affordance only to the author or to admins. Falls back to
-// false when no writing is loaded or the viewer is not signed in.
+// Show the edit affordance to the author, admins, or anyone the author
+// has invited as a named editor. Falls back to false when no writing is
+// loaded or the viewer is not signed in.
 const canEdit = computed(() => {
   if (!writing.value || !isAuthenticated.value || !user.value) return false
-  return isAdmin.value || writing.value.userId === user.value.id
+  if (isAdmin.value || writing.value.userId === user.value.id) return true
+  return myGrants.hasEditGrant(writing.value.id)
 })
 
 const formattedDate = computed(() => {
