@@ -151,6 +151,21 @@
                   {{ u.status }}
                 </span>
 
+                <!-- Shared-content access badge. Off by default for new
+                     signups; admins toggle this to grant read access to
+                     other users' shared-visibility frags. -->
+                <span
+                  class="inline-block px-2 py-1 text-xs rounded font-medium"
+                  :class="u.sharedAccess
+                    ? 'bg-blue-100 text-blue-800'
+                    : 'bg-gray-100 text-gray-600'"
+                  :title="u.sharedAccess
+                    ? 'Can read other users\' shared-visibility frags'
+                    : 'Cannot see others\' shared frags until approved'"
+                >
+                  {{ u.sharedAccess ? 'shared: on' : 'shared: off' }}
+                </span>
+
                 <span class="text-xs text-ink-lighter hidden sm:inline">{{ formatDate(u.createdAt) }}</span>
 
                 <!-- Role Toggle -->
@@ -177,6 +192,18 @@
                     : 'border-green-300 text-green-700 hover:bg-green-50'"
                 >
                   {{ u.status === 'active' ? 'Suspend' : 'Activate' }}
+                </button>
+
+                <!-- Shared-access toggle -->
+                <button
+                  @click="toggleSharedAccess(u)"
+                  :disabled="actionInProgress === u.id"
+                  class="px-2.5 py-1 text-xs rounded border transition-colors disabled:opacity-50"
+                  :class="u.sharedAccess
+                    ? 'border-blue-300 text-blue-700 hover:bg-blue-50'
+                    : 'border-green-300 text-green-700 hover:bg-green-50'"
+                >
+                  {{ u.sharedAccess ? 'Revoke shared' : 'Approve shared' }}
                 </button>
 
                 <!-- Delete User -->
@@ -1406,6 +1433,20 @@ const toggleStatus = async (u: User) => {
     showFeedback(`${u.displayName} is now ${newStatus}`)
   } catch (err) {
     showFeedback(err instanceof Error ? err.message : 'Failed to update status', 'error')
+  } finally {
+    actionInProgress.value = null
+  }
+}
+
+const toggleSharedAccess = async (u: User) => {
+  try {
+    actionInProgress.value = u.id
+    const next = !u.sharedAccess
+    await api.put(`/admin/users/${u.id}`, { sharedAccess: next })
+    u.sharedAccess = next
+    showFeedback(`${u.displayName} ${next ? 'can now read' : 'can no longer read'} other users' shared frags`)
+  } catch (err) {
+    showFeedback(err instanceof Error ? err.message : 'Failed to update shared access', 'error')
   } finally {
     actionInProgress.value = null
   }

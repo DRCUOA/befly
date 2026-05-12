@@ -5,7 +5,7 @@ import { LlmConfigurationError, LlmRequestError } from '../services/llm/llm-clie
 import { UnauthorizedError, ValidationError } from '../utils/errors.js'
 import { activityService } from '../services/activity.service.js'
 import { getClientIp, getUserAgent, getUserId } from '../utils/activity-logger.js'
-import { isAdminRequest } from '../middleware/authorize.middleware.js'
+import { isAdminRequest, hasSharedAccess } from '../middleware/authorize.middleware.js'
 import { logger } from '../utils/logger.js'
 import type {
   WritingAssistMode,
@@ -40,9 +40,10 @@ export const writingController = {
   async getAll(req: Request, res: Response) {
     const userId = (req as any).userId || null // From optionalAuthMiddleware
     const admin = isAdminRequest(req)
+    const sharedAccess = hasSharedAccess(req)
     const limit = parseInt(req.query.limit as string) || 50
     const offset = parseInt(req.query.offset as string) || 0
-    const writings = await writingService.getAll(userId, limit, offset, admin)
+    const writings = await writingService.getAll(userId, limit, offset, admin, sharedAccess)
     
     // Log view activity
     await activityService.logView(
@@ -61,7 +62,8 @@ export const writingController = {
     const { id } = req.params
     const userId = (req as any).userId || null // From optionalAuthMiddleware
     const admin = isAdminRequest(req)
-    const writing = await writingService.getById(id, userId, admin)
+    const sharedAccess = hasSharedAccess(req)
+    const writing = await writingService.getById(id, userId, admin, sharedAccess)
     
     // Log view activity
     await activityService.logWriting(
@@ -232,7 +234,8 @@ export const writingController = {
       const result = await writingAssistService.run(
         { writingId: id, request, model },
         userId,
-        admin
+        admin,
+        hasSharedAccess(req)
       )
       logger.info('[writing-assist] request ok', {
         writingId: id,

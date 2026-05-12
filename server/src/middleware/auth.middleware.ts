@@ -33,7 +33,8 @@ export async function authMiddleware(
     // Attach userId and userRole to request for use in controllers
     ;(req as any).userId = userId
     ;(req as any).userRole = user.role || 'user'
-    
+    ;(req as any).userSharedAccess = Boolean(user.sharedAccess)
+
     next()
   } catch (error) {
     next(new UnauthorizedError('Invalid or expired token'))
@@ -60,6 +61,7 @@ export async function optionalAuthMiddleware(
       if (user) {
         ;(req as any).userId = userId
         ;(req as any).userRole = user.role || 'user'
+        ;(req as any).userSharedAccess = Boolean(user.sharedAccess)
       }
     } catch (error) {
       // Silently fail for optional auth

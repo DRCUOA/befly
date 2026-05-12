@@ -44,3 +44,13 @@ export function requireAdmin(req: Request, res: Response, next: NextFunction) {
 export function isAdminRequest(req: Request): boolean {
   return (req as any).userRole === 'admin'
 }
+
+/**
+ * Helper to check if the current user has admin-granted access to
+ * shared-visibility content. Admins are always considered to have it.
+ * Returns false for unauthenticated requests.
+ */
+export function hasSharedAccess(req: Request): boolean {
+  if ((req as any).userRole === 'admin') return true
+  return Boolean((req as any).userSharedAccess)
+}
