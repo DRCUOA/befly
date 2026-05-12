@@ -8,8 +8,10 @@ import { NotFoundError } from '../utils/errors.js'
 export const userRepo = {
   async findByEmail(email: string): Promise<UserWithPassword | null> {
     const result = await pool.query(
-      `SELECT id, email, password_hash as "passwordHash", display_name as "displayName", 
-              COALESCE(role, 'user') as role, status, created_at as "createdAt", updated_at as "updatedAt"
+      `SELECT id, email, password_hash as "passwordHash", display_name as "displayName",
+              COALESCE(role, 'user') as role, status,
+              COALESCE(shared_access, FALSE) as "sharedAccess",
+              created_at as "createdAt", updated_at as "updatedAt"
        FROM users
        WHERE email = $1`,
       [email]
@@ -21,8 +23,9 @@ export const userRepo = {
     // Check if role column exists, if not use COALESCE to default to 'user'
     const result = await pool.query(
       `SELECT id, email, display_name as "displayName", 
-              COALESCE(role, 'user') as role, 
-              status, 
+              COALESCE(role, 'user') as role,
+              status,
+              COALESCE(shared_access, FALSE) as "sharedAccess",
               created_at as "createdAt", updated_at as "updatedAt",
               latitude, longitude
        FROM users
@@ -49,28 +52,32 @@ export const userRepo = {
       {
         query: `INSERT INTO users (email, password_hash, display_name, role, username)
                 VALUES ($1, $2, $3, $4, $1)
-                RETURNING id, email, display_name as "displayName", COALESCE(role, 'user') as role, status, 
+                RETURNING id, email, display_name as "displayName", COALESCE(role, 'user') as role, status,
+                          COALESCE(shared_access, FALSE) as "sharedAccess",
                           created_at as "createdAt", updated_at as "updatedAt"`,
         values: [user.email, user.passwordHash, user.displayName, role]
       },
       {
         query: `INSERT INTO users (email, password_hash, display_name, username)
                 VALUES ($1, $2, $3, $1)
-                RETURNING id, email, display_name as "displayName", 'user' as role, status, 
+                RETURNING id, email, display_name as "displayName", 'user' as role, status,
+                          COALESCE(shared_access, FALSE) as "sharedAccess",
                           created_at as "createdAt", updated_at as "updatedAt"`,
         values: [user.email, user.passwordHash, user.displayName]
       },
       {
         query: `INSERT INTO users (email, password_hash, display_name, role)
                 VALUES ($1, $2, $3, $4)
-                RETURNING id, email, display_name as "displayName", COALESCE(role, 'user') as role, status, 
+                RETURNING id, email, display_name as "displayName", COALESCE(role, 'user') as role, status,
+                          COALESCE(shared_access, FALSE) as "sharedAccess",
                           created_at as "createdAt", updated_at as "updatedAt"`,
         values: [user.email, user.passwordHash, user.displayName, role]
       },
       {
         query: `INSERT INTO users (email, password_hash, display_name)
                 VALUES ($1, $2, $3)
-                RETURNING id, email, display_name as "displayName", 'user' as role, status, 
+                RETURNING id, email, display_name as "displayName", 'user' as role, status,
+                          COALESCE(shared_access, FALSE) as "sharedAccess",
                           created_at as "createdAt", updated_at as "updatedAt"`,
         values: [user.email, user.passwordHash, user.displayName]
       }
@@ -127,8 +134,9 @@ export const userRepo = {
   async findAll(limit: number = 100, offset: number = 0): Promise<User[]> {
     const result = await pool.query(
       `SELECT id, email, display_name as "displayName", 
-              COALESCE(role, 'user') as role, 
-              status, 
+              COALESCE(role, 'user') as role,
+              status,
+              COALESCE(shared_access, FALSE) as "sharedAccess",
               created_at as "createdAt", updated_at as "updatedAt",
               latitude, longitude
        FROM users
@@ -165,6 +173,7 @@ export const userRepo = {
     role: 'user' | 'admin'
     latitude: number
     longitude: number
+    sharedAccess: boolean
   }>): Promise<User> {
     const fields: string[] = []
     const values: unknown[] = []
@@ -194,6 +203,10 @@ export const userRepo = {
       fields.push(`longitude = $${paramCount++}`)
       values.push(updates.longitude)
     }
+    if (updates.sharedAccess !== undefined) {
+      fields.push(`shared_access = $${paramCount++}`)
+      values.push(updates.sharedAccess)
+    }
 
     if (fields.length === 0) {
       const user = await this.findById(id)
@@ -208,7 +221,8 @@ export const userRepo = {
       `UPDATE users
        SET ${fields.join(', ')}
        WHERE id = $${paramCount}
-       RETURNING id, email, display_name as "displayName", COALESCE(role, 'user') as role, status, 
+       RETURNING id, email, display_name as "displayName", COALESCE(role, 'user') as role, status,
+                 COALESCE(shared_access, FALSE) as "sharedAccess",
                  created_at as "createdAt", updated_at as "updatedAt", latitude, longitude`,
       values
     )

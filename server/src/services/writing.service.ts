@@ -22,12 +22,23 @@ function validateCoverImagePath(pathOrUrl: string): void {
  * Writing service - business logic layer
  */
 export const writingService = {
-  async getAll(userId: string | null, limit?: number, offset?: number, isAdmin: boolean = false): Promise<WritingBlock[]> {
-    return writingRepo.findAll(userId, limit || 50, offset || 0, isAdmin)
+  async getAll(
+    userId: string | null,
+    limit?: number,
+    offset?: number,
+    isAdmin: boolean = false,
+    userSharedAccess: boolean = false
+  ): Promise<WritingBlock[]> {
+    return writingRepo.findAll(userId, limit || 50, offset || 0, isAdmin, userSharedAccess)
   },
 
-  async getById(id: string, userId: string | null, isAdmin: boolean = false): Promise<WritingBlock> {
-    return writingRepo.findById(id, userId, isAdmin)
+  async getById(
+    id: string,
+    userId: string | null,
+    isAdmin: boolean = false,
+    userSharedAccess: boolean = false
+  ): Promise<WritingBlock> {
+    return writingRepo.findById(id, userId, isAdmin, userSharedAccess)
   },
 
   async create(data: {

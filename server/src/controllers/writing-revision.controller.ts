@@ -6,7 +6,7 @@ import {
   canEdit,
 } from '../services/writing-permissions.service.js'
 import { writingRepo } from '../repositories/writing.repo.js'
-import { isAdminRequest } from '../middleware/authorize.middleware.js'
+import { isAdminRequest, hasSharedAccess } from '../middleware/authorize.middleware.js'
 import {
   UnauthorizedError,
   ValidationError,
@@ -29,7 +29,7 @@ export const writingRevisionController = {
     // Anyone who can read the frag can read its history. We piggyback
     // on the same access policy as GET /writing/:id by calling findById
     // first; this throws 404/403 consistently for unauthorized readers.
-    await writingRepo.findById(id, userId, admin)
+    await writingRepo.findById(id, userId, admin, hasSharedAccess(req))
     const summaries = await writingRevisionRepo.listSummaries(id)
     res.json({ data: summaries })
   },
@@ -38,7 +38,7 @@ export const writingRevisionController = {
     const { id, versionNumber } = req.params
     const userId = userIdOrThrow(req)
     const admin = isAdminRequest(req)
-    await writingRepo.findById(id, userId, admin)
+    await writingRepo.findById(id, userId, admin, hasSharedAccess(req))
     const v = parseInt(versionNumber, 10)
     if (!Number.isInteger(v) || v < 1) {
       throw new ValidationError('Invalid version number')

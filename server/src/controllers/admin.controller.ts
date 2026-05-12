@@ -195,7 +195,7 @@ export const adminController = {
   async updateUser(req: Request, res: Response) {
     const { id } = req.params
     const adminUserId = (req as any).userId
-    const { role, status, displayName, latitude, longitude } = req.body
+    const { role, status, displayName, latitude, longitude, sharedAccess } = req.body
 
     // Prevent admin from demoting themselves
     if (id === adminUserId && role && role !== 'admin') {
@@ -223,6 +223,9 @@ export const adminController = {
     if (longitude !== undefined && (typeof longitude !== 'number' || longitude < -180 || longitude > 180)) {
       throw new ValidationError('Longitude must be a number between -180 and 180')
     }
+    if (sharedAccess !== undefined && typeof sharedAccess !== 'boolean') {
+      throw new ValidationError('sharedAccess must be a boolean')
+    }
 
     const updates: Record<string, any> = {}
     if (role !== undefined) updates.role = role
@@ -230,6 +233,7 @@ export const adminController = {
     if (displayName !== undefined) updates.displayName = displayName
     if (latitude !== undefined) updates.latitude = latitude
     if (longitude !== undefined) updates.longitude = longitude
+    if (sharedAccess !== undefined) updates.sharedAccess = sharedAccess
 
     if (Object.keys(updates).length === 0) {
       throw new ValidationError('No updates provided')

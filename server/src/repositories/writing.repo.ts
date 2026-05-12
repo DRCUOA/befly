@@ -68,7 +68,13 @@ export const writingRepo = {
    * - Own private/shared/public blocks
    * - Others' shared/public blocks
    */
-  async findAll(userId: string | null, limit: number = 50, offset: number = 0, isAdmin: boolean = false): Promise<WritingBlock[]> {
+  async findAll(
+    userId: string | null,
+    limit: number = 50,
+    offset: number = 0,
+    isAdmin: boolean = false,
+    userSharedAccess: boolean = false
+  ): Promise<WritingBlock[]> {
     let query: string
     let params: unknown[]
 
@@ -112,12 +118,17 @@ export const writingRepo = {
         `
         params = [limit, offset]
       } else if (userId) {
-        // Authenticated: own blocks + shared/public from others
+        // Authenticated, non-admin. Read access is granted when ANY of:
+        //   - user is the owner (any visibility, incl. private)
+        //   - visibility = 'public' (anyone)
+        //   - visibility = 'shared' AND user is admin-approved for shared
+        //   - user has a row in writing_block_editors (named editor on a
+        //     private/shared/public frag)
         query = `
-          SELECT 
-            wb.id, 
-            wb.user_id as "userId", 
-            wb.title, 
+          SELECT
+            wb.id,
+            wb.user_id as "userId",
+            wb.title,
             wb.body,
             COALESCE(wb.visibility, 'private') as visibility,
             wb.cover_image_url as "coverImageUrl",
@@ -131,12 +142,19 @@ export const writingRepo = {
             ) as "themeIds"
           FROM writing_blocks wb
           LEFT JOIN writing_themes wt ON wb.id = wt.writing_id
-          WHERE wb.user_id = $1 OR COALESCE(wb.visibility, 'private') IN ('shared', 'public')
+          WHERE
+            wb.user_id = $1
+            OR COALESCE(wb.visibility, 'private') = 'public'
+            OR (COALESCE(wb.visibility, 'private') = 'shared' AND $4::boolean)
+            OR EXISTS (
+              SELECT 1 FROM writing_block_editors wbe
+              WHERE wbe.writing_block_id = wb.id AND wbe.user_id = $1
+            )
           GROUP BY wb.id, wb.user_id, wb.title, wb.body, wb.visibility, wb.cover_image_url, wb.cover_image_position, wb.created_at, wb.updated_at
           ORDER BY wb.created_at DESC
           LIMIT $2 OFFSET $3
         `
-        params = [userId, limit, offset]
+        params = [userId, limit, offset, userSharedAccess]
       } else {
         // Unauthenticated: only public blocks
         query = `
@@ -203,7 +221,12 @@ export const writingRepo = {
    * - Owner can access any visibility
    * - Others can only access shared/public
    */
-  async findById(id: string, userId: string | null, isAdmin: boolean = false): Promise<WritingBlock> {
+  async findById(
+    id: string,
+    userId: string | null,
+    isAdmin: boolean = false,
+    userSharedAccess: boolean = false
+  ): Promise<WritingBlock> {
     // Check if visibility column exists
     let hasVisibilityColumn = true
     try {
@@ -245,11 +268,13 @@ export const writingRepo = {
         `
         params = [id]
       } else if (userId) {
+        // Same access rules as findAll's authenticated branch:
+        // owner, public, shared+approved, or named-editor grant.
         query = `
-          SELECT 
-            wb.id, 
-            wb.user_id as "userId", 
-            wb.title, 
+          SELECT
+            wb.id,
+            wb.user_id as "userId",
+            wb.title,
             wb.body,
             COALESCE(wb.visibility, 'private') as visibility,
             wb.cover_image_url as "coverImageUrl",
@@ -263,10 +288,18 @@ export const writingRepo = {
             ) as "themeIds"
           FROM writing_blocks wb
           LEFT JOIN writing_themes wt ON wb.id = wt.writing_id
-          WHERE wb.id = $1 AND (wb.user_id = $2 OR COALESCE(wb.visibility, 'private') IN ('shared', 'public'))
+          WHERE wb.id = $1 AND (
+            wb.user_id = $2
+            OR COALESCE(wb.visibility, 'private') = 'public'
+            OR (COALESCE(wb.visibility, 'private') = 'shared' AND $3::boolean)
+            OR EXISTS (
+              SELECT 1 FROM writing_block_editors wbe
+              WHERE wbe.writing_block_id = wb.id AND wbe.user_id = $2
+            )
+          )
           GROUP BY wb.id, wb.user_id, wb.title, wb.body, wb.visibility, wb.cover_image_url, wb.cover_image_position, wb.created_at, wb.updated_at
         `
-        params = [id, userId]
+        params = [id, userId, userSharedAccess]
       } else {
         query = `
           SELECT 

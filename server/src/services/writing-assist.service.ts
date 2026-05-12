@@ -214,7 +214,8 @@ export const writingAssistService = {
   async run(
     input: RunWritingAssistInput,
     userId: string | null,
-    isAdmin: boolean = false
+    isAdmin: boolean = false,
+    userSharedAccess: boolean = false
   ): Promise<WritingAssistResponse> {
     logger.debug('[writing-assist] service.run start', {
       writingId: input.writingId,
@@ -226,7 +227,7 @@ export const writingAssistService = {
     // 1. Authorize. Reusing writingService.getById means the caller sees
     //    exactly the same NotFound / Forbidden semantics as the regular
     //    writing endpoints — and we keep the access policy in one place.
-    const writing = await writingService.getById(input.writingId, userId, isAdmin)
+    const writing = await writingService.getById(input.writingId, userId, isAdmin, userSharedAccess)
     logger.debug('[writing-assist] writing loaded', {
       writingId: writing.id,
       titleLen: writing.title?.length ?? 0,
