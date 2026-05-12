@@ -84,6 +84,8 @@ export const writingService = {
       visibility?: 'private' | 'shared' | 'public'
       coverImageUrl?: string
       coverImagePosition?: string
+      expectedVersion?: number
+      revisionNote?: string
     }>,
     isAdmin: boolean = false
   ): Promise<WritingBlock> {
@@ -94,6 +96,8 @@ export const writingService = {
       visibility?: 'private' | 'shared' | 'public'
       coverImageUrl?: string | null
       coverImagePosition?: string
+      expectedVersion?: number
+      revisionNote?: string
     }> = {}
     if (data.title !== undefined) {
       updates.title = sanitizeString(data.title)
@@ -114,8 +118,31 @@ export const writingService = {
     if (data.coverImagePosition !== undefined) {
       updates.coverImagePosition = (typeof data.coverImagePosition === 'string' && data.coverImagePosition.trim()) ? data.coverImagePosition.trim() : '50% 50%'
     }
+    if (typeof data.expectedVersion === 'number' && Number.isFinite(data.expectedVersion)) {
+      updates.expectedVersion = data.expectedVersion
+    }
+    if (typeof data.revisionNote === 'string') {
+      const trimmed = data.revisionNote.trim()
+      if (trimmed.length > 500) {
+        throw new ValidationError('Revision note must be 500 characters or less')
+      }
+      if (trimmed) updates.revisionNote = trimmed
+    }
 
     return writingRepo.update(id, userId, updates, isAdmin)
+  },
+
+  async restore(
+    id: string,
+    targetVersion: number,
+    userId: string,
+    isAdmin: boolean = false,
+    note?: string
+  ): Promise<WritingBlock> {
+    if (!Number.isInteger(targetVersion) || targetVersion < 1) {
+      throw new ValidationError('Invalid target version')
+    }
+    return writingRepo.restore(id, targetVersion, userId, isAdmin, note)
   },
 
   async delete(id: string, userId: string, isAdmin: boolean = false): Promise<void> {

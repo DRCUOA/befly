@@ -96,6 +96,32 @@ export const userRepo = {
   },
 
   /**
+   * Search active users by display name or email prefix. Returns a
+   * minimal payload suitable for invite-by-name UIs. Excludes the caller
+   * (`excludeUserId`) so they don't try to grant themselves rights.
+   */
+  async search(
+    query: string,
+    excludeUserId: string | null,
+    limit: number = 10
+  ): Promise<Array<Pick<User, 'id' | 'displayName' | 'email'>>> {
+    const q = query.trim()
+    if (q.length < 2) return []
+    const like = `${q.replace(/[%_]/g, m => `\\${m}`)}%`
+    const result = await pool.query(
+      `SELECT id, email, display_name AS "displayName"
+       FROM users
+       WHERE status = 'active'
+         AND ($3::uuid IS NULL OR id <> $3)
+         AND (display_name ILIKE $1 OR email ILIKE $1)
+       ORDER BY display_name ASC
+       LIMIT $2`,
+      [like, limit, excludeUserId]
+    )
+    return result.rows
+  },
+
+  /**
    * Find all users (admin-only)
    */
   async findAll(limit: number = 100, offset: number = 0): Promise<User[]> {

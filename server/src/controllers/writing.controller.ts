@@ -119,7 +119,13 @@ export const writingController = {
       themeIds: req.body.themeIds,
       visibility: req.body.visibility,
       coverImageUrl: req.body.coverImageUrl,
-      coverImagePosition: req.body.coverImagePosition
+      coverImagePosition: req.body.coverImagePosition,
+      expectedVersion: typeof req.body.expectedVersion === 'number'
+        ? req.body.expectedVersion
+        : undefined,
+      revisionNote: typeof req.body.revisionNote === 'string'
+        ? req.body.revisionNote
+        : undefined,
     }, admin)
     
     // Log update activity

@@ -30,9 +30,11 @@ export function errorMiddleware(
       method: req.method,
     })
 
+    const details = (err as AppError & { details?: Record<string, unknown> }).details
     return res.status(statusCode).json({
       error: err.message,
-      code: err.code
+      code: err.code,
+      ...(details ? { details } : {})
     })
   }
 
