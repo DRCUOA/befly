@@ -11,6 +11,11 @@ const router = Router()
 
 // Public routes (with optional auth for visibility filtering)
 router.get('/', optionalAuthMiddleware, asyncHandler(writingController.getAll))
+
+// "Frags I was invited to edit" — must be declared BEFORE the /:id route
+// so Express doesn't match the literal "my-grants" as an :id param.
+router.get('/my-grants', authMiddleware, asyncHandler(writingEditorController.myGrants))
+
 router.get('/:id', optionalAuthMiddleware, asyncHandler(writingController.getById))
 
 // Upload (authenticated users - for own essay covers)
