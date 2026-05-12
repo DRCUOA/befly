@@ -122,10 +122,6 @@ const readingStore = useReadingStore()
 const myGrants = useMyGrants()
 const deleting = ref(false)
 
-if (isAuthenticated.value) {
-  myGrants.loadOnce()
-}
-
 const isOwner = computed(() => !!user.value && props.writing.userId === user.value.id)
 // Owner, admin, OR named editor → can open in the editor.
 const canEdit = computed(() => {

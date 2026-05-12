@@ -29,12 +29,14 @@ async function loadOnce(force = false): Promise<void> {
     const res = await api.get<ApiResponse<Grant[]>>('/writing/my-grants')
     grants.value = res.data || []
     loaded.value = true
-  } catch {
-    // If the endpoint 401s (signed out) or 500s (migration not run),
-    // leave the grants set empty — worst case the user sees no edit
-    // icon on shared frags, which is the safe default.
+  } catch (err) {
+    // Leave loaded=false so a transient failure (e.g. the server
+    // hasn't restarted to pick up the new route) doesn't permanently
+    // suppress the edit icon. The next trigger will retry.
     grants.value = []
-    loaded.value = true
+    if (typeof console !== 'undefined') {
+      console.warn('[useMyGrants] /writing/my-grants failed', err)
+    }
   } finally {
     loading.value = false
   }
@@ -45,14 +47,22 @@ function clear(): void {
   loaded.value = false
 }
 
-// Auto-clear when the signed-in user changes (sign-out, account switch).
-// Runs once at module load; the watcher persists for the page lifetime.
+// React to auth state: fetch grants when a user appears or changes,
+// clear them on sign-out. `immediate: true` covers the case where the
+// composable is imported AFTER the user has already been restored
+// (the usual path on a page refresh).
 const { user } = useAuth()
 watch(
   () => user.value?.id ?? null,
   (newId, oldId) => {
-    if (newId !== oldId) clear()
-  }
+    if (oldId !== undefined && newId !== oldId) clear()
+    if (newId) {
+      void loadOnce(true)
+    } else {
+      clear()
+    }
+  },
+  { immediate: true }
 )
 
 export function useMyGrants() {
