@@ -24,6 +24,7 @@ router.post('/upload', authMiddleware, uploadSingle, asyncHandler(uploadsControl
 // Protected routes require authentication
 router.post('/', authMiddleware, validateBody(['title', 'body']), asyncHandler(writingController.create))
 router.put('/:id', authMiddleware, asyncHandler(writingController.update))
+router.put('/:id/sort-order', authMiddleware, asyncHandler(writingController.moveSortOrder))
 router.delete('/:id', authMiddleware, asyncHandler(writingController.delete))
 
 // Editor grants — owner/admin/manager only. List + upsert by userId,

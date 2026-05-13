@@ -143,6 +143,35 @@ export const writingController = {
     res.json({ data: writing })
   },
 
+  /**
+   * PUT /api/writing/:id/sort-order
+   *
+   * Body: { sortOrder: number }
+   *
+   * Moves the frag to `sortOrder` (1..n) inside its owner's list and
+   * renumbers every other frag belonging to that owner so the sequence
+   * stays continuous. Permission: owner or admin. Returns the owner's
+   * full normalized list so the client can refresh without a second GET.
+   */
+  async moveSortOrder(req: Request, res: Response) {
+    const { id } = req.params
+    const userId = (req as any).userId
+    const admin = isAdminRequest(req)
+    if (!userId) {
+      throw new UnauthorizedError('Authentication required')
+    }
+
+    const raw = req.body?.sortOrder
+    const target = typeof raw === 'number' ? raw : Number(raw)
+    if (!Number.isFinite(target) || !Number.isInteger(target)) {
+      throw new ValidationError('sortOrder must be an integer')
+    }
+
+    const list = await writingService.moveFragToSortOrder(id, target, userId, admin)
+
+    res.json({ data: list })
+  },
+
   async delete(req: Request, res: Response) {
     const { id } = req.params
     const userId = (req as any).userId

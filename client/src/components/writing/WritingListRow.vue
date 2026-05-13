@@ -32,10 +32,35 @@
       </span>
     </router-link>
     <div class="frag-row-actions" @click.stop>
+      <label
+        v-if="canReorder"
+        class="frag-row-sort-order"
+        :title="`Position ${writing.sortOrder ?? '—'}. Type a new number and press Tab to move this frag.`"
+      >
+        <span aria-hidden="true">#</span>
+        <input
+          type="number"
+          inputmode="numeric"
+          step="1"
+          min="1"
+          :value="sortOrderDraft"
+          @input="onSortOrderInput"
+          @keydown.enter.prevent="($event.target as HTMLInputElement)?.blur()"
+          @keydown.escape.prevent="resetSortOrderDraft(); ($event.target as HTMLInputElement)?.blur()"
+          @blur="commitSortOrder"
+          :disabled="reorderBusy"
+          aria-label="Sort order"
+        />
+      </label>
+      <span
+        v-else-if="typeof writing.sortOrder === 'number'"
+        class="frag-row-sort-order-static"
+        :title="`Position ${writing.sortOrder}`"
+      >#{{ writing.sortOrder }}</span>
       <button
         type="button"
         @click="emit('move-up', writing.id)"
-        :disabled="!canMoveUp"
+        :disabled="!canMoveUp || reorderBusy"
         class="frag-row-action"
         aria-label="Move up"
         title="Move up"
@@ -47,7 +72,7 @@
       <button
         type="button"
         @click="emit('move-down', writing.id)"
-        :disabled="!canMoveDown"
+        :disabled="!canMoveDown || reorderBusy"
         class="frag-row-action"
         aria-label="Move down"
         title="Move down"
@@ -90,7 +115,7 @@
 // page can swap them based on viewMode without changing the surrounding
 // list scaffolding.
 
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { api } from '../../api/client'
 import { useAuth } from '../../stores/auth'
 import { useReadingStore } from '../../stores/reading'
@@ -104,17 +129,22 @@ interface Props {
   themes: Theme[]
   canMoveUp?: boolean
   canMoveDown?: boolean
+  /** True while a reorder request is in flight for this row. */
+  reorderBusy?: boolean
 }
 
 const emit = defineEmits<{
   deleted: [writingId: string]
   'move-up': [writingId: string]
   'move-down': [writingId: string]
+  /** Fired on focus-out of the sort-order input. */
+  'move-to-sort-order': [writingId: string, sortOrder: number]
 }>()
 
 const props = withDefaults(defineProps<Props>(), {
   canMoveUp: false,
   canMoveDown: false,
+  reorderBusy: false,
 })
 
 const { user, isAdmin, isAuthenticated } = useAuth()
@@ -130,6 +160,33 @@ const canEdit = computed(() => {
 })
 // Delete remains owner/admin only.
 const canDelete = computed(() => isOwner.value || isAdmin.value)
+// Reorder is owner/admin only — same scope as delete.
+const canReorder = computed(() => isOwner.value || isAdmin.value)
+
+// Local sort-order draft. Mirrors WritingCard's behaviour: invalid input
+// rolls back on blur; valid input emits `move-to-sort-order` and lets
+// the host page persist + renormalise.
+const sortOrderDraft = ref<string>(
+  typeof props.writing.sortOrder === 'number' ? String(props.writing.sortOrder) : ''
+)
+function resetSortOrderDraft() {
+  sortOrderDraft.value = typeof props.writing.sortOrder === 'number' ? String(props.writing.sortOrder) : ''
+}
+watch(() => props.writing.sortOrder, () => { resetSortOrderDraft() })
+function onSortOrderInput(e: Event) {
+  sortOrderDraft.value = (e.target as HTMLInputElement).value
+}
+function commitSortOrder() {
+  const raw = sortOrderDraft.value.trim()
+  if (raw === '') { resetSortOrderDraft(); return }
+  const parsed = Number(raw)
+  if (!Number.isFinite(parsed) || !Number.isInteger(parsed)) {
+    resetSortOrderDraft()
+    return
+  }
+  if (parsed === props.writing.sortOrder) { resetSortOrderDraft(); return }
+  emit('move-to-sort-order', props.writing.id, parsed)
+}
 const isRecentlyRead = computed(() => readingStore.isRecentlyRead(props.writing.id))
 const isSpa = computed(() => isStandaloneHtmlDoc(props.writing.body))
 
@@ -261,6 +318,43 @@ async function handleDelete() {
 }
 .frag-row:hover .frag-row-actions,
 .frag-row:focus-within .frag-row-actions { opacity: 1; }
+
+.frag-row-sort-order {
+  display: inline-flex; align-items: center; gap: 0.25rem;
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.7rem;
+  color: rgb(var(--color-ink-lighter));
+  margin-right: 0.25rem;
+}
+.frag-row-sort-order input {
+  width: 2.75rem;
+  padding: 0.05rem 0.3rem;
+  border: 1px solid rgb(var(--color-line));
+  background: rgb(var(--color-paper));
+  color: rgb(var(--color-ink));
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.75rem;
+  text-align: right;
+}
+.frag-row-sort-order input:focus {
+  outline: none;
+  border-color: rgb(var(--color-ink-lighter));
+}
+.frag-row-sort-order input:disabled { opacity: 0.5; }
+.frag-row-sort-order input::-webkit-outer-spin-button,
+.frag-row-sort-order input::-webkit-inner-spin-button {
+  -webkit-appearance: none; margin: 0;
+}
+.frag-row-sort-order input { -moz-appearance: textfield; }
+
+.frag-row-sort-order-static {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.7rem;
+  color: rgb(var(--color-ink-whisper));
+  font-variant-numeric: tabular-nums;
+  margin-right: 0.25rem;
+}
 
 .frag-row-action {
   display: inline-flex;
