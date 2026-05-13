@@ -129,20 +129,37 @@
               <span class="hidden md:inline">List</span>
             </button>
           </div>
-          <div class="relative">
-            <select
-              :value="currentSort"
-              @change="onSortChange"
-              class="text-xs sm:text-sm font-sans text-ink-lighter bg-transparent border border-line rounded-none px-3 py-1.5 pr-8 appearance-none cursor-pointer hover:border-ink-lighter transition-colors duration-300"
-              aria-label="Sort frags"
+          <div class="flex items-center gap-2">
+            <div class="relative">
+              <select
+                :value="currentSort"
+                @change="onSortChange"
+                class="text-xs sm:text-sm font-sans text-ink-lighter bg-transparent border border-line rounded-none px-3 py-1.5 pr-8 appearance-none cursor-pointer hover:border-ink-lighter transition-colors duration-300"
+                aria-label="Sort frags"
+              >
+                <option v-for="option in sortOptions" :key="option.value" :value="option.value">
+                  {{ option.label }}
+                </option>
+              </select>
+              <svg class="absolute right-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-ink-lighter pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+            <!-- Sort-direction toggle: flips between ascending (1..n,
+                 oldest, A→Z) and descending (n..1, newest, Z→A) for whichever
+                 sort option is currently active. Hidden unless the host
+                 page opts in via `enableSortDirection`. -->
+            <button
+              v-if="enableSortDirection"
+              type="button"
+              @click="emit('sort-direction-change', sortDirection === 'asc' ? 'desc' : 'asc')"
+              class="text-xs sm:text-sm font-sans text-ink-lighter bg-transparent border border-line rounded-none px-2 py-1.5 hover:border-ink-lighter hover:text-ink transition-colors duration-300 inline-flex items-center gap-1"
+              :aria-label="sortDirection === 'asc' ? 'Ascending — switch to descending' : 'Descending — switch to ascending'"
+              :title="sortDirection === 'asc' ? 'Ascending (1 → n)' : 'Descending (n → 1)'"
             >
-              <option v-for="option in sortOptions" :key="option.value" :value="option.value">
-                {{ option.label }}
-              </option>
-            </select>
-            <svg class="absolute right-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-ink-lighter pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-            </svg>
+              <span aria-hidden="true">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+              <span class="hidden md:inline">{{ sortDirection === 'asc' ? 'Asc' : 'Desc' }}</span>
+            </button>
           </div>
         </div>
       </div>
@@ -163,6 +180,7 @@ interface SortOption {
 
 export type SearchScope = 'title' | 'anywhere'
 export type ViewMode = 'detail' | 'list'
+export type SortDirection = 'asc' | 'desc'
 
 interface Props {
   filters: Filter[]
@@ -185,6 +203,10 @@ interface Props {
   enableViewMode?: boolean
   /** Current view mode (controlled). */
   viewMode?: ViewMode
+  /** Show the asc/desc direction toggle next to the sort dropdown. */
+  enableSortDirection?: boolean
+  /** Current sort direction (controlled). */
+  sortDirection?: SortDirection
 }
 
 withDefaults(defineProps<Props>(), {
@@ -201,6 +223,8 @@ withDefaults(defineProps<Props>(), {
   searchScope: 'anywhere',
   enableViewMode: false,
   viewMode: 'detail',
+  enableSortDirection: false,
+  sortDirection: 'asc',
 })
 
 const emit = defineEmits<{
@@ -209,6 +233,7 @@ const emit = defineEmits<{
   'search-change': [value: string]
   'scope-change': [value: SearchScope]
   'view-change': [value: ViewMode]
+  'sort-direction-change': [value: SortDirection]
 }>()
 
 const onSortChange = (event: Event) => {

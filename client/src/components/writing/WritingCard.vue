@@ -73,10 +73,39 @@
       class="flex items-center gap-2 mt-4"
       @click.stop
     >
+      <label
+        v-if="canReorder"
+        class="inline-flex items-center gap-1.5 text-xs font-sans text-ink-lighter"
+        :title="`Position ${writing.sortOrder ?? '—'}. Type a new number and press Tab to move this frag.`"
+      >
+        <span class="uppercase tracking-widest">#</span>
+        <input
+          type="number"
+          inputmode="numeric"
+          step="1"
+          min="1"
+          :value="sortOrderDraft"
+          @input="onSortOrderInput"
+          @keydown.enter.prevent="($event.target as HTMLInputElement)?.blur()"
+          @keydown.escape.prevent="resetSortOrderDraft(); ($event.target as HTMLInputElement)?.blur()"
+          @blur="commitSortOrder"
+          :disabled="reorderBusy"
+          class="w-14 px-1.5 py-0.5 border border-line bg-paper text-ink text-xs font-mono tabular-nums text-right rounded-none focus:outline-none focus:border-ink-lighter disabled:opacity-50"
+          aria-label="Sort order"
+        />
+      </label>
+      <span
+        v-else-if="typeof writing.sortOrder === 'number'"
+        class="inline-flex items-center gap-1.5 text-xs font-sans text-ink-whisper"
+        :title="`Position ${writing.sortOrder}`"
+      >
+        <span class="uppercase tracking-widest">#</span>
+        <span class="font-mono tabular-nums">{{ writing.sortOrder }}</span>
+      </span>
       <button
         type="button"
         @click="emit('move-up', writing.id)"
-        :disabled="!canMoveUp"
+        :disabled="!canMoveUp || reorderBusy"
         class="p-2 text-ink-lighter hover:text-ink disabled:opacity-30 disabled:cursor-not-allowed"
         aria-label="Move up"
         title="Move up"
@@ -88,7 +117,7 @@
       <button
         type="button"
         @click="emit('move-down', writing.id)"
-        :disabled="!canMoveDown"
+        :disabled="!canMoveDown || reorderBusy"
         class="p-2 text-ink-lighter hover:text-ink disabled:opacity-30 disabled:cursor-not-allowed"
         aria-label="Move down"
         title="Move down"
@@ -142,18 +171,26 @@ interface Props {
   reactionSummary?: WritingReactionSummary
   canMoveUp?: boolean
   canMoveDown?: boolean
+  /** True while a reorder request is in flight for this writing. The host
+   *  page passes this so we can lock the input + arrow buttons together. */
+  reorderBusy?: boolean
 }
 
 const emit = defineEmits<{
   deleted: [writingId: string]
   'move-up': [writingId: string]
   'move-down': [writingId: string]
+  /** Fired on focus-out of the sort-order input. The host page is
+   *  responsible for clamping and persisting; we just pass the integer
+   *  the user typed (or `undefined` if the value should be reset). */
+  'move-to-sort-order': [writingId: string, sortOrder: number]
 }>()
 
 const props = withDefaults(defineProps<Props>(), {
   showImage: false,
   canMoveUp: false,
   canMoveDown: false,
+  reorderBusy: false,
 })
 
 const { user, isAdmin, isAuthenticated } = useAuth()
@@ -178,6 +215,46 @@ const canEdit = computed(() => {
 const canDelete = computed(() => {
   return isOwner.value || isAdmin.value
 })
+
+// Reordering is owner/admin-only. Editors-of-others' frags can change
+// title/body but not the owner's curated position.
+const canReorder = computed(() => isOwner.value || isAdmin.value)
+
+// Live draft for the sort-order input. We use a local string buffer (not
+// v-model directly on the prop) so an invalid keystroke doesn't propagate
+// to the parent — only on blur do we validate and either emit a move or
+// roll back to the last persisted value.
+const sortOrderDraft = ref<string>(
+  typeof props.writing.sortOrder === 'number' ? String(props.writing.sortOrder) : ''
+)
+function resetSortOrderDraft() {
+  sortOrderDraft.value = typeof props.writing.sortOrder === 'number' ? String(props.writing.sortOrder) : ''
+}
+// Keep the draft in sync when the parent replaces the row (server
+// renormalised the list — see Home.vue handleMoveToSortOrder).
+watch(() => props.writing.sortOrder, () => { resetSortOrderDraft() })
+function onSortOrderInput(e: Event) {
+  sortOrderDraft.value = (e.target as HTMLInputElement).value
+}
+function commitSortOrder() {
+  const raw = sortOrderDraft.value.trim()
+  // Empty / non-integer / non-finite → restore previous valid value and
+  // skip the move entirely. The server validates again but failing fast
+  // here keeps the network quiet.
+  if (raw === '') { resetSortOrderDraft(); return }
+  const parsed = Number(raw)
+  if (!Number.isFinite(parsed) || !Number.isInteger(parsed)) {
+    resetSortOrderDraft()
+    return
+  }
+  // Same value: nothing to do.
+  if (parsed === props.writing.sortOrder) { resetSortOrderDraft(); return }
+  // Hand off to the host page. We don't clamp here — the server does the
+  // canonical clamp against `n` (which it has) and returns the
+  // normalised list. We just reset the draft optimistically; the watch
+  // above re-syncs to the persisted value once the server responds.
+  emit('move-to-sort-order', props.writing.id, parsed)
+}
 
 const isRecentlyRead = computed(() => {
   return readingStore.isRecentlyRead(props.writing.id)

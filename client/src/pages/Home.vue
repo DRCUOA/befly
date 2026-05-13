@@ -44,6 +44,7 @@
       :filters="filters"
       :current-filter="filter"
       :count="totalMatchedCount"
+      :sort-options="sortOptions"
       :current-sort="sort"
       :enable-search="true"
       :search-query="searchQuery"
@@ -51,11 +52,14 @@
       :search-placeholder="searchScope === 'title' ? 'Search frag titles…' : 'Search title or text…'"
       :enable-view-mode="true"
       :view-mode="viewMode"
+      :enable-sort-direction="true"
+      :sort-direction="sortDirection"
       @filter-change="handleFilterChange"
       @sort-change="handleSortChange"
       @search-change="handleSearchChange"
       @scope-change="handleSearchScopeChange"
       @view-change="handleViewChange"
+      @sort-direction-change="handleSortDirectionChange"
     />
 
     <!-- Essay List -->
@@ -111,9 +115,11 @@
               :reaction-summary="getReactionSummary(writing.id)"
               :can-move-up="index > 0"
               :can-move-down="index < filteredWritings.length - 1"
+              :reorder-busy="reorderBusyId === writing.id"
               @deleted="handleWritingDeleted"
               @move-up="handleMoveUp"
               @move-down="handleMoveDown"
+              @move-to-sort-order="handleMoveToSortOrder"
             />
           </template>
           <template v-else>
@@ -124,9 +130,11 @@
               :themes="getThemesForWriting(writing)"
               :can-move-up="index > 0"
               :can-move-down="index < filteredWritings.length - 1"
+              :reorder-busy="reorderBusyId === writing.id"
               @deleted="handleWritingDeleted"
               @move-up="handleMoveUp"
               @move-down="handleMoveDown"
+              @move-to-sort-order="handleMoveToSortOrder"
             />
           </template>
 
@@ -199,7 +207,7 @@ import type { Theme } from '../domain/Theme'
 import type { WritingReactionSummary } from '../domain/Appreciation'
 import WritingCard from '../components/writing/WritingCard.vue'
 import WritingListRow from '../components/writing/WritingListRow.vue'
-import FilterNavigation, { type SearchScope, type ViewMode } from '../components/browse/FilterNavigation.vue'
+import FilterNavigation, { type SearchScope, type ViewMode, type SortDirection } from '../components/browse/FilterNavigation.vue'
 import CollectionCard from '../components/browse/CollectionCard.vue'
 import { markdownToText } from '../utils/markdown'
 import type { ApiResponse } from '@shared/ApiResponses'
@@ -212,7 +220,29 @@ const reactionSummaries = ref<Map<string, WritingReactionSummary>>(new Map())
 const loading = ref(true)
 const error = ref<string | null>(null)
 const filter = ref<'all' | 'mine' | 'shared'>('all')
-const sort = ref<string>('newest')
+// Default sort is the user-controlled manual order. Each Frag carries a
+// persisted `sortOrder` integer (1..n per owner) that the user can edit
+// inline; this view reflects that order until the user picks a different
+// option from the dropdown.
+const sort = ref<string>('manual')
+const SORT_DIRECTION_STORAGE_KEY = 'frag:sortDirection'
+function loadSortDirection(): SortDirection {
+  try {
+    if (typeof localStorage !== 'undefined') {
+      const v = localStorage.getItem(SORT_DIRECTION_STORAGE_KEY)
+      if (v === 'asc' || v === 'desc') return v
+    }
+  } catch { /* ignore */ }
+  return 'asc'
+}
+const sortDirection = ref<SortDirection>(loadSortDirection())
+const reorderBusyId = ref<string | null>(null)
+const sortOptions = [
+  { value: 'manual', label: 'Manual order' },
+  { value: 'newest', label: 'Newest' },
+  { value: 'oldest', label: 'Oldest' },
+  { value: 'updated', label: 'Recently Updated' },
+]
 const searchQuery = ref('')
 const debouncedSearchQuery = ref('')
 const searchScope = ref<SearchScope>('anywhere')
@@ -231,46 +261,6 @@ function loadViewMode(): ViewMode {
   return 'detail'
 }
 const viewMode = ref<ViewMode>(loadViewMode())
-
-// Custom user-defined ordering. Map of writing id → rank (lower = higher in
-// list). When non-empty it overrides the date-based sort below for the ids
-// it covers; ids not in the map fall through to the regular sort and are
-// appended after the custom-ordered items. Persisted to localStorage so a
-// user's hand-arranged list survives reloads.
-const CUSTOM_ORDER_STORAGE_KEY = 'frag:customOrder'
-function loadCustomOrder(): Map<string, number> {
-  const map = new Map<string, number>()
-  try {
-    if (typeof localStorage !== 'undefined') {
-      const raw = localStorage.getItem(CUSTOM_ORDER_STORAGE_KEY)
-      if (raw) {
-        const ids = JSON.parse(raw)
-        if (Array.isArray(ids)) {
-          ids.forEach((id, i) => {
-            if (typeof id === 'string') map.set(id, i)
-          })
-        }
-      }
-    }
-  } catch { /* ignore — fall through to empty map */ }
-  return map
-}
-const customOrder = ref<Map<string, number>>(loadCustomOrder())
-function saveCustomOrder() {
-  try {
-    if (typeof localStorage === 'undefined') return
-    if (customOrder.value.size === 0) {
-      localStorage.removeItem(CUSTOM_ORDER_STORAGE_KEY)
-      return
-    }
-    // Serialize as a flat list of ids in rank order — compact and trivially
-    // re-loadable.
-    const ids = [...customOrder.value.entries()]
-      .sort((a, b) => a[1] - b[1])
-      .map(([id]) => id)
-    localStorage.setItem(CUSTOM_ORDER_STORAGE_KEY, JSON.stringify(ids))
-  } catch { /* ignore */ }
-}
 
 const PAGE_SIZE = 6
 const displayedCount = ref(PAGE_SIZE)
@@ -319,25 +309,36 @@ const matchedWritings = computed(() => {
   }
 
   filtered = [...filtered].sort((a, b) => {
-    // Custom user ordering wins. Items present in customOrder are ranked by
-    // their stored rank; items not in the map fall back to the date sort and
-    // are placed AFTER any custom-ordered items.
-    const co = customOrder.value
-    if (co.size > 0) {
-      const aRank = co.get(a.id)
-      const bRank = co.get(b.id)
-      if (aRank !== undefined && bRank !== undefined) return aRank - bRank
-      if (aRank !== undefined) return -1
-      if (bRank !== undefined) return 1
+    if (sort.value === 'manual') {
+      // Primary key is the persisted per-owner sortOrder. Frags from
+      // different owners interleave by their respective positions —
+      // every owner's #1 sorts first, then everyone's #2, and so on.
+      // Stable tiebreaker uses createdAt then id so duplicates (which
+      // shouldn't normally exist but might briefly during a server
+      // reorder) still order deterministically.
+      const aSo = typeof a.sortOrder === 'number' ? a.sortOrder : Number.POSITIVE_INFINITY
+      const bSo = typeof b.sortOrder === 'number' ? b.sortOrder : Number.POSITIVE_INFINITY
+      if (aSo !== bSo) return sortDirection.value === 'asc' ? aSo - bSo : bSo - aSo
+      const cmp =
+        new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+        || a.id.localeCompare(b.id)
+      return sortDirection.value === 'asc' ? cmp : -cmp
     }
+    // Date-based sorts still respect the direction toggle: asc = oldest
+    // first, desc = newest first.
+    let cmp: number
     switch (sort.value) {
       case 'oldest':
-        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+        cmp = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+        break
       case 'updated':
-        return new Date(b.updatedAt || b.createdAt).getTime() - new Date(a.updatedAt || a.createdAt).getTime()
+        cmp = new Date(b.updatedAt || b.createdAt).getTime() - new Date(a.updatedAt || a.createdAt).getTime()
+        break
       default:
-        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        cmp = new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        break
     }
+    return sortDirection.value === 'asc' ? cmp : -cmp
   })
 
   return filtered
@@ -384,49 +385,53 @@ const handleFilterChange = (value: string) => {
 const handleSortChange = (value: string) => {
   sort.value = value
   displayedCount.value = PAGE_SIZE
-  // Picking a sort is an explicit "use this ordering" — drop any prior
-  // hand-arranged order so the chosen sort actually takes effect.
-  if (customOrder.value.size > 0) {
-    customOrder.value = new Map()
-    saveCustomOrder()
+}
+
+const handleSortDirectionChange = (value: SortDirection) => {
+  sortDirection.value = value
+  try { localStorage.setItem(SORT_DIRECTION_STORAGE_KEY, value) } catch { /* ignore */ }
+}
+
+// Up/down arrow handlers: translate to a positional move of the target
+// frag to (sortOrder - 1) or (sortOrder + 1) in its owner's list. The
+// server normalises 1..n and returns the owner's updated list which we
+// merge into local state.
+async function moveByOffset(writingId: string, offset: number) {
+  const w = writings.value.find(x => x.id === writingId)
+  if (!w || typeof w.sortOrder !== 'number') return
+  await handleMoveToSortOrder(writingId, w.sortOrder + offset)
+}
+const handleMoveUp = (writingId: string) => moveByOffset(writingId, -1)
+const handleMoveDown = (writingId: string) => moveByOffset(writingId, +1)
+
+// Persist a positional move: PUT /writing/:id/sort-order with the target
+// 1..n position. The server clamps and renormalises, then returns the
+// owner's updated list which we splice into local state. We swallow
+// errors here because the child components surface them inline; this
+// just keeps the page reactive.
+async function handleMoveToSortOrder(writingId: string, target: number) {
+  if (!Number.isFinite(target) || !Number.isInteger(target)) return
+  reorderBusyId.value = writingId
+  try {
+    const response = await api.put<ApiResponse<WritingBlock[]>>(
+      `/writing/${writingId}/sort-order`,
+      { sortOrder: target },
+    )
+    const updated = response.data
+    if (!Array.isArray(updated) || updated.length === 0) return
+    // Replace every row in local state that the server returned. The
+    // server returns the full owner-scoped list (1..n), so this single
+    // splice covers every renumbered sibling.
+    const updatedById = new Map(updated.map(w => [w.id, w]))
+    writings.value = writings.value.map(w => updatedById.get(w.id) || w)
+  } catch (err) {
+    // Surface failures via the page error banner so the user sees them
+    // without forcing the child to handle alerts.
+    error.value = err instanceof Error ? err.message : 'Failed to reorder frag'
+  } finally {
+    reorderBusyId.value = null
   }
 }
-
-// Up/down arrow handlers from WritingCard / WritingListRow. Swap the target
-// writing with its neighbour in the currently-displayed (matched + sorted)
-// list, then bake that order into customOrder so it sticks across reloads
-// and across filter/search changes.
-function applyMove(writingId: string, direction: 'up' | 'down') {
-  const list = matchedWritings.value
-  const idx = list.findIndex(w => w.id === writingId)
-  if (idx === -1) return
-  const targetIdx = direction === 'up' ? idx - 1 : idx + 1
-  if (targetIdx < 0 || targetIdx >= list.length) return
-
-  const visibleIds = list.map(w => w.id)
-  const tmp = visibleIds[idx]
-  visibleIds[idx] = visibleIds[targetIdx]
-  visibleIds[targetIdx] = tmp
-
-  // Off-screen items that the user has previously hand-arranged (but are
-  // currently filtered out by search/filter) keep their relative order;
-  // they're appended after the visible block so the visible arrangement
-  // stays at the top of any list that includes both.
-  const visibleSet = new Set(visibleIds)
-  const preservedIds = [...customOrder.value.entries()]
-    .filter(([id]) => !visibleSet.has(id))
-    .sort((a, b) => a[1] - b[1])
-    .map(([id]) => id)
-
-  const next = new Map<string, number>()
-  let rank = 0
-  for (const id of visibleIds) next.set(id, rank++)
-  for (const id of preservedIds) next.set(id, rank++)
-  customOrder.value = next
-  saveCustomOrder()
-}
-const handleMoveUp = (writingId: string) => applyMove(writingId, 'up')
-const handleMoveDown = (writingId: string) => applyMove(writingId, 'down')
 
 // Search debouncing. The user can type quickly through a long list; we
 // reflect their input in the input box immediately (searchQuery) but only

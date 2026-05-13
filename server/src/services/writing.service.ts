@@ -158,5 +158,24 @@ export const writingService = {
 
   async delete(id: string, userId: string, isAdmin: boolean = false): Promise<void> {
     return writingRepo.delete(id, userId, isAdmin)
-  }
+  },
+
+  /**
+   * Move a frag to a target position within its owner's list. Validates
+   * the target is a finite integer and clamping is left to the repo
+   * (which has access to the owner's current count `n`). Returns the
+   * normalized 1..n list for the owner so the UI can refresh in one
+   * round-trip.
+   */
+  async moveFragToSortOrder(
+    fragId: string,
+    targetSortOrder: number,
+    userId: string,
+    isAdmin: boolean = false,
+  ): Promise<WritingBlock[]> {
+    if (typeof targetSortOrder !== 'number' || !Number.isFinite(targetSortOrder) || !Number.isInteger(targetSortOrder)) {
+      throw new ValidationError('targetSortOrder must be an integer')
+    }
+    return writingRepo.moveFragToSortOrder(fragId, targetSortOrder, userId, isAdmin)
+  },
 }

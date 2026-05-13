@@ -106,6 +106,7 @@ export const writingRepo = {
             wb.created_at as "createdAt",
             wb.updated_at as "updatedAt",
             COALESCE(wb.current_version, 1) as "currentVersion",
+            wb.sort_order as "sortOrder",
             COALESCE(
               ARRAY_AGG(wt.theme_id) FILTER (WHERE wt.theme_id IS NOT NULL),
               ARRAY[]::UUID[]
@@ -136,6 +137,7 @@ export const writingRepo = {
             wb.created_at as "createdAt",
             wb.updated_at as "updatedAt",
             COALESCE(wb.current_version, 1) as "currentVersion",
+            wb.sort_order as "sortOrder",
             COALESCE(
               ARRAY_AGG(wt.theme_id) FILTER (WHERE wt.theme_id IS NOT NULL),
               ARRAY[]::UUID[]
@@ -169,6 +171,7 @@ export const writingRepo = {
             wb.created_at as "createdAt",
             wb.updated_at as "updatedAt",
             COALESCE(wb.current_version, 1) as "currentVersion",
+            wb.sort_order as "sortOrder",
             COALESCE(
               ARRAY_AGG(wt.theme_id) FILTER (WHERE wt.theme_id IS NOT NULL),
               ARRAY[]::UUID[]
@@ -193,8 +196,9 @@ export const writingRepo = {
           'private' as visibility,
           wb.cover_image_url as "coverImageUrl",
           COALESCE(wb.cover_image_position, '50% 50%') as "coverImagePosition",
-          wb.created_at as "createdAt", 
+          wb.created_at as "createdAt",
           wb.updated_at as "updatedAt",
+          wb.sort_order as "sortOrder",
           COALESCE(
             ARRAY_AGG(wt.theme_id) FILTER (WHERE wt.theme_id IS NOT NULL),
             ARRAY[]::UUID[]
@@ -257,6 +261,7 @@ export const writingRepo = {
             wb.created_at as "createdAt",
             wb.updated_at as "updatedAt",
             COALESCE(wb.current_version, 1) as "currentVersion",
+            wb.sort_order as "sortOrder",
             COALESCE(
               ARRAY_AGG(wt.theme_id) FILTER (WHERE wt.theme_id IS NOT NULL),
               ARRAY[]::UUID[]
@@ -282,6 +287,7 @@ export const writingRepo = {
             wb.created_at as "createdAt",
             wb.updated_at as "updatedAt",
             COALESCE(wb.current_version, 1) as "currentVersion",
+            wb.sort_order as "sortOrder",
             COALESCE(
               ARRAY_AGG(wt.theme_id) FILTER (WHERE wt.theme_id IS NOT NULL),
               ARRAY[]::UUID[]
@@ -313,6 +319,7 @@ export const writingRepo = {
             wb.created_at as "createdAt",
             wb.updated_at as "updatedAt",
             COALESCE(wb.current_version, 1) as "currentVersion",
+            wb.sort_order as "sortOrder",
             COALESCE(
               ARRAY_AGG(wt.theme_id) FILTER (WHERE wt.theme_id IS NOT NULL),
               ARRAY[]::UUID[]
@@ -335,8 +342,9 @@ export const writingRepo = {
           'private' as visibility,
           wb.cover_image_url as "coverImageUrl",
           COALESCE(wb.cover_image_position, '50% 50%') as "coverImagePosition",
-          wb.created_at as "createdAt", 
+          wb.created_at as "createdAt",
           wb.updated_at as "updatedAt",
+          wb.sort_order as "sortOrder",
           COALESCE(
             ARRAY_AGG(wt.theme_id) FILTER (WHERE wt.theme_id IS NOT NULL),
             ARRAY[]::UUID[]
@@ -359,11 +367,11 @@ export const writingRepo = {
     }
   },
 
-  async create(writing: Omit<WritingBlock, 'id' | 'createdAt' | 'updatedAt' | 'currentVersion'>): Promise<WritingBlock> {
+  async create(writing: Omit<WritingBlock, 'id' | 'createdAt' | 'updatedAt' | 'currentVersion' | 'sortOrder'>): Promise<WritingBlock> {
     const client = await pool.connect()
     try {
       await client.query('BEGIN')
-      
+
       // Check if visibility column exists
       let hasVisibilityColumn = true
       try {
@@ -375,19 +383,52 @@ export const writingRepo = {
           throw error
         }
       }
-      
+
+      // Check if sort_order column exists (migration 029)
+      let hasSortOrderColumn = true
+      try {
+        await client.query('SELECT sort_order FROM writing_blocks LIMIT 1')
+      } catch (error: any) {
+        if (error.code === '42703') {
+          hasSortOrderColumn = false
+        } else {
+          throw error
+        }
+      }
+
+      // Serialize sort_order assignment per user. Two concurrent creates
+      // by the same user would otherwise race on MAX(sort_order) and pick
+      // duplicates; the advisory lock pins the per-user sequence so the
+      // next insert always sees the latest MAX.
+      if (hasSortOrderColumn) {
+        await client.query(
+          `SELECT pg_advisory_xact_lock(hashtext('writing_blocks_sort_order:' || $1::text))`,
+          [writing.userId]
+        )
+      }
+
       // Insert writing block with visibility (defaults to 'private')
       const visibility = writing.visibility || 'private'
       const coverImageUrl = writing.coverImageUrl ?? null
       const coverImagePosition = writing.coverImagePosition ?? '50% 50%'
       let writingResult
       if (hasVisibilityColumn) {
-        writingResult = await client.query(
-          `INSERT INTO writing_blocks (user_id, title, body, visibility, cover_image_url, cover_image_position)
-           VALUES ($1, $2, $3, $4, $5, $6)
-           RETURNING id, user_id as "userId", title, body, visibility, cover_image_url as "coverImageUrl", COALESCE(cover_image_position, '50% 50%') as "coverImagePosition", created_at as "createdAt", updated_at as "updatedAt"`,
-          [writing.userId, writing.title, writing.body, visibility, coverImageUrl, coverImagePosition]
-        )
+        if (hasSortOrderColumn) {
+          writingResult = await client.query(
+            `INSERT INTO writing_blocks (user_id, title, body, visibility, cover_image_url, cover_image_position, sort_order)
+             VALUES ($1, $2, $3, $4, $5, $6,
+                     (SELECT COALESCE(MAX(sort_order), 0) + 1 FROM writing_blocks WHERE user_id = $1))
+             RETURNING id, user_id as "userId", title, body, visibility, cover_image_url as "coverImageUrl", COALESCE(cover_image_position, '50% 50%') as "coverImagePosition", created_at as "createdAt", updated_at as "updatedAt", sort_order as "sortOrder"`,
+            [writing.userId, writing.title, writing.body, visibility, coverImageUrl, coverImagePosition]
+          )
+        } else {
+          writingResult = await client.query(
+            `INSERT INTO writing_blocks (user_id, title, body, visibility, cover_image_url, cover_image_position)
+             VALUES ($1, $2, $3, $4, $5, $6)
+             RETURNING id, user_id as "userId", title, body, visibility, cover_image_url as "coverImageUrl", COALESCE(cover_image_position, '50% 50%') as "coverImagePosition", created_at as "createdAt", updated_at as "updatedAt"`,
+            [writing.userId, writing.title, writing.body, visibility, coverImageUrl, coverImagePosition]
+          )
+        }
       } else {
         // Fallback: pre-visibility schema (no cover_image_url either)
         writingResult = await client.query(
@@ -716,5 +757,160 @@ export const writingRepo = {
     if (result.rowCount === 0) {
       throw new NotFoundError('Writing block not found')
     }
-  }
+  },
+
+  /**
+   * Move a frag to a target position (1..n) within its owner's sequence.
+   *
+   * This is a positional move, not a simple value update: the moved frag
+   * is removed from its owner's ordered list, re-inserted at the target
+   * index, and every frag belonging to that owner is renumbered 1..n.
+   * The whole renumbering happens in a single transaction so partial
+   * writes can never leave the sequence with gaps or duplicates.
+   *
+   * Permission: owner of the moved frag, or admin. Editors (without
+   * ownership) cannot reorder — order is treated as owner-curated.
+   *
+   * Target is clamped to [1..n] and the input is expected to be a finite
+   * integer; the service layer validates `targetSortOrder` before this
+   * runs.
+   *
+   * Returns the moved frag's owner's full ordered list (1..n) after the
+   * renumber so the UI can refresh without a second round-trip.
+   */
+  async moveFragToSortOrder(
+    fragId: string,
+    targetSortOrder: number,
+    userId: string,
+    isAdmin: boolean = false,
+  ): Promise<WritingBlock[]> {
+    const client = await pool.connect()
+    try {
+      await client.query('BEGIN')
+
+      // Identify the owner whose list we'll renumber. Admin can move
+      // anyone's frag; in that case we renumber the owner's list, not
+      // the admin's. Non-admin can only move their own frags.
+      const ownerRow = await client.query(
+        `SELECT user_id FROM writing_blocks WHERE id = $1`,
+        [fragId]
+      )
+      if (ownerRow.rows.length === 0) {
+        throw new NotFoundError('Writing block not found')
+      }
+      const ownerId: string = ownerRow.rows[0].user_id
+      if (!isAdmin && ownerId !== userId) {
+        throw new ForbiddenError('Not authorized to reorder this writing block')
+      }
+
+      // Serialize against concurrent moves/creates for the same owner.
+      // Same advisory-lock key as create() so a reorder can't interleave
+      // with a new-frag insert and produce duplicate positions.
+      await client.query(
+        `SELECT pg_advisory_xact_lock(hashtext('writing_blocks_sort_order:' || $1::text))`,
+        [ownerId]
+      )
+
+      // Load all of the owner's frags, ordered by current sort_order with
+      // a stable fallback to (created_at, id) so duplicate or NULL
+      // positions still sort deterministically — the renumber below will
+      // clean them up.
+      const allRows = await client.query(
+        `SELECT id, sort_order
+         FROM writing_blocks
+         WHERE user_id = $1
+         ORDER BY sort_order ASC NULLS LAST, created_at ASC NULLS LAST, id ASC
+         FOR UPDATE`,
+        [ownerId]
+      )
+
+      const ids: string[] = allRows.rows.map((r: any) => r.id)
+      const fromIdx = ids.indexOf(fragId)
+      if (fromIdx === -1) {
+        // Shouldn't happen — the row exists (ownerRow above) and we
+        // selected the owner's full set.
+        throw new NotFoundError('Writing block not found')
+      }
+
+      const n = ids.length
+
+      // Remove from current position, then insert at the clamped target.
+      // Target arrives 1-based; convert to 0-based, clamp to [0..n-1].
+      const targetIdx0 = Math.max(0, Math.min(n - 1, targetSortOrder - 1))
+
+      const reordered = ids.slice()
+      reordered.splice(fromIdx, 1)
+      reordered.splice(targetIdx0, 0, fragId)
+
+      // Two-phase renumber to avoid colliding with the
+      // UNIQUE(user_id, sort_order) constraint mid-update: shift every
+      // row into a temporary negative-offset range first, then write the
+      // final positions. Negative values are not used by the normal flow
+      // (positions are >= 1), so they don't collide with rows we haven't
+      // touched yet.
+      const TEMP_OFFSET = n + 1
+      for (let i = 0; i < reordered.length; i++) {
+        await client.query(
+          `UPDATE writing_blocks SET sort_order = $1 WHERE id = $2`,
+          [-(i + 1 + TEMP_OFFSET), reordered[i]]
+        )
+      }
+      for (let i = 0; i < reordered.length; i++) {
+        await client.query(
+          `UPDATE writing_blocks SET sort_order = $1 WHERE id = $2`,
+          [i + 1, reordered[i]]
+        )
+      }
+
+      await client.query('COMMIT')
+
+      // Return the owner's normalized 1..n list. We deliberately re-query
+      // (rather than synthesize the rows from the in-memory `reordered`
+      // array) so the caller gets fully-populated WritingBlock records,
+      // including theme associations and visibility-derived fields, that
+      // match what findAll would have returned.
+      return this.findAllForOwner(ownerId)
+    } catch (error) {
+      await client.query('ROLLBACK')
+      throw error
+    } finally {
+      client.release()
+    }
+  },
+
+  /**
+   * Internal: list every frag owned by `ownerId`, ordered by sort_order.
+   * Used by moveFragToSortOrder to return the post-renumber list to the
+   * client without going through the visibility-filtered findAll.
+   */
+  async findAllForOwner(ownerId: string): Promise<WritingBlock[]> {
+    const result = await pool.query(
+      `SELECT
+         wb.id,
+         wb.user_id as "userId",
+         wb.title,
+         wb.body,
+         COALESCE(wb.visibility, 'private') as visibility,
+         wb.cover_image_url as "coverImageUrl",
+         COALESCE(wb.cover_image_position, '50% 50%') as "coverImagePosition",
+         wb.created_at as "createdAt",
+         wb.updated_at as "updatedAt",
+         COALESCE(wb.current_version, 1) as "currentVersion",
+         wb.sort_order as "sortOrder",
+         COALESCE(
+           ARRAY_AGG(wt.theme_id) FILTER (WHERE wt.theme_id IS NOT NULL),
+           ARRAY[]::UUID[]
+         ) as "themeIds"
+       FROM writing_blocks wb
+       LEFT JOIN writing_themes wt ON wb.id = wt.writing_id
+       WHERE wb.user_id = $1
+       GROUP BY wb.id, wb.user_id, wb.title, wb.body, wb.visibility, wb.cover_image_url, wb.cover_image_position, wb.created_at, wb.updated_at
+       ORDER BY wb.sort_order ASC`,
+      [ownerId]
+    )
+    return result.rows.map((row: any) => ({
+      ...row,
+      themeIds: row.themeIds || [],
+    }))
+  },
 }
