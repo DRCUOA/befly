@@ -34,10 +34,10 @@ export interface PrintBuildArgs {
   cfg: PreviewConfig
   /** Already-built bookFlowHtml (front matter + chapters + back matter). */
   bookFlowHtml: string
-  /** Self-contained HTML for the front cover. */
-  frontCoverHtml: string
-  /** Self-contained HTML for the back cover. */
-  backCoverHtml: string
+  /** Self-contained HTML for the front cover. Ignored when includeCovers is false. */
+  frontCoverHtml?: string
+  /** Self-contained HTML for the back cover. Ignored when includeCovers is false. */
+  backCoverHtml?: string
   /** Manuscript title for running header default. */
   bookTitle: string
   /** Author name for running header default. */
@@ -46,6 +46,13 @@ export interface PrintBuildArgs {
   documentTitle: string
   /** Print layout. */
   layout: PrintLayout
+  /**
+   * When false, omit the front and back cover pages entirely. Used by the
+   * single-essay print path on the Frag preview, which wants the same
+   * typography as the book wizard but none of the surrounding book chrome.
+   * Defaults to true (book-print behaviour).
+   */
+  includeCovers?: boolean
 }
 
 const A5_W_MM = 148
@@ -55,6 +62,7 @@ export function buildNaturalPrintHtml(args: PrintBuildArgs): string {
   const {
     cfg, bookFlowHtml, frontCoverHtml, backCoverHtml,
     bookTitle, authorName, documentTitle, layout,
+    includeCovers = true,
   } = args
 
   const fontFamily = `"${escapeCssString(cfg.typography.bodyFont)}", "Iowan Old Style", Georgia, "Times New Roman", serif`
@@ -303,9 +311,9 @@ export function buildNaturalPrintHtml(args: PrintBuildArgs): string {
   </div>
   <div class="pp-screen-only" style="height:46px;"></div>
 
-  <div class="pp-cover-page pp-cover-page-front">${frontCoverHtml}</div>
+  ${includeCovers ? `<div class="pp-cover-page pp-cover-page-front">${frontCoverHtml || ''}</div>` : ''}
   ${bookFlowHtml}
-  <div class="pp-cover-page">${backCoverHtml}</div>
+  ${includeCovers ? `<div class="pp-cover-page">${backCoverHtml || ''}</div>` : ''}
 
   <script>
     // Wait for cover artwork to fully decode before opening the print
