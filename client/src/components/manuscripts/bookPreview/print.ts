@@ -53,6 +53,13 @@ export interface PrintBuildArgs {
    * Defaults to true (book-print behaviour).
    */
   includeCovers?: boolean
+  /**
+   * When true, overlay light-grey dashed horizontal rules every 2cm across
+   * the page — proof-reader's ruling so an editor can scribble notes against
+   * the printed essay. Used by the single-essay print path; book print never
+   * sets this. Defaults to false.
+   */
+  editorMarginOverlay?: boolean
 }
 
 const A5_W_MM = 148
@@ -63,6 +70,7 @@ export function buildNaturalPrintHtml(args: PrintBuildArgs): string {
     cfg, bookFlowHtml, frontCoverHtml, backCoverHtml,
     bookTitle, authorName, documentTitle, layout,
     includeCovers = true,
+    editorMarginOverlay = false,
   } = args
 
   const fontFamily = `"${escapeCssString(cfg.typography.bodyFont)}", "Iowan Old Style", Georgia, "Times New Roman", serif`
@@ -144,6 +152,120 @@ export function buildNaturalPrintHtml(args: PrintBuildArgs): string {
   const toolbarHint = layout === 'a4_booklet_2up'
     ? 'Open Print → Layout / Booklet (or "Pages per sheet → 2") in the system print dialog to fold and saddle-stitch.'
     : 'Use your browser\'s Print dialog (⌘P / Ctrl-P) to send to printer or save as PDF.'
+
+  // Editor-margin overlay: horizontal dashed rules every 2cm. Implemented as
+  // a body background-image (a tiny inline SVG sized to 100% × 2cm with a
+  // hairline dashed stroke along the bottom edge) so that as body content
+  // flows across pages the rules naturally repeat on each page. We pin
+  // `print-color-adjust: exact` so browsers actually emit the background to
+  // the printer/PDF instead of stripping it as a "background graphic".
+  //
+  // We also constrain body to the print content-area width and give it
+  // `position: relative` so the JS-injected band labels (see the
+  // `injectMarginLabels` script block below) sit at consistent X positions
+  // and so line wrapping in the screen-preview window matches the wrapping
+  // the print engine will produce — without that match, the line positions
+  // we measure before print don't align with the dashed rules on the printed
+  // page.
+  const contentWidthMm = (sheetW - (m.insideGutter + m.outside) * 25.4).toFixed(2)
+  // First 4 characters of the title, JSON-escaped for safe embedding in the
+  // inline script; `</` is escaped further to prevent a stray title from
+  // closing the <script> tag early. Empty prefix suppresses the labels.
+  const labelPrefixJs = JSON.stringify(bookTitle.trim().slice(0, 4)).replace(/<\//g, '<\\/')
+  const overlaySvg = "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 148 20' preserveAspectRatio='none'><line x1='0' y1='19.7' x2='148' y2='19.7' stroke='%23b8b8b8' stroke-width='0.3' stroke-dasharray='2 2'/></svg>"
+  const overlayCss = editorMarginOverlay
+    ? `body {
+        background-image: url("data:image/svg+xml;utf8,${overlaySvg}");
+        background-repeat: repeat;
+        background-size: 100% 2cm;
+        background-color: ${paperColor};
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        width: ${contentWidthMm}mm;
+        margin-left: auto;
+        margin-right: auto;
+        position: relative;
+      }
+      .editor-margin-label {
+        position: absolute;
+        left: -13mm;
+        transform: translateY(-50%);
+        font: 6pt -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, sans-serif;
+        color: #888;
+        white-space: nowrap;
+        letter-spacing: 0.02em;
+        pointer-events: none;
+      }`
+    : ''
+
+  // JS injected only when the overlay is on. After layout settles it walks
+  // each rendered display line in the essay body, groups them into 2cm
+  // bands matching the dashed-rule body background, then drops a small
+  // label in the left margin of each band giving "<title-prefix> nFirst-nLast".
+  // The screen-only spacer is hidden first so on-screen line positions
+  // match the @media-print layout (where pp-screen-only is display:none).
+  const labelFnDef = editorMarginOverlay ? `
+
+    function injectMarginLabels() {
+      var inflow = document.body.querySelectorAll('.pp-screen-only');
+      for (var i = 0; i < inflow.length; i++) {
+        if (getComputedStyle(inflow[i]).position !== 'fixed') {
+          inflow[i].style.display = 'none';
+        }
+      }
+      void document.body.offsetHeight;
+
+      var ROW_PX = 2 * 96 / 2.54;
+      var PREFIX = ${labelPrefixJs};
+      if (!PREFIX) return;
+
+      var items = document.querySelectorAll('.bp-item, .bp-item-opening');
+      if (!items.length) return;
+
+      var lines = [];
+      var lastTop = -Infinity;
+      var lineNum = 0;
+      var bodyTop = document.body.getBoundingClientRect().top + window.scrollY;
+      for (var i = 0; i < items.length; i++) {
+        var walker = document.createTreeWalker(items[i], NodeFilter.SHOW_TEXT, null);
+        var node;
+        while ((node = walker.nextNode())) {
+          if (!node.textContent.trim()) continue;
+          var range = document.createRange();
+          range.selectNodeContents(node);
+          var rects = range.getClientRects();
+          for (var k = 0; k < rects.length; k++) {
+            var r = rects[k];
+            if (r.height < 1 || r.width < 1) continue;
+            var top = r.top + window.scrollY;
+            if (top > lastTop + r.height * 0.5) {
+              lineNum++;
+              lastTop = top;
+              lines.push({ y: top - bodyTop, n: lineNum });
+            }
+          }
+        }
+      }
+      if (!lines.length) return;
+
+      var bands = {};
+      for (var j = 0; j < lines.length; j++) {
+        var idx = Math.floor(lines[j].y / ROW_PX);
+        if (!bands[idx]) bands[idx] = { min: lines[j].n, max: lines[j].n };
+        else bands[idx].max = lines[j].n;
+      }
+
+      for (var key in bands) {
+        var b = bands[key];
+        var label = document.createElement('div');
+        label.className = 'editor-margin-label';
+        label.textContent = PREFIX + ' ' + b.min + '-' + b.max;
+        label.style.top = ((parseInt(key, 10) + 0.5) * ROW_PX) + 'px';
+        document.body.appendChild(label);
+      }
+    }
+` : ''
+  const labelCall = editorMarginOverlay ? 'injectMarginLabels(); ' : ''
 
   return `<!doctype html>
 <html lang="en">
@@ -291,7 +413,7 @@ export function buildNaturalPrintHtml(args: PrintBuildArgs): string {
   .pp-cover-page-front { /* first sheet — already gets @page :first */ }
 
   ${dropCapCss}
-  ${smallCapsCss}
+  ${smallCapsCss}${overlayCss ? `\n  ${overlayCss}` : ''}
 
   /* Trim guides (commented out — uncomment if you want crop marks)
   @media print { body::after { content: ''; position: fixed; ... } }
@@ -327,11 +449,11 @@ export function buildNaturalPrintHtml(args: PrintBuildArgs): string {
         if (typeof img.decode === 'function') return img.decode().catch(function () {});
         return new Promise(function (res) { img.addEventListener('load', res, { once: true }); img.addEventListener('error', res, { once: true }); });
       }));
-    }
+    }${labelFnDef}
     window.addEventListener('load', function () {
       waitForCoverImages().then(function () {
         // Small extra tick for the layout engine to flush after image decode.
-        setTimeout(function () { try { window.focus(); window.print(); } catch (e) {} }, 100);
+        setTimeout(function () { try { ${labelCall}window.focus(); window.print(); } catch (e) {} }, 100);
       });
     });
   </script>
