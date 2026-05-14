@@ -87,6 +87,19 @@ export interface BriefingProject {
   narrativePromise: string | null
   /** Theme ids the manuscript draws from. Names travel in `themes[]` below. */
   sourceThemeIds: string[]
+  /**
+   * Configured spine depth (1..MAX_SPINE_DEPTH). Optional on the wire
+   * because legacy briefing consumers predate the Configurable Spine
+   * Depth Refactor; missing means "treat as depth 1". When present,
+   * `spineLayerLabels.length` equals this value.
+   */
+  spineDepth?: number
+  /**
+   * Human label for each spine layer, outermost first. Lets the
+   * briefing's narrative prompt name the user's actual containers
+   * (e.g. "Part / Chapter / Section") instead of generic "Section".
+   */
+  spineLayerLabels?: string[]
   createdAt: string
   updatedAt: string
 }
@@ -106,6 +119,18 @@ export interface BriefingSection {
   purpose: ManuscriptSectionPurpose
   notes: string | null
   itemIds: string[]
+  /**
+   * Phase 6 of the Configurable Spine Depth Refactor: tree shape so
+   * downstream AI consumers can read the manuscript's container
+   * hierarchy (e.g. Parts containing Chapters) rather than seeing a
+   * flat list. Optional on the wire so legacy consumers ignore them;
+   * a depth-1 manuscript serialises with parentSectionId=null,
+   * level=1, childSectionIds=[] on every row.
+   */
+  parentSectionId?: string | null
+  level?: number
+  /** Direct children's section ids, ordered by orderIndex / createdAt. */
+  childSectionIds?: string[]
 }
 
 export interface BriefingItem {

@@ -69,8 +69,25 @@ export interface ChaptersConfig {
    * sections are chapters and items inside a section flow with scene
    * breaks between them. True is the default for essay collections, where
    * each piece stands alone.
+   *
+   * Phase 5 of the Configurable Spine Depth Refactor caveat: this
+   * setting only applies when `chapterLayer === manuscript.spineDepth`
+   * (the deepest layer). For shallower chapter layers the wizard
+   * always treats each container at that layer as a chapter and
+   * gathers descendant items as the chapter body — there is no
+   * "essay-per-chapter" choice once you've stepped above the deepest
+   * layer (because there's no 1:1 layer-to-essay mapping above it).
    */
   chaptersFromItems: boolean
+  /**
+   * Which spine layer becomes a chapter. 1-based; defaults to the
+   * manuscript's spineDepth, so legacy depth-1 manuscripts use the
+   * existing "section-as-chapter / item-as-chapter" code paths
+   * verbatim and the wizard is byte-identical to before. Lower values
+   * (e.g. 1 on a depth-2 manuscript) collapse the deeper levels into
+   * each chapter's body.
+   */
+  chapterLayer: number
 }
 
 export type SceneBreakStyle =
@@ -187,6 +204,20 @@ export interface CoverConfig {
   showBarcode: boolean
 }
 
+/**
+ * How the Contents page is rendered when the user enables the
+ * `contents` front-matter key. 'flat' (the default and the
+ * pre-Phase-5 behaviour) emits one numbered <ol> with each chapter as
+ * a top-level <li>. 'hierarchical' walks the section tree from level
+ * 1 down to `chapterLayer`, emitting nested <ol>s so a depth-2
+ * manuscript's TOC reads e.g. "Part One → Chapter 1 / Chapter 2".
+ *
+ * Only meaningful when `chapterLayer > 1`; at chapterLayer=1 there's
+ * only one level and the nested rendering collapses to identical
+ * output anyway.
+ */
+export type TocStyle = 'flat' | 'hierarchical'
+
 export interface PreviewConfig {
   id: string
   projectId: string
@@ -203,6 +234,11 @@ export interface PreviewConfig {
   matterContent: MatterContent
   paper: PaperConfig
   cover: CoverConfig
+  /**
+   * Contents-page rendering style. Defaults to 'flat' so legacy
+   * configurations and the Phase 1 snapshot suite see no change.
+   */
+  tocStyle: TocStyle
   /** ISO-8601 timestamps. */
   createdAt: string
   updatedAt: string

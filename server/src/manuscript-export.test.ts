@@ -29,6 +29,8 @@ function makeManuscript(over: Partial<ManuscriptProject> = {}): ManuscriptProjec
     emotionalArc: null,
     narrativePromise: null,
     visibility: 'private',
+    spineDepth: 1,
+    spineLayerLabels: ['Section'],
     createdAt: '2026-01-01T00:00:00Z',
     updatedAt: '2026-01-01T00:00:00Z',
     ...over,
@@ -221,6 +223,92 @@ describe('manuscriptToMarkdown - numbering and TOC', () => {
     expect(md).toContain('## Contents')
     expect(md).toContain('[Opening](#opening)')
     expect(md).toContain('[Arrived Late Yesterday](#arrived-late-yesterday)')
+  })
+})
+
+/**
+ * Phase 6 of the Configurable Spine Depth Refactor adds depth-aware
+ * rendering: a section's `level` drives the markdown heading depth
+ * (`##` for level 1, `###` for level 2, …). Items hang off the
+ * deepest level. The tests below pin the new behaviour at depth=2
+ * and depth=3 so any future drift surfaces in CI.
+ */
+describe('manuscriptToMarkdown — depth>1 heading hierarchy', () => {
+  it('depth=2: level-1 sections get ## and level-2 sections get ###; items at #### sit under their level-2 leaf', () => {
+    const sections = [
+      makeSection({ id: 'p1', title: 'Before', orderIndex: 0, purpose: 'setup', level: 1 }),
+      makeSection({ id: 'c1', title: 'The day before', orderIndex: 0, purpose: 'unassigned', level: 2, parentSectionId: 'p1' }),
+      makeSection({ id: 'p2', title: 'After',  orderIndex: 1, purpose: 'resolution', level: 1 }),
+      makeSection({ id: 'c2', title: 'Counting', orderIndex: 0, purpose: 'unassigned', level: 2, parentSectionId: 'p2' }),
+    ]
+    const items = [
+      makeItem({ id: 'i1', title: 'Arrived Late Yesterday', sectionId: 'c1', orderIndex: 0, body: 'rain' }),
+      makeItem({ id: 'i2', title: 'After Counting',         sectionId: 'c2', orderIndex: 0, body: 'tally' }),
+    ]
+    const md = manuscriptToMarkdown(
+      makeManuscript({ spineDepth: 2, spineLayerLabels: ['Part', 'Chapter'] }),
+      sections,
+      items,
+    )
+
+    // Part headings at ##; chapter headings at ###; items at ####.
+    expect(md).toMatch(/^## Before/m)
+    expect(md).toMatch(/^## After/m)
+    expect(md).toMatch(/^### The day before/m)
+    expect(md).toMatch(/^### Counting/m)
+    expect(md).toMatch(/^#### Arrived Late Yesterday/m)
+    expect(md).toMatch(/^#### After Counting/m)
+
+    // Reading order: parent before its descendants; siblings in order.
+    const beforePos = md.indexOf('## Before')
+    const chapterPos = md.indexOf('### The day before')
+    const itemPos = md.indexOf('#### Arrived Late Yesterday')
+    const afterPos = md.indexOf('## After')
+    expect(beforePos).toBeLessThan(chapterPos)
+    expect(chapterPos).toBeLessThan(itemPos)
+    expect(itemPos).toBeLessThan(afterPos)
+  })
+
+  it('depth=3: each level adds one #, items emit two levels deeper than their leaf section', () => {
+    const sections = [
+      makeSection({ id: 'v1', title: 'Volume I', orderIndex: 0, level: 1 }),
+      makeSection({ id: 'p1', title: 'Part 1',   orderIndex: 0, level: 2, parentSectionId: 'v1' }),
+      makeSection({ id: 'c1', title: 'Chapter 1', orderIndex: 0, level: 3, parentSectionId: 'p1' }),
+    ]
+    const items = [
+      makeItem({ id: 'i1', title: 'The first piece', sectionId: 'c1', orderIndex: 0, body: 'a' }),
+    ]
+    const md = manuscriptToMarkdown(
+      makeManuscript({ spineDepth: 3, spineLayerLabels: ['Volume', 'Part', 'Chapter'] }),
+      sections,
+      items,
+    )
+    expect(md).toMatch(/^## Volume I/m)
+    expect(md).toMatch(/^### Part 1/m)
+    expect(md).toMatch(/^#### Chapter 1/m)
+    expect(md).toMatch(/^##### The first piece/m)
+  })
+
+  it('depth=2 TOC nests items under their deepest-level section', () => {
+    const sections = [
+      makeSection({ id: 'p1', title: 'Before', orderIndex: 0, level: 1 }),
+      makeSection({ id: 'c1', title: 'The day before', orderIndex: 0, level: 2, parentSectionId: 'p1' }),
+    ]
+    const items = [
+      makeItem({ id: 'i1', title: 'Arrived Late', sectionId: 'c1', orderIndex: 0, body: 'r' }),
+    ]
+    const md = manuscriptToMarkdown(
+      makeManuscript({ spineDepth: 2, spineLayerLabels: ['Part', 'Chapter'] }),
+      sections,
+      items,
+      { includeToc: true },
+    )
+    expect(md).toContain('## Contents')
+    // TOC bullets: parent at 0 indent, child section at 2-space indent,
+    // item at 4-space indent.
+    expect(md).toMatch(/^- \[Before\]\(#before\)/m)
+    expect(md).toMatch(/^ {2}- \[The day before\]\(#the-day-before\)/m)
+    expect(md).toMatch(/^ {4}- \[Arrived Late\]\(#arrived-late\)/m)
   })
 })
 

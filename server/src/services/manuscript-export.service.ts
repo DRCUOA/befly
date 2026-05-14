@@ -135,35 +135,80 @@ function filterItems(items: ExportItem[], opts: Required<MarkdownExportOptions>)
 }
 
 /**
- * Group items in render order: walk sections in section order_index, then
- * append a final "Unassigned" group for items whose section_id is null or
- * points at a section that's been removed.
+ * One section in render order, with its directly-attached items and
+ * an explicit depth (1-based) that drives the heading level. Items
+ * only ever hang off deepest-level sections (the Configurable Spine
+ * Depth invariant from Phase 3), so non-leaf nodes typically have
+ * `items: []` and serve only as container headings.
  */
-interface RenderGroup {
-  section: ManuscriptSection | null
+interface RenderNode {
+  section: ManuscriptSection
   items: ExportItem[]
+  children: RenderNode[]
 }
 
-function groupItems(sections: ManuscriptSection[], items: ExportItem[]): RenderGroup[] {
+/**
+ * Build a depth-aware render tree from the flat section list plus an
+ * Unassigned bucket at the end.
+ *
+ * Returns:
+ *   - `roots`: top-level sections in order_index order, each with
+ *     children (themselves RenderNodes) walked from their
+ *     parent_section_id descendants. Items on each leaf are sorted.
+ *   - `unassigned`: items whose section_id is null OR points at a
+ *     section that's been removed. Rendered as one flat group AFTER
+ *     the tree.
+ *
+ * At depth=1 (every legacy manuscript) every section is a level-1
+ * leaf with no children → DFS over `roots` visits exactly the
+ * sections in the same order the old `groupItems` walker did, and
+ * each visit emits the same `## Section` + `### Item` markdown. The
+ * existing snapshot-style assertions in manuscript-export.test.ts
+ * stay green.
+ */
+function buildRenderTree(sections: ManuscriptSection[], items: ExportItem[]): {
+  roots: RenderNode[]
+  unassigned: ExportItem[]
+} {
   const orderedSections = [...sections].sort((a, b) =>
     a.orderIndex - b.orderIndex || a.createdAt.localeCompare(b.createdAt)
   )
   const sectionIds = new Set(orderedSections.map(s => s.id))
 
-  const groups: RenderGroup[] = []
-  for (const section of orderedSections) {
-    const sectionItems = items
-      .filter(i => i.sectionId === section.id)
-      .sort((a, b) => a.orderIndex - b.orderIndex || a.createdAt.localeCompare(b.createdAt))
-    groups.push({ section, items: sectionItems })
+  // Index items by their section id once, sorted within each bucket.
+  const itemsBySection = new Map<string, ExportItem[]>()
+  for (const s of orderedSections) itemsBySection.set(s.id, [])
+  for (const item of items) {
+    if (item.sectionId && itemsBySection.has(item.sectionId)) {
+      itemsBySection.get(item.sectionId)!.push(item)
+    }
   }
+  for (const list of itemsBySection.values()) {
+    list.sort((a, b) => a.orderIndex - b.orderIndex || a.createdAt.localeCompare(b.createdAt))
+  }
+
+  // Build the tree. We iterate orderedSections in reading order so
+  // children land in the right sibling order under each parent. Any
+  // section whose parentSectionId points at a missing row gets
+  // treated as a root — defensive against partial cascades, mirrors
+  // the server's `buildSectionTree` repo helper.
+  const nodeById = new Map<string, RenderNode>()
+  for (const s of orderedSections) {
+    nodeById.set(s.id, { section: s, items: itemsBySection.get(s.id) ?? [], children: [] })
+  }
+  const roots: RenderNode[] = []
+  for (const s of orderedSections) {
+    const node = nodeById.get(s.id)!
+    const parent = s.parentSectionId ? nodeById.get(s.parentSectionId) : null
+    if (parent) parent.children.push(node)
+    else roots.push(node)
+  }
+
   const unassigned = items
     .filter(i => !i.sectionId || !sectionIds.has(i.sectionId))
     .sort((a, b) => a.orderIndex - b.orderIndex || a.createdAt.localeCompare(b.createdAt))
-  if (unassigned.length > 0) {
-    groups.push({ section: null, items: unassigned })
-  }
-  return groups
+
+  return { roots, unassigned }
 }
 
 function renderFrontMatter(m: ManuscriptProject): string {
@@ -198,46 +243,105 @@ function renderFrontMatter(m: ManuscriptProject): string {
   return lines.join('\n')
 }
 
-function renderToc(groups: RenderGroup[]): string {
+/**
+ * Coerce a section's level to a usable 1-based integer. Legacy rows
+ * backfilled by migration 030 always have level=1, but tests and
+ * fixtures sometimes synthesise sections through `as ManuscriptSection`
+ * casts that omit the field; treating those as level 1 preserves the
+ * pre-Phase-6 heading depth and keeps the export byte-identical.
+ */
+function safeLevel(level: number | undefined | null): number {
+  if (typeof level === 'number' && Number.isFinite(level) && level >= 1) return level
+  return 1
+}
+
+/**
+ * Markdown heading prefix for a section at the given 1-based level.
+ * Phase 6 of the Configurable Spine Depth Refactor: level → '#'
+ * count, anchored at `##` for level 1 so depth-1 manuscripts (which
+ * are byte-identical to the pre-Phase-6 export) keep getting `##`
+ * section headings and the existing test fixtures pass unchanged.
+ *
+ *   level 1 → '##'
+ *   level 2 → '###'
+ *   level 3 → '####'
+ *   level 4 → '#####'   (max — MAX_SPINE_DEPTH from the migration)
+ */
+function sectionHashes(level: number | undefined | null): string {
+  return '#'.repeat(safeLevel(level) + 1)
+}
+
+/** Heading prefix for an item under a section at the given level. */
+function itemHashes(sectionLevel: number | undefined | null): string {
+  return '#'.repeat(safeLevel(sectionLevel) + 2)
+}
+
+function renderToc(roots: RenderNode[], unassigned: ExportItem[]): string {
   const lines: string[] = ['', '## Contents', '']
-  for (const group of groups) {
-    if (group.section) {
-      const sLabel = group.section.title
-      lines.push(`- [${sLabel}](#${slugForAnchor(sLabel)})`)
-    } else {
-      lines.push('- [Unassigned](#unassigned)')
+
+  // Recursive TOC walker. Indents 2 spaces per tree level so the
+  // markdown renderer nests the bulleted list. Items always appear
+  // at one indent deeper than their container — matching the
+  // depth-1 output exactly when every section is a level-1 leaf.
+  const walk = (node: RenderNode, indentLevel: number): void => {
+    const indent = '  '.repeat(indentLevel)
+    lines.push(`${indent}- [${node.section.title}](#${slugForAnchor(node.section.title)})`)
+    // Children at this section's tree depth become next indent.
+    for (const child of node.children) walk(child, indentLevel + 1)
+    // Items only attach to leaves; render them at child indent so the
+    // bullet hierarchy reads as "section → item" regardless of depth.
+    for (const item of node.items) {
+      const itemIndent = '  '.repeat(indentLevel + 1)
+      lines.push(`${itemIndent}- [${item.title}](#${slugForAnchor(item.title)})`)
     }
-    for (const item of group.items) {
+  }
+  for (const root of roots) walk(root, 0)
+
+  if (unassigned.length > 0) {
+    lines.push('- [Unassigned](#unassigned)')
+    for (const item of unassigned) {
       lines.push(`  - [${item.title}](#${slugForAnchor(item.title)})`)
     }
   }
+
   return lines.join('\n')
 }
 
-function renderSectionHeading(section: ManuscriptSection | null): string {
-  if (!section) {
-    return [
-      '',
-      '## Unassigned',
-      '',
-      '*Items not yet placed in a section.*',
-    ].join('\n')
-  }
+function renderSectionHeading(section: ManuscriptSection): string {
+  const hashes = sectionHashes(section.level)
   const purposeNote = section.purpose && section.purpose !== 'unassigned'
     ? ` — *${PURPOSE_LABELS[section.purpose] ?? section.purpose}*`
     : ''
-  const lines = ['', `## ${section.title}${purposeNote}`]
+  const lines = ['', `${hashes} ${section.title}${purposeNote}`]
   if (section.notes) {
     lines.push('', `> ${section.notes.replace(/\n/g, '\n> ')}`)
   }
   return lines.join('\n')
 }
 
-function renderItem(item: ExportItem, opts: Required<MarkdownExportOptions>, ordinal: number | null): string {
+function renderUnassignedHeading(): string {
+  return [
+    '',
+    '## Unassigned',
+    '',
+    '*Items not yet placed in a section.*',
+  ].join('\n')
+}
+
+/**
+ * @param itemHashesPrefix Heading prefix for the item title. Computed
+ *   from the containing section's level so depth-1 stays `###`.
+ */
+function renderItem(
+  item: ExportItem,
+  opts: Required<MarkdownExportOptions>,
+  ordinal: number | null,
+  itemHashesPrefix: string,
+): string {
   const numberPrefix = ordinal !== null ? `${ordinal}. ` : ''
   const lines: string[] = []
   lines.push('')
-  lines.push(`### ${numberPrefix}${item.title}`)
+  lines.push(`${itemHashesPrefix} ${numberPrefix}${item.title}`)
 
   // Per-item metadata line - kept terse so it doesn't dominate the page.
   const meta: string[] = [TYPE_LABELS[item.itemType] ?? item.itemType]
@@ -287,7 +391,16 @@ function renderItem(item: ExportItem, opts: Required<MarkdownExportOptions>, ord
 }
 
 /**
- * The whole export: front matter + optional TOC + grouped items in order.
+ * The whole export: front matter + optional TOC + tree-walked sections
+ * in order.
+ *
+ * Phase 6 of the Configurable Spine Depth Refactor: depth-aware. The
+ * section heading level scales with `section.level` so a memoir at
+ * depth=2 reads as `## Part One` → `### Chapter` → `#### Essay`. At
+ * depth=1 (today's default for every existing manuscript) every
+ * section is at level 1 and the output is byte-identical to the
+ * pre-Phase-6 export — the existing test fixtures in
+ * manuscript-export.test.ts gate this.
  */
 export function manuscriptToMarkdown(
   manuscript: ManuscriptProject,
@@ -298,7 +411,8 @@ export function manuscriptToMarkdown(
   const opts: Required<MarkdownExportOptions> = { ...DEFAULTS, ...options }
 
   const filtered = filterItems(items, opts)
-  const groups = groupItems(sections, filtered)
+  const { roots, unassigned } = buildRenderTree(sections, filtered)
+  const hasContent = roots.length > 0 || unassigned.length > 0
 
   const parts: string[] = []
   if (opts.includeFrontMatter) {
@@ -306,17 +420,37 @@ export function manuscriptToMarkdown(
   } else {
     parts.push(`# ${manuscript.title}`)
   }
-  if (opts.includeToc && groups.length > 0) {
-    parts.push(renderToc(groups))
+  if (opts.includeToc && hasContent) {
+    parts.push(renderToc(roots, unassigned))
   }
 
+  // DFS the tree. We track the numbering ordinal across the whole
+  // traversal so essay numbering (`1.`, `2.`, …) stays in document
+  // order regardless of how deep the manuscript nests. Items live at
+  // each leaf section; non-leaf containers emit a heading only.
   let ordinal = 0
-  for (const group of groups) {
-    parts.push(renderSectionHeading(group.section))
-    for (const item of group.items) {
+  const walk = (node: RenderNode): void => {
+    parts.push(renderSectionHeading(node.section))
+    const itemPrefix = itemHashes(node.section.level)
+    for (const item of node.items) {
       const counted = opts.numberItems && item.itemType === 'essay'
       if (counted) ordinal += 1
-      parts.push(renderItem(item, opts, counted ? ordinal : null))
+      parts.push(renderItem(item, opts, counted ? ordinal : null, itemPrefix))
+    }
+    for (const child of node.children) walk(child)
+  }
+  for (const root of roots) walk(root)
+
+  if (unassigned.length > 0) {
+    parts.push(renderUnassignedHeading())
+    // Unassigned items are loose — they have no container level, so
+    // they sit at the same heading depth items would sit at under a
+    // top-level section, matching the pre-Phase-6 `###` prefix.
+    const unassignedItemPrefix = itemHashes(1)
+    for (const item of unassigned) {
+      const counted = opts.numberItems && item.itemType === 'essay'
+      if (counted) ordinal += 1
+      parts.push(renderItem(item, opts, counted ? ordinal : null, unassignedItemPrefix))
     }
   }
 

@@ -1,0 +1,147 @@
+{
+  "_comment": "Traditional sectioned manuscript: three sections, each containing multiple items so scene breaks render. Exercises both chaptersFromItems modes plus an orphan (unassigned) item.",
+  "manuscript": {
+    "id": "fixture-mss-traditional",
+    "userId": "fixture-user-1",
+    "title": "After the Storm",
+    "workingSubtitle": null,
+    "sourceThemeIds": [],
+    "form": "memoir",
+    "status": "drafting",
+    "intendedReader": null,
+    "centralQuestion": null,
+    "throughLine": null,
+    "emotionalArc": null,
+    "narrativePromise": null,
+    "visibility": "private",
+    "spineDepth": 1,
+    "spineLayerLabels": ["Section"],
+    "createdAt": "2025-01-01T00:00:00.000Z",
+    "updatedAt": "2025-01-01T00:00:00.000Z"
+  },
+  "sections": [
+    {
+      "id": "fixture-sec-tr-1",
+      "manuscriptId": "fixture-mss-traditional",
+      "title": "Before",
+      "orderIndex": 0,
+      "purpose": "setup",
+      "notes": null,
+      "createdAt": "2025-01-01T00:00:00.000Z",
+      "updatedAt": "2025-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "fixture-sec-tr-2",
+      "manuscriptId": "fixture-mss-traditional",
+      "title": "During",
+      "orderIndex": 1,
+      "purpose": "turning_point",
+      "notes": null,
+      "createdAt": "2025-01-01T00:00:00.000Z",
+      "updatedAt": "2025-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "fixture-sec-tr-3",
+      "manuscriptId": "fixture-mss-traditional",
+      "title": "After",
+      "orderIndex": 2,
+      "purpose": "resolution",
+      "notes": null,
+      "createdAt": "2025-01-01T00:00:00.000Z",
+      "updatedAt": "2025-01-01T00:00:00.000Z"
+    }
+  ],
+  "items": [
+    {
+      "id": "fixture-itm-tr-1",
+      "manuscriptId": "fixture-mss-traditional",
+      "sectionId": "fixture-sec-tr-1",
+      "writingBlockId": "fixture-wb-tr-1",
+      "itemType": "essay",
+      "title": "The day before",
+      "orderIndex": 0,
+      "structuralRole": "setup",
+      "summary": null,
+      "aiNotes": null,
+      "createdAt": "2025-01-01T00:00:00.000Z",
+      "updatedAt": "2025-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "fixture-itm-tr-2",
+      "manuscriptId": "fixture-mss-traditional",
+      "sectionId": "fixture-sec-tr-1",
+      "writingBlockId": "fixture-wb-tr-2",
+      "itemType": "essay",
+      "title": "The hour before",
+      "orderIndex": 1,
+      "structuralRole": null,
+      "summary": null,
+      "aiNotes": null,
+      "createdAt": "2025-01-01T00:00:00.000Z",
+      "updatedAt": "2025-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "fixture-itm-tr-3",
+      "manuscriptId": "fixture-mss-traditional",
+      "sectionId": "fixture-sec-tr-2",
+      "writingBlockId": "fixture-wb-tr-3",
+      "itemType": "essay",
+      "title": "Eye of it",
+      "orderIndex": 0,
+      "structuralRole": "turning_point",
+      "summary": null,
+      "aiNotes": null,
+      "createdAt": "2025-01-01T00:00:00.000Z",
+      "updatedAt": "2025-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "fixture-itm-tr-4",
+      "manuscriptId": "fixture-mss-traditional",
+      "sectionId": "fixture-sec-tr-3",
+      "writingBlockId": "fixture-wb-tr-4",
+      "itemType": "essay",
+      "title": "Counting",
+      "orderIndex": 0,
+      "structuralRole": "resolution",
+      "summary": null,
+      "aiNotes": null,
+      "createdAt": "2025-01-01T00:00:00.000Z",
+      "updatedAt": "2025-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "fixture-itm-tr-5",
+      "manuscriptId": "fixture-mss-traditional",
+      "sectionId": "fixture-sec-tr-3",
+      "writingBlockId": null,
+      "itemType": "placeholder",
+      "title": "What I haven't written yet",
+      "orderIndex": 1,
+      "structuralRole": null,
+      "summary": "A passage about the year after, still to come.",
+      "aiNotes": null,
+      "createdAt": "2025-01-01T00:00:00.000Z",
+      "updatedAt": "2025-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "fixture-itm-tr-orphan",
+      "manuscriptId": "fixture-mss-traditional",
+      "sectionId": null,
+      "writingBlockId": "fixture-wb-tr-orphan",
+      "itemType": "essay",
+      "title": "Stray pages",
+      "orderIndex": 0,
+      "structuralRole": null,
+      "summary": null,
+      "aiNotes": null,
+      "createdAt": "2025-01-01T00:00:00.000Z",
+      "updatedAt": "2025-01-01T00:00:00.000Z"
+    }
+  ],
+  "bodies": {
+    "fixture-wb-tr-1": "It would be easy, now, to say I knew. I did not. I knew only that the air was wrong.",
+    "fixture-wb-tr-2": "We waited on the porch. The radio cut in and out. My father kept his hand on the doorframe.",
+    "fixture-wb-tr-3": "When it came it did not sound like wind. It sounded like a train, and then like nothing.",
+    "fixture-wb-tr-4": "Afterward we counted. The barn, the elm, the south fence — gone. The house, somehow, was still standing.",
+    "fixture-wb-tr-orphan": "These are pages I never knew where to file."
+  }
+}

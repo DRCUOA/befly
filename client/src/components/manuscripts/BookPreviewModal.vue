@@ -170,8 +170,7 @@
             <div v-if="currentStep.id === 'manuscript'" class="space-y-4">
               <p class="text-sm text-ink-light">
                 Choose the sections and items to include as chapters in the
-                preview. Top-level sections become chapters; items inside a
-                section flow as that chapter's body.
+                preview. {{ manuscriptStepCopy }}
               </p>
               <div class="flex items-center gap-3 text-xs">
                 <button type="button" class="bp-link" @click="selectAll">Select all</button>
@@ -1423,6 +1422,10 @@ function configToInput(c: PreviewConfig, draftLabel: string): BookPrintingInput 
     matterContent: c.matterContent,
     paper: c.paper,
     cover: c.cover,
+    // Phase 5 fields. Send them on the wire so the server persists the
+    // user's choice; the server defaults the columns to 1 / 'flat' for
+    // any older client that omits them.
+    tocStyle: c.tocStyle,
   }
 }
 
@@ -1435,8 +1438,18 @@ function printingToConfig(p: BookPrinting): PreviewConfig {
     trimSize: p.trimSize,
     margins: { ...p.margins, unit: 'in' as const },
     typography: p.typography,
-    paragraphs: p.paragraphs,
-    chapters: p.chapters,
+    paragraphs: {
+      ...p.paragraphs,
+    },
+    // BookPrintingChapters.chapterLayer is optional (legacy printings
+    // saved before Phase 5 won't carry it). Fall back to the
+    // manuscript's spineDepth — that pins the chapter layer to the
+    // deepest level, which is what the wizard always did before this
+    // refactor, so the loaded draft renders exactly the same.
+    chapters: {
+      ...p.chapters,
+      chapterLayer: p.chapters.chapterLayer ?? props.manuscript.spineDepth,
+    },
     sceneBreaks: p.sceneBreaks,
     headersAndFooters: p.headersAndFooters,
     frontMatter: p.frontMatter,
@@ -1444,6 +1457,10 @@ function printingToConfig(p: BookPrinting): PreviewConfig {
     matterContent: p.matterContent,
     paper: p.paper,
     cover: p.cover,
+    // Default to 'flat' for legacy printings. Server returns 'flat' for
+    // rows created before Phase 5 (the column has NOT NULL DEFAULT
+    // 'flat'), but we guard here in case the response is older.
+    tocStyle: p.tocStyle ?? 'flat',
     createdAt: p.createdAt,
     updatedAt: p.updatedAt,
   }
@@ -1952,37 +1969,141 @@ const openingPaddingTop = computed(() => {
   }
 })
 
+/**
+ * Effective chapter layer used by the renderer. The persisted
+ * config.chapters.chapterLayer reflects the user's choice, but the
+ * manuscript's spineDepth bounds it: a user who saved a printing at
+ * chapterLayer=3 and then removed a layer would otherwise point at a
+ * level that no longer exists. We clamp to `min(configValue,
+ * spineDepth)` so the renderer never tries to gather chapters from a
+ * layer the manuscript doesn't have. Defaults to spineDepth (so legacy
+ * depth-1 manuscripts use chapterLayer=1 even if the saved printing
+ * omits the field).
+ */
+const effectiveChapterLayer = computed(() => {
+  const requested = config.value.chapters.chapterLayer ?? props.manuscript.spineDepth
+  return Math.max(1, Math.min(requested, props.manuscript.spineDepth))
+})
+
+/**
+ * Dynamic prose for the wizard's step-1 picker. At depth=1 (every
+ * legacy manuscript) we reproduce the pre-Phase-5 copy exactly so the
+ * UI is byte-identical. At depth>1 the copy names the user's actual
+ * layer labels (e.g. "Each Part contains Chapters …"), reading them
+ * from manuscript.spineLayerLabels.
+ */
+const manuscriptStepCopy = computed(() => {
+  const labels = props.manuscript.spineLayerLabels
+  if (props.manuscript.spineDepth <= 1) {
+    return `Top-level sections become chapters; items inside a section flow as that chapter's body.`
+  }
+  const top = labels[0] || 'Layer 1'
+  const layerN = labels[effectiveChapterLayer.value - 1] || `Layer ${effectiveChapterLayer.value}`
+  if (effectiveChapterLayer.value === 1) {
+    return `Each top-level ${top.toLowerCase()} becomes a chapter; everything inside flows as that chapter's body.`
+  }
+  return `Each ${layerN.toLowerCase()} becomes a chapter; items inside flow as that chapter's body.`
+})
+
+/**
+ * For a given section, walk down its subtree (any depth) and return
+ * every selected item from sections at the manuscript's deepest level.
+ * Items only ever attach to deepest-level sections — that's the Phase
+ * 3 invariant — so we filter by manuscript.spineDepth, not by the
+ * walked node's level. Reading order within the manuscript is
+ * preserved by `orderIndex ASC, createdAt ASC`, which mirrors the
+ * server's listItems ordering and the rest of the wizard.
+ */
+function descendantItemsUnder(rootSectionId: string, selSet: Set<string>): ManuscriptItem[] {
+  // BFS over parent_section_id to collect every section under root.
+  const subtree = new Set<string>([rootSectionId])
+  let frontier = [rootSectionId]
+  while (frontier.length > 0) {
+    const next: string[] = []
+    for (const parentId of frontier) {
+      for (const s of props.sections) {
+        if (s.parentSectionId === parentId && !subtree.has(s.id)) {
+          subtree.add(s.id)
+          next.push(s.id)
+        }
+      }
+    }
+    frontier = next
+  }
+  // Collect items from every leaf section in the subtree.
+  const items: ManuscriptItem[] = []
+  for (const sid of subtree) {
+    const list = itemsBySection.value.get(sid) ?? []
+    for (const it of list) {
+      if (selSet.has(it.id)) items.push(it)
+    }
+  }
+  items.sort((a, b) => a.orderIndex - b.orderIndex || a.createdAt.localeCompare(b.createdAt))
+  return items
+}
+
 const chapters = computed(() => {
   const selSet = new Set(selectedItemIds.value)
   const chList: { title: string; items: ManuscriptItem[] }[] = []
+  const layer = effectiveChapterLayer.value
+  const atDeepestLayer = layer === props.manuscript.spineDepth
 
-  if (config.value.chapters.chaptersFromItems) {
-    // Per-item chapters. Each essay (or placeholder / bridge) becomes its
-    // own chapter, with the item's title used as the chapter title. The
-    // section structure is preserved in the order — items keep their
-    // section's order — but sections themselves are no longer rendered
-    // as chapter containers. This is the right model for essay
-    // collections, where each piece is a standalone chapter.
-    for (const s of sortedSections.value) {
-      const list = (itemsBySection.value.get(s.id) || []).filter(i => selSet.has(i.id))
-      for (const item of list) {
+  // ── Depth-1 / deepest-layer path ────────────────────────────────
+  // When the chapter layer is the manuscript's deepest level, the
+  // chapter mapping is the same as the pre-Phase-5 wizard: each
+  // deepest-level section is a candidate chapter, and the
+  // chaptersFromItems toggle decides whether items collapse into
+  // their section (off) or each becomes its own chapter (on).
+  //
+  // The plan's preservation contract calls this out: "preserve
+  // existing chaptersFromItems branch when chapterLayer ==
+  // spine_depth". The two branches below are LITERALLY the
+  // pre-Phase-5 code; do not refactor without re-running the snapshot
+  // suite.
+  if (atDeepestLayer) {
+    if (config.value.chapters.chaptersFromItems) {
+      // Per-item chapters. Each essay (or placeholder / bridge) becomes its
+      // own chapter, with the item's title used as the chapter title. The
+      // section structure is preserved in the order — items keep their
+      // section's order — but sections themselves are no longer rendered
+      // as chapter containers. This is the right model for essay
+      // collections, where each piece is a standalone chapter.
+      for (const s of sortedSections.value) {
+        const list = (itemsBySection.value.get(s.id) || []).filter(i => selSet.has(i.id))
+        for (const item of list) {
+          chList.push({ title: item.title || 'Untitled', items: [item] })
+        }
+      }
+      for (const item of unassignedItems.value.filter(i => selSet.has(i.id))) {
         chList.push({ title: item.title || 'Untitled', items: [item] })
       }
+    } else {
+      // Section-based chapters (legacy). Each section is one chapter;
+      // multiple items within flow with scene breaks between them.
+      for (const s of sortedSections.value) {
+        const list = (itemsBySection.value.get(s.id) || []).filter(i => selSet.has(i.id))
+        if (list.length) chList.push({ title: s.title || 'Untitled', items: list })
+      }
+      const orphans = unassignedItems.value.filter(i => selSet.has(i.id))
+      if (orphans.length) chList.push({ title: 'Other', items: orphans })
     }
-    for (const item of unassignedItems.value.filter(i => selSet.has(i.id))) {
-      chList.push({ title: item.title || 'Untitled', items: [item] })
-    }
-  } else {
-    // Section-based chapters (legacy). Each section is one chapter;
-    // multiple items within flow with scene breaks between them.
-    for (const s of sortedSections.value) {
-      const list = (itemsBySection.value.get(s.id) || []).filter(i => selSet.has(i.id))
-      if (list.length) chList.push({ title: s.title || 'Untitled', items: list })
-    }
-    const orphans = unassignedItems.value.filter(i => selSet.has(i.id))
-    if (orphans.length) chList.push({ title: 'Other', items: orphans })
+    return chList
   }
 
+  // ── Shallower chapter layer (Phase 5 new path) ──────────────────
+  // The user has picked a layer above the deepest one. Each container
+  // at `layer` becomes one chapter; that chapter's body is every
+  // selected item found anywhere in its subtree (collapsed across all
+  // descendants). chaptersFromItems does not apply at shallower
+  // layers — there's no 1:1 layer-to-essay mapping above the deepest
+  // level, so the wizard always uses container-as-chapter here.
+  const containersAtLayer = sortedSections.value.filter(s => s.level === layer)
+  for (const c of containersAtLayer) {
+    const items = descendantItemsUnder(c.id, selSet)
+    if (items.length) chList.push({ title: c.title || 'Untitled', items })
+  }
+  const orphans = unassignedItems.value.filter(i => selSet.has(i.id))
+  if (orphans.length) chList.push({ title: 'Other', items: orphans })
   return chList
 })
 
@@ -2040,13 +2161,55 @@ const bookFlowHtml = computed(() => {
     )
   }
   if (fm.has('contents') && chapters.value.length) {
-    const lis = chapters.value.map((c, i) => `<li><span class="bp-toc-num">${i + 1}.</span> ${escapeHtml(c.title)}</li>`).join('')
-    parts.push(
-      `<section class="bp-toc bp-page-break-before bp-page-break-after">
+    // Hierarchical TOC: walk the section tree from level 1 down to
+    // chapterLayer, emitting nested <ol>s. Only fires when the user
+    // explicitly opts in AND the manuscript has multiple layers — at
+    // chapterLayer=1 the hierarchical and flat outputs would be
+    // identical anyway, so we always take the flat branch and keep
+    // the depth=1 snapshot suite byte-identical.
+    if (config.value.tocStyle === 'hierarchical' && effectiveChapterLayer.value > 1) {
+      const layer = effectiveChapterLayer.value
+      // Inline recursive renderer: each ancestor (level < chapterLayer)
+      // gets a wrapping <li> with the section title; each chapter
+      // (level === chapterLayer) gets the bp-toc-num span so the
+      // numbering still reads as "1. Chapter title" — that detail is
+      // worth preserving so users switching between flat and
+      // hierarchical aren't surprised by a missing chapter number.
+      const chapterTitleToIndex = new Map<string, number>()
+      chapters.value.forEach((c, i) => chapterTitleToIndex.set(c.title, i))
+
+      const renderNode = (s: import('@shared/Manuscript').ManuscriptSection): string => {
+        if (s.level === layer) {
+          const idx = chapterTitleToIndex.get(s.title || 'Untitled')
+          const num = idx !== undefined ? idx + 1 : 0
+          return `<li><span class="bp-toc-num">${num}.</span> ${escapeHtml(s.title || 'Untitled')}</li>`
+        }
+        // Ancestor: just the title plus any nested children up to and
+        // including the chapter layer.
+        const childNodes = sortedSections.value.filter(x => x.parentSectionId === s.id && x.level <= layer)
+        const childrenHtml = childNodes.length
+          ? `<ol class="bp-toc-list">${childNodes.map(renderNode).join('')}</ol>`
+          : ''
+        return `<li>${escapeHtml(s.title || 'Untitled')}${childrenHtml}</li>`
+      }
+      const rootNodes = sortedSections.value.filter(s => s.level === 1)
+      const rootsHtml = rootNodes.map(renderNode).join('')
+      parts.push(
+        `<section class="bp-toc bp-page-break-before bp-page-break-after">
+         <h2 class="bp-h2">Contents</h2>
+         <ol class="bp-toc-list">${rootsHtml}</ol>
+       </section>`,
+      )
+    } else {
+      // Flat TOC — pre-Phase-5 behaviour. Snapshot suite gates this.
+      const lis = chapters.value.map((c, i) => `<li><span class="bp-toc-num">${i + 1}.</span> ${escapeHtml(c.title)}</li>`).join('')
+      parts.push(
+        `<section class="bp-toc bp-page-break-before bp-page-break-after">
          <h2 class="bp-h2">Contents</h2>
          <ol class="bp-toc-list">${lis}</ol>
        </section>`,
-    )
+      )
+    }
   }
 
   // ---- Chapters ----

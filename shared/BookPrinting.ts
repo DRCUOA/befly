@@ -60,6 +60,17 @@ export interface BookPrintingChapters {
   dropCap: boolean
   smallCapsOpening: boolean
   chaptersFromItems: boolean
+  /**
+   * Which spine layer becomes a chapter in the printed book. Defaults
+   * to the manuscript's deepest layer (== spineDepth, == 1 for legacy
+   * manuscripts) — that path is byte-identical to the pre-Phase-5
+   * renderer. Lower values let users with multi-layer spines pick
+   * (e.g. "Parts as chapters" by setting chapterLayer=1 on a depth-2
+   * manuscript). Optional on the wire to keep saved printings created
+   * before Phase 5 valid; the server's column has NOT NULL DEFAULT 1
+   * so reads always return a value.
+   */
+  chapterLayer?: number
 }
 
 export type BookPrintingSceneBreakStyle =
@@ -150,6 +161,19 @@ export interface BookPrintingCover {
  * nested groups mirror the wizard's UI sections so the client doesn't
  * need a separate translation pass.
  */
+/**
+ * How the printed Contents page is rendered. Phase 5 of the
+ * Configurable Spine Depth Refactor: 'flat' (the only behaviour before
+ * this phase) emits one numbered list of chapters; 'hierarchical'
+ * walks the spine tree and emits nested <ol>s with each ancestor
+ * container as a sub-heading.
+ *
+ * Stored as the DB column `book_printings.toc_style` (VARCHAR DEFAULT
+ * 'flat'), so a saved printing from before Phase 5 reads back as
+ * 'flat' and the wizard renders identically.
+ */
+export type BookPrintingTocStyle = 'flat' | 'hierarchical'
+
 export interface BookPrinting {
   id: string
   manuscriptId: string
@@ -170,6 +194,13 @@ export interface BookPrinting {
   matterContent: BookPrintingMatterContent
   paper: BookPrintingPaper
   cover: BookPrintingCover
+
+  /**
+   * Contents-page style. Optional on the wire so legacy printings
+   * (saved before Phase 5) still validate. Server reads
+   * 'flat' from the column default when the saved row predates Phase 5.
+   */
+  tocStyle?: BookPrintingTocStyle
 
   createdAt: string
   updatedAt: string
@@ -217,4 +248,9 @@ export interface BookPrintingInput {
   matterContent: BookPrintingMatterContent
   paper: BookPrintingPaper
   cover: BookPrintingCover
+  /**
+   * Optional on the wire so the wizard can omit it for legacy
+   * printings being copied around. New saves always include it.
+   */
+  tocStyle?: BookPrintingTocStyle
 }

@@ -115,6 +115,12 @@ export function defaultPaperbackProfile(projectId: string): PreviewConfig {
       dropCap: false,
       smallCapsOpening: false,
       chaptersFromItems: true,
+      // Defaults to 1 — the deepest layer of legacy depth=1 manuscripts.
+      // For multi-layer manuscripts the wizard re-syncs this to the
+      // manuscript's spineDepth on open (see BookPreviewModal), but
+      // the static default has to satisfy the type and the snapshot
+      // suite's `defaultPaperbackProfile` consumer.
+      chapterLayer: 1,
     },
     sceneBreaks: { style: 'centered_asterisks', symbol: '* * *' },
     headersAndFooters: {
@@ -127,6 +133,11 @@ export function defaultPaperbackProfile(projectId: string): PreviewConfig {
     frontMatter: ['half_title', 'title_page', 'copyright_page', 'dedication'],
     backMatter: ['acknowledgements', 'author_bio'],
     matterContent: emptyMatterContent(),
+    // 'flat' produces the same numbered <ol> the wizard has always
+    // produced. Switching to 'hierarchical' only takes effect when
+    // chapterLayer > 1; at chapterLayer === 1 (the default) the
+    // nested renderer collapses to identical output.
+    tocStyle: 'flat',
     paper: { color: 'cream', ink: 'black', binding: 'perfect_bound' },
     cover: {
       authorName: '',

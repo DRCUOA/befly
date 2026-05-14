@@ -205,6 +205,23 @@
                 >
                   + Section
                 </button>
+                <!--
+                  Configure layers — gated by the spine_depth_configurable
+                  feature flag (Phase 4 of the Configurable Spine Depth
+                  Refactor). Hidden by default until the user opts in via
+                  the localStorage flag. When the flag is off this entire
+                  button is removed from the DOM, so the toolbar matches
+                  the pre-refactor markup exactly.
+                -->
+                <button
+                  v-if="spineDepthFlagEnabled"
+                  type="button"
+                  @click="showLayerConfig = true"
+                  class="px-3 py-1.5 text-xs tracking-wide font-sans border border-line text-ink-light hover:text-ink hover:border-ink-lighter transition-colors"
+                  :title="`Spine depth: ${manuscript.spineDepth}`"
+                >
+                  Configure layers
+                </button>
                 <button
                   type="button"
                   @click="openAddItemPanel"
@@ -220,98 +237,38 @@
               Sections give the manuscript its macro shape; items are the frags, bridges, and placeholders that fill them.
             </p>
 
-            <!-- Sections + their items -->
+            <!--
+              Sections + their items — rendered through the recursive
+              SpineSection component. At depth=1 every section is a
+              level-1 leaf with no children, so the resulting DOM is
+              equivalent to the legacy flat markup that lived inline
+              here before Phase 4. Per-level indent and the layer-label
+              chip are additive and only appear when the feature flag
+              is on AND manuscript.spineDepth > 1 (see resolveLayerLabel).
+            -->
             <div class="space-y-8">
-              <div
-                v-for="section in sortedSections"
-                :key="section.id"
-                class="border border-line bg-paper"
-                @dragover.prevent
-                @drop="onDropOnSection($event, section.id)"
-              >
-                <header class="px-5 py-3 border-b border-line flex items-center justify-between gap-3">
-                  <div class="flex items-center gap-3 flex-1 min-w-0">
-                    <span class="text-xs uppercase tracking-widest text-ink-lighter font-sans shrink-0">
-                      {{ purposeLabel(section.purpose) }}
-                    </span>
-                    <h3 class="text-lg font-light tracking-tight truncate">{{ section.title }}</h3>
-                  </div>
-                  <div v-if="canModify" class="flex items-center gap-1 shrink-0">
-                    <button
-                      type="button"
-                      @click="renameSectionPrompt(section)"
-                      class="p-1 text-ink-lighter hover:text-ink"
-                      title="Rename"
-                    >
-                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                    </button>
-                    <button
-                      type="button"
-                      @click="deleteSection(section)"
-                      class="p-1 text-ink-lighter hover:text-red-600"
-                      title="Delete (items remain, unassigned)"
-                    >
-                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                    </button>
-                  </div>
-                </header>
-
-                <ul class="divide-y divide-line">
-                  <li
-                    v-for="item in itemsBySection.get(section.id) ?? []"
-                    :key="item.id"
-                    class="px-5 py-4 flex items-start gap-3 transition-colors"
-                    :class="{
-                      'cursor-grab': canModify,
-                      'bg-surface': dragOverItemId === item.id,
-                    }"
-                    :draggable="canModify"
-                    @dragstart="onDragStart($event, item.id)"
-                    @dragover.prevent="dragOverItemId = item.id"
-                    @dragleave="dragOverItemId = null"
-                    @drop.stop="onDropBeforeItem($event, item)"
-                  >
-                    <span class="text-xs text-ink-lighter font-sans w-6 shrink-0 mt-1">{{ globalIndex(item) + 1 }}</span>
-                    <div class="flex-1 min-w-0">
-                      <div class="flex flex-wrap items-baseline gap-2">
-                        <span class="text-xs uppercase tracking-widest text-ink-lighter font-sans">
-                          {{ itemTypeLabel(item.itemType) }}
-                        </span>
-                        <span v-if="item.structuralRole" class="text-xs text-ink-lighter italic">
-                          &middot; {{ structuralRoleLabel(item.structuralRole) }}
-                        </span>
-                      </div>
-                      <p class="text-base font-light text-ink mt-1">{{ item.title }}</p>
-                      <p v-if="item.summary" class="text-sm text-ink-light mt-1 line-clamp-2">{{ item.summary }}</p>
-                    </div>
-                    <div v-if="canModify" class="flex items-center gap-1 shrink-0">
-                      <router-link
-                        v-if="item.writingBlockId"
-                        :to="`/read/${item.writingBlockId}`"
-                        class="p-1 text-ink-lighter hover:text-ink"
-                        title="Read frag"
-                        @click.stop
-                      >
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                      </router-link>
-                      <button
-                        type="button"
-                        @click.stop="deleteItem(item)"
-                        class="p-1 text-ink-lighter hover:text-red-600"
-                        title="Remove from manuscript"
-                      >
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                      </button>
-                    </div>
-                  </li>
-                  <li
-                    v-if="(itemsBySection.get(section.id) ?? []).length === 0"
-                    class="px-5 py-6 text-sm text-ink-lighter italic text-center"
-                  >
-                    Empty section. Drop an item here.
-                  </li>
-                </ul>
-              </div>
+              <SpineSection
+                v-for="node in topLevelNodes"
+                :key="node.section.id"
+                :section="node.section"
+                :items="itemsBySection.get(node.section.id) ?? []"
+                :children="node.children"
+                :items-by-section-id="itemsBySection"
+                :layer-label="resolveLayerLabel(node.section.level)"
+                :can-modify="canModify"
+                :drag-over-item-id="dragOverItemId"
+                :manuscript-spine-depth="manuscript.spineDepth"
+                :helpers="{ purposeLabel, itemTypeLabel, structuralRoleLabel, globalIndex }"
+                :on-rename-section="renameSectionPrompt"
+                :on-delete-section="deleteSection"
+                :on-delete-item="deleteItem"
+                :on-drop-on-section="onDropOnSection"
+                :on-drop-before-item="onDropBeforeItem"
+                :on-drag-start="onDragStart"
+                :on-drag-over-item="(id) => { dragOverItemId = id }"
+                :on-drag-leave-item="() => { dragOverItemId = null }"
+                :resolve-layer-label="resolveLayerLabel"
+              />
 
               <!-- Unassigned items -->
               <div
@@ -741,6 +698,21 @@
       :manuscript-id="manuscript.id"
       @close="chatOpen = false"
     />
+
+    <!-- Configure-layers modal (Phase 4 of the Configurable Spine Depth
+         Refactor). Mounted at the page root so its overlay covers the
+         Book Room. The button that opens it is gated by the
+         spine_depth_configurable flag; the modal itself stays in the
+         DOM unmounted (v-if) when the flag is off to keep the
+         flag-off render byte-identical. -->
+    <LayerConfigModal
+      v-if="manuscript && spineDepthFlagEnabled"
+      v-model="showLayerConfig"
+      :manuscript="manuscript"
+      :sections="sections"
+      :items="items"
+      @updated="applyLayerUpdate"
+    />
   </div>
 </template>
 
@@ -756,6 +728,9 @@ import BriefingModal from '../components/manuscripts/BriefingModal.vue'
 import HelpTooltip from '../components/ui/HelpTooltip.vue'
 import ManuscriptSubNav from '../components/storycraft/ManuscriptSubNav.vue'
 import ChatDrawer from '../components/manuscripts/ChatDrawer.vue'
+import SpineSection from '../components/manuscripts/SpineSection.vue'
+import LayerConfigModal from '../components/manuscripts/LayerConfigModal.vue'
+import { useSpineDepthFlag } from '../composables/useSpineDepthFlag'
 import type { ApiResponse } from '@shared/ApiResponses'
 import type { Theme } from '../domain/Theme'
 import type { WritingBlock } from '../domain/WritingBlock'
@@ -771,6 +746,8 @@ import type {
   ManuscriptArtifact,
   ManuscriptArtifactStatus,
   GapAnalysisContent,
+  ManuscriptWithSpine,
+  SpineNode,
 } from '@shared/Manuscript'
 
 const route = useRoute()
@@ -864,6 +841,53 @@ const canModify = computed(() => {
 const sortedSections = computed(() =>
   [...sections.value].sort((a, b) => a.orderIndex - b.orderIndex || a.createdAt.localeCompare(b.createdAt))
 )
+
+// Configurable spine depth: feature flag + tree-mode UI state.
+const { enabled: spineDepthFlagEnabled } = useSpineDepthFlag()
+const showLayerConfig = ref(false)
+
+/**
+ * Build a SpineNode forest from the flat sortedSections list. Mirrors
+ * server-side buildSectionTree exactly: orphans (parent_section_id
+ * referencing a missing row) surface as roots so the user never loses
+ * a section to a stale FK. For depth=1 manuscripts every section has
+ * parentSectionId=null + level=1 → the result is a flat list of roots
+ * with empty `children`, which is what SpineSection needs for the
+ * byte-identical depth=1 path.
+ */
+const topLevelNodes = computed<SpineNode[]>(() => {
+  const byId = new Map<string, SpineNode>()
+  for (const s of sortedSections.value) byId.set(s.id, { section: s, children: [] })
+  const roots: SpineNode[] = []
+  for (const s of sortedSections.value) {
+    const node = byId.get(s.id)!
+    const parent = s.parentSectionId ? byId.get(s.parentSectionId) : null
+    if (parent) parent.children.push(node)
+    else roots.push(node)
+  }
+  return roots
+})
+
+/**
+ * Resolve a layer's display label. Only returns a non-null value when
+ * the feature flag is on AND the manuscript has more than one layer
+ * (otherwise the chip would just be visual noise duplicating the
+ * existing "Section" purpose label). Suppressing here is what keeps
+ * the flag-off / depth-1 DOM byte-identical to the legacy renderer.
+ */
+const resolveLayerLabel = (level: number): string | null => {
+  if (!spineDepthFlagEnabled.value) return null
+  if (!manuscript.value || manuscript.value.spineDepth <= 1) return null
+  const labels = manuscript.value.spineLayerLabels
+  return labels[level - 1] ?? null
+}
+
+/** Called from the LayerConfigModal's `updated` emit; rehydrate local state from the server response. */
+function applyLayerUpdate(payload: ManuscriptWithSpine) {
+  manuscript.value = payload.manuscript
+  sections.value = payload.sections
+  items.value = payload.items
+}
 
 const itemsBySection = computed(() => {
   const map = new Map<string, ManuscriptItem[]>()

@@ -80,6 +80,15 @@ interface BuildGapPromptInput {
   manuscript: ManuscriptProject
   /** Section title that contains `from`/`to`, if any, for context. */
   sectionTitle?: string | null
+  /**
+   * Phase 6 of the Configurable Spine Depth Refactor. For a manuscript
+   * with multiple spine layers (e.g. Part → Chapter → Section), this is
+   * the chain of ancestor titles outermost-first, NOT including the
+   * leaf section itself (that's in sectionTitle). Empty array or
+   * undefined means "no ancestors above the leaf" — the depth=1 case,
+   * which renders the prompt identically to before this refactor.
+   */
+  ancestorTitles?: string[]
   /** The earlier item in the spine. */
   from: GapPromptItem
   /** The later item in the spine. */
@@ -98,7 +107,7 @@ interface BuildGapPromptInput {
  * doesn't have to guess at field names.
  */
 export function buildGapAnalysisPrompt(input: BuildGapPromptInput): string {
-  const { manuscript, sectionTitle, from, to, priorAcceptedNotes } = input
+  const { manuscript, sectionTitle, ancestorTitles, from, to, priorAcceptedNotes } = input
   const budget = input.bodyCharBudget ?? 3500
 
   const fromBody = trimBodyForPrompt(from.body, budget)
@@ -134,7 +143,7 @@ Important constraints:
 
 Title: ${manuscript.title}
 Form: ${manuscript.form}
-${sectionTitle ? `Section: ${sectionTitle}` : 'Section: (none)'}
+${ancestorTitles && ancestorTitles.length > 0 ? `Container path: ${ancestorTitles.join(' → ')}\n` : ''}${sectionTitle ? `Section: ${sectionTitle}` : 'Section: (none)'}
 
 Literary direction:
 ${directionBlock}

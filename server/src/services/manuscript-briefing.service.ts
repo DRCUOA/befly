@@ -124,6 +124,38 @@ function maxUpdatedAt(
   return best
 }
 
+/**
+ * Build the spine documentation string the AI consumer reads first.
+ * At depth=1 this returns the pre-Phase-6 wording verbatim — anything
+ * else risks regressing the gap-analysis prompt's behaviour on legacy
+ * manuscripts. At depth>1 the copy names the user's actual layer
+ * labels (Parts → Chapters → Sections, whatever the writer set in
+ * spineLayerLabels) so the model speaks the writer's vocabulary.
+ */
+function spineDocs(project: BriefingProject): string {
+  const depth = project.spineDepth ?? 1
+  const labels = project.spineLayerLabels ?? ['Section']
+  if (depth <= 1) {
+    return (
+      'sections[] are ordered by orderIndex. Each section.itemIds lists items ' +
+      'in that section in order. items[] is the flat list of all items; an item ' +
+      'with sectionId = null is unassigned. items[].prose may be null when no ' +
+      'writing block is linked or when proseLevel = "none".'
+    )
+  }
+  const hierarchy = labels.slice(0, depth).join(' → ') + ' → items'
+  return (
+    `sections[] form a ${depth}-layer hierarchy: ${hierarchy}. Each section ` +
+    `carries section.level (1..${depth}), section.parentSectionId (null for ` +
+    `top-level), section.childSectionIds (direct descendants in reading order), ` +
+    'and section.itemIds. Items only attach to sections at the deepest level ' +
+    `(level === ${depth}); sections at shallower levels are containers. ` +
+    'items[] is the flat list of all items; an item with sectionId = null is ' +
+    'unassigned. items[].prose may be null when no writing block is linked or ' +
+    'when proseLevel = "none".'
+  )
+}
+
 /* ----- The builder ----- */
 
 export async function buildManuscriptBriefing(
@@ -160,13 +192,26 @@ export async function buildManuscriptBriefing(
       : Promise.resolve({ rows: [] as { id: string; name: string; slug: string }[] }),
   ])
 
-  // 3) Spine: sections (with their item-id lists) and items (with prose
-  //    materialised at the requested level).
+  // 3) Spine: sections (with their item-id lists + tree shape) and
+  //    items (with prose materialised at the requested level).
   const itemIdsBySection = new Map<string, string[]>()
   for (const s of sectionsRaw) itemIdsBySection.set(s.id, [])
   for (const item of itemsWithBodies) {
     if (item.sectionId && itemIdsBySection.has(item.sectionId)) {
       itemIdsBySection.get(item.sectionId)!.push(item.id)
+    }
+  }
+
+  // Phase 6 of the Configurable Spine Depth Refactor: precompute each
+  // section's direct children so the AI consumer can navigate the
+  // hierarchy without re-walking the flat list. sectionsRaw is already
+  // ordered by (order_index, created_at), so child arrays inherit
+  // reading order naturally.
+  const childIdsBySection = new Map<string, string[]>()
+  for (const s of sectionsRaw) childIdsBySection.set(s.id, [])
+  for (const s of sectionsRaw) {
+    if (s.parentSectionId && childIdsBySection.has(s.parentSectionId)) {
+      childIdsBySection.get(s.parentSectionId)!.push(s.id)
     }
   }
 
@@ -177,6 +222,9 @@ export async function buildManuscriptBriefing(
     purpose: s.purpose,
     notes: s.notes ?? null,
     itemIds: itemIdsBySection.get(s.id) ?? [],
+    parentSectionId: s.parentSectionId ?? null,
+    level: s.level,
+    childSectionIds: childIdsBySection.get(s.id) ?? [],
   }))
 
   const items: BriefingItem[] = itemsWithBodies.map(item => {
@@ -379,6 +427,12 @@ export async function buildManuscriptBriefing(
     emotionalArc: project.emotionalArc ?? null,
     narrativePromise: project.narrativePromise ?? null,
     sourceThemeIds: project.sourceThemeIds,
+    // Phase 6 of the Configurable Spine Depth Refactor: surface the
+    // user's configured layer shape so the AI prompt can name
+    // containers in the writer's own vocabulary (Parts / Chapters /
+    // Sections, whatever the user set).
+    spineDepth: project.spineDepth,
+    spineLayerLabels: project.spineLayerLabels,
     createdAt: project.createdAt,
     updatedAt: project.updatedAt,
   }
@@ -395,11 +449,7 @@ export async function buildManuscriptBriefing(
       `Set to "${opts.proseLevel}". "none" omits all prose, "digest" gives ` +
       'first/last sentence per essay-backed item, "full" includes whole bodies. ' +
       'Default is "digest".',
-    spine:
-      'sections[] are ordered by orderIndex. Each section.itemIds lists items ' +
-      'in that section in order. items[] is the flat list of all items; an item ' +
-      'with sectionId = null is unassigned. items[].prose may be null when no ' +
-      'writing block is linked or when proseLevel = "none".',
+    spine: spineDocs(projectOut),
     plot:
       'beats[] are the planning unit (one scene). Each beat carries outerEvent, ' +
       'innerTurn, sceneFunctionType, withholdingLevel, plus a knowledge ledger ' +
