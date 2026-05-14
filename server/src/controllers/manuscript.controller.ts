@@ -516,4 +516,77 @@ export const manuscriptController = {
     })
     res.json({ data: items })
   },
+
+  /**
+   * PUT /api/manuscripts/:id/sections/reorder
+   * Body: { moves: [{ id, orderIndex, parentSectionId? }] }
+   *
+   * Cross-parent section moves. Each move may change order_index and/or
+   * parent_section_id. The service rejects moves that would
+   * promote/demote across levels (use add/remove layer for that).
+   */
+  async reorderSections(req: Request, res: Response) {
+    const { id } = req.params
+    const userId = (req as any).userId
+    if (!userId) throw new UnauthorizedError('Authentication required')
+    const admin = isAdminRequest(req)
+    const moves = (req.body && (req.body.moves ?? req.body)) as unknown
+    const sections = await manuscriptService.reorderSections(id, userId, moves, admin)
+    await activityService.logManuscript('sections_reorder', id, userId, getClientIp(req), getUserAgent(req), {
+      count: Array.isArray(moves) ? moves.length : 0,
+    })
+    res.json({ data: sections })
+  },
+
+  /**
+   * POST /api/manuscripts/:id/spine/layers
+   * Body: { policy: 'wrap_above', label: string }
+   *
+   * Adds a new container layer above the current top of the spine.
+   * Every existing top-level section becomes a child of a single new
+   * parent named `label`. Increments spineDepth, prepends label.
+   * Returns the manuscript + full updated spine so the client can
+   * refresh in one round-trip.
+   */
+  async addSpineLayer(req: Request, res: Response) {
+    const { id } = req.params
+    const userId = (req as any).userId
+    if (!userId) throw new UnauthorizedError('Authentication required')
+    const admin = isAdminRequest(req)
+    const result = await manuscriptService.addSpineLayer(id, userId, req.body ?? {}, admin)
+    await activityService.logManuscript('spine_layer_add', id, userId, getClientIp(req), getUserAgent(req), {
+      policy: req.body?.policy ?? 'wrap_above',
+      label: result.manuscript.spineLayerLabels[0],
+      newDepth: result.manuscript.spineDepth,
+    })
+    res.status(201).json({ data: result })
+  },
+
+  /**
+   * DELETE /api/manuscripts/:id/spine/layers/:level
+   *
+   * Flattens the named level. Children of removed nodes are promoted to
+   * the grandparent in reading order. Items remain attached to their
+   * (now-promoted) parents. Refuses to remove the deepest layer when
+   * items are present — the UI surfaces that as a 400 and asks the user
+   * to move items first.
+   */
+  async removeSpineLayer(req: Request, res: Response) {
+    const { id, level: levelParam } = req.params
+    const userId = (req as any).userId
+    if (!userId) throw new UnauthorizedError('Authentication required')
+    const admin = isAdminRequest(req)
+
+    const level = Number(levelParam)
+    if (!Number.isInteger(level)) {
+      throw new ValidationError(`level must be an integer; got "${levelParam}"`)
+    }
+
+    const result = await manuscriptService.removeSpineLayer(id, userId, level, admin)
+    await activityService.logManuscript('spine_layer_remove', id, userId, getClientIp(req), getUserAgent(req), {
+      removedLevel: level,
+      newDepth: result.manuscript.spineDepth,
+    })
+    res.json({ data: result })
+  },
 }

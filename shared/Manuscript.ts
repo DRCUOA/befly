@@ -27,6 +27,13 @@ export type ManuscriptStatus =
 
 export type ManuscriptVisibility = 'private' | 'shared' | 'public'
 
+/**
+ * Maximum number of container layers in a manuscript spine. The cap
+ * bounds tree depth so the UI's indent and the renderer's recursion stay
+ * predictable. Items always live below the deepest container.
+ */
+export const MAX_SPINE_DEPTH = 4
+
 export interface ManuscriptProject {
   id: string
   userId: string
@@ -46,6 +53,22 @@ export interface ManuscriptProject {
   narrativePromise?: string | null
 
   visibility: ManuscriptVisibility
+
+  /**
+   * Number of container layers in this manuscript's spine. 1 = the legacy
+   * SPINE → SECTION → ITEM shape; 2 = SPINE → CHAPTER → SECTION → ITEM;
+   * up to MAX_SPINE_DEPTH (4). Manuscripts created before the
+   * Configurable Spine Depth refactor backfill to 1.
+   */
+  spineDepth: number
+
+  /**
+   * Human label for each layer, ordered from outermost to innermost.
+   * Length always equals `spineDepth`. Defaults to ["Section"] for
+   * legacy depth-1 manuscripts; depth-2 typically labels ["Chapter",
+   * "Section"], etc. Users may rename layers freely.
+   */
+  spineLayerLabels: string[]
 
   createdAt: string
   updatedAt: string
@@ -69,8 +92,46 @@ export interface ManuscriptSection {
   orderIndex: number
   purpose: ManuscriptSectionPurpose
   notes?: string | null
+
+  /**
+   * Parent section for nested spines (e.g. a "Chapter" contains
+   * "Sections"). NULL means this section sits at the top of the spine.
+   * Items still attach via `ManuscriptItem.sectionId` to whichever
+   * section is at the deepest level of the manuscript's configured
+   * spineDepth.
+   *
+   * Backfilled to NULL for all rows that predate the Configurable Spine
+   * Depth refactor — a flat spine looks like every section at level 1
+   * with no parent.
+   */
+  parentSectionId?: string | null
+
+  /**
+   * Depth of this section within the spine (1-based). A top-level
+   * section is level 1; its direct children are level 2; etc. Bounded by
+   * the parent manuscript's `spineDepth`. Denormalised from
+   * parentSectionId so consumers (Book Room renderer, export, RAG) can
+   * paginate without recursive joins.
+   */
+  level: number
+
   createdAt: string
   updatedAt: string
+}
+
+/**
+ * Recursive tree node returned by repository helpers that walk the spine
+ * top-down. `children` is empty for sections at `level === spineDepth`
+ * (the deepest layer). Items aren't part of the tree — they hang off
+ * sections at the deepest level via `ManuscriptItem.sectionId`.
+ *
+ * Phase 2 introduces this alongside the existing flat `listSections()`
+ * helper; callers that don't yet know about nesting continue to use the
+ * flat list and see level=1 / parentSectionId=null on every row.
+ */
+export interface SpineNode {
+  section: ManuscriptSection
+  children: SpineNode[]
 }
 
 export type ManuscriptItemType =
@@ -111,14 +172,21 @@ export interface ManuscriptItem {
 }
 
 /**
- * Convenience composite returned by GET /api/manuscripts/:id - the manuscript
- * along with its full ordered spine. Cheaper for the Book Room view than
- * three separate round-trips.
+ * Convenience composite returned by GET /api/manuscripts/:id/spine — the
+ * manuscript along with its full ordered spine. Cheaper for the Book
+ * Room view than three separate round-trips.
+ *
+ * `sectionTree` is the same data as `sections`, just shaped as a forest
+ * rooted at top-level (parentSectionId IS NULL) sections. Phase 3+
+ * clients with depth-aware UIs consume the tree directly; older clients
+ * ignore it and keep using the flat `sections` list. For depth-1
+ * manuscripts the tree is a single level — same information either way.
  */
 export interface ManuscriptWithSpine {
   manuscript: ManuscriptProject
   sections: ManuscriptSection[]
   items: ManuscriptItem[]
+  sectionTree: SpineNode[]
 }
 
 /* ----- Manuscript artifacts (durable AI assist output) ----- */

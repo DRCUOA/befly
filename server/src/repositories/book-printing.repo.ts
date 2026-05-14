@@ -45,6 +45,12 @@ interface BookPrintingRow {
   chapter_drop_cap: boolean
   chapter_small_caps_opening: boolean
   chapters_from_items: boolean
+  // Phase 5 of the Configurable Spine Depth Refactor. Both columns
+  // have NOT NULL DEFAULT in the schema (migration 030), so any row
+  // — including ones inserted by clients that pre-date Phase 5 —
+  // reads back with a sensible value.
+  chapter_layer: number
+  toc_style: string
   scene_break_style: string
   scene_break_symbol: string
   running_headers: boolean
@@ -137,6 +143,8 @@ const ALL_COLUMNS = `
   chapter_drop_cap,
   chapter_small_caps_opening,
   chapters_from_items,
+  chapter_layer,
+  toc_style,
   scene_break_style,
   scene_break_symbol,
   running_headers,
@@ -222,6 +230,7 @@ function rowToPrinting(row: BookPrintingRow): BookPrinting {
       dropCap: row.chapter_drop_cap,
       smallCapsOpening: row.chapter_small_caps_opening,
       chaptersFromItems: row.chapters_from_items,
+      chapterLayer: row.chapter_layer,
     },
     sceneBreaks: {
       style: row.scene_break_style as BookPrinting['sceneBreaks']['style'],
@@ -269,6 +278,7 @@ function rowToPrinting(row: BookPrintingRow): BookPrinting {
       isbn: row.cover_isbn,
       showBarcode: row.cover_show_barcode,
     },
+    tocStyle: row.toc_style as BookPrinting['tocStyle'],
     createdAt: row.created_at.toISOString(),
     updatedAt: row.updated_at.toISOString(),
   }
@@ -356,6 +366,13 @@ export const bookPrintingRepo = {
     data: BookPrintingInput
   }): Promise<BookPrinting> {
     const d = input.data
+    // Phase 5 of the Configurable Spine Depth Refactor adds two
+    // optional fields (chapters.chapterLayer, tocStyle). When the
+    // wizard omits them — e.g. an older client — we fall back to the
+    // same defaults the DB column would supply (1 / 'flat'), so older
+    // clients keep working byte-identical to today.
+    const chapterLayer = d.chapters.chapterLayer ?? 1
+    const tocStyle = d.tocStyle ?? 'flat'
     const r = await pool.query<BookPrintingRow>(
       `INSERT INTO book_printings (
         manuscript_id, user_id, version_number, draft_label, profile_name,
@@ -379,7 +396,8 @@ export const bookPrintingRepo = {
         cover_author_size, cover_author_color,
         cover_title_align, cover_author_align,
         cover_back_text, cover_back_text_color,
-        cover_opacity, cover_isbn, cover_show_barcode
+        cover_opacity, cover_isbn, cover_show_barcode,
+        chapter_layer, toc_style
       ) VALUES (
         $1, $2, $3, $4, $5,
         $6, $7, $8, $9,
@@ -402,7 +420,8 @@ export const bookPrintingRepo = {
         $56, $57,
         $58, $59,
         $60, $61,
-        $62, $63, $64
+        $62, $63, $64,
+        $65, $66
       ) RETURNING ${ALL_COLUMNS}`,
       [
         input.manuscriptId, input.userId, input.versionNumber,
@@ -438,6 +457,7 @@ export const bookPrintingRepo = {
         d.cover.titleAlign, d.cover.authorAlign,
         d.cover.backText, d.cover.backTextColor,
         d.cover.coverOpacity, d.cover.isbn, d.cover.showBarcode,
+        chapterLayer, tocStyle,
       ]
     )
     return rowToPrinting(r.rows[0])
@@ -452,9 +472,13 @@ export const bookPrintingRepo = {
     // Verify ownership before overwriting.
     await this.findById(printingId, userId)
     const d = data
+    // Phase 5 fallback: legacy clients that don't carry these new
+    // fields write the same defaults the DB column would supply.
+    const chapterLayer = d.chapters.chapterLayer ?? 1
+    const tocStyle = d.tocStyle ?? 'flat'
     const r = await pool.query<BookPrintingRow>(
       `UPDATE book_printings SET
-         ${versionNumberOverride !== undefined ? 'version_number = $63,' : ''}
+         ${versionNumberOverride !== undefined ? 'version_number = $65,' : ''}
          draft_label = $2,
          profile_name = $3,
          trim_label = $4, trim_width = $5, trim_height = $6, trim_unit = $7,
@@ -482,6 +506,7 @@ export const bookPrintingRepo = {
          cover_title_align = $56, cover_author_align = $57,
          cover_back_text = $58, cover_back_text_color = $59,
          cover_opacity = $60, cover_isbn = $61, cover_show_barcode = $62,
+         chapter_layer = $63, toc_style = $64,
          updated_at = NOW()
        WHERE id = $1
        RETURNING ${ALL_COLUMNS}`,
@@ -519,6 +544,7 @@ export const bookPrintingRepo = {
         d.cover.titleAlign, d.cover.authorAlign,
         d.cover.backText, d.cover.backTextColor,
         d.cover.coverOpacity, d.cover.isbn, d.cover.showBarcode,
+        chapterLayer, tocStyle,
         ...(versionNumberOverride !== undefined ? [versionNumberOverride] : []),
       ]
     )

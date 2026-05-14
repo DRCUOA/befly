@@ -109,8 +109,15 @@ async function tryRetrieveContextPack(
 
 /**
  * Order items by section order, then order_index within section, then
- * unassigned at the end. Mirrors the export formatter's render order so the
- * notion of "adjacent" matches what the user sees in the Book Room.
+ * unassigned at the end. Mirrors the export formatter's render order so
+ * the notion of "adjacent" matches what the user sees in the Book Room.
+ *
+ * Phase 6 of the Configurable Spine Depth Refactor: walks the section
+ * tree DFS so a depth-2 manuscript's items emerge in
+ * Part1→Chapter1→item, Part1→Chapter2→item, Part2→… order rather than
+ * a flat sort that would jumble parts together. At depth=1 every
+ * section is a level-1 leaf and the traversal degenerates to the
+ * pre-Phase-6 flat order — so existing manuscripts behave identically.
  */
 function orderItems(
   sections: ManuscriptSection[],
@@ -120,13 +127,37 @@ function orderItems(
     a.orderIndex - b.orderIndex || a.createdAt.localeCompare(b.createdAt)
   )
   const sectionIds = new Set(orderedSections.map(s => s.id))
-  const out: GapPromptItem[] = []
+  // Build adjacency in one pass; orderedSections is already sorted so
+  // child arrays inherit reading order.
+  const childrenByParent = new Map<string | null, ManuscriptSection[]>()
   for (const s of orderedSections) {
-    const list = items
-      .filter(i => i.sectionId === s.id)
-      .sort((a, b) => a.orderIndex - b.orderIndex || a.createdAt.localeCompare(b.createdAt))
-    out.push(...list)
+    const key = s.parentSectionId ?? null
+    const list = childrenByParent.get(key) ?? []
+    list.push(s)
+    childrenByParent.set(key, list)
   }
+
+  const itemsBySection = new Map<string, GapPromptItem[]>()
+  for (const s of orderedSections) itemsBySection.set(s.id, [])
+  for (const i of items) {
+    if (i.sectionId && itemsBySection.has(i.sectionId)) {
+      itemsBySection.get(i.sectionId)!.push(i)
+    }
+  }
+  for (const list of itemsBySection.values()) {
+    list.sort((a, b) => a.orderIndex - b.orderIndex || a.createdAt.localeCompare(b.createdAt))
+  }
+
+  const out: GapPromptItem[] = []
+  const visit = (s: ManuscriptSection): void => {
+    // Items first (matches export formatter at depth=1 where every
+    // section is both visited AND a leaf).
+    const directItems = itemsBySection.get(s.id) ?? []
+    out.push(...directItems)
+    for (const child of (childrenByParent.get(s.id) ?? [])) visit(child)
+  }
+  for (const root of (childrenByParent.get(null) ?? [])) visit(root)
+
   const unassigned = items
     .filter(i => !i.sectionId || !sectionIds.has(i.sectionId))
     .sort((a, b) => a.orderIndex - b.orderIndex || a.createdAt.localeCompare(b.createdAt))
@@ -141,10 +172,46 @@ function findSectionTitle(
 ): string | null {
   // The "junction belongs to" the earlier item's section. Cross-section
   // junctions are interesting too; we still report from the earlier side.
+  void to
   const sId = from.sectionId
   if (!sId) return null
   const s = sections.find(x => x.id === sId)
   return s?.title ?? null
+}
+
+/**
+ * Phase 6 of the Configurable Spine Depth Refactor. Walks up the
+ * section tree from `sectionId` and returns the chain of ANCESTOR
+ * titles, outermost-first, NOT including the leaf section itself.
+ *
+ * For a depth-1 manuscript the result is always `[]` — the leaf is
+ * level 1 with no parent, so there's nothing above it. The gap-analysis
+ * prompt threads this through as `Container path: Part → Chapter`
+ * context above the section line, giving the model the hierarchy the
+ * writer actually built.
+ */
+function ancestorTitleChain(
+  sections: ManuscriptSection[],
+  sectionId: string | null | undefined
+): string[] {
+  if (!sectionId) return []
+  const byId = new Map<string, ManuscriptSection>()
+  for (const s of sections) byId.set(s.id, s)
+  const chain: string[] = []
+  // Walk parent_section_id chain. Defensive against a tiny cycle just
+  // in case (the DB CHECK forbids self-parent but doesn't catch all
+  // cycles); 16 iterations is a comfortable bound past MAX_SPINE_DEPTH=4.
+  let current = byId.get(sectionId)
+  let hops = 0
+  while (current?.parentSectionId && hops < 16) {
+    const parent = byId.get(current.parentSectionId)
+    if (!parent) break
+    chain.push(parent.title)
+    current = parent
+    hops += 1
+  }
+  // chain is collected innermost-first; flip to outermost-first.
+  return chain.reverse()
 }
 
 /**
@@ -332,6 +399,11 @@ async function runGapAnalysis(input: GapRunInput): Promise<RunAssistResult> {
     let prompt = buildGapAnalysisPrompt({
       manuscript,
       sectionTitle: findSectionTitle(sections, from, to),
+      // Phase 6: when the manuscript has nested layers, surface the
+      // container chain (Part / Chapter / …) above the section line
+      // so the model knows the structural context. Empty array at
+      // depth=1 — the prompt renders identically to before.
+      ancestorTitles: ancestorTitleChain(sections, from.sectionId),
       from,
       to,
       priorAcceptedNotes: priorNotes,

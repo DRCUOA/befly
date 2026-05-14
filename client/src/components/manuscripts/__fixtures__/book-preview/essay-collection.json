@@ -1,0 +1,107 @@
+{
+  "_comment": "Essay collection fixture: two sections, multiple short essays per section. Exercises chaptersFromItems=true (each essay = chapter) and chaptersFromItems=false (section = chapter, scene breaks between essays).",
+  "manuscript": {
+    "id": "fixture-mss-essay-collection",
+    "userId": "fixture-user-1",
+    "title": "Small Rooms, Open Doors",
+    "workingSubtitle": "Essays on attention",
+    "sourceThemeIds": [],
+    "form": "essay_collection",
+    "status": "structuring",
+    "intendedReader": null,
+    "centralQuestion": null,
+    "throughLine": null,
+    "emotionalArc": null,
+    "narrativePromise": null,
+    "visibility": "private",
+    "spineDepth": 1,
+    "spineLayerLabels": ["Section"],
+    "createdAt": "2025-01-01T00:00:00.000Z",
+    "updatedAt": "2025-01-01T00:00:00.000Z"
+  },
+  "sections": [
+    {
+      "id": "fixture-sec-ec-1",
+      "manuscriptId": "fixture-mss-essay-collection",
+      "title": "Looking",
+      "orderIndex": 0,
+      "purpose": "opening",
+      "notes": null,
+      "createdAt": "2025-01-01T00:00:00.000Z",
+      "updatedAt": "2025-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "fixture-sec-ec-2",
+      "manuscriptId": "fixture-mss-essay-collection",
+      "title": "Listening",
+      "orderIndex": 1,
+      "purpose": "deepening",
+      "notes": null,
+      "createdAt": "2025-01-01T00:00:00.000Z",
+      "updatedAt": "2025-01-01T00:00:00.000Z"
+    }
+  ],
+  "items": [
+    {
+      "id": "fixture-itm-ec-1",
+      "manuscriptId": "fixture-mss-essay-collection",
+      "sectionId": "fixture-sec-ec-1",
+      "writingBlockId": "fixture-wb-ec-1",
+      "itemType": "essay",
+      "title": "The Window",
+      "orderIndex": 0,
+      "structuralRole": "introduces_theme",
+      "summary": null,
+      "aiNotes": null,
+      "createdAt": "2025-01-01T00:00:00.000Z",
+      "updatedAt": "2025-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "fixture-itm-ec-2",
+      "manuscriptId": "fixture-mss-essay-collection",
+      "sectionId": "fixture-sec-ec-1",
+      "writingBlockId": "fixture-wb-ec-2",
+      "itemType": "essay",
+      "title": "The Garden",
+      "orderIndex": 1,
+      "structuralRole": "personal_example",
+      "summary": null,
+      "aiNotes": null,
+      "createdAt": "2025-01-01T00:00:00.000Z",
+      "updatedAt": "2025-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "fixture-itm-ec-3",
+      "manuscriptId": "fixture-mss-essay-collection",
+      "sectionId": "fixture-sec-ec-2",
+      "writingBlockId": "fixture-wb-ec-3",
+      "itemType": "essay",
+      "title": "The Conversation",
+      "orderIndex": 0,
+      "structuralRole": "deepening",
+      "summary": null,
+      "aiNotes": null,
+      "createdAt": "2025-01-01T00:00:00.000Z",
+      "updatedAt": "2025-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "fixture-itm-ec-4",
+      "manuscriptId": "fixture-mss-essay-collection",
+      "sectionId": "fixture-sec-ec-2",
+      "writingBlockId": null,
+      "itemType": "bridge",
+      "title": "Between voices",
+      "orderIndex": 1,
+      "structuralRole": null,
+      "summary": "A short bridge linking the conversation pieces.",
+      "aiNotes": null,
+      "createdAt": "2025-01-01T00:00:00.000Z",
+      "updatedAt": "2025-01-01T00:00:00.000Z"
+    }
+  ],
+  "bodies": {
+    "fixture-wb-ec-1": "The window was small and faced east. Each morning the light filled it slowly, then all at once.\n\nI learned to wait for that crossing.",
+    "fixture-wb-ec-2": "The garden was nothing — a patch of dirt behind a borrowed flat. Still, I went out to it each evening.",
+    "fixture-wb-ec-3": "Conversations rarely arrive when they are summoned. They arrive in the middle of doing dishes, in the long pause before someone says goodbye."
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "_comment": "Minimal long-form fixture: one section, one essay. Exercises the smallest non-empty path and confirms chaptersFromItems true/false produce sensible output with a single chapter.",
+  "manuscript": {
+    "id": "fixture-mss-long-form",
+    "userId": "fixture-user-1",
+    "title": "On Quiet",
+    "workingSubtitle": null,
+    "sourceThemeIds": [],
+    "form": "long_form_essay",
+    "status": "drafting",
+    "intendedReader": null,
+    "centralQuestion": null,
+    "throughLine": null,
+    "emotionalArc": null,
+    "narrativePromise": null,
+    "visibility": "private",
+    "spineDepth": 1,
+    "spineLayerLabels": ["Section"],
+    "createdAt": "2025-01-01T00:00:00.000Z",
+    "updatedAt": "2025-01-01T00:00:00.000Z"
+  },
+  "sections": [
+    {
+      "id": "fixture-sec-lf-1",
+      "manuscriptId": "fixture-mss-long-form",
+      "title": "Body",
+      "orderIndex": 0,
+      "purpose": "unassigned",
+      "notes": null,
+      "createdAt": "2025-01-01T00:00:00.000Z",
+      "updatedAt": "2025-01-01T00:00:00.000Z"
+    }
+  ],
+  "items": [
+    {
+      "id": "fixture-itm-lf-1",
+      "manuscriptId": "fixture-mss-long-form",
+      "sectionId": "fixture-sec-lf-1",
+      "writingBlockId": "fixture-wb-lf-1",
+      "itemType": "essay",
+      "title": "On quiet",
+      "orderIndex": 0,
+      "structuralRole": null,
+      "summary": null,
+      "aiNotes": null,
+      "createdAt": "2025-01-01T00:00:00.000Z",
+      "updatedAt": "2025-01-01T00:00:00.000Z"
+    }
+  ],
+  "bodies": {
+    "fixture-wb-lf-1": "Quiet is not the absence of sound. It is what remains when nothing is asking anything of us.\n\nI go looking for it the way other people go looking for noise."
+  }
+}

@@ -1,0 +1,3365 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`BookPreviewModal — depth-1 regression snapshots (Phase 1 baseline) > fixture: essay-collection > P1-defaults — chaptersFromItems=true, asterisk scene breaks, minimal matter > bookFlowHtml 1`] = `
+"<section class="bp-frontmatter bp-page-break-before bp-page-break-after"><div class="bp-half-title">Small Rooms, Open Doors</div></section>
+<section class="bp-titlepage bp-page-break-before bp-page-break-after">
+         <h1 class="bp-book-title">Small Rooms, Open Doors</h1>
+         <p class="bp-book-subtitle">Essays on attention</p>
+         
+       </section>
+<section class="bp-frontmatter bp-page-break-before bp-page-break-after">
+         <p class="bp-fm-line">Small Rooms, Open Doors</p>
+         
+         <p class="bp-fm-line">All rights reserved.</p>
+         <p class="bp-fm-line">ISBN 978-1-1274-1829-9</p>
+         <p class="bp-fm-line">First edition.</p>
+       </section>
+<section class="bp-frontmatter bp-page-break-before bp-page-break-after"><p class="bp-dedication">For…</p></section>
+<section class="bp-chapter bp-chapter-opening bp-page-break-before  "
+                data-chapter-index="0"
+                data-chapter-title="The Window">
+         <div class="bp-chapter-spacer" style="height:32%"></div>
+         <div class="bp-chapter-heading">Chapter 1</div>
+       </section>
+<div class="bp-item bp-item-opening"><p>The window was small and faced east. Each morning the light filled it slowly, then all at once.</p>
+<p>I learned to wait for that crossing.</p>
+</div>
+<section class="bp-chapter bp-chapter-opening bp-page-break-before  "
+                data-chapter-index="1"
+                data-chapter-title="The Garden">
+         <div class="bp-chapter-spacer" style="height:32%"></div>
+         <div class="bp-chapter-heading">Chapter 2</div>
+       </section>
+<div class="bp-item bp-item-opening"><p>The garden was nothing — a patch of dirt behind a borrowed flat. Still, I went out to it each evening.</p>
+</div>
+<section class="bp-chapter bp-chapter-opening bp-page-break-before  "
+                data-chapter-index="2"
+                data-chapter-title="The Conversation">
+         <div class="bp-chapter-spacer" style="height:32%"></div>
+         <div class="bp-chapter-heading">Chapter 3</div>
+       </section>
+<div class="bp-item bp-item-opening"><p>Conversations rarely arrive when they are summoned. They arrive in the middle of doing dishes, in the long pause before someone says goodbye.</p>
+</div>
+<section class="bp-chapter bp-chapter-opening bp-page-break-before  "
+                data-chapter-index="3"
+                data-chapter-title="Between voices">
+         <div class="bp-chapter-spacer" style="height:32%"></div>
+         <div class="bp-chapter-heading">Chapter 4</div>
+       </section>
+<div class="bp-item bp-item-opening"><div class="bp-bridge"><p><em>Between voices</em></p><p>A short bridge linking the conversation pieces.</p></div></div>
+<section class="bp-backmatter bp-page-break-before"><h2 class="bp-h2">Acknowledgements</h2><p>—</p></section>
+<section class="bp-backmatter bp-page-break-before"><h2 class="bp-h2">About the author</h2><p>—</p></section>"
+`;
+
+exports[`BookPreviewModal — depth-1 regression snapshots (Phase 1 baseline) > fixture: essay-collection > P1-defaults — chaptersFromItems=true, asterisk scene breaks, minimal matter > printHtml 1`] = `
+"<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Small Rooms, Open Doors — A5</title>
+<style>
+  /* ===== Page rules ===== */
+  @page {
+    size: 148mm 210mm;
+    margin: 0.65in 0.65in 0.75in 0.8in;
+  }
+  @page :left {
+    margin: 0.65in 0.8in 0.75in 0.65in;
+    
+    @bottom-center { content: counter(page); font-family: "Garamond", "Iowan Old Style", Georgia, "Times New Roman", serif; font-size: 9pt; color: #5a4f3f; }
+  }
+  @page :right {
+    margin: 0.65in 0.65in 0.75in 0.8in;
+    @top-center { content: "Small Rooms, Open Doors"; font-family: "Garamond", "Iowan Old Style", Georgia, "Times New Roman", serif; font-size: 9pt; color: #5a4f3f; letter-spacing: 0.04em; }
+    @bottom-center { content: counter(page); font-family: "Garamond", "Iowan Old Style", Georgia, "Times New Roman", serif; font-size: 9pt; color: #5a4f3f; }
+  }
+  @page :first {
+    @top-center { content: ""; }
+    @bottom-center { content: ""; }
+    @top-left-corner { content: ""; }
+    @top-right-corner { content: ""; }
+    @bottom-left-corner { content: ""; }
+    @bottom-right-corner { content: ""; }
+  }
+  @page chapter-opening {
+    margin: 0.65in 0.65in 0.75in 0.8in;
+    
+      @top-center { content: ""; }
+      @top-left-corner { content: ""; }
+      @top-right-corner { content: ""; }
+      @bottom-center { content: ""; }
+      @bottom-left-corner { content: ""; }
+      @bottom-right-corner { content: ""; }
+    
+  }
+  @page cover {
+    margin: 0;
+    @top-center { content: ""; } @bottom-center { content: ""; }
+    @top-left-corner { content: ""; } @top-right-corner { content: ""; }
+    @bottom-left-corner { content: ""; } @bottom-right-corner { content: ""; }
+  }
+
+  /* ===== Document chrome ===== */
+  html, body { margin: 0; padding: 0; background: #f4ecdd; }
+  body {
+    font-family: "Garamond", "Iowan Old Style", Georgia, "Times New Roman", serif;
+    font-size: 11pt;
+    line-height: 13pt;
+    text-align: justify;
+    hyphens: auto;
+    -webkit-hyphens: auto;
+    color: #1f1a14;
+  }
+
+  /* ===== Body type ===== */
+  p { margin: 0; text-indent: 0.25in; padding-bottom: 0pt; }
+  .bp-item > p:first-child,
+  .bp-item-opening > p:first-child { text-indent: 0; }
+  .bp-scene-break + .bp-item > p:first-child { text-indent: 0; }
+  .bp-scene-break {
+    text-indent: 0; text-align: center; margin: 1.2em 0;
+    font-style: italic; letter-spacing: 0.4em;
+  }
+  .bp-scene-break-blank { color: transparent; }
+  em { font-style: italic; }
+  strong { font-weight: 600; }
+  blockquote { margin: 0.6em 1.2em; font-style: italic; color: #3a3022; }
+
+  /* ===== Chapter openings =====
+     The screen-mode .bp-chapter-spacer uses a percentage height that only
+     works inside CSS columns. In print we hide it and apply mm padding to
+     the section directly so the heading lands at the right vertical
+     position on the A5 page. */
+  .bp-chapter-opening, .bp-chapter {
+    break-before: page;
+    break-inside: avoid-page;
+    page: chapter-opening;
+    text-align: center;
+    padding-top: 55mm;
+  }
+  .bp-chapter-opening > .bp-chapter-spacer { display: none; }
+  .bp-chapter-heading {
+    font-size: 1.6em; font-weight: 300; letter-spacing: 0.04em;
+    margin: 0 0 1em 0;
+    line-height: 1.2;
+  }
+  /* Front-matter sections that get their own page also need explicit
+     top spacing — the % values inside their inline styles collapse to 0
+     in print, leaving the heading flush against the top margin. */
+  .bp-half-title { margin-top: 70mm; padding-top: 0; }
+  .bp-titlepage { padding-top: 38mm; margin-top: 0; }
+  .bp-toc { padding-top: 18mm; }
+  .bp-fm-h { margin-top: 55mm; padding-top: 0; }
+  .bp-dedication { margin-top: 70mm; }
+  .bp-epigraph { margin-top: 55mm; }
+  .bp-h2 { margin: 18mm 0 6mm 0; padding-top: 0; }
+
+  /* ===== Front matter ===== */
+  .bp-frontmatter, .bp-titlepage, .bp-toc {
+    break-before: page;
+    page: chapter-opening;
+    text-align: center;
+  }
+  .bp-half-title { font-size: 1.2em; letter-spacing: 0.06em; }
+  .bp-book-title { font-size: 1.8em; font-weight: 300; margin: 0 0 0.4em 0; line-height: 1.2; }
+  .bp-book-subtitle { font-style: italic; margin: 0 0 1.5em 0; }
+  .bp-book-author { font-style: italic; margin: 1.5em 0 0 0; }
+  .bp-fm-line { font-size: 0.85em; margin: 0.4em 0; text-indent: 0; }
+  .bp-fm-h { font-size: 1.2em; }
+  .bp-dedication { text-indent: 0; font-style: italic; }
+  .bp-epigraph { margin-left: 12mm; margin-right: 12mm; font-style: italic; text-indent: 0; }
+  .bp-epigraph-attribution { text-align: center; margin: 4mm 12mm 0; font-size: 0.85em; text-indent: 0; }
+  .bp-h2 { font-size: 1.4em; }
+  .bp-toc-list { list-style: none; padding: 0; margin: 1em 0; font-size: 0.95em; }
+  .bp-toc-list li { margin: 0.35em 0; }
+  .bp-toc-num { display: inline-block; width: 1.6em; }
+  .bp-bridge {
+    margin: 0.6em 1.2em; padding: 0.6em 0;
+    border-top: 1px solid #c7bfae; border-bottom: 1px solid #c7bfae;
+    text-align: center; font-style: italic;
+  }
+  .bp-placeholder { font-style: italic; color: #6a5f4d; }
+
+  /* ===== Cover pages ===== */
+  .pp-cover-page {
+    break-before: page;
+    break-after: page;
+    page: cover;
+    width: 148mm;
+    height: 210mm;
+    position: relative;
+    box-sizing: border-box;
+    overflow: hidden;
+    background: #2a2620;
+    color: #f4ecdd;
+  }
+  .pp-cover-page-front { /* first sheet — already gets @page :first */ }
+
+  
+  
+
+  /* Trim guides (commented out — uncomment if you want crop marks)
+  @media print { body::after { content: ''; position: fixed; ... } }
+  */
+
+  @media print {
+    .pp-screen-only { display: none !important; }
+  }
+</style>
+</head>
+<body>
+  <div class="pp-screen-only" style="position:fixed;top:0;left:0;right:0;padding:8px 12px;background:#222;color:#fff;font-family:system-ui,sans-serif;font-size:13px;display:flex;gap:8px;align-items:center;z-index:9999;">
+    <strong>Print preview.</strong>
+    <span style="opacity:.85;">Use your browser's Print dialog (⌘P / Ctrl-P) to send to printer or save as PDF.</span>
+    <button onclick="window.print()" style="margin-left:auto;padding:4px 10px;background:#fff;color:#000;border:0;border-radius:3px;cursor:pointer;">Print</button>
+    <button onclick="window.close()" style="padding:4px 10px;background:transparent;color:#fff;border:1px solid #fff;border-radius:3px;cursor:pointer;">Close</button>
+  </div>
+  <div class="pp-screen-only" style="height:46px;"></div>
+
+  <div class="pp-cover-page pp-cover-page-front"></div>
+  <section class="bp-frontmatter bp-page-break-before bp-page-break-after"><div class="bp-half-title">Small Rooms, Open Doors</div></section>
+<section class="bp-titlepage bp-page-break-before bp-page-break-after">
+         <h1 class="bp-book-title">Small Rooms, Open Doors</h1>
+         <p class="bp-book-subtitle">Essays on attention</p>
+         
+       </section>
+<section class="bp-frontmatter bp-page-break-before bp-page-break-after">
+         <p class="bp-fm-line">Small Rooms, Open Doors</p>
+         
+         <p class="bp-fm-line">All rights reserved.</p>
+         <p class="bp-fm-line">ISBN 978-1-1274-1829-9</p>
+         <p class="bp-fm-line">First edition.</p>
+       </section>
+<section class="bp-frontmatter bp-page-break-before bp-page-break-after"><p class="bp-dedication">For…</p></section>
+<section class="bp-chapter bp-chapter-opening bp-page-break-before  "
+                data-chapter-index="0"
+                data-chapter-title="The Window">
+         <div class="bp-chapter-spacer" style="height:32%"></div>
+         <div class="bp-chapter-heading">Chapter 1</div>
+       </section>
+<div class="bp-item bp-item-opening"><p>The window was small and faced east. Each morning the light filled it slowly, then all at once.</p>
+<p>I learned to wait for that crossing.</p>
+</div>
+<section class="bp-chapter bp-chapter-opening bp-page-break-before  "
+                data-chapter-index="1"
+                data-chapter-title="The Garden">
+         <div class="bp-chapter-spacer" style="height:32%"></div>
+         <div class="bp-chapter-heading">Chapter 2</div>
+       </section>
+<div class="bp-item bp-item-opening"><p>The garden was nothing — a patch of dirt behind a borrowed flat. Still, I went out to it each evening.</p>
+</div>
+<section class="bp-chapter bp-chapter-opening bp-page-break-before  "
+                data-chapter-index="2"
+                data-chapter-title="The Conversation">
+         <div class="bp-chapter-spacer" style="height:32%"></div>
+         <div class="bp-chapter-heading">Chapter 3</div>
+       </section>
+<div class="bp-item bp-item-opening"><p>Conversations rarely arrive when they are summoned. They arrive in the middle of doing dishes, in the long pause before someone says goodbye.</p>
+</div>
+<section class="bp-chapter bp-chapter-opening bp-page-break-before  "
+                data-chapter-index="3"
+                data-chapter-title="Between voices">
+         <div class="bp-chapter-spacer" style="height:32%"></div>
+         <div class="bp-chapter-heading">Chapter 4</div>
+       </section>
+<div class="bp-item bp-item-opening"><div class="bp-bridge"><p><em>Between voices</em></p><p>A short bridge linking the conversation pieces.</p></div></div>
+<section class="bp-backmatter bp-page-break-before"><h2 class="bp-h2">Acknowledgements</h2><p>—</p></section>
+<section class="bp-backmatter bp-page-break-before"><h2 class="bp-h2">About the author</h2><p>—</p></section>
+  <div class="pp-cover-page"></div>
+
+  <script>
+    // Wait for cover artwork to fully decode before opening the print
+    // dialog — without this the browser can snapshot the page while the
+    // images are still loading and they end up missing on the printed PDF.
+    function waitForCoverImages() {
+      var imgs = Array.from(document.querySelectorAll('img.pp-cover-art'));
+      if (!imgs.length) return Promise.resolve();
+      return Promise.all(imgs.map(function (img) {
+        if (img.complete && img.naturalWidth > 0) return Promise.resolve();
+        if (typeof img.decode === 'function') return img.decode().catch(function () {});
+        return new Promise(function (res) { img.addEventListener('load', res, { once: true }); img.addEventListener('error', res, { once: true }); });
+      }));
+    }
+    window.addEventListener('load', function () {
+      waitForCoverImages().then(function () {
+        // Small extra tick for the layout engine to flush after image decode.
+        setTimeout(function () { try { window.focus(); window.print(); } catch (e) {} }, 100);
+      });
+    });
+  </script>
+</body>
+</html>"
+`;
+
+exports[`BookPreviewModal — depth-1 regression snapshots (Phase 1 baseline) > fixture: essay-collection > P2-sections-as-chapters — chaptersFromItems=false, asterisk scene breaks, minimal matter > bookFlowHtml 1`] = `
+"<section class="bp-titlepage bp-page-break-before bp-page-break-after">
+         <h1 class="bp-book-title">Small Rooms, Open Doors</h1>
+         <p class="bp-book-subtitle">Essays on attention</p>
+         
+       </section>
+<section class="bp-chapter bp-chapter-opening bp-page-break-before  "
+                data-chapter-index="0"
+                data-chapter-title="Looking">
+         <div class="bp-chapter-spacer" style="height:32%"></div>
+         <div class="bp-chapter-heading">Chapter 1</div>
+       </section>
+<div class="bp-item bp-item-opening"><p>The window was small and faced east. Each morning the light filled it slowly, then all at once.</p>
+<p>I learned to wait for that crossing.</p>
+</div>
+<p class="bp-scene-break bp-scene-break-symbol">* * *</p>
+<div class="bp-item"><p>The garden was nothing — a patch of dirt behind a borrowed flat. Still, I went out to it each evening.</p>
+</div>
+<section class="bp-chapter bp-chapter-opening bp-page-break-before  "
+                data-chapter-index="1"
+                data-chapter-title="Listening">
+         <div class="bp-chapter-spacer" style="height:32%"></div>
+         <div class="bp-chapter-heading">Chapter 2</div>
+       </section>
+<div class="bp-item bp-item-opening"><p>Conversations rarely arrive when they are summoned. They arrive in the middle of doing dishes, in the long pause before someone says goodbye.</p>
+</div>
+<p class="bp-scene-break bp-scene-break-symbol">* * *</p>
+<div class="bp-item"><div class="bp-bridge"><p><em>Between voices</em></p><p>A short bridge linking the conversation pieces.</p></div></div>"
+`;
+
+exports[`BookPreviewModal — depth-1 regression snapshots (Phase 1 baseline) > fixture: essay-collection > P2-sections-as-chapters — chaptersFromItems=false, asterisk scene breaks, minimal matter > printHtml 1`] = `
+"<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Small Rooms, Open Doors — A5</title>
+<style>
+  /* ===== Page rules ===== */
+  @page {
+    size: 148mm 210mm;
+    margin: 0.65in 0.65in 0.75in 0.8in;
+  }
+  @page :left {
+    margin: 0.65in 0.8in 0.75in 0.65in;
+    
+    @bottom-center { content: counter(page); font-family: "Garamond", "Iowan Old Style", Georgia, "Times New Roman", serif; font-size: 9pt; color: #5a4f3f; }
+  }
+  @page :right {
+    margin: 0.65in 0.65in 0.75in 0.8in;
+    @top-center { content: "Small Rooms, Open Doors"; font-family: "Garamond", "Iowan Old Style", Georgia, "Times New Roman", serif; font-size: 9pt; color: #5a4f3f; letter-spacing: 0.04em; }
+    @bottom-center { content: counter(page); font-family: "Garamond", "Iowan Old Style", Georgia, "Times New Roman", serif; font-size: 9pt; color: #5a4f3f; }
+  }
+  @page :first {
+    @top-center { content: ""; }
+    @bottom-center { content: ""; }
+    @top-left-corner { content: ""; }
+    @top-right-corner { content: ""; }
+    @bottom-left-corner { content: ""; }
+    @bottom-right-corner { content: ""; }
+  }
+  @page chapter-opening {
+    margin: 0.65in 0.65in 0.75in 0.8in;
+    
+      @top-center { content: ""; }
+      @top-left-corner { content: ""; }
+      @top-right-corner { content: ""; }
+      @bottom-center { content: ""; }
+      @bottom-left-corner { content: ""; }
+      @bottom-right-corner { content: ""; }
+    
+  }
+  @page cover {
+    margin: 0;
+    @top-center { content: ""; } @bottom-center { content: ""; }
+    @top-left-corner { content: ""; } @top-right-corner { content: ""; }
+    @bottom-left-corner { content: ""; } @bottom-right-corner { content: ""; }
+  }
+
+  /* ===== Document chrome ===== */
+  html, body { margin: 0; padding: 0; background: #f4ecdd; }
+  body {
+    font-family: "Garamond", "Iowan Old Style", Georgia, "Times New Roman", serif;
+    font-size: 11pt;
+    line-height: 13pt;
+    text-align: justify;
+    hyphens: auto;
+    -webkit-hyphens: auto;
+    color: #1f1a14;
+  }
+
+  /* ===== Body type ===== */
+  p { margin: 0; text-indent: 0.25in; padding-bottom: 0pt; }
+  .bp-item > p:first-child,
+  .bp-item-opening > p:first-child { text-indent: 0; }
+  .bp-scene-break + .bp-item > p:first-child { text-indent: 0; }
+  .bp-scene-break {
+    text-indent: 0; text-align: center; margin: 1.2em 0;
+    font-style: italic; letter-spacing: 0.4em;
+  }
+  .bp-scene-break-blank { color: transparent; }
+  em { font-style: italic; }
+  strong { font-weight: 600; }
+  blockquote { margin: 0.6em 1.2em; font-style: italic; color: #3a3022; }
+
+  /* ===== Chapter openings =====
+     The screen-mode .bp-chapter-spacer uses a percentage height that only
+     works inside CSS columns. In print we hide it and apply mm padding to
+     the section directly so the heading lands at the right vertical
+     position on the A5 page. */
+  .bp-chapter-opening, .bp-chapter {
+    break-before: page;
+    break-inside: avoid-page;
+    page: chapter-opening;
+    text-align: center;
+    padding-top: 55mm;
+  }
+  .bp-chapter-opening > .bp-chapter-spacer { display: none; }
+  .bp-chapter-heading {
+    font-size: 1.6em; font-weight: 300; letter-spacing: 0.04em;
+    margin: 0 0 1em 0;
+    line-height: 1.2;
+  }
+  /* Front-matter sections that get their own page also need explicit
+     top spacing — the % values inside their inline styles collapse to 0
+     in print, leaving the heading flush against the top margin. */
+  .bp-half-title { margin-top: 70mm; padding-top: 0; }
+  .bp-titlepage { padding-top: 38mm; margin-top: 0; }
+  .bp-toc { padding-top: 18mm; }
+  .bp-fm-h { margin-top: 55mm; padding-top: 0; }
+  .bp-dedication { margin-top: 70mm; }
+  .bp-epigraph { margin-top: 55mm; }
+  .bp-h2 { margin: 18mm 0 6mm 0; padding-top: 0; }
+
+  /* ===== Front matter ===== */
+  .bp-frontmatter, .bp-titlepage, .bp-toc {
+    break-before: page;
+    page: chapter-opening;
+    text-align: center;
+  }
+  .bp-half-title { font-size: 1.2em; letter-spacing: 0.06em; }
+  .bp-book-title { font-size: 1.8em; font-weight: 300; margin: 0 0 0.4em 0; line-height: 1.2; }
+  .bp-book-subtitle { font-style: italic; margin: 0 0 1.5em 0; }
+  .bp-book-author { font-style: italic; margin: 1.5em 0 0 0; }
+  .bp-fm-line { font-size: 0.85em; margin: 0.4em 0; text-indent: 0; }
+  .bp-fm-h { font-size: 1.2em; }
+  .bp-dedication { text-indent: 0; font-style: italic; }
+  .bp-epigraph { margin-left: 12mm; margin-right: 12mm; font-style: italic; text-indent: 0; }
+  .bp-epigraph-attribution { text-align: center; margin: 4mm 12mm 0; font-size: 0.85em; text-indent: 0; }
+  .bp-h2 { font-size: 1.4em; }
+  .bp-toc-list { list-style: none; padding: 0; margin: 1em 0; font-size: 0.95em; }
+  .bp-toc-list li { margin: 0.35em 0; }
+  .bp-toc-num { display: inline-block; width: 1.6em; }
+  .bp-bridge {
+    margin: 0.6em 1.2em; padding: 0.6em 0;
+    border-top: 1px solid #c7bfae; border-bottom: 1px solid #c7bfae;
+    text-align: center; font-style: italic;
+  }
+  .bp-placeholder { font-style: italic; color: #6a5f4d; }
+
+  /* ===== Cover pages ===== */
+  .pp-cover-page {
+    break-before: page;
+    break-after: page;
+    page: cover;
+    width: 148mm;
+    height: 210mm;
+    position: relative;
+    box-sizing: border-box;
+    overflow: hidden;
+    background: #2a2620;
+    color: #f4ecdd;
+  }
+  .pp-cover-page-front { /* first sheet — already gets @page :first */ }
+
+  
+  
+
+  /* Trim guides (commented out — uncomment if you want crop marks)
+  @media print { body::after { content: ''; position: fixed; ... } }
+  */
+
+  @media print {
+    .pp-screen-only { display: none !important; }
+  }
+</style>
+</head>
+<body>
+  <div class="pp-screen-only" style="position:fixed;top:0;left:0;right:0;padding:8px 12px;background:#222;color:#fff;font-family:system-ui,sans-serif;font-size:13px;display:flex;gap:8px;align-items:center;z-index:9999;">
+    <strong>Print preview.</strong>
+    <span style="opacity:.85;">Use your browser's Print dialog (⌘P / Ctrl-P) to send to printer or save as PDF.</span>
+    <button onclick="window.print()" style="margin-left:auto;padding:4px 10px;background:#fff;color:#000;border:0;border-radius:3px;cursor:pointer;">Print</button>
+    <button onclick="window.close()" style="padding:4px 10px;background:transparent;color:#fff;border:1px solid #fff;border-radius:3px;cursor:pointer;">Close</button>
+  </div>
+  <div class="pp-screen-only" style="height:46px;"></div>
+
+  <div class="pp-cover-page pp-cover-page-front"></div>
+  <section class="bp-titlepage bp-page-break-before bp-page-break-after">
+         <h1 class="bp-book-title">Small Rooms, Open Doors</h1>
+         <p class="bp-book-subtitle">Essays on attention</p>
+         
+       </section>
+<section class="bp-chapter bp-chapter-opening bp-page-break-before  "
+                data-chapter-index="0"
+                data-chapter-title="Looking">
+         <div class="bp-chapter-spacer" style="height:32%"></div>
+         <div class="bp-chapter-heading">Chapter 1</div>
+       </section>
+<div class="bp-item bp-item-opening"><p>The window was small and faced east. Each morning the light filled it slowly, then all at once.</p>
+<p>I learned to wait for that crossing.</p>
+</div>
+<p class="bp-scene-break bp-scene-break-symbol">* * *</p>
+<div class="bp-item"><p>The garden was nothing — a patch of dirt behind a borrowed flat. Still, I went out to it each evening.</p>
+</div>
+<section class="bp-chapter bp-chapter-opening bp-page-break-before  "
+                data-chapter-index="1"
+                data-chapter-title="Listening">
+         <div class="bp-chapter-spacer" style="height:32%"></div>
+         <div class="bp-chapter-heading">Chapter 2</div>
+       </section>
+<div class="bp-item bp-item-opening"><p>Conversations rarely arrive when they are summoned. They arrive in the middle of doing dishes, in the long pause before someone says goodbye.</p>
+</div>
+<p class="bp-scene-break bp-scene-break-symbol">* * *</p>
+<div class="bp-item"><div class="bp-bridge"><p><em>Between voices</em></p><p>A short bridge linking the conversation pieces.</p></div></div>
+  <div class="pp-cover-page"></div>
+
+  <script>
+    // Wait for cover artwork to fully decode before opening the print
+    // dialog — without this the browser can snapshot the page while the
+    // images are still loading and they end up missing on the printed PDF.
+    function waitForCoverImages() {
+      var imgs = Array.from(document.querySelectorAll('img.pp-cover-art'));
+      if (!imgs.length) return Promise.resolve();
+      return Promise.all(imgs.map(function (img) {
+        if (img.complete && img.naturalWidth > 0) return Promise.resolve();
+        if (typeof img.decode === 'function') return img.decode().catch(function () {});
+        return new Promise(function (res) { img.addEventListener('load', res, { once: true }); img.addEventListener('error', res, { once: true }); });
+      }));
+    }
+    window.addEventListener('load', function () {
+      waitForCoverImages().then(function () {
+        // Small extra tick for the layout engine to flush after image decode.
+        setTimeout(function () { try { window.focus(); window.print(); } catch (e) {} }, 100);
+      });
+    });
+  </script>
+</body>
+</html>"
+`;
+
+exports[`BookPreviewModal — depth-1 regression snapshots (Phase 1 baseline) > fixture: essay-collection > P3-toc-blank-breaks — chaptersFromItems=true, blank-line scene breaks, TOC on > bookFlowHtml 1`] = `
+"<section class="bp-frontmatter bp-page-break-before bp-page-break-after"><div class="bp-half-title">Small Rooms, Open Doors</div></section>
+<section class="bp-titlepage bp-page-break-before bp-page-break-after">
+         <h1 class="bp-book-title">Small Rooms, Open Doors</h1>
+         <p class="bp-book-subtitle">Essays on attention</p>
+         
+       </section>
+<section class="bp-toc bp-page-break-before bp-page-break-after">
+         <h2 class="bp-h2">Contents</h2>
+         <ol class="bp-toc-list"><li><span class="bp-toc-num">1.</span> The Window</li><li><span class="bp-toc-num">2.</span> The Garden</li><li><span class="bp-toc-num">3.</span> The Conversation</li><li><span class="bp-toc-num">4.</span> Between voices</li></ol>
+       </section>
+<section class="bp-chapter bp-chapter-opening bp-page-break-before  "
+                data-chapter-index="0"
+                data-chapter-title="The Window">
+         <div class="bp-chapter-spacer" style="height:32%"></div>
+         <div class="bp-chapter-heading">Chapter 1</div>
+       </section>
+<div class="bp-item bp-item-opening"><p>The window was small and faced east. Each morning the light filled it slowly, then all at once.</p>
+<p>I learned to wait for that crossing.</p>
+</div>
+<section class="bp-chapter bp-chapter-opening bp-page-break-before  "
+                data-chapter-index="1"
+                data-chapter-title="The Garden">
+         <div class="bp-chapter-spacer" style="height:32%"></div>
+         <div class="bp-chapter-heading">Chapter 2</div>
+       </section>
+<div class="bp-item bp-item-opening"><p>The garden was nothing — a patch of dirt behind a borrowed flat. Still, I went out to it each evening.</p>
+</div>
+<section class="bp-chapter bp-chapter-opening bp-page-break-before  "
+                data-chapter-index="2"
+                data-chapter-title="The Conversation">
+         <div class="bp-chapter-spacer" style="height:32%"></div>
+         <div class="bp-chapter-heading">Chapter 3</div>
+       </section>
+<div class="bp-item bp-item-opening"><p>Conversations rarely arrive when they are summoned. They arrive in the middle of doing dishes, in the long pause before someone says goodbye.</p>
+</div>
+<section class="bp-chapter bp-chapter-opening bp-page-break-before  "
+                data-chapter-index="3"
+                data-chapter-title="Between voices">
+         <div class="bp-chapter-spacer" style="height:32%"></div>
+         <div class="bp-chapter-heading">Chapter 4</div>
+       </section>
+<div class="bp-item bp-item-opening"><div class="bp-bridge"><p><em>Between voices</em></p><p>A short bridge linking the conversation pieces.</p></div></div>"
+`;
+
+exports[`BookPreviewModal — depth-1 regression snapshots (Phase 1 baseline) > fixture: essay-collection > P3-toc-blank-breaks — chaptersFromItems=true, blank-line scene breaks, TOC on > printHtml 1`] = `
+"<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Small Rooms, Open Doors — A5</title>
+<style>
+  /* ===== Page rules ===== */
+  @page {
+    size: 148mm 210mm;
+    margin: 0.65in 0.65in 0.75in 0.8in;
+  }
+  @page :left {
+    margin: 0.65in 0.8in 0.75in 0.65in;
+    
+    @bottom-center { content: counter(page); font-family: "Garamond", "Iowan Old Style", Georgia, "Times New Roman", serif; font-size: 9pt; color: #5a4f3f; }
+  }
+  @page :right {
+    margin: 0.65in 0.65in 0.75in 0.8in;
+    @top-center { content: "Small Rooms, Open Doors"; font-family: "Garamond", "Iowan Old Style", Georgia, "Times New Roman", serif; font-size: 9pt; color: #5a4f3f; letter-spacing: 0.04em; }
+    @bottom-center { content: counter(page); font-family: "Garamond", "Iowan Old Style", Georgia, "Times New Roman", serif; font-size: 9pt; color: #5a4f3f; }
+  }
+  @page :first {
+    @top-center { content: ""; }
+    @bottom-center { content: ""; }
+    @top-left-corner { content: ""; }
+    @top-right-corner { content: ""; }
+    @bottom-left-corner { content: ""; }
+    @bottom-right-corner { content: ""; }
+  }
+  @page chapter-opening {
+    margin: 0.65in 0.65in 0.75in 0.8in;
+    
+      @top-center { content: ""; }
+      @top-left-corner { content: ""; }
+      @top-right-corner { content: ""; }
+      @bottom-center { content: ""; }
+      @bottom-left-corner { content: ""; }
+      @bottom-right-corner { content: ""; }
+    
+  }
+  @page cover {
+    margin: 0;
+    @top-center { content: ""; } @bottom-center { content: ""; }
+    @top-left-corner { content: ""; } @top-right-corner { content: ""; }
+    @bottom-left-corner { content: ""; } @bottom-right-corner { content: ""; }
+  }
+
+  /* ===== Document chrome ===== */
+  html, body { margin: 0; padding: 0; background: #f4ecdd; }
+  body {
+    font-family: "Garamond", "Iowan Old Style", Georgia, "Times New Roman", serif;
+    font-size: 11pt;
+    line-height: 13pt;
+    text-align: justify;
+    hyphens: auto;
+    -webkit-hyphens: auto;
+    color: #1f1a14;
+  }
+
+  /* ===== Body type ===== */
+  p { margin: 0; text-indent: 0.25in; padding-bottom: 0pt; }
+  .bp-item > p:first-child,
+  .bp-item-opening > p:first-child { text-indent: 0; }
+  .bp-scene-break + .bp-item > p:first-child { text-indent: 0; }
+  .bp-scene-break {
+    text-indent: 0; text-align: center; margin: 1.2em 0;
+    font-style: italic; letter-spacing: 0.4em;
+  }
+  .bp-scene-break-blank { color: transparent; }
+  em { font-style: italic; }
+  strong { font-weight: 600; }
+  blockquote { margin: 0.6em 1.2em; font-style: italic; color: #3a3022; }
+
+  /* ===== Chapter openings =====
+     The screen-mode .bp-chapter-spacer uses a percentage height that only
+     works inside CSS columns. In print we hide it and apply mm padding to
+     the section directly so the heading lands at the right vertical
+     position on the A5 page. */
+  .bp-chapter-opening, .bp-chapter {
+    break-before: page;
+    break-inside: avoid-page;
+    page: chapter-opening;
+    text-align: center;
+    padding-top: 55mm;
+  }
+  .bp-chapter-opening > .bp-chapter-spacer { display: none; }
+  .bp-chapter-heading {
+    font-size: 1.6em; font-weight: 300; letter-spacing: 0.04em;
+    margin: 0 0 1em 0;
+    line-height: 1.2;
+  }
+  /* Front-matter sections that get their own page also need explicit
+     top spacing — the % values inside their inline styles collapse to 0
+     in print, leaving the heading flush against the top margin. */
+  .bp-half-title { margin-top: 70mm; padding-top: 0; }
+  .bp-titlepage { padding-top: 38mm; margin-top: 0; }
+  .bp-toc { padding-top: 18mm; }
+  .bp-fm-h { margin-top: 55mm; padding-top: 0; }
+  .bp-dedication { margin-top: 70mm; }
+  .bp-epigraph { margin-top: 55mm; }
+  .bp-h2 { margin: 18mm 0 6mm 0; padding-top: 0; }
+
+  /* ===== Front matter ===== */
+  .bp-frontmatter, .bp-titlepage, .bp-toc {
+    break-before: page;
+    page: chapter-opening;
+    text-align: center;
+  }
+  .bp-half-title { font-size: 1.2em; letter-spacing: 0.06em; }
+  .bp-book-title { font-size: 1.8em; font-weight: 300; margin: 0 0 0.4em 0; line-height: 1.2; }
+  .bp-book-subtitle { font-style: italic; margin: 0 0 1.5em 0; }
+  .bp-book-author { font-style: italic; margin: 1.5em 0 0 0; }
+  .bp-fm-line { font-size: 0.85em; margin: 0.4em 0; text-indent: 0; }
+  .bp-fm-h { font-size: 1.2em; }
+  .bp-dedication { text-indent: 0; font-style: italic; }
+  .bp-epigraph { margin-left: 12mm; margin-right: 12mm; font-style: italic; text-indent: 0; }
+  .bp-epigraph-attribution { text-align: center; margin: 4mm 12mm 0; font-size: 0.85em; text-indent: 0; }
+  .bp-h2 { font-size: 1.4em; }
+  .bp-toc-list { list-style: none; padding: 0; margin: 1em 0; font-size: 0.95em; }
+  .bp-toc-list li { margin: 0.35em 0; }
+  .bp-toc-num { display: inline-block; width: 1.6em; }
+  .bp-bridge {
+    margin: 0.6em 1.2em; padding: 0.6em 0;
+    border-top: 1px solid #c7bfae; border-bottom: 1px solid #c7bfae;
+    text-align: center; font-style: italic;
+  }
+  .bp-placeholder { font-style: italic; color: #6a5f4d; }
+
+  /* ===== Cover pages ===== */
+  .pp-cover-page {
+    break-before: page;
+    break-after: page;
+    page: cover;
+    width: 148mm;
+    height: 210mm;
+    position: relative;
+    box-sizing: border-box;
+    overflow: hidden;
+    background: #2a2620;
+    color: #f4ecdd;
+  }
+  .pp-cover-page-front { /* first sheet — already gets @page :first */ }
+
+  
+  
+
+  /* Trim guides (commented out — uncomment if you want crop marks)
+  @media print { body::after { content: ''; position: fixed; ... } }
+  */
+
+  @media print {
+    .pp-screen-only { display: none !important; }
+  }
+</style>
+</head>
+<body>
+  <div class="pp-screen-only" style="position:fixed;top:0;left:0;right:0;padding:8px 12px;background:#222;color:#fff;font-family:system-ui,sans-serif;font-size:13px;display:flex;gap:8px;align-items:center;z-index:9999;">
+    <strong>Print preview.</strong>
+    <span style="opacity:.85;">Use your browser's Print dialog (⌘P / Ctrl-P) to send to printer or save as PDF.</span>
+    <button onclick="window.print()" style="margin-left:auto;padding:4px 10px;background:#fff;color:#000;border:0;border-radius:3px;cursor:pointer;">Print</button>
+    <button onclick="window.close()" style="padding:4px 10px;background:transparent;color:#fff;border:1px solid #fff;border-radius:3px;cursor:pointer;">Close</button>
+  </div>
+  <div class="pp-screen-only" style="height:46px;"></div>
+
+  <div class="pp-cover-page pp-cover-page-front"></div>
+  <section class="bp-frontmatter bp-page-break-before bp-page-break-after"><div class="bp-half-title">Small Rooms, Open Doors</div></section>
+<section class="bp-titlepage bp-page-break-before bp-page-break-after">
+         <h1 class="bp-book-title">Small Rooms, Open Doors</h1>
+         <p class="bp-book-subtitle">Essays on attention</p>
+         
+       </section>
+<section class="bp-toc bp-page-break-before bp-page-break-after">
+         <h2 class="bp-h2">Contents</h2>
+         <ol class="bp-toc-list"><li><span class="bp-toc-num">1.</span> The Window</li><li><span class="bp-toc-num">2.</span> The Garden</li><li><span class="bp-toc-num">3.</span> The Conversation</li><li><span class="bp-toc-num">4.</span> Between voices</li></ol>
+       </section>
+<section class="bp-chapter bp-chapter-opening bp-page-break-before  "
+                data-chapter-index="0"
+                data-chapter-title="The Window">
+         <div class="bp-chapter-spacer" style="height:32%"></div>
+         <div class="bp-chapter-heading">Chapter 1</div>
+       </section>
+<div class="bp-item bp-item-opening"><p>The window was small and faced east. Each morning the light filled it slowly, then all at once.</p>
+<p>I learned to wait for that crossing.</p>
+</div>
+<section class="bp-chapter bp-chapter-opening bp-page-break-before  "
+                data-chapter-index="1"
+                data-chapter-title="The Garden">
+         <div class="bp-chapter-spacer" style="height:32%"></div>
+         <div class="bp-chapter-heading">Chapter 2</div>
+       </section>
+<div class="bp-item bp-item-opening"><p>The garden was nothing — a patch of dirt behind a borrowed flat. Still, I went out to it each evening.</p>
+</div>
+<section class="bp-chapter bp-chapter-opening bp-page-break-before  "
+                data-chapter-index="2"
+                data-chapter-title="The Conversation">
+         <div class="bp-chapter-spacer" style="height:32%"></div>
+         <div class="bp-chapter-heading">Chapter 3</div>
+       </section>
+<div class="bp-item bp-item-opening"><p>Conversations rarely arrive when they are summoned. They arrive in the middle of doing dishes, in the long pause before someone says goodbye.</p>
+</div>
+<section class="bp-chapter bp-chapter-opening bp-page-break-before  "
+                data-chapter-index="3"
+                data-chapter-title="Between voices">
+         <div class="bp-chapter-spacer" style="height:32%"></div>
+         <div class="bp-chapter-heading">Chapter 4</div>
+       </section>
+<div class="bp-item bp-item-opening"><div class="bp-bridge"><p><em>Between voices</em></p><p>A short bridge linking the conversation pieces.</p></div></div>
+  <div class="pp-cover-page"></div>
+
+  <script>
+    // Wait for cover artwork to fully decode before opening the print
+    // dialog — without this the browser can snapshot the page while the
+    // images are still loading and they end up missing on the printed PDF.
+    function waitForCoverImages() {
+      var imgs = Array.from(document.querySelectorAll('img.pp-cover-art'));
+      if (!imgs.length) return Promise.resolve();
+      return Promise.all(imgs.map(function (img) {
+        if (img.complete && img.naturalWidth > 0) return Promise.resolve();
+        if (typeof img.decode === 'function') return img.decode().catch(function () {});
+        return new Promise(function (res) { img.addEventListener('load', res, { once: true }); img.addEventListener('error', res, { once: true }); });
+      }));
+    }
+    window.addEventListener('load', function () {
+      waitForCoverImages().then(function () {
+        // Small extra tick for the layout engine to flush after image decode.
+        setTimeout(function () { try { window.focus(); window.print(); } catch (e) {} }, 100);
+      });
+    });
+  </script>
+</body>
+</html>"
+`;
+
+exports[`BookPreviewModal — depth-1 regression snapshots (Phase 1 baseline) > fixture: essay-collection > P4-full-matter-symbol-breaks — chaptersFromItems=true, custom symbol scene breaks, full front+back matter > bookFlowHtml 1`] = `
+"<section class="bp-frontmatter bp-page-break-before bp-page-break-after"><div class="bp-half-title">Small Rooms, Open Doors</div></section>
+<section class="bp-frontmatter bp-page-break-before bp-page-break-after"><h3 class="bp-fm-h">Also by the author</h3><p class="bp-fm-line">A Quieter Year</p><p class="bp-fm-line">The Long Hall</p></section>
+<section class="bp-titlepage bp-page-break-before bp-page-break-after">
+         <h1 class="bp-book-title">Small Rooms, Open Doors</h1>
+         <p class="bp-book-subtitle">Essays on attention</p>
+         <p class="bp-book-author">A. Reader</p>
+       </section>
+<section class="bp-frontmatter bp-page-break-before bp-page-break-after">
+         <p class="bp-fm-line">Small Rooms, Open Doors</p>
+         <p class="bp-fm-line">© 2025 A. Reader.</p>
+         <p class="bp-fm-line">All rights reserved.</p>
+         <p class="bp-fm-line">ISBN 978-1-1274-1829-9</p>
+         <p class="bp-fm-line">First edition.</p>
+       </section>
+<section class="bp-frontmatter bp-page-break-before bp-page-break-after"><p class="bp-dedication">For E., who waited.</p></section>
+<section class="bp-frontmatter bp-page-break-before bp-page-break-after">
+         <blockquote class="bp-epigraph">We shape our dwellings,<br>and afterwards our dwellings shape us.</blockquote>
+         <p class="bp-epigraph-attribution">Winston Churchill</p>
+       </section>
+<section class="bp-toc bp-page-break-before bp-page-break-after">
+         <h2 class="bp-h2">Contents</h2>
+         <ol class="bp-toc-list"><li><span class="bp-toc-num">1.</span> The Window</li><li><span class="bp-toc-num">2.</span> The Garden</li><li><span class="bp-toc-num">3.</span> The Conversation</li><li><span class="bp-toc-num">4.</span> Between voices</li></ol>
+       </section>
+<section class="bp-chapter bp-chapter-opening bp-page-break-before  "
+                data-chapter-index="0"
+                data-chapter-title="The Window">
+         <div class="bp-chapter-spacer" style="height:32%"></div>
+         <div class="bp-chapter-heading">Chapter 1</div>
+       </section>
+<div class="bp-item bp-item-opening"><p>The window was small and faced east. Each morning the light filled it slowly, then all at once.</p>
+<p>I learned to wait for that crossing.</p>
+</div>
+<section class="bp-chapter bp-chapter-opening bp-page-break-before  "
+                data-chapter-index="1"
+                data-chapter-title="The Garden">
+         <div class="bp-chapter-spacer" style="height:32%"></div>
+         <div class="bp-chapter-heading">Chapter 2</div>
+       </section>
+<div class="bp-item bp-item-opening"><p>The garden was nothing — a patch of dirt behind a borrowed flat. Still, I went out to it each evening.</p>
+</div>
+<section class="bp-chapter bp-chapter-opening bp-page-break-before  "
+                data-chapter-index="2"
+                data-chapter-title="The Conversation">
+         <div class="bp-chapter-spacer" style="height:32%"></div>
+         <div class="bp-chapter-heading">Chapter 3</div>
+       </section>
+<div class="bp-item bp-item-opening"><p>Conversations rarely arrive when they are summoned. They arrive in the middle of doing dishes, in the long pause before someone says goodbye.</p>
+</div>
+<section class="bp-chapter bp-chapter-opening bp-page-break-before  "
+                data-chapter-index="3"
+                data-chapter-title="Between voices">
+         <div class="bp-chapter-spacer" style="height:32%"></div>
+         <div class="bp-chapter-heading">Chapter 4</div>
+       </section>
+<div class="bp-item bp-item-opening"><div class="bp-bridge"><p><em>Between voices</em></p><p>A short bridge linking the conversation pieces.</p></div></div>
+<section class="bp-backmatter bp-page-break-before"><h2 class="bp-h2">Acknowledgements</h2><p>Thanks to everyone who read these in draft.</p><p>And to the early-morning cafés that let me linger.</p></section>
+<section class="bp-backmatter bp-page-break-before"><h2 class="bp-h2">Author's note</h2><p>A note on what these are.</p></section>
+<section class="bp-backmatter bp-page-break-before"><h2 class="bp-h2">Discussion questions</h2><ol><li>What does attention cost?</li><li>Where does it accrue?</li></ol></section>
+<section class="bp-backmatter bp-page-break-before"><h2 class="bp-h2">Also by the author</h2><p class="bp-fm-line">A Quieter Year</p><p class="bp-fm-line">The Long Hall</p></section>
+<section class="bp-backmatter bp-page-break-before"><h2 class="bp-h2">Coming next</h2><p>A teaser will go here.</p></section>
+<section class="bp-backmatter bp-page-break-before"><h2 class="bp-h2">About the author</h2><p>The author lives nowhere in particular and is grateful for that.</p></section>"
+`;
+
+exports[`BookPreviewModal — depth-1 regression snapshots (Phase 1 baseline) > fixture: essay-collection > P4-full-matter-symbol-breaks — chaptersFromItems=true, custom symbol scene breaks, full front+back matter > printHtml 1`] = `
+"<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Small Rooms, Open Doors — A5</title>
+<style>
+  /* ===== Page rules ===== */
+  @page {
+    size: 148mm 210mm;
+    margin: 0.65in 0.65in 0.75in 0.8in;
+  }
+  @page :left {
+    margin: 0.65in 0.8in 0.75in 0.65in;
+    @top-center { content: "A. Reader"; font-family: "Garamond", "Iowan Old Style", Georgia, "Times New Roman", serif; font-size: 9pt; color: #5a4f3f; letter-spacing: 0.04em; }
+    @bottom-center { content: counter(page); font-family: "Garamond", "Iowan Old Style", Georgia, "Times New Roman", serif; font-size: 9pt; color: #5a4f3f; }
+  }
+  @page :right {
+    margin: 0.65in 0.65in 0.75in 0.8in;
+    @top-center { content: "Small Rooms, Open Doors"; font-family: "Garamond", "Iowan Old Style", Georgia, "Times New Roman", serif; font-size: 9pt; color: #5a4f3f; letter-spacing: 0.04em; }
+    @bottom-center { content: counter(page); font-family: "Garamond", "Iowan Old Style", Georgia, "Times New Roman", serif; font-size: 9pt; color: #5a4f3f; }
+  }
+  @page :first {
+    @top-center { content: ""; }
+    @bottom-center { content: ""; }
+    @top-left-corner { content: ""; }
+    @top-right-corner { content: ""; }
+    @bottom-left-corner { content: ""; }
+    @bottom-right-corner { content: ""; }
+  }
+  @page chapter-opening {
+    margin: 0.65in 0.65in 0.75in 0.8in;
+    
+      @top-center { content: ""; }
+      @top-left-corner { content: ""; }
+      @top-right-corner { content: ""; }
+      @bottom-center { content: ""; }
+      @bottom-left-corner { content: ""; }
+      @bottom-right-corner { content: ""; }
+    
+  }
+  @page cover {
+    margin: 0;
+    @top-center { content: ""; } @bottom-center { content: ""; }
+    @top-left-corner { content: ""; } @top-right-corner { content: ""; }
+    @bottom-left-corner { content: ""; } @bottom-right-corner { content: ""; }
+  }
+
+  /* ===== Document chrome ===== */
+  html, body { margin: 0; padding: 0; background: #f4ecdd; }
+  body {
+    font-family: "Garamond", "Iowan Old Style", Georgia, "Times New Roman", serif;
+    font-size: 11pt;
+    line-height: 13pt;
+    text-align: justify;
+    hyphens: auto;
+    -webkit-hyphens: auto;
+    color: #1f1a14;
+  }
+
+  /* ===== Body type ===== */
+  p { margin: 0; text-indent: 0.25in; padding-bottom: 0pt; }
+  .bp-item > p:first-child,
+  .bp-item-opening > p:first-child { text-indent: 0; }
+  .bp-scene-break + .bp-item > p:first-child { text-indent: 0; }
+  .bp-scene-break {
+    text-indent: 0; text-align: center; margin: 1.2em 0;
+    font-style: italic; letter-spacing: 0.4em;
+  }
+  .bp-scene-break-blank { color: transparent; }
+  em { font-style: italic; }
+  strong { font-weight: 600; }
+  blockquote { margin: 0.6em 1.2em; font-style: italic; color: #3a3022; }
+
+  /* ===== Chapter openings =====
+     The screen-mode .bp-chapter-spacer uses a percentage height that only
+     works inside CSS columns. In print we hide it and apply mm padding to
+     the section directly so the heading lands at the right vertical
+     position on the A5 page. */
+  .bp-chapter-opening, .bp-chapter {
+    break-before: page;
+    break-inside: avoid-page;
+    page: chapter-opening;
+    text-align: center;
+    padding-top: 55mm;
+  }
+  .bp-chapter-opening > .bp-chapter-spacer { display: none; }
+  .bp-chapter-heading {
+    font-size: 1.6em; font-weight: 300; letter-spacing: 0.04em;
+    margin: 0 0 1em 0;
+    line-height: 1.2;
+  }
+  /* Front-matter sections that get their own page also need explicit
+     top spacing — the % values inside their inline styles collapse to 0
+     in print, leaving the heading flush against the top margin. */
+  .bp-half-title { margin-top: 70mm; padding-top: 0; }
+  .bp-titlepage { padding-top: 38mm; margin-top: 0; }
+  .bp-toc { padding-top: 18mm; }
+  .bp-fm-h { margin-top: 55mm; padding-top: 0; }
+  .bp-dedication { margin-top: 70mm; }
+  .bp-epigraph { margin-top: 55mm; }
+  .bp-h2 { margin: 18mm 0 6mm 0; padding-top: 0; }
+
+  /* ===== Front matter ===== */
+  .bp-frontmatter, .bp-titlepage, .bp-toc {
+    break-before: page;
+    page: chapter-opening;
+    text-align: center;
+  }
+  .bp-half-title { font-size: 1.2em; letter-spacing: 0.06em; }
+  .bp-book-title { font-size: 1.8em; font-weight: 300; margin: 0 0 0.4em 0; line-height: 1.2; }
+  .bp-book-subtitle { font-style: italic; margin: 0 0 1.5em 0; }
+  .bp-book-author { font-style: italic; margin: 1.5em 0 0 0; }
+  .bp-fm-line { font-size: 0.85em; margin: 0.4em 0; text-indent: 0; }
+  .bp-fm-h { font-size: 1.2em; }
+  .bp-dedication { text-indent: 0; font-style: italic; }
+  .bp-epigraph { margin-left: 12mm; margin-right: 12mm; font-style: italic; text-indent: 0; }
+  .bp-epigraph-attribution { text-align: center; margin: 4mm 12mm 0; font-size: 0.85em; text-indent: 0; }
+  .bp-h2 { font-size: 1.4em; }
+  .bp-toc-list { list-style: none; padding: 0; margin: 1em 0; font-size: 0.95em; }
+  .bp-toc-list li { margin: 0.35em 0; }
+  .bp-toc-num { display: inline-block; width: 1.6em; }
+  .bp-bridge {
+    margin: 0.6em 1.2em; padding: 0.6em 0;
+    border-top: 1px solid #c7bfae; border-bottom: 1px solid #c7bfae;
+    text-align: center; font-style: italic;
+  }
+  .bp-placeholder { font-style: italic; color: #6a5f4d; }
+
+  /* ===== Cover pages ===== */
+  .pp-cover-page {
+    break-before: page;
+    break-after: page;
+    page: cover;
+    width: 148mm;
+    height: 210mm;
+    position: relative;
+    box-sizing: border-box;
+    overflow: hidden;
+    background: #2a2620;
+    color: #f4ecdd;
+  }
+  .pp-cover-page-front { /* first sheet — already gets @page :first */ }
+
+  
+  
+
+  /* Trim guides (commented out — uncomment if you want crop marks)
+  @media print { body::after { content: ''; position: fixed; ... } }
+  */
+
+  @media print {
+    .pp-screen-only { display: none !important; }
+  }
+</style>
+</head>
+<body>
+  <div class="pp-screen-only" style="position:fixed;top:0;left:0;right:0;padding:8px 12px;background:#222;color:#fff;font-family:system-ui,sans-serif;font-size:13px;display:flex;gap:8px;align-items:center;z-index:9999;">
+    <strong>Print preview.</strong>
+    <span style="opacity:.85;">Use your browser's Print dialog (⌘P / Ctrl-P) to send to printer or save as PDF.</span>
+    <button onclick="window.print()" style="margin-left:auto;padding:4px 10px;background:#fff;color:#000;border:0;border-radius:3px;cursor:pointer;">Print</button>
+    <button onclick="window.close()" style="padding:4px 10px;background:transparent;color:#fff;border:1px solid #fff;border-radius:3px;cursor:pointer;">Close</button>
+  </div>
+  <div class="pp-screen-only" style="height:46px;"></div>
+
+  <div class="pp-cover-page pp-cover-page-front"></div>
+  <section class="bp-frontmatter bp-page-break-before bp-page-break-after"><div class="bp-half-title">Small Rooms, Open Doors</div></section>
+<section class="bp-frontmatter bp-page-break-before bp-page-break-after"><h3 class="bp-fm-h">Also by the author</h3><p class="bp-fm-line">A Quieter Year</p><p class="bp-fm-line">The Long Hall</p></section>
+<section class="bp-titlepage bp-page-break-before bp-page-break-after">
+         <h1 class="bp-book-title">Small Rooms, Open Doors</h1>
+         <p class="bp-book-subtitle">Essays on attention</p>
+         <p class="bp-book-author">A. Reader</p>
+       </section>
+<section class="bp-frontmatter bp-page-break-before bp-page-break-after">
+         <p class="bp-fm-line">Small Rooms, Open Doors</p>
+         <p class="bp-fm-line">© 2025 A. Reader.</p>
+         <p class="bp-fm-line">All rights reserved.</p>
+         <p class="bp-fm-line">ISBN 978-1-1274-1829-9</p>
+         <p class="bp-fm-line">First edition.</p>
+       </section>
+<section class="bp-frontmatter bp-page-break-before bp-page-break-after"><p class="bp-dedication">For E., who waited.</p></section>
+<section class="bp-frontmatter bp-page-break-before bp-page-break-after">
+         <blockquote class="bp-epigraph">We shape our dwellings,<br>and afterwards our dwellings shape us.</blockquote>
+         <p class="bp-epigraph-attribution">Winston Churchill</p>
+       </section>
+<section class="bp-toc bp-page-break-before bp-page-break-after">
+         <h2 class="bp-h2">Contents</h2>
+         <ol class="bp-toc-list"><li><span class="bp-toc-num">1.</span> The Window</li><li><span class="bp-toc-num">2.</span> The Garden</li><li><span class="bp-toc-num">3.</span> The Conversation</li><li><span class="bp-toc-num">4.</span> Between voices</li></ol>
+       </section>
+<section class="bp-chapter bp-chapter-opening bp-page-break-before  "
+                data-chapter-index="0"
+                data-chapter-title="The Window">
+         <div class="bp-chapter-spacer" style="height:32%"></div>
+         <div class="bp-chapter-heading">Chapter 1</div>
+       </section>
+<div class="bp-item bp-item-opening"><p>The window was small and faced east. Each morning the light filled it slowly, then all at once.</p>
+<p>I learned to wait for that crossing.</p>
+</div>
+<section class="bp-chapter bp-chapter-opening bp-page-break-before  "
+                data-chapter-index="1"
+                data-chapter-title="The Garden">
+         <div class="bp-chapter-spacer" style="height:32%"></div>
+         <div class="bp-chapter-heading">Chapter 2</div>
+       </section>
+<div class="bp-item bp-item-opening"><p>The garden was nothing — a patch of dirt behind a borrowed flat. Still, I went out to it each evening.</p>
+</div>
+<section class="bp-chapter bp-chapter-opening bp-page-break-before  "
+                data-chapter-index="2"
+                data-chapter-title="The Conversation">
+         <div class="bp-chapter-spacer" style="height:32%"></div>
+         <div class="bp-chapter-heading">Chapter 3</div>
+       </section>
+<div class="bp-item bp-item-opening"><p>Conversations rarely arrive when they are summoned. They arrive in the middle of doing dishes, in the long pause before someone says goodbye.</p>
+</div>
+<section class="bp-chapter bp-chapter-opening bp-page-break-before  "
+                data-chapter-index="3"
+                data-chapter-title="Between voices">
+         <div class="bp-chapter-spacer" style="height:32%"></div>
+         <div class="bp-chapter-heading">Chapter 4</div>
+       </section>
+<div class="bp-item bp-item-opening"><div class="bp-bridge"><p><em>Between voices</em></p><p>A short bridge linking the conversation pieces.</p></div></div>
+<section class="bp-backmatter bp-page-break-before"><h2 class="bp-h2">Acknowledgements</h2><p>Thanks to everyone who read these in draft.</p><p>And to the early-morning cafés that let me linger.</p></section>
+<section class="bp-backmatter bp-page-break-before"><h2 class="bp-h2">Author's note</h2><p>A note on what these are.</p></section>
+<section class="bp-backmatter bp-page-break-before"><h2 class="bp-h2">Discussion questions</h2><ol><li>What does attention cost?</li><li>Where does it accrue?</li></ol></section>
+<section class="bp-backmatter bp-page-break-before"><h2 class="bp-h2">Also by the author</h2><p class="bp-fm-line">A Quieter Year</p><p class="bp-fm-line">The Long Hall</p></section>
+<section class="bp-backmatter bp-page-break-before"><h2 class="bp-h2">Coming next</h2><p>A teaser will go here.</p></section>
+<section class="bp-backmatter bp-page-break-before"><h2 class="bp-h2">About the author</h2><p>The author lives nowhere in particular and is grateful for that.</p></section>
+  <div class="pp-cover-page"></div>
+
+  <script>
+    // Wait for cover artwork to fully decode before opening the print
+    // dialog — without this the browser can snapshot the page while the
+    // images are still loading and they end up missing on the printed PDF.
+    function waitForCoverImages() {
+      var imgs = Array.from(document.querySelectorAll('img.pp-cover-art'));
+      if (!imgs.length) return Promise.resolve();
+      return Promise.all(imgs.map(function (img) {
+        if (img.complete && img.naturalWidth > 0) return Promise.resolve();
+        if (typeof img.decode === 'function') return img.decode().catch(function () {});
+        return new Promise(function (res) { img.addEventListener('load', res, { once: true }); img.addEventListener('error', res, { once: true }); });
+      }));
+    }
+    window.addEventListener('load', function () {
+      waitForCoverImages().then(function () {
+        // Small extra tick for the layout engine to flush after image decode.
+        setTimeout(function () { try { window.focus(); window.print(); } catch (e) {} }, 100);
+      });
+    });
+  </script>
+</body>
+</html>"
+`;
+
+exports[`BookPreviewModal — depth-1 regression snapshots (Phase 1 baseline) > fixture: single-long-form > P1-defaults — chaptersFromItems=true, asterisk scene breaks, minimal matter > bookFlowHtml 1`] = `
+"<section class="bp-frontmatter bp-page-break-before bp-page-break-after"><div class="bp-half-title">On Quiet</div></section>
+<section class="bp-titlepage bp-page-break-before bp-page-break-after">
+         <h1 class="bp-book-title">On Quiet</h1>
+         
+         
+       </section>
+<section class="bp-frontmatter bp-page-break-before bp-page-break-after">
+         <p class="bp-fm-line">On Quiet</p>
+         
+         <p class="bp-fm-line">All rights reserved.</p>
+         <p class="bp-fm-line">ISBN 978-6-5257-4801-6</p>
+         <p class="bp-fm-line">First edition.</p>
+       </section>
+<section class="bp-frontmatter bp-page-break-before bp-page-break-after"><p class="bp-dedication">For…</p></section>
+<section class="bp-chapter bp-chapter-opening bp-page-break-before  "
+                data-chapter-index="0"
+                data-chapter-title="On quiet">
+         <div class="bp-chapter-spacer" style="height:32%"></div>
+         <div class="bp-chapter-heading">Chapter 1</div>
+       </section>
+<div class="bp-item bp-item-opening"><p>Quiet is not the absence of sound. It is what remains when nothing is asking anything of us.</p>
+<p>I go looking for it the way other people go looking for noise.</p>
+</div>
+<section class="bp-backmatter bp-page-break-before"><h2 class="bp-h2">Acknowledgements</h2><p>—</p></section>
+<section class="bp-backmatter bp-page-break-before"><h2 class="bp-h2">About the author</h2><p>—</p></section>"
+`;
+
+exports[`BookPreviewModal — depth-1 regression snapshots (Phase 1 baseline) > fixture: single-long-form > P1-defaults — chaptersFromItems=true, asterisk scene breaks, minimal matter > printHtml 1`] = `
+"<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>On Quiet — A5</title>
+<style>
+  /* ===== Page rules ===== */
+  @page {
+    size: 148mm 210mm;
+    margin: 0.65in 0.65in 0.75in 0.8in;
+  }
+  @page :left {
+    margin: 0.65in 0.8in 0.75in 0.65in;
+    
+    @bottom-center { content: counter(page); font-family: "Garamond", "Iowan Old Style", Georgia, "Times New Roman", serif; font-size: 9pt; color: #5a4f3f; }
+  }
+  @page :right {
+    margin: 0.65in 0.65in 0.75in 0.8in;
+    @top-center { content: "On Quiet"; font-family: "Garamond", "Iowan Old Style", Georgia, "Times New Roman", serif; font-size: 9pt; color: #5a4f3f; letter-spacing: 0.04em; }
+    @bottom-center { content: counter(page); font-family: "Garamond", "Iowan Old Style", Georgia, "Times New Roman", serif; font-size: 9pt; color: #5a4f3f; }
+  }
+  @page :first {
+    @top-center { content: ""; }
+    @bottom-center { content: ""; }
+    @top-left-corner { content: ""; }
+    @top-right-corner { content: ""; }
+    @bottom-left-corner { content: ""; }
+    @bottom-right-corner { content: ""; }
+  }
+  @page chapter-opening {
+    margin: 0.65in 0.65in 0.75in 0.8in;
+    
+      @top-center { content: ""; }
+      @top-left-corner { content: ""; }
+      @top-right-corner { content: ""; }
+      @bottom-center { content: ""; }
+      @bottom-left-corner { content: ""; }
+      @bottom-right-corner { content: ""; }
+    
+  }
+  @page cover {
+    margin: 0;
+    @top-center { content: ""; } @bottom-center { content: ""; }
+    @top-left-corner { content: ""; } @top-right-corner { content: ""; }
+    @bottom-left-corner { content: ""; } @bottom-right-corner { content: ""; }
+  }
+
+  /* ===== Document chrome ===== */
+  html, body { margin: 0; padding: 0; background: #f4ecdd; }
+  body {
+    font-family: "Garamond", "Iowan Old Style", Georgia, "Times New Roman", serif;
+    font-size: 11pt;
+    line-height: 13pt;
+    text-align: justify;
+    hyphens: auto;
+    -webkit-hyphens: auto;
+    color: #1f1a14;
+  }
+
+  /* ===== Body type ===== */
+  p { margin: 0; text-indent: 0.25in; padding-bottom: 0pt; }
+  .bp-item > p:first-child,
+  .bp-item-opening > p:first-child { text-indent: 0; }
+  .bp-scene-break + .bp-item > p:first-child { text-indent: 0; }
+  .bp-scene-break {
+    text-indent: 0; text-align: center; margin: 1.2em 0;
+    font-style: italic; letter-spacing: 0.4em;
+  }
+  .bp-scene-break-blank { color: transparent; }
+  em { font-style: italic; }
+  strong { font-weight: 600; }
+  blockquote { margin: 0.6em 1.2em; font-style: italic; color: #3a3022; }
+
+  /* ===== Chapter openings =====
+     The screen-mode .bp-chapter-spacer uses a percentage height that only
+     works inside CSS columns. In print we hide it and apply mm padding to
+     the section directly so the heading lands at the right vertical
+     position on the A5 page. */
+  .bp-chapter-opening, .bp-chapter {
+    break-before: page;
+    break-inside: avoid-page;
+    page: chapter-opening;
+    text-align: center;
+    padding-top: 55mm;
+  }
+  .bp-chapter-opening > .bp-chapter-spacer { display: none; }
+  .bp-chapter-heading {
+    font-size: 1.6em; font-weight: 300; letter-spacing: 0.04em;
+    margin: 0 0 1em 0;
+    line-height: 1.2;
+  }
+  /* Front-matter sections that get their own page also need explicit
+     top spacing — the % values inside their inline styles collapse to 0
+     in print, leaving the heading flush against the top margin. */
+  .bp-half-title { margin-top: 70mm; padding-top: 0; }
+  .bp-titlepage { padding-top: 38mm; margin-top: 0; }
+  .bp-toc { padding-top: 18mm; }
+  .bp-fm-h { margin-top: 55mm; padding-top: 0; }
+  .bp-dedication { margin-top: 70mm; }
+  .bp-epigraph { margin-top: 55mm; }
+  .bp-h2 { margin: 18mm 0 6mm 0; padding-top: 0; }
+
+  /* ===== Front matter ===== */
+  .bp-frontmatter, .bp-titlepage, .bp-toc {
+    break-before: page;
+    page: chapter-opening;
+    text-align: center;
+  }
+  .bp-half-title { font-size: 1.2em; letter-spacing: 0.06em; }
+  .bp-book-title { font-size: 1.8em; font-weight: 300; margin: 0 0 0.4em 0; line-height: 1.2; }
+  .bp-book-subtitle { font-style: italic; margin: 0 0 1.5em 0; }
+  .bp-book-author { font-style: italic; margin: 1.5em 0 0 0; }
+  .bp-fm-line { font-size: 0.85em; margin: 0.4em 0; text-indent: 0; }
+  .bp-fm-h { font-size: 1.2em; }
+  .bp-dedication { text-indent: 0; font-style: italic; }
+  .bp-epigraph { margin-left: 12mm; margin-right: 12mm; font-style: italic; text-indent: 0; }
+  .bp-epigraph-attribution { text-align: center; margin: 4mm 12mm 0; font-size: 0.85em; text-indent: 0; }
+  .bp-h2 { font-size: 1.4em; }
+  .bp-toc-list { list-style: none; padding: 0; margin: 1em 0; font-size: 0.95em; }
+  .bp-toc-list li { margin: 0.35em 0; }
+  .bp-toc-num { display: inline-block; width: 1.6em; }
+  .bp-bridge {
+    margin: 0.6em 1.2em; padding: 0.6em 0;
+    border-top: 1px solid #c7bfae; border-bottom: 1px solid #c7bfae;
+    text-align: center; font-style: italic;
+  }
+  .bp-placeholder { font-style: italic; color: #6a5f4d; }
+
+  /* ===== Cover pages ===== */
+  .pp-cover-page {
+    break-before: page;
+    break-after: page;
+    page: cover;
+    width: 148mm;
+    height: 210mm;
+    position: relative;
+    box-sizing: border-box;
+    overflow: hidden;
+    background: #2a2620;
+    color: #f4ecdd;
+  }
+  .pp-cover-page-front { /* first sheet — already gets @page :first */ }
+
+  
+  
+
+  /* Trim guides (commented out — uncomment if you want crop marks)
+  @media print { body::after { content: ''; position: fixed; ... } }
+  */
+
+  @media print {
+    .pp-screen-only { display: none !important; }
+  }
+</style>
+</head>
+<body>
+  <div class="pp-screen-only" style="position:fixed;top:0;left:0;right:0;padding:8px 12px;background:#222;color:#fff;font-family:system-ui,sans-serif;font-size:13px;display:flex;gap:8px;align-items:center;z-index:9999;">
+    <strong>Print preview.</strong>
+    <span style="opacity:.85;">Use your browser's Print dialog (⌘P / Ctrl-P) to send to printer or save as PDF.</span>
+    <button onclick="window.print()" style="margin-left:auto;padding:4px 10px;background:#fff;color:#000;border:0;border-radius:3px;cursor:pointer;">Print</button>
+    <button onclick="window.close()" style="padding:4px 10px;background:transparent;color:#fff;border:1px solid #fff;border-radius:3px;cursor:pointer;">Close</button>
+  </div>
+  <div class="pp-screen-only" style="height:46px;"></div>
+
+  <div class="pp-cover-page pp-cover-page-front"></div>
+  <section class="bp-frontmatter bp-page-break-before bp-page-break-after"><div class="bp-half-title">On Quiet</div></section>
+<section class="bp-titlepage bp-page-break-before bp-page-break-after">
+         <h1 class="bp-book-title">On Quiet</h1>
+         
+         
+       </section>
+<section class="bp-frontmatter bp-page-break-before bp-page-break-after">
+         <p class="bp-fm-line">On Quiet</p>
+         
+         <p class="bp-fm-line">All rights reserved.</p>
+         <p class="bp-fm-line">ISBN 978-6-5257-4801-6</p>
+         <p class="bp-fm-line">First edition.</p>
+       </section>
+<section class="bp-frontmatter bp-page-break-before bp-page-break-after"><p class="bp-dedication">For…</p></section>
+<section class="bp-chapter bp-chapter-opening bp-page-break-before  "
+                data-chapter-index="0"
+                data-chapter-title="On quiet">
+         <div class="bp-chapter-spacer" style="height:32%"></div>
+         <div class="bp-chapter-heading">Chapter 1</div>
+       </section>
+<div class="bp-item bp-item-opening"><p>Quiet is not the absence of sound. It is what remains when nothing is asking anything of us.</p>
+<p>I go looking for it the way other people go looking for noise.</p>
+</div>
+<section class="bp-backmatter bp-page-break-before"><h2 class="bp-h2">Acknowledgements</h2><p>—</p></section>
+<section class="bp-backmatter bp-page-break-before"><h2 class="bp-h2">About the author</h2><p>—</p></section>
+  <div class="pp-cover-page"></div>
+
+  <script>
+    // Wait for cover artwork to fully decode before opening the print
+    // dialog — without this the browser can snapshot the page while the
+    // images are still loading and they end up missing on the printed PDF.
+    function waitForCoverImages() {
+      var imgs = Array.from(document.querySelectorAll('img.pp-cover-art'));
+      if (!imgs.length) return Promise.resolve();
+      return Promise.all(imgs.map(function (img) {
+        if (img.complete && img.naturalWidth > 0) return Promise.resolve();
+        if (typeof img.decode === 'function') return img.decode().catch(function () {});
+        return new Promise(function (res) { img.addEventListener('load', res, { once: true }); img.addEventListener('error', res, { once: true }); });
+      }));
+    }
+    window.addEventListener('load', function () {
+      waitForCoverImages().then(function () {
+        // Small extra tick for the layout engine to flush after image decode.
+        setTimeout(function () { try { window.focus(); window.print(); } catch (e) {} }, 100);
+      });
+    });
+  </script>
+</body>
+</html>"
+`;
+
+exports[`BookPreviewModal — depth-1 regression snapshots (Phase 1 baseline) > fixture: single-long-form > P2-sections-as-chapters — chaptersFromItems=false, asterisk scene breaks, minimal matter > bookFlowHtml 1`] = `
+"<section class="bp-titlepage bp-page-break-before bp-page-break-after">
+         <h1 class="bp-book-title">On Quiet</h1>
+         
+         
+       </section>
+<section class="bp-chapter bp-chapter-opening bp-page-break-before  "
+                data-chapter-index="0"
+                data-chapter-title="Body">
+         <div class="bp-chapter-spacer" style="height:32%"></div>
+         <div class="bp-chapter-heading">Chapter 1</div>
+       </section>
+<div class="bp-item bp-item-opening"><p>Quiet is not the absence of sound. It is what remains when nothing is asking anything of us.</p>
+<p>I go looking for it the way other people go looking for noise.</p>
+</div>"
+`;
+
+exports[`BookPreviewModal — depth-1 regression snapshots (Phase 1 baseline) > fixture: single-long-form > P2-sections-as-chapters — chaptersFromItems=false, asterisk scene breaks, minimal matter > printHtml 1`] = `
+"<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>On Quiet — A5</title>
+<style>
+  /* ===== Page rules ===== */
+  @page {
+    size: 148mm 210mm;
+    margin: 0.65in 0.65in 0.75in 0.8in;
+  }
+  @page :left {
+    margin: 0.65in 0.8in 0.75in 0.65in;
+    
+    @bottom-center { content: counter(page); font-family: "Garamond", "Iowan Old Style", Georgia, "Times New Roman", serif; font-size: 9pt; color: #5a4f3f; }
+  }
+  @page :right {
+    margin: 0.65in 0.65in 0.75in 0.8in;
+    @top-center { content: "On Quiet"; font-family: "Garamond", "Iowan Old Style", Georgia, "Times New Roman", serif; font-size: 9pt; color: #5a4f3f; letter-spacing: 0.04em; }
+    @bottom-center { content: counter(page); font-family: "Garamond", "Iowan Old Style", Georgia, "Times New Roman", serif; font-size: 9pt; color: #5a4f3f; }
+  }
+  @page :first {
+    @top-center { content: ""; }
+    @bottom-center { content: ""; }
+    @top-left-corner { content: ""; }
+    @top-right-corner { content: ""; }
+    @bottom-left-corner { content: ""; }
+    @bottom-right-corner { content: ""; }
+  }
+  @page chapter-opening {
+    margin: 0.65in 0.65in 0.75in 0.8in;
+    
+      @top-center { content: ""; }
+      @top-left-corner { content: ""; }
+      @top-right-corner { content: ""; }
+      @bottom-center { content: ""; }
+      @bottom-left-corner { content: ""; }
+      @bottom-right-corner { content: ""; }
+    
+  }
+  @page cover {
+    margin: 0;
+    @top-center { content: ""; } @bottom-center { content: ""; }
+    @top-left-corner { content: ""; } @top-right-corner { content: ""; }
+    @bottom-left-corner { content: ""; } @bottom-right-corner { content: ""; }
+  }
+
+  /* ===== Document chrome ===== */
+  html, body { margin: 0; padding: 0; background: #f4ecdd; }
+  body {
+    font-family: "Garamond", "Iowan Old Style", Georgia, "Times New Roman", serif;
+    font-size: 11pt;
+    line-height: 13pt;
+    text-align: justify;
+    hyphens: auto;
+    -webkit-hyphens: auto;
+    color: #1f1a14;
+  }
+
+  /* ===== Body type ===== */
+  p { margin: 0; text-indent: 0.25in; padding-bottom: 0pt; }
+  .bp-item > p:first-child,
+  .bp-item-opening > p:first-child { text-indent: 0; }
+  .bp-scene-break + .bp-item > p:first-child { text-indent: 0; }
+  .bp-scene-break {
+    text-indent: 0; text-align: center; margin: 1.2em 0;
+    font-style: italic; letter-spacing: 0.4em;
+  }
+  .bp-scene-break-blank { color: transparent; }
+  em { font-style: italic; }
+  strong { font-weight: 600; }
+  blockquote { margin: 0.6em 1.2em; font-style: italic; color: #3a3022; }
+
+  /* ===== Chapter openings =====
+     The screen-mode .bp-chapter-spacer uses a percentage height that only
+     works inside CSS columns. In print we hide it and apply mm padding to
+     the section directly so the heading lands at the right vertical
+     position on the A5 page. */
+  .bp-chapter-opening, .bp-chapter {
+    break-before: page;
+    break-inside: avoid-page;
+    page: chapter-opening;
+    text-align: center;
+    padding-top: 55mm;
+  }
+  .bp-chapter-opening > .bp-chapter-spacer { display: none; }
+  .bp-chapter-heading {
+    font-size: 1.6em; font-weight: 300; letter-spacing: 0.04em;
+    margin: 0 0 1em 0;
+    line-height: 1.2;
+  }
+  /* Front-matter sections that get their own page also need explicit
+     top spacing — the % values inside their inline styles collapse to 0
+     in print, leaving the heading flush against the top margin. */
+  .bp-half-title { margin-top: 70mm; padding-top: 0; }
+  .bp-titlepage { padding-top: 38mm; margin-top: 0; }
+  .bp-toc { padding-top: 18mm; }
+  .bp-fm-h { margin-top: 55mm; padding-top: 0; }
+  .bp-dedication { margin-top: 70mm; }
+  .bp-epigraph { margin-top: 55mm; }
+  .bp-h2 { margin: 18mm 0 6mm 0; padding-top: 0; }
+
+  /* ===== Front matter ===== */
+  .bp-frontmatter, .bp-titlepage, .bp-toc {
+    break-before: page;
+    page: chapter-opening;
+    text-align: center;
+  }
+  .bp-half-title { font-size: 1.2em; letter-spacing: 0.06em; }
+  .bp-book-title { font-size: 1.8em; font-weight: 300; margin: 0 0 0.4em 0; line-height: 1.2; }
+  .bp-book-subtitle { font-style: italic; margin: 0 0 1.5em 0; }
+  .bp-book-author { font-style: italic; margin: 1.5em 0 0 0; }
+  .bp-fm-line { font-size: 0.85em; margin: 0.4em 0; text-indent: 0; }
+  .bp-fm-h { font-size: 1.2em; }
+  .bp-dedication { text-indent: 0; font-style: italic; }
+  .bp-epigraph { margin-left: 12mm; margin-right: 12mm; font-style: italic; text-indent: 0; }
+  .bp-epigraph-attribution { text-align: center; margin: 4mm 12mm 0; font-size: 0.85em; text-indent: 0; }
+  .bp-h2 { font-size: 1.4em; }
+  .bp-toc-list { list-style: none; padding: 0; margin: 1em 0; font-size: 0.95em; }
+  .bp-toc-list li { margin: 0.35em 0; }
+  .bp-toc-num { display: inline-block; width: 1.6em; }
+  .bp-bridge {
+    margin: 0.6em 1.2em; padding: 0.6em 0;
+    border-top: 1px solid #c7bfae; border-bottom: 1px solid #c7bfae;
+    text-align: center; font-style: italic;
+  }
+  .bp-placeholder { font-style: italic; color: #6a5f4d; }
+
+  /* ===== Cover pages ===== */
+  .pp-cover-page {
+    break-before: page;
+    break-after: page;
+    page: cover;
+    width: 148mm;
+    height: 210mm;
+    position: relative;
+    box-sizing: border-box;
+    overflow: hidden;
+    background: #2a2620;
+    color: #f4ecdd;
+  }
+  .pp-cover-page-front { /* first sheet — already gets @page :first */ }
+
+  
+  
+
+  /* Trim guides (commented out — uncomment if you want crop marks)
+  @media print { body::after { content: ''; position: fixed; ... } }
+  */
+
+  @media print {
+    .pp-screen-only { display: none !important; }
+  }
+</style>
+</head>
+<body>
+  <div class="pp-screen-only" style="position:fixed;top:0;left:0;right:0;padding:8px 12px;background:#222;color:#fff;font-family:system-ui,sans-serif;font-size:13px;display:flex;gap:8px;align-items:center;z-index:9999;">
+    <strong>Print preview.</strong>
+    <span style="opacity:.85;">Use your browser's Print dialog (⌘P / Ctrl-P) to send to printer or save as PDF.</span>
+    <button onclick="window.print()" style="margin-left:auto;padding:4px 10px;background:#fff;color:#000;border:0;border-radius:3px;cursor:pointer;">Print</button>
+    <button onclick="window.close()" style="padding:4px 10px;background:transparent;color:#fff;border:1px solid #fff;border-radius:3px;cursor:pointer;">Close</button>
+  </div>
+  <div class="pp-screen-only" style="height:46px;"></div>
+
+  <div class="pp-cover-page pp-cover-page-front"></div>
+  <section class="bp-titlepage bp-page-break-before bp-page-break-after">
+         <h1 class="bp-book-title">On Quiet</h1>
+         
+         
+       </section>
+<section class="bp-chapter bp-chapter-opening bp-page-break-before  "
+                data-chapter-index="0"
+                data-chapter-title="Body">
+         <div class="bp-chapter-spacer" style="height:32%"></div>
+         <div class="bp-chapter-heading">Chapter 1</div>
+       </section>
+<div class="bp-item bp-item-opening"><p>Quiet is not the absence of sound. It is what remains when nothing is asking anything of us.</p>
+<p>I go looking for it the way other people go looking for noise.</p>
+</div>
+  <div class="pp-cover-page"></div>
+
+  <script>
+    // Wait for cover artwork to fully decode before opening the print
+    // dialog — without this the browser can snapshot the page while the
+    // images are still loading and they end up missing on the printed PDF.
+    function waitForCoverImages() {
+      var imgs = Array.from(document.querySelectorAll('img.pp-cover-art'));
+      if (!imgs.length) return Promise.resolve();
+      return Promise.all(imgs.map(function (img) {
+        if (img.complete && img.naturalWidth > 0) return Promise.resolve();
+        if (typeof img.decode === 'function') return img.decode().catch(function () {});
+        return new Promise(function (res) { img.addEventListener('load', res, { once: true }); img.addEventListener('error', res, { once: true }); });
+      }));
+    }
+    window.addEventListener('load', function () {
+      waitForCoverImages().then(function () {
+        // Small extra tick for the layout engine to flush after image decode.
+        setTimeout(function () { try { window.focus(); window.print(); } catch (e) {} }, 100);
+      });
+    });
+  </script>
+</body>
+</html>"
+`;
+
+exports[`BookPreviewModal — depth-1 regression snapshots (Phase 1 baseline) > fixture: single-long-form > P3-toc-blank-breaks — chaptersFromItems=true, blank-line scene breaks, TOC on > bookFlowHtml 1`] = `
+"<section class="bp-frontmatter bp-page-break-before bp-page-break-after"><div class="bp-half-title">On Quiet</div></section>
+<section class="bp-titlepage bp-page-break-before bp-page-break-after">
+         <h1 class="bp-book-title">On Quiet</h1>
+         
+         
+       </section>
+<section class="bp-toc bp-page-break-before bp-page-break-after">
+         <h2 class="bp-h2">Contents</h2>
+         <ol class="bp-toc-list"><li><span class="bp-toc-num">1.</span> On quiet</li></ol>
+       </section>
+<section class="bp-chapter bp-chapter-opening bp-page-break-before  "
+                data-chapter-index="0"
+                data-chapter-title="On quiet">
+         <div class="bp-chapter-spacer" style="height:32%"></div>
+         <div class="bp-chapter-heading">Chapter 1</div>
+       </section>
+<div class="bp-item bp-item-opening"><p>Quiet is not the absence of sound. It is what remains when nothing is asking anything of us.</p>
+<p>I go looking for it the way other people go looking for noise.</p>
+</div>"
+`;
+
+exports[`BookPreviewModal — depth-1 regression snapshots (Phase 1 baseline) > fixture: single-long-form > P3-toc-blank-breaks — chaptersFromItems=true, blank-line scene breaks, TOC on > printHtml 1`] = `
+"<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>On Quiet — A5</title>
+<style>
+  /* ===== Page rules ===== */
+  @page {
+    size: 148mm 210mm;
+    margin: 0.65in 0.65in 0.75in 0.8in;
+  }
+  @page :left {
+    margin: 0.65in 0.8in 0.75in 0.65in;
+    
+    @bottom-center { content: counter(page); font-family: "Garamond", "Iowan Old Style", Georgia, "Times New Roman", serif; font-size: 9pt; color: #5a4f3f; }
+  }
+  @page :right {
+    margin: 0.65in 0.65in 0.75in 0.8in;
+    @top-center { content: "On Quiet"; font-family: "Garamond", "Iowan Old Style", Georgia, "Times New Roman", serif; font-size: 9pt; color: #5a4f3f; letter-spacing: 0.04em; }
+    @bottom-center { content: counter(page); font-family: "Garamond", "Iowan Old Style", Georgia, "Times New Roman", serif; font-size: 9pt; color: #5a4f3f; }
+  }
+  @page :first {
+    @top-center { content: ""; }
+    @bottom-center { content: ""; }
+    @top-left-corner { content: ""; }
+    @top-right-corner { content: ""; }
+    @bottom-left-corner { content: ""; }
+    @bottom-right-corner { content: ""; }
+  }
+  @page chapter-opening {
+    margin: 0.65in 0.65in 0.75in 0.8in;
+    
+      @top-center { content: ""; }
+      @top-left-corner { content: ""; }
+      @top-right-corner { content: ""; }
+      @bottom-center { content: ""; }
+      @bottom-left-corner { content: ""; }
+      @bottom-right-corner { content: ""; }
+    
+  }
+  @page cover {
+    margin: 0;
+    @top-center { content: ""; } @bottom-center { content: ""; }
+    @top-left-corner { content: ""; } @top-right-corner { content: ""; }
+    @bottom-left-corner { content: ""; } @bottom-right-corner { content: ""; }
+  }
+
+  /* ===== Document chrome ===== */
+  html, body { margin: 0; padding: 0; background: #f4ecdd; }
+  body {
+    font-family: "Garamond", "Iowan Old Style", Georgia, "Times New Roman", serif;
+    font-size: 11pt;
+    line-height: 13pt;
+    text-align: justify;
+    hyphens: auto;
+    -webkit-hyphens: auto;
+    color: #1f1a14;
+  }
+
+  /* ===== Body type ===== */
+  p { margin: 0; text-indent: 0.25in; padding-bottom: 0pt; }
+  .bp-item > p:first-child,
+  .bp-item-opening > p:first-child { text-indent: 0; }
+  .bp-scene-break + .bp-item > p:first-child { text-indent: 0; }
+  .bp-scene-break {
+    text-indent: 0; text-align: center; margin: 1.2em 0;
+    font-style: italic; letter-spacing: 0.4em;
+  }
+  .bp-scene-break-blank { color: transparent; }
+  em { font-style: italic; }
+  strong { font-weight: 600; }
+  blockquote { margin: 0.6em 1.2em; font-style: italic; color: #3a3022; }
+
+  /* ===== Chapter openings =====
+     The screen-mode .bp-chapter-spacer uses a percentage height that only
+     works inside CSS columns. In print we hide it and apply mm padding to
+     the section directly so the heading lands at the right vertical
+     position on the A5 page. */
+  .bp-chapter-opening, .bp-chapter {
+    break-before: page;
+    break-inside: avoid-page;
+    page: chapter-opening;
+    text-align: center;
+    padding-top: 55mm;
+  }
+  .bp-chapter-opening > .bp-chapter-spacer { display: none; }
+  .bp-chapter-heading {
+    font-size: 1.6em; font-weight: 300; letter-spacing: 0.04em;
+    margin: 0 0 1em 0;
+    line-height: 1.2;
+  }
+  /* Front-matter sections that get their own page also need explicit
+     top spacing — the % values inside their inline styles collapse to 0
+     in print, leaving the heading flush against the top margin. */
+  .bp-half-title { margin-top: 70mm; padding-top: 0; }
+  .bp-titlepage { padding-top: 38mm; margin-top: 0; }
+  .bp-toc { padding-top: 18mm; }
+  .bp-fm-h { margin-top: 55mm; padding-top: 0; }
+  .bp-dedication { margin-top: 70mm; }
+  .bp-epigraph { margin-top: 55mm; }
+  .bp-h2 { margin: 18mm 0 6mm 0; padding-top: 0; }
+
+  /* ===== Front matter ===== */
+  .bp-frontmatter, .bp-titlepage, .bp-toc {
+    break-before: page;
+    page: chapter-opening;
+    text-align: center;
+  }
+  .bp-half-title { font-size: 1.2em; letter-spacing: 0.06em; }
+  .bp-book-title { font-size: 1.8em; font-weight: 300; margin: 0 0 0.4em 0; line-height: 1.2; }
+  .bp-book-subtitle { font-style: italic; margin: 0 0 1.5em 0; }
+  .bp-book-author { font-style: italic; margin: 1.5em 0 0 0; }
+  .bp-fm-line { font-size: 0.85em; margin: 0.4em 0; text-indent: 0; }
+  .bp-fm-h { font-size: 1.2em; }
+  .bp-dedication { text-indent: 0; font-style: italic; }
+  .bp-epigraph { margin-left: 12mm; margin-right: 12mm; font-style: italic; text-indent: 0; }
+  .bp-epigraph-attribution { text-align: center; margin: 4mm 12mm 0; font-size: 0.85em; text-indent: 0; }
+  .bp-h2 { font-size: 1.4em; }
+  .bp-toc-list { list-style: none; padding: 0; margin: 1em 0; font-size: 0.95em; }
+  .bp-toc-list li { margin: 0.35em 0; }
+  .bp-toc-num { display: inline-block; width: 1.6em; }
+  .bp-bridge {
+    margin: 0.6em 1.2em; padding: 0.6em 0;
+    border-top: 1px solid #c7bfae; border-bottom: 1px solid #c7bfae;
+    text-align: center; font-style: italic;
+  }
+  .bp-placeholder { font-style: italic; color: #6a5f4d; }
+
+  /* ===== Cover pages ===== */
+  .pp-cover-page {
+    break-before: page;
+    break-after: page;
+    page: cover;
+    width: 148mm;
+    height: 210mm;
+    position: relative;
+    box-sizing: border-box;
+    overflow: hidden;
+    background: #2a2620;
+    color: #f4ecdd;
+  }
+  .pp-cover-page-front { /* first sheet — already gets @page :first */ }
+
+  
+  
+
+  /* Trim guides (commented out — uncomment if you want crop marks)
+  @media print { body::after { content: ''; position: fixed; ... } }
+  */
+
+  @media print {
+    .pp-screen-only { display: none !important; }
+  }
+</style>
+</head>
+<body>
+  <div class="pp-screen-only" style="position:fixed;top:0;left:0;right:0;padding:8px 12px;background:#222;color:#fff;font-family:system-ui,sans-serif;font-size:13px;display:flex;gap:8px;align-items:center;z-index:9999;">
+    <strong>Print preview.</strong>
+    <span style="opacity:.85;">Use your browser's Print dialog (⌘P / Ctrl-P) to send to printer or save as PDF.</span>
+    <button onclick="window.print()" style="margin-left:auto;padding:4px 10px;background:#fff;color:#000;border:0;border-radius:3px;cursor:pointer;">Print</button>
+    <button onclick="window.close()" style="padding:4px 10px;background:transparent;color:#fff;border:1px solid #fff;border-radius:3px;cursor:pointer;">Close</button>
+  </div>
+  <div class="pp-screen-only" style="height:46px;"></div>
+
+  <div class="pp-cover-page pp-cover-page-front"></div>
+  <section class="bp-frontmatter bp-page-break-before bp-page-break-after"><div class="bp-half-title">On Quiet</div></section>
+<section class="bp-titlepage bp-page-break-before bp-page-break-after">
+         <h1 class="bp-book-title">On Quiet</h1>
+         
+         
+       </section>
+<section class="bp-toc bp-page-break-before bp-page-break-after">
+         <h2 class="bp-h2">Contents</h2>
+         <ol class="bp-toc-list"><li><span class="bp-toc-num">1.</span> On quiet</li></ol>
+       </section>
+<section class="bp-chapter bp-chapter-opening bp-page-break-before  "
+                data-chapter-index="0"
+                data-chapter-title="On quiet">
+         <div class="bp-chapter-spacer" style="height:32%"></div>
+         <div class="bp-chapter-heading">Chapter 1</div>
+       </section>
+<div class="bp-item bp-item-opening"><p>Quiet is not the absence of sound. It is what remains when nothing is asking anything of us.</p>
+<p>I go looking for it the way other people go looking for noise.</p>
+</div>
+  <div class="pp-cover-page"></div>
+
+  <script>
+    // Wait for cover artwork to fully decode before opening the print
+    // dialog — without this the browser can snapshot the page while the
+    // images are still loading and they end up missing on the printed PDF.
+    function waitForCoverImages() {
+      var imgs = Array.from(document.querySelectorAll('img.pp-cover-art'));
+      if (!imgs.length) return Promise.resolve();
+      return Promise.all(imgs.map(function (img) {
+        if (img.complete && img.naturalWidth > 0) return Promise.resolve();
+        if (typeof img.decode === 'function') return img.decode().catch(function () {});
+        return new Promise(function (res) { img.addEventListener('load', res, { once: true }); img.addEventListener('error', res, { once: true }); });
+      }));
+    }
+    window.addEventListener('load', function () {
+      waitForCoverImages().then(function () {
+        // Small extra tick for the layout engine to flush after image decode.
+        setTimeout(function () { try { window.focus(); window.print(); } catch (e) {} }, 100);
+      });
+    });
+  </script>
+</body>
+</html>"
+`;
+
+exports[`BookPreviewModal — depth-1 regression snapshots (Phase 1 baseline) > fixture: single-long-form > P4-full-matter-symbol-breaks — chaptersFromItems=true, custom symbol scene breaks, full front+back matter > bookFlowHtml 1`] = `
+"<section class="bp-frontmatter bp-page-break-before bp-page-break-after"><div class="bp-half-title">On Quiet</div></section>
+<section class="bp-frontmatter bp-page-break-before bp-page-break-after"><h3 class="bp-fm-h">Also by the author</h3><p class="bp-fm-line">A Quieter Year</p><p class="bp-fm-line">The Long Hall</p></section>
+<section class="bp-titlepage bp-page-break-before bp-page-break-after">
+         <h1 class="bp-book-title">On Quiet</h1>
+         
+         <p class="bp-book-author">A. Reader</p>
+       </section>
+<section class="bp-frontmatter bp-page-break-before bp-page-break-after">
+         <p class="bp-fm-line">On Quiet</p>
+         <p class="bp-fm-line">© 2025 A. Reader.</p>
+         <p class="bp-fm-line">All rights reserved.</p>
+         <p class="bp-fm-line">ISBN 978-6-5257-4801-6</p>
+         <p class="bp-fm-line">First edition.</p>
+       </section>
+<section class="bp-frontmatter bp-page-break-before bp-page-break-after"><p class="bp-dedication">For E., who waited.</p></section>
+<section class="bp-frontmatter bp-page-break-before bp-page-break-after">
+         <blockquote class="bp-epigraph">We shape our dwellings,<br>and afterwards our dwellings shape us.</blockquote>
+         <p class="bp-epigraph-attribution">Winston Churchill</p>
+       </section>
+<section class="bp-toc bp-page-break-before bp-page-break-after">
+         <h2 class="bp-h2">Contents</h2>
+         <ol class="bp-toc-list"><li><span class="bp-toc-num">1.</span> On quiet</li></ol>
+       </section>
+<section class="bp-chapter bp-chapter-opening bp-page-break-before  "
+                data-chapter-index="0"
+                data-chapter-title="On quiet">
+         <div class="bp-chapter-spacer" style="height:32%"></div>
+         <div class="bp-chapter-heading">Chapter 1</div>
+       </section>
+<div class="bp-item bp-item-opening"><p>Quiet is not the absence of sound. It is what remains when nothing is asking anything of us.</p>
+<p>I go looking for it the way other people go looking for noise.</p>
+</div>
+<section class="bp-backmatter bp-page-break-before"><h2 class="bp-h2">Acknowledgements</h2><p>Thanks to everyone who read these in draft.</p><p>And to the early-morning cafés that let me linger.</p></section>
+<section class="bp-backmatter bp-page-break-before"><h2 class="bp-h2">Author's note</h2><p>A note on what these are.</p></section>
+<section class="bp-backmatter bp-page-break-before"><h2 class="bp-h2">Discussion questions</h2><ol><li>What does attention cost?</li><li>Where does it accrue?</li></ol></section>
+<section class="bp-backmatter bp-page-break-before"><h2 class="bp-h2">Also by the author</h2><p class="bp-fm-line">A Quieter Year</p><p class="bp-fm-line">The Long Hall</p></section>
+<section class="bp-backmatter bp-page-break-before"><h2 class="bp-h2">Coming next</h2><p>A teaser will go here.</p></section>
+<section class="bp-backmatter bp-page-break-before"><h2 class="bp-h2">About the author</h2><p>The author lives nowhere in particular and is grateful for that.</p></section>"
+`;
+
+exports[`BookPreviewModal — depth-1 regression snapshots (Phase 1 baseline) > fixture: single-long-form > P4-full-matter-symbol-breaks — chaptersFromItems=true, custom symbol scene breaks, full front+back matter > printHtml 1`] = `
+"<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>On Quiet — A5</title>
+<style>
+  /* ===== Page rules ===== */
+  @page {
+    size: 148mm 210mm;
+    margin: 0.65in 0.65in 0.75in 0.8in;
+  }
+  @page :left {
+    margin: 0.65in 0.8in 0.75in 0.65in;
+    @top-center { content: "A. Reader"; font-family: "Garamond", "Iowan Old Style", Georgia, "Times New Roman", serif; font-size: 9pt; color: #5a4f3f; letter-spacing: 0.04em; }
+    @bottom-center { content: counter(page); font-family: "Garamond", "Iowan Old Style", Georgia, "Times New Roman", serif; font-size: 9pt; color: #5a4f3f; }
+  }
+  @page :right {
+    margin: 0.65in 0.65in 0.75in 0.8in;
+    @top-center { content: "On Quiet"; font-family: "Garamond", "Iowan Old Style", Georgia, "Times New Roman", serif; font-size: 9pt; color: #5a4f3f; letter-spacing: 0.04em; }
+    @bottom-center { content: counter(page); font-family: "Garamond", "Iowan Old Style", Georgia, "Times New Roman", serif; font-size: 9pt; color: #5a4f3f; }
+  }
+  @page :first {
+    @top-center { content: ""; }
+    @bottom-center { content: ""; }
+    @top-left-corner { content: ""; }
+    @top-right-corner { content: ""; }
+    @bottom-left-corner { content: ""; }
+    @bottom-right-corner { content: ""; }
+  }
+  @page chapter-opening {
+    margin: 0.65in 0.65in 0.75in 0.8in;
+    
+      @top-center { content: ""; }
+      @top-left-corner { content: ""; }
+      @top-right-corner { content: ""; }
+      @bottom-center { content: ""; }
+      @bottom-left-corner { content: ""; }
+      @bottom-right-corner { content: ""; }
+    
+  }
+  @page cover {
+    margin: 0;
+    @top-center { content: ""; } @bottom-center { content: ""; }
+    @top-left-corner { content: ""; } @top-right-corner { content: ""; }
+    @bottom-left-corner { content: ""; } @bottom-right-corner { content: ""; }
+  }
+
+  /* ===== Document chrome ===== */
+  html, body { margin: 0; padding: 0; background: #f4ecdd; }
+  body {
+    font-family: "Garamond", "Iowan Old Style", Georgia, "Times New Roman", serif;
+    font-size: 11pt;
+    line-height: 13pt;
+    text-align: justify;
+    hyphens: auto;
+    -webkit-hyphens: auto;
+    color: #1f1a14;
+  }
+
+  /* ===== Body type ===== */
+  p { margin: 0; text-indent: 0.25in; padding-bottom: 0pt; }
+  .bp-item > p:first-child,
+  .bp-item-opening > p:first-child { text-indent: 0; }
+  .bp-scene-break + .bp-item > p:first-child { text-indent: 0; }
+  .bp-scene-break {
+    text-indent: 0; text-align: center; margin: 1.2em 0;
+    font-style: italic; letter-spacing: 0.4em;
+  }
+  .bp-scene-break-blank { color: transparent; }
+  em { font-style: italic; }
+  strong { font-weight: 600; }
+  blockquote { margin: 0.6em 1.2em; font-style: italic; color: #3a3022; }
+
+  /* ===== Chapter openings =====
+     The screen-mode .bp-chapter-spacer uses a percentage height that only
+     works inside CSS columns. In print we hide it and apply mm padding to
+     the section directly so the heading lands at the right vertical
+     position on the A5 page. */
+  .bp-chapter-opening, .bp-chapter {
+    break-before: page;
+    break-inside: avoid-page;
+    page: chapter-opening;
+    text-align: center;
+    padding-top: 55mm;
+  }
+  .bp-chapter-opening > .bp-chapter-spacer { display: none; }
+  .bp-chapter-heading {
+    font-size: 1.6em; font-weight: 300; letter-spacing: 0.04em;
+    margin: 0 0 1em 0;
+    line-height: 1.2;
+  }
+  /* Front-matter sections that get their own page also need explicit
+     top spacing — the % values inside their inline styles collapse to 0
+     in print, leaving the heading flush against the top margin. */
+  .bp-half-title { margin-top: 70mm; padding-top: 0; }
+  .bp-titlepage { padding-top: 38mm; margin-top: 0; }
+  .bp-toc { padding-top: 18mm; }
+  .bp-fm-h { margin-top: 55mm; padding-top: 0; }
+  .bp-dedication { margin-top: 70mm; }
+  .bp-epigraph { margin-top: 55mm; }
+  .bp-h2 { margin: 18mm 0 6mm 0; padding-top: 0; }
+
+  /* ===== Front matter ===== */
+  .bp-frontmatter, .bp-titlepage, .bp-toc {
+    break-before: page;
+    page: chapter-opening;
+    text-align: center;
+  }
+  .bp-half-title { font-size: 1.2em; letter-spacing: 0.06em; }
+  .bp-book-title { font-size: 1.8em; font-weight: 300; margin: 0 0 0.4em 0; line-height: 1.2; }
+  .bp-book-subtitle { font-style: italic; margin: 0 0 1.5em 0; }
+  .bp-book-author { font-style: italic; margin: 1.5em 0 0 0; }
+  .bp-fm-line { font-size: 0.85em; margin: 0.4em 0; text-indent: 0; }
+  .bp-fm-h { font-size: 1.2em; }
+  .bp-dedication { text-indent: 0; font-style: italic; }
+  .bp-epigraph { margin-left: 12mm; margin-right: 12mm; font-style: italic; text-indent: 0; }
+  .bp-epigraph-attribution { text-align: center; margin: 4mm 12mm 0; font-size: 0.85em; text-indent: 0; }
+  .bp-h2 { font-size: 1.4em; }
+  .bp-toc-list { list-style: none; padding: 0; margin: 1em 0; font-size: 0.95em; }
+  .bp-toc-list li { margin: 0.35em 0; }
+  .bp-toc-num { display: inline-block; width: 1.6em; }
+  .bp-bridge {
+    margin: 0.6em 1.2em; padding: 0.6em 0;
+    border-top: 1px solid #c7bfae; border-bottom: 1px solid #c7bfae;
+    text-align: center; font-style: italic;
+  }
+  .bp-placeholder { font-style: italic; color: #6a5f4d; }
+
+  /* ===== Cover pages ===== */
+  .pp-cover-page {
+    break-before: page;
+    break-after: page;
+    page: cover;
+    width: 148mm;
+    height: 210mm;
+    position: relative;
+    box-sizing: border-box;
+    overflow: hidden;
+    background: #2a2620;
+    color: #f4ecdd;
+  }
+  .pp-cover-page-front { /* first sheet — already gets @page :first */ }
+
+  
+  
+
+  /* Trim guides (commented out — uncomment if you want crop marks)
+  @media print { body::after { content: ''; position: fixed; ... } }
+  */
+
+  @media print {
+    .pp-screen-only { display: none !important; }
+  }
+</style>
+</head>
+<body>
+  <div class="pp-screen-only" style="position:fixed;top:0;left:0;right:0;padding:8px 12px;background:#222;color:#fff;font-family:system-ui,sans-serif;font-size:13px;display:flex;gap:8px;align-items:center;z-index:9999;">
+    <strong>Print preview.</strong>
+    <span style="opacity:.85;">Use your browser's Print dialog (⌘P / Ctrl-P) to send to printer or save as PDF.</span>
+    <button onclick="window.print()" style="margin-left:auto;padding:4px 10px;background:#fff;color:#000;border:0;border-radius:3px;cursor:pointer;">Print</button>
+    <button onclick="window.close()" style="padding:4px 10px;background:transparent;color:#fff;border:1px solid #fff;border-radius:3px;cursor:pointer;">Close</button>
+  </div>
+  <div class="pp-screen-only" style="height:46px;"></div>
+
+  <div class="pp-cover-page pp-cover-page-front"></div>
+  <section class="bp-frontmatter bp-page-break-before bp-page-break-after"><div class="bp-half-title">On Quiet</div></section>
+<section class="bp-frontmatter bp-page-break-before bp-page-break-after"><h3 class="bp-fm-h">Also by the author</h3><p class="bp-fm-line">A Quieter Year</p><p class="bp-fm-line">The Long Hall</p></section>
+<section class="bp-titlepage bp-page-break-before bp-page-break-after">
+         <h1 class="bp-book-title">On Quiet</h1>
+         
+         <p class="bp-book-author">A. Reader</p>
+       </section>
+<section class="bp-frontmatter bp-page-break-before bp-page-break-after">
+         <p class="bp-fm-line">On Quiet</p>
+         <p class="bp-fm-line">© 2025 A. Reader.</p>
+         <p class="bp-fm-line">All rights reserved.</p>
+         <p class="bp-fm-line">ISBN 978-6-5257-4801-6</p>
+         <p class="bp-fm-line">First edition.</p>
+       </section>
+<section class="bp-frontmatter bp-page-break-before bp-page-break-after"><p class="bp-dedication">For E., who waited.</p></section>
+<section class="bp-frontmatter bp-page-break-before bp-page-break-after">
+         <blockquote class="bp-epigraph">We shape our dwellings,<br>and afterwards our dwellings shape us.</blockquote>
+         <p class="bp-epigraph-attribution">Winston Churchill</p>
+       </section>
+<section class="bp-toc bp-page-break-before bp-page-break-after">
+         <h2 class="bp-h2">Contents</h2>
+         <ol class="bp-toc-list"><li><span class="bp-toc-num">1.</span> On quiet</li></ol>
+       </section>
+<section class="bp-chapter bp-chapter-opening bp-page-break-before  "
+                data-chapter-index="0"
+                data-chapter-title="On quiet">
+         <div class="bp-chapter-spacer" style="height:32%"></div>
+         <div class="bp-chapter-heading">Chapter 1</div>
+       </section>
+<div class="bp-item bp-item-opening"><p>Quiet is not the absence of sound. It is what remains when nothing is asking anything of us.</p>
+<p>I go looking for it the way other people go looking for noise.</p>
+</div>
+<section class="bp-backmatter bp-page-break-before"><h2 class="bp-h2">Acknowledgements</h2><p>Thanks to everyone who read these in draft.</p><p>And to the early-morning cafés that let me linger.</p></section>
+<section class="bp-backmatter bp-page-break-before"><h2 class="bp-h2">Author's note</h2><p>A note on what these are.</p></section>
+<section class="bp-backmatter bp-page-break-before"><h2 class="bp-h2">Discussion questions</h2><ol><li>What does attention cost?</li><li>Where does it accrue?</li></ol></section>
+<section class="bp-backmatter bp-page-break-before"><h2 class="bp-h2">Also by the author</h2><p class="bp-fm-line">A Quieter Year</p><p class="bp-fm-line">The Long Hall</p></section>
+<section class="bp-backmatter bp-page-break-before"><h2 class="bp-h2">Coming next</h2><p>A teaser will go here.</p></section>
+<section class="bp-backmatter bp-page-break-before"><h2 class="bp-h2">About the author</h2><p>The author lives nowhere in particular and is grateful for that.</p></section>
+  <div class="pp-cover-page"></div>
+
+  <script>
+    // Wait for cover artwork to fully decode before opening the print
+    // dialog — without this the browser can snapshot the page while the
+    // images are still loading and they end up missing on the printed PDF.
+    function waitForCoverImages() {
+      var imgs = Array.from(document.querySelectorAll('img.pp-cover-art'));
+      if (!imgs.length) return Promise.resolve();
+      return Promise.all(imgs.map(function (img) {
+        if (img.complete && img.naturalWidth > 0) return Promise.resolve();
+        if (typeof img.decode === 'function') return img.decode().catch(function () {});
+        return new Promise(function (res) { img.addEventListener('load', res, { once: true }); img.addEventListener('error', res, { once: true }); });
+      }));
+    }
+    window.addEventListener('load', function () {
+      waitForCoverImages().then(function () {
+        // Small extra tick for the layout engine to flush after image decode.
+        setTimeout(function () { try { window.focus(); window.print(); } catch (e) {} }, 100);
+      });
+    });
+  </script>
+</body>
+</html>"
+`;
+
+exports[`BookPreviewModal — depth-1 regression snapshots (Phase 1 baseline) > fixture: traditional-sectioned > P1-defaults — chaptersFromItems=true, asterisk scene breaks, minimal matter > bookFlowHtml 1`] = `
+"<section class="bp-frontmatter bp-page-break-before bp-page-break-after"><div class="bp-half-title">After the Storm</div></section>
+<section class="bp-titlepage bp-page-break-before bp-page-break-after">
+         <h1 class="bp-book-title">After the Storm</h1>
+         
+         
+       </section>
+<section class="bp-frontmatter bp-page-break-before bp-page-break-after">
+         <p class="bp-fm-line">After the Storm</p>
+         
+         <p class="bp-fm-line">All rights reserved.</p>
+         <p class="bp-fm-line">ISBN 978-7-8688-2586-0</p>
+         <p class="bp-fm-line">First edition.</p>
+       </section>
+<section class="bp-frontmatter bp-page-break-before bp-page-break-after"><p class="bp-dedication">For…</p></section>
+<section class="bp-chapter bp-chapter-opening bp-page-break-before  "
+                data-chapter-index="0"
+                data-chapter-title="The day before">
+         <div class="bp-chapter-spacer" style="height:32%"></div>
+         <div class="bp-chapter-heading">Chapter 1</div>
+       </section>
+<div class="bp-item bp-item-opening"><p>It would be easy, now, to say I knew. I did not. I knew only that the air was wrong.</p>
+</div>
+<section class="bp-chapter bp-chapter-opening bp-page-break-before  "
+                data-chapter-index="1"
+                data-chapter-title="The hour before">
+         <div class="bp-chapter-spacer" style="height:32%"></div>
+         <div class="bp-chapter-heading">Chapter 2</div>
+       </section>
+<div class="bp-item bp-item-opening"><p>We waited on the porch. The radio cut in and out. My father kept his hand on the doorframe.</p>
+</div>
+<section class="bp-chapter bp-chapter-opening bp-page-break-before  "
+                data-chapter-index="2"
+                data-chapter-title="Eye of it">
+         <div class="bp-chapter-spacer" style="height:32%"></div>
+         <div class="bp-chapter-heading">Chapter 3</div>
+       </section>
+<div class="bp-item bp-item-opening"><p>When it came it did not sound like wind. It sounded like a train, and then like nothing.</p>
+</div>
+<section class="bp-chapter bp-chapter-opening bp-page-break-before  "
+                data-chapter-index="3"
+                data-chapter-title="Counting">
+         <div class="bp-chapter-spacer" style="height:32%"></div>
+         <div class="bp-chapter-heading">Chapter 4</div>
+       </section>
+<div class="bp-item bp-item-opening"><p>Afterward we counted. The barn, the elm, the south fence — gone. The house, somehow, was still standing.</p>
+</div>
+<section class="bp-chapter bp-chapter-opening bp-page-break-before  "
+                data-chapter-index="4"
+                data-chapter-title="What I haven't written yet">
+         <div class="bp-chapter-spacer" style="height:32%"></div>
+         <div class="bp-chapter-heading">Chapter 5</div>
+       </section>
+<div class="bp-item bp-item-opening"><p class="bp-placeholder"><em>A passage about the year after, still to come.</em></p></div>
+<section class="bp-chapter bp-chapter-opening bp-page-break-before  "
+                data-chapter-index="5"
+                data-chapter-title="Stray pages">
+         <div class="bp-chapter-spacer" style="height:32%"></div>
+         <div class="bp-chapter-heading">Chapter 6</div>
+       </section>
+<div class="bp-item bp-item-opening"><p>These are pages I never knew where to file.</p>
+</div>
+<section class="bp-backmatter bp-page-break-before"><h2 class="bp-h2">Acknowledgements</h2><p>—</p></section>
+<section class="bp-backmatter bp-page-break-before"><h2 class="bp-h2">About the author</h2><p>—</p></section>"
+`;
+
+exports[`BookPreviewModal — depth-1 regression snapshots (Phase 1 baseline) > fixture: traditional-sectioned > P1-defaults — chaptersFromItems=true, asterisk scene breaks, minimal matter > printHtml 1`] = `
+"<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>After the Storm — A5</title>
+<style>
+  /* ===== Page rules ===== */
+  @page {
+    size: 148mm 210mm;
+    margin: 0.65in 0.65in 0.75in 0.8in;
+  }
+  @page :left {
+    margin: 0.65in 0.8in 0.75in 0.65in;
+    
+    @bottom-center { content: counter(page); font-family: "Garamond", "Iowan Old Style", Georgia, "Times New Roman", serif; font-size: 9pt; color: #5a4f3f; }
+  }
+  @page :right {
+    margin: 0.65in 0.65in 0.75in 0.8in;
+    @top-center { content: "After the Storm"; font-family: "Garamond", "Iowan Old Style", Georgia, "Times New Roman", serif; font-size: 9pt; color: #5a4f3f; letter-spacing: 0.04em; }
+    @bottom-center { content: counter(page); font-family: "Garamond", "Iowan Old Style", Georgia, "Times New Roman", serif; font-size: 9pt; color: #5a4f3f; }
+  }
+  @page :first {
+    @top-center { content: ""; }
+    @bottom-center { content: ""; }
+    @top-left-corner { content: ""; }
+    @top-right-corner { content: ""; }
+    @bottom-left-corner { content: ""; }
+    @bottom-right-corner { content: ""; }
+  }
+  @page chapter-opening {
+    margin: 0.65in 0.65in 0.75in 0.8in;
+    
+      @top-center { content: ""; }
+      @top-left-corner { content: ""; }
+      @top-right-corner { content: ""; }
+      @bottom-center { content: ""; }
+      @bottom-left-corner { content: ""; }
+      @bottom-right-corner { content: ""; }
+    
+  }
+  @page cover {
+    margin: 0;
+    @top-center { content: ""; } @bottom-center { content: ""; }
+    @top-left-corner { content: ""; } @top-right-corner { content: ""; }
+    @bottom-left-corner { content: ""; } @bottom-right-corner { content: ""; }
+  }
+
+  /* ===== Document chrome ===== */
+  html, body { margin: 0; padding: 0; background: #f4ecdd; }
+  body {
+    font-family: "Garamond", "Iowan Old Style", Georgia, "Times New Roman", serif;
+    font-size: 11pt;
+    line-height: 13pt;
+    text-align: justify;
+    hyphens: auto;
+    -webkit-hyphens: auto;
+    color: #1f1a14;
+  }
+
+  /* ===== Body type ===== */
+  p { margin: 0; text-indent: 0.25in; padding-bottom: 0pt; }
+  .bp-item > p:first-child,
+  .bp-item-opening > p:first-child { text-indent: 0; }
+  .bp-scene-break + .bp-item > p:first-child { text-indent: 0; }
+  .bp-scene-break {
+    text-indent: 0; text-align: center; margin: 1.2em 0;
+    font-style: italic; letter-spacing: 0.4em;
+  }
+  .bp-scene-break-blank { color: transparent; }
+  em { font-style: italic; }
+  strong { font-weight: 600; }
+  blockquote { margin: 0.6em 1.2em; font-style: italic; color: #3a3022; }
+
+  /* ===== Chapter openings =====
+     The screen-mode .bp-chapter-spacer uses a percentage height that only
+     works inside CSS columns. In print we hide it and apply mm padding to
+     the section directly so the heading lands at the right vertical
+     position on the A5 page. */
+  .bp-chapter-opening, .bp-chapter {
+    break-before: page;
+    break-inside: avoid-page;
+    page: chapter-opening;
+    text-align: center;
+    padding-top: 55mm;
+  }
+  .bp-chapter-opening > .bp-chapter-spacer { display: none; }
+  .bp-chapter-heading {
+    font-size: 1.6em; font-weight: 300; letter-spacing: 0.04em;
+    margin: 0 0 1em 0;
+    line-height: 1.2;
+  }
+  /* Front-matter sections that get their own page also need explicit
+     top spacing — the % values inside their inline styles collapse to 0
+     in print, leaving the heading flush against the top margin. */
+  .bp-half-title { margin-top: 70mm; padding-top: 0; }
+  .bp-titlepage { padding-top: 38mm; margin-top: 0; }
+  .bp-toc { padding-top: 18mm; }
+  .bp-fm-h { margin-top: 55mm; padding-top: 0; }
+  .bp-dedication { margin-top: 70mm; }
+  .bp-epigraph { margin-top: 55mm; }
+  .bp-h2 { margin: 18mm 0 6mm 0; padding-top: 0; }
+
+  /* ===== Front matter ===== */
+  .bp-frontmatter, .bp-titlepage, .bp-toc {
+    break-before: page;
+    page: chapter-opening;
+    text-align: center;
+  }
+  .bp-half-title { font-size: 1.2em; letter-spacing: 0.06em; }
+  .bp-book-title { font-size: 1.8em; font-weight: 300; margin: 0 0 0.4em 0; line-height: 1.2; }
+  .bp-book-subtitle { font-style: italic; margin: 0 0 1.5em 0; }
+  .bp-book-author { font-style: italic; margin: 1.5em 0 0 0; }
+  .bp-fm-line { font-size: 0.85em; margin: 0.4em 0; text-indent: 0; }
+  .bp-fm-h { font-size: 1.2em; }
+  .bp-dedication { text-indent: 0; font-style: italic; }
+  .bp-epigraph { margin-left: 12mm; margin-right: 12mm; font-style: italic; text-indent: 0; }
+  .bp-epigraph-attribution { text-align: center; margin: 4mm 12mm 0; font-size: 0.85em; text-indent: 0; }
+  .bp-h2 { font-size: 1.4em; }
+  .bp-toc-list { list-style: none; padding: 0; margin: 1em 0; font-size: 0.95em; }
+  .bp-toc-list li { margin: 0.35em 0; }
+  .bp-toc-num { display: inline-block; width: 1.6em; }
+  .bp-bridge {
+    margin: 0.6em 1.2em; padding: 0.6em 0;
+    border-top: 1px solid #c7bfae; border-bottom: 1px solid #c7bfae;
+    text-align: center; font-style: italic;
+  }
+  .bp-placeholder { font-style: italic; color: #6a5f4d; }
+
+  /* ===== Cover pages ===== */
+  .pp-cover-page {
+    break-before: page;
+    break-after: page;
+    page: cover;
+    width: 148mm;
+    height: 210mm;
+    position: relative;
+    box-sizing: border-box;
+    overflow: hidden;
+    background: #2a2620;
+    color: #f4ecdd;
+  }
+  .pp-cover-page-front { /* first sheet — already gets @page :first */ }
+
+  
+  
+
+  /* Trim guides (commented out — uncomment if you want crop marks)
+  @media print { body::after { content: ''; position: fixed; ... } }
+  */
+
+  @media print {
+    .pp-screen-only { display: none !important; }
+  }
+</style>
+</head>
+<body>
+  <div class="pp-screen-only" style="position:fixed;top:0;left:0;right:0;padding:8px 12px;background:#222;color:#fff;font-family:system-ui,sans-serif;font-size:13px;display:flex;gap:8px;align-items:center;z-index:9999;">
+    <strong>Print preview.</strong>
+    <span style="opacity:.85;">Use your browser's Print dialog (⌘P / Ctrl-P) to send to printer or save as PDF.</span>
+    <button onclick="window.print()" style="margin-left:auto;padding:4px 10px;background:#fff;color:#000;border:0;border-radius:3px;cursor:pointer;">Print</button>
+    <button onclick="window.close()" style="padding:4px 10px;background:transparent;color:#fff;border:1px solid #fff;border-radius:3px;cursor:pointer;">Close</button>
+  </div>
+  <div class="pp-screen-only" style="height:46px;"></div>
+
+  <div class="pp-cover-page pp-cover-page-front"></div>
+  <section class="bp-frontmatter bp-page-break-before bp-page-break-after"><div class="bp-half-title">After the Storm</div></section>
+<section class="bp-titlepage bp-page-break-before bp-page-break-after">
+         <h1 class="bp-book-title">After the Storm</h1>
+         
+         
+       </section>
+<section class="bp-frontmatter bp-page-break-before bp-page-break-after">
+         <p class="bp-fm-line">After the Storm</p>
+         
+         <p class="bp-fm-line">All rights reserved.</p>
+         <p class="bp-fm-line">ISBN 978-7-8688-2586-0</p>
+         <p class="bp-fm-line">First edition.</p>
+       </section>
+<section class="bp-frontmatter bp-page-break-before bp-page-break-after"><p class="bp-dedication">For…</p></section>
+<section class="bp-chapter bp-chapter-opening bp-page-break-before  "
+                data-chapter-index="0"
+                data-chapter-title="The day before">
+         <div class="bp-chapter-spacer" style="height:32%"></div>
+         <div class="bp-chapter-heading">Chapter 1</div>
+       </section>
+<div class="bp-item bp-item-opening"><p>It would be easy, now, to say I knew. I did not. I knew only that the air was wrong.</p>
+</div>
+<section class="bp-chapter bp-chapter-opening bp-page-break-before  "
+                data-chapter-index="1"
+                data-chapter-title="The hour before">
+         <div class="bp-chapter-spacer" style="height:32%"></div>
+         <div class="bp-chapter-heading">Chapter 2</div>
+       </section>
+<div class="bp-item bp-item-opening"><p>We waited on the porch. The radio cut in and out. My father kept his hand on the doorframe.</p>
+</div>
+<section class="bp-chapter bp-chapter-opening bp-page-break-before  "
+                data-chapter-index="2"
+                data-chapter-title="Eye of it">
+         <div class="bp-chapter-spacer" style="height:32%"></div>
+         <div class="bp-chapter-heading">Chapter 3</div>
+       </section>
+<div class="bp-item bp-item-opening"><p>When it came it did not sound like wind. It sounded like a train, and then like nothing.</p>
+</div>
+<section class="bp-chapter bp-chapter-opening bp-page-break-before  "
+                data-chapter-index="3"
+                data-chapter-title="Counting">
+         <div class="bp-chapter-spacer" style="height:32%"></div>
+         <div class="bp-chapter-heading">Chapter 4</div>
+       </section>
+<div class="bp-item bp-item-opening"><p>Afterward we counted. The barn, the elm, the south fence — gone. The house, somehow, was still standing.</p>
+</div>
+<section class="bp-chapter bp-chapter-opening bp-page-break-before  "
+                data-chapter-index="4"
+                data-chapter-title="What I haven't written yet">
+         <div class="bp-chapter-spacer" style="height:32%"></div>
+         <div class="bp-chapter-heading">Chapter 5</div>
+       </section>
+<div class="bp-item bp-item-opening"><p class="bp-placeholder"><em>A passage about the year after, still to come.</em></p></div>
+<section class="bp-chapter bp-chapter-opening bp-page-break-before  "
+                data-chapter-index="5"
+                data-chapter-title="Stray pages">
+         <div class="bp-chapter-spacer" style="height:32%"></div>
+         <div class="bp-chapter-heading">Chapter 6</div>
+       </section>
+<div class="bp-item bp-item-opening"><p>These are pages I never knew where to file.</p>
+</div>
+<section class="bp-backmatter bp-page-break-before"><h2 class="bp-h2">Acknowledgements</h2><p>—</p></section>
+<section class="bp-backmatter bp-page-break-before"><h2 class="bp-h2">About the author</h2><p>—</p></section>
+  <div class="pp-cover-page"></div>
+
+  <script>
+    // Wait for cover artwork to fully decode before opening the print
+    // dialog — without this the browser can snapshot the page while the
+    // images are still loading and they end up missing on the printed PDF.
+    function waitForCoverImages() {
+      var imgs = Array.from(document.querySelectorAll('img.pp-cover-art'));
+      if (!imgs.length) return Promise.resolve();
+      return Promise.all(imgs.map(function (img) {
+        if (img.complete && img.naturalWidth > 0) return Promise.resolve();
+        if (typeof img.decode === 'function') return img.decode().catch(function () {});
+        return new Promise(function (res) { img.addEventListener('load', res, { once: true }); img.addEventListener('error', res, { once: true }); });
+      }));
+    }
+    window.addEventListener('load', function () {
+      waitForCoverImages().then(function () {
+        // Small extra tick for the layout engine to flush after image decode.
+        setTimeout(function () { try { window.focus(); window.print(); } catch (e) {} }, 100);
+      });
+    });
+  </script>
+</body>
+</html>"
+`;
+
+exports[`BookPreviewModal — depth-1 regression snapshots (Phase 1 baseline) > fixture: traditional-sectioned > P2-sections-as-chapters — chaptersFromItems=false, asterisk scene breaks, minimal matter > bookFlowHtml 1`] = `
+"<section class="bp-titlepage bp-page-break-before bp-page-break-after">
+         <h1 class="bp-book-title">After the Storm</h1>
+         
+         
+       </section>
+<section class="bp-chapter bp-chapter-opening bp-page-break-before  "
+                data-chapter-index="0"
+                data-chapter-title="Before">
+         <div class="bp-chapter-spacer" style="height:32%"></div>
+         <div class="bp-chapter-heading">Chapter 1</div>
+       </section>
+<div class="bp-item bp-item-opening"><p>It would be easy, now, to say I knew. I did not. I knew only that the air was wrong.</p>
+</div>
+<p class="bp-scene-break bp-scene-break-symbol">* * *</p>
+<div class="bp-item"><p>We waited on the porch. The radio cut in and out. My father kept his hand on the doorframe.</p>
+</div>
+<section class="bp-chapter bp-chapter-opening bp-page-break-before  "
+                data-chapter-index="1"
+                data-chapter-title="During">
+         <div class="bp-chapter-spacer" style="height:32%"></div>
+         <div class="bp-chapter-heading">Chapter 2</div>
+       </section>
+<div class="bp-item bp-item-opening"><p>When it came it did not sound like wind. It sounded like a train, and then like nothing.</p>
+</div>
+<section class="bp-chapter bp-chapter-opening bp-page-break-before  "
+                data-chapter-index="2"
+                data-chapter-title="After">
+         <div class="bp-chapter-spacer" style="height:32%"></div>
+         <div class="bp-chapter-heading">Chapter 3</div>
+       </section>
+<div class="bp-item bp-item-opening"><p>Afterward we counted. The barn, the elm, the south fence — gone. The house, somehow, was still standing.</p>
+</div>
+<p class="bp-scene-break bp-scene-break-symbol">* * *</p>
+<div class="bp-item"><p class="bp-placeholder"><em>A passage about the year after, still to come.</em></p></div>
+<section class="bp-chapter bp-chapter-opening bp-page-break-before  "
+                data-chapter-index="3"
+                data-chapter-title="Other">
+         <div class="bp-chapter-spacer" style="height:32%"></div>
+         <div class="bp-chapter-heading">Chapter 4</div>
+       </section>
+<div class="bp-item bp-item-opening"><p>These are pages I never knew where to file.</p>
+</div>"
+`;
+
+exports[`BookPreviewModal — depth-1 regression snapshots (Phase 1 baseline) > fixture: traditional-sectioned > P2-sections-as-chapters — chaptersFromItems=false, asterisk scene breaks, minimal matter > printHtml 1`] = `
+"<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>After the Storm — A5</title>
+<style>
+  /* ===== Page rules ===== */
+  @page {
+    size: 148mm 210mm;
+    margin: 0.65in 0.65in 0.75in 0.8in;
+  }
+  @page :left {
+    margin: 0.65in 0.8in 0.75in 0.65in;
+    
+    @bottom-center { content: counter(page); font-family: "Garamond", "Iowan Old Style", Georgia, "Times New Roman", serif; font-size: 9pt; color: #5a4f3f; }
+  }
+  @page :right {
+    margin: 0.65in 0.65in 0.75in 0.8in;
+    @top-center { content: "After the Storm"; font-family: "Garamond", "Iowan Old Style", Georgia, "Times New Roman", serif; font-size: 9pt; color: #5a4f3f; letter-spacing: 0.04em; }
+    @bottom-center { content: counter(page); font-family: "Garamond", "Iowan Old Style", Georgia, "Times New Roman", serif; font-size: 9pt; color: #5a4f3f; }
+  }
+  @page :first {
+    @top-center { content: ""; }
+    @bottom-center { content: ""; }
+    @top-left-corner { content: ""; }
+    @top-right-corner { content: ""; }
+    @bottom-left-corner { content: ""; }
+    @bottom-right-corner { content: ""; }
+  }
+  @page chapter-opening {
+    margin: 0.65in 0.65in 0.75in 0.8in;
+    
+      @top-center { content: ""; }
+      @top-left-corner { content: ""; }
+      @top-right-corner { content: ""; }
+      @bottom-center { content: ""; }
+      @bottom-left-corner { content: ""; }
+      @bottom-right-corner { content: ""; }
+    
+  }
+  @page cover {
+    margin: 0;
+    @top-center { content: ""; } @bottom-center { content: ""; }
+    @top-left-corner { content: ""; } @top-right-corner { content: ""; }
+    @bottom-left-corner { content: ""; } @bottom-right-corner { content: ""; }
+  }
+
+  /* ===== Document chrome ===== */
+  html, body { margin: 0; padding: 0; background: #f4ecdd; }
+  body {
+    font-family: "Garamond", "Iowan Old Style", Georgia, "Times New Roman", serif;
+    font-size: 11pt;
+    line-height: 13pt;
+    text-align: justify;
+    hyphens: auto;
+    -webkit-hyphens: auto;
+    color: #1f1a14;
+  }
+
+  /* ===== Body type ===== */
+  p { margin: 0; text-indent: 0.25in; padding-bottom: 0pt; }
+  .bp-item > p:first-child,
+  .bp-item-opening > p:first-child { text-indent: 0; }
+  .bp-scene-break + .bp-item > p:first-child { text-indent: 0; }
+  .bp-scene-break {
+    text-indent: 0; text-align: center; margin: 1.2em 0;
+    font-style: italic; letter-spacing: 0.4em;
+  }
+  .bp-scene-break-blank { color: transparent; }
+  em { font-style: italic; }
+  strong { font-weight: 600; }
+  blockquote { margin: 0.6em 1.2em; font-style: italic; color: #3a3022; }
+
+  /* ===== Chapter openings =====
+     The screen-mode .bp-chapter-spacer uses a percentage height that only
+     works inside CSS columns. In print we hide it and apply mm padding to
+     the section directly so the heading lands at the right vertical
+     position on the A5 page. */
+  .bp-chapter-opening, .bp-chapter {
+    break-before: page;
+    break-inside: avoid-page;
+    page: chapter-opening;
+    text-align: center;
+    padding-top: 55mm;
+  }
+  .bp-chapter-opening > .bp-chapter-spacer { display: none; }
+  .bp-chapter-heading {
+    font-size: 1.6em; font-weight: 300; letter-spacing: 0.04em;
+    margin: 0 0 1em 0;
+    line-height: 1.2;
+  }
+  /* Front-matter sections that get their own page also need explicit
+     top spacing — the % values inside their inline styles collapse to 0
+     in print, leaving the heading flush against the top margin. */
+  .bp-half-title { margin-top: 70mm; padding-top: 0; }
+  .bp-titlepage { padding-top: 38mm; margin-top: 0; }
+  .bp-toc { padding-top: 18mm; }
+  .bp-fm-h { margin-top: 55mm; padding-top: 0; }
+  .bp-dedication { margin-top: 70mm; }
+  .bp-epigraph { margin-top: 55mm; }
+  .bp-h2 { margin: 18mm 0 6mm 0; padding-top: 0; }
+
+  /* ===== Front matter ===== */
+  .bp-frontmatter, .bp-titlepage, .bp-toc {
+    break-before: page;
+    page: chapter-opening;
+    text-align: center;
+  }
+  .bp-half-title { font-size: 1.2em; letter-spacing: 0.06em; }
+  .bp-book-title { font-size: 1.8em; font-weight: 300; margin: 0 0 0.4em 0; line-height: 1.2; }
+  .bp-book-subtitle { font-style: italic; margin: 0 0 1.5em 0; }
+  .bp-book-author { font-style: italic; margin: 1.5em 0 0 0; }
+  .bp-fm-line { font-size: 0.85em; margin: 0.4em 0; text-indent: 0; }
+  .bp-fm-h { font-size: 1.2em; }
+  .bp-dedication { text-indent: 0; font-style: italic; }
+  .bp-epigraph { margin-left: 12mm; margin-right: 12mm; font-style: italic; text-indent: 0; }
+  .bp-epigraph-attribution { text-align: center; margin: 4mm 12mm 0; font-size: 0.85em; text-indent: 0; }
+  .bp-h2 { font-size: 1.4em; }
+  .bp-toc-list { list-style: none; padding: 0; margin: 1em 0; font-size: 0.95em; }
+  .bp-toc-list li { margin: 0.35em 0; }
+  .bp-toc-num { display: inline-block; width: 1.6em; }
+  .bp-bridge {
+    margin: 0.6em 1.2em; padding: 0.6em 0;
+    border-top: 1px solid #c7bfae; border-bottom: 1px solid #c7bfae;
+    text-align: center; font-style: italic;
+  }
+  .bp-placeholder { font-style: italic; color: #6a5f4d; }
+
+  /* ===== Cover pages ===== */
+  .pp-cover-page {
+    break-before: page;
+    break-after: page;
+    page: cover;
+    width: 148mm;
+    height: 210mm;
+    position: relative;
+    box-sizing: border-box;
+    overflow: hidden;
+    background: #2a2620;
+    color: #f4ecdd;
+  }
+  .pp-cover-page-front { /* first sheet — already gets @page :first */ }
+
+  
+  
+
+  /* Trim guides (commented out — uncomment if you want crop marks)
+  @media print { body::after { content: ''; position: fixed; ... } }
+  */
+
+  @media print {
+    .pp-screen-only { display: none !important; }
+  }
+</style>
+</head>
+<body>
+  <div class="pp-screen-only" style="position:fixed;top:0;left:0;right:0;padding:8px 12px;background:#222;color:#fff;font-family:system-ui,sans-serif;font-size:13px;display:flex;gap:8px;align-items:center;z-index:9999;">
+    <strong>Print preview.</strong>
+    <span style="opacity:.85;">Use your browser's Print dialog (⌘P / Ctrl-P) to send to printer or save as PDF.</span>
+    <button onclick="window.print()" style="margin-left:auto;padding:4px 10px;background:#fff;color:#000;border:0;border-radius:3px;cursor:pointer;">Print</button>
+    <button onclick="window.close()" style="padding:4px 10px;background:transparent;color:#fff;border:1px solid #fff;border-radius:3px;cursor:pointer;">Close</button>
+  </div>
+  <div class="pp-screen-only" style="height:46px;"></div>
+
+  <div class="pp-cover-page pp-cover-page-front"></div>
+  <section class="bp-titlepage bp-page-break-before bp-page-break-after">
+         <h1 class="bp-book-title">After the Storm</h1>
+         
+         
+       </section>
+<section class="bp-chapter bp-chapter-opening bp-page-break-before  "
+                data-chapter-index="0"
+                data-chapter-title="Before">
+         <div class="bp-chapter-spacer" style="height:32%"></div>
+         <div class="bp-chapter-heading">Chapter 1</div>
+       </section>
+<div class="bp-item bp-item-opening"><p>It would be easy, now, to say I knew. I did not. I knew only that the air was wrong.</p>
+</div>
+<p class="bp-scene-break bp-scene-break-symbol">* * *</p>
+<div class="bp-item"><p>We waited on the porch. The radio cut in and out. My father kept his hand on the doorframe.</p>
+</div>
+<section class="bp-chapter bp-chapter-opening bp-page-break-before  "
+                data-chapter-index="1"
+                data-chapter-title="During">
+         <div class="bp-chapter-spacer" style="height:32%"></div>
+         <div class="bp-chapter-heading">Chapter 2</div>
+       </section>
+<div class="bp-item bp-item-opening"><p>When it came it did not sound like wind. It sounded like a train, and then like nothing.</p>
+</div>
+<section class="bp-chapter bp-chapter-opening bp-page-break-before  "
+                data-chapter-index="2"
+                data-chapter-title="After">
+         <div class="bp-chapter-spacer" style="height:32%"></div>
+         <div class="bp-chapter-heading">Chapter 3</div>
+       </section>
+<div class="bp-item bp-item-opening"><p>Afterward we counted. The barn, the elm, the south fence — gone. The house, somehow, was still standing.</p>
+</div>
+<p class="bp-scene-break bp-scene-break-symbol">* * *</p>
+<div class="bp-item"><p class="bp-placeholder"><em>A passage about the year after, still to come.</em></p></div>
+<section class="bp-chapter bp-chapter-opening bp-page-break-before  "
+                data-chapter-index="3"
+                data-chapter-title="Other">
+         <div class="bp-chapter-spacer" style="height:32%"></div>
+         <div class="bp-chapter-heading">Chapter 4</div>
+       </section>
+<div class="bp-item bp-item-opening"><p>These are pages I never knew where to file.</p>
+</div>
+  <div class="pp-cover-page"></div>
+
+  <script>
+    // Wait for cover artwork to fully decode before opening the print
+    // dialog — without this the browser can snapshot the page while the
+    // images are still loading and they end up missing on the printed PDF.
+    function waitForCoverImages() {
+      var imgs = Array.from(document.querySelectorAll('img.pp-cover-art'));
+      if (!imgs.length) return Promise.resolve();
+      return Promise.all(imgs.map(function (img) {
+        if (img.complete && img.naturalWidth > 0) return Promise.resolve();
+        if (typeof img.decode === 'function') return img.decode().catch(function () {});
+        return new Promise(function (res) { img.addEventListener('load', res, { once: true }); img.addEventListener('error', res, { once: true }); });
+      }));
+    }
+    window.addEventListener('load', function () {
+      waitForCoverImages().then(function () {
+        // Small extra tick for the layout engine to flush after image decode.
+        setTimeout(function () { try { window.focus(); window.print(); } catch (e) {} }, 100);
+      });
+    });
+  </script>
+</body>
+</html>"
+`;
+
+exports[`BookPreviewModal — depth-1 regression snapshots (Phase 1 baseline) > fixture: traditional-sectioned > P3-toc-blank-breaks — chaptersFromItems=true, blank-line scene breaks, TOC on > bookFlowHtml 1`] = `
+"<section class="bp-frontmatter bp-page-break-before bp-page-break-after"><div class="bp-half-title">After the Storm</div></section>
+<section class="bp-titlepage bp-page-break-before bp-page-break-after">
+         <h1 class="bp-book-title">After the Storm</h1>
+         
+         
+       </section>
+<section class="bp-toc bp-page-break-before bp-page-break-after">
+         <h2 class="bp-h2">Contents</h2>
+         <ol class="bp-toc-list"><li><span class="bp-toc-num">1.</span> The day before</li><li><span class="bp-toc-num">2.</span> The hour before</li><li><span class="bp-toc-num">3.</span> Eye of it</li><li><span class="bp-toc-num">4.</span> Counting</li><li><span class="bp-toc-num">5.</span> What I haven't written yet</li><li><span class="bp-toc-num">6.</span> Stray pages</li></ol>
+       </section>
+<section class="bp-chapter bp-chapter-opening bp-page-break-before  "
+                data-chapter-index="0"
+                data-chapter-title="The day before">
+         <div class="bp-chapter-spacer" style="height:32%"></div>
+         <div class="bp-chapter-heading">Chapter 1</div>
+       </section>
+<div class="bp-item bp-item-opening"><p>It would be easy, now, to say I knew. I did not. I knew only that the air was wrong.</p>
+</div>
+<section class="bp-chapter bp-chapter-opening bp-page-break-before  "
+                data-chapter-index="1"
+                data-chapter-title="The hour before">
+         <div class="bp-chapter-spacer" style="height:32%"></div>
+         <div class="bp-chapter-heading">Chapter 2</div>
+       </section>
+<div class="bp-item bp-item-opening"><p>We waited on the porch. The radio cut in and out. My father kept his hand on the doorframe.</p>
+</div>
+<section class="bp-chapter bp-chapter-opening bp-page-break-before  "
+                data-chapter-index="2"
+                data-chapter-title="Eye of it">
+         <div class="bp-chapter-spacer" style="height:32%"></div>
+         <div class="bp-chapter-heading">Chapter 3</div>
+       </section>
+<div class="bp-item bp-item-opening"><p>When it came it did not sound like wind. It sounded like a train, and then like nothing.</p>
+</div>
+<section class="bp-chapter bp-chapter-opening bp-page-break-before  "
+                data-chapter-index="3"
+                data-chapter-title="Counting">
+         <div class="bp-chapter-spacer" style="height:32%"></div>
+         <div class="bp-chapter-heading">Chapter 4</div>
+       </section>
+<div class="bp-item bp-item-opening"><p>Afterward we counted. The barn, the elm, the south fence — gone. The house, somehow, was still standing.</p>
+</div>
+<section class="bp-chapter bp-chapter-opening bp-page-break-before  "
+                data-chapter-index="4"
+                data-chapter-title="What I haven't written yet">
+         <div class="bp-chapter-spacer" style="height:32%"></div>
+         <div class="bp-chapter-heading">Chapter 5</div>
+       </section>
+<div class="bp-item bp-item-opening"><p class="bp-placeholder"><em>A passage about the year after, still to come.</em></p></div>
+<section class="bp-chapter bp-chapter-opening bp-page-break-before  "
+                data-chapter-index="5"
+                data-chapter-title="Stray pages">
+         <div class="bp-chapter-spacer" style="height:32%"></div>
+         <div class="bp-chapter-heading">Chapter 6</div>
+       </section>
+<div class="bp-item bp-item-opening"><p>These are pages I never knew where to file.</p>
+</div>"
+`;
+
+exports[`BookPreviewModal — depth-1 regression snapshots (Phase 1 baseline) > fixture: traditional-sectioned > P3-toc-blank-breaks — chaptersFromItems=true, blank-line scene breaks, TOC on > printHtml 1`] = `
+"<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>After the Storm — A5</title>
+<style>
+  /* ===== Page rules ===== */
+  @page {
+    size: 148mm 210mm;
+    margin: 0.65in 0.65in 0.75in 0.8in;
+  }
+  @page :left {
+    margin: 0.65in 0.8in 0.75in 0.65in;
+    
+    @bottom-center { content: counter(page); font-family: "Garamond", "Iowan Old Style", Georgia, "Times New Roman", serif; font-size: 9pt; color: #5a4f3f; }
+  }
+  @page :right {
+    margin: 0.65in 0.65in 0.75in 0.8in;
+    @top-center { content: "After the Storm"; font-family: "Garamond", "Iowan Old Style", Georgia, "Times New Roman", serif; font-size: 9pt; color: #5a4f3f; letter-spacing: 0.04em; }
+    @bottom-center { content: counter(page); font-family: "Garamond", "Iowan Old Style", Georgia, "Times New Roman", serif; font-size: 9pt; color: #5a4f3f; }
+  }
+  @page :first {
+    @top-center { content: ""; }
+    @bottom-center { content: ""; }
+    @top-left-corner { content: ""; }
+    @top-right-corner { content: ""; }
+    @bottom-left-corner { content: ""; }
+    @bottom-right-corner { content: ""; }
+  }
+  @page chapter-opening {
+    margin: 0.65in 0.65in 0.75in 0.8in;
+    
+      @top-center { content: ""; }
+      @top-left-corner { content: ""; }
+      @top-right-corner { content: ""; }
+      @bottom-center { content: ""; }
+      @bottom-left-corner { content: ""; }
+      @bottom-right-corner { content: ""; }
+    
+  }
+  @page cover {
+    margin: 0;
+    @top-center { content: ""; } @bottom-center { content: ""; }
+    @top-left-corner { content: ""; } @top-right-corner { content: ""; }
+    @bottom-left-corner { content: ""; } @bottom-right-corner { content: ""; }
+  }
+
+  /* ===== Document chrome ===== */
+  html, body { margin: 0; padding: 0; background: #f4ecdd; }
+  body {
+    font-family: "Garamond", "Iowan Old Style", Georgia, "Times New Roman", serif;
+    font-size: 11pt;
+    line-height: 13pt;
+    text-align: justify;
+    hyphens: auto;
+    -webkit-hyphens: auto;
+    color: #1f1a14;
+  }
+
+  /* ===== Body type ===== */
+  p { margin: 0; text-indent: 0.25in; padding-bottom: 0pt; }
+  .bp-item > p:first-child,
+  .bp-item-opening > p:first-child { text-indent: 0; }
+  .bp-scene-break + .bp-item > p:first-child { text-indent: 0; }
+  .bp-scene-break {
+    text-indent: 0; text-align: center; margin: 1.2em 0;
+    font-style: italic; letter-spacing: 0.4em;
+  }
+  .bp-scene-break-blank { color: transparent; }
+  em { font-style: italic; }
+  strong { font-weight: 600; }
+  blockquote { margin: 0.6em 1.2em; font-style: italic; color: #3a3022; }
+
+  /* ===== Chapter openings =====
+     The screen-mode .bp-chapter-spacer uses a percentage height that only
+     works inside CSS columns. In print we hide it and apply mm padding to
+     the section directly so the heading lands at the right vertical
+     position on the A5 page. */
+  .bp-chapter-opening, .bp-chapter {
+    break-before: page;
+    break-inside: avoid-page;
+    page: chapter-opening;
+    text-align: center;
+    padding-top: 55mm;
+  }
+  .bp-chapter-opening > .bp-chapter-spacer { display: none; }
+  .bp-chapter-heading {
+    font-size: 1.6em; font-weight: 300; letter-spacing: 0.04em;
+    margin: 0 0 1em 0;
+    line-height: 1.2;
+  }
+  /* Front-matter sections that get their own page also need explicit
+     top spacing — the % values inside their inline styles collapse to 0
+     in print, leaving the heading flush against the top margin. */
+  .bp-half-title { margin-top: 70mm; padding-top: 0; }
+  .bp-titlepage { padding-top: 38mm; margin-top: 0; }
+  .bp-toc { padding-top: 18mm; }
+  .bp-fm-h { margin-top: 55mm; padding-top: 0; }
+  .bp-dedication { margin-top: 70mm; }
+  .bp-epigraph { margin-top: 55mm; }
+  .bp-h2 { margin: 18mm 0 6mm 0; padding-top: 0; }
+
+  /* ===== Front matter ===== */
+  .bp-frontmatter, .bp-titlepage, .bp-toc {
+    break-before: page;
+    page: chapter-opening;
+    text-align: center;
+  }
+  .bp-half-title { font-size: 1.2em; letter-spacing: 0.06em; }
+  .bp-book-title { font-size: 1.8em; font-weight: 300; margin: 0 0 0.4em 0; line-height: 1.2; }
+  .bp-book-subtitle { font-style: italic; margin: 0 0 1.5em 0; }
+  .bp-book-author { font-style: italic; margin: 1.5em 0 0 0; }
+  .bp-fm-line { font-size: 0.85em; margin: 0.4em 0; text-indent: 0; }
+  .bp-fm-h { font-size: 1.2em; }
+  .bp-dedication { text-indent: 0; font-style: italic; }
+  .bp-epigraph { margin-left: 12mm; margin-right: 12mm; font-style: italic; text-indent: 0; }
+  .bp-epigraph-attribution { text-align: center; margin: 4mm 12mm 0; font-size: 0.85em; text-indent: 0; }
+  .bp-h2 { font-size: 1.4em; }
+  .bp-toc-list { list-style: none; padding: 0; margin: 1em 0; font-size: 0.95em; }
+  .bp-toc-list li { margin: 0.35em 0; }
+  .bp-toc-num { display: inline-block; width: 1.6em; }
+  .bp-bridge {
+    margin: 0.6em 1.2em; padding: 0.6em 0;
+    border-top: 1px solid #c7bfae; border-bottom: 1px solid #c7bfae;
+    text-align: center; font-style: italic;
+  }
+  .bp-placeholder { font-style: italic; color: #6a5f4d; }
+
+  /* ===== Cover pages ===== */
+  .pp-cover-page {
+    break-before: page;
+    break-after: page;
+    page: cover;
+    width: 148mm;
+    height: 210mm;
+    position: relative;
+    box-sizing: border-box;
+    overflow: hidden;
+    background: #2a2620;
+    color: #f4ecdd;
+  }
+  .pp-cover-page-front { /* first sheet — already gets @page :first */ }
+
+  
+  
+
+  /* Trim guides (commented out — uncomment if you want crop marks)
+  @media print { body::after { content: ''; position: fixed; ... } }
+  */
+
+  @media print {
+    .pp-screen-only { display: none !important; }
+  }
+</style>
+</head>
+<body>
+  <div class="pp-screen-only" style="position:fixed;top:0;left:0;right:0;padding:8px 12px;background:#222;color:#fff;font-family:system-ui,sans-serif;font-size:13px;display:flex;gap:8px;align-items:center;z-index:9999;">
+    <strong>Print preview.</strong>
+    <span style="opacity:.85;">Use your browser's Print dialog (⌘P / Ctrl-P) to send to printer or save as PDF.</span>
+    <button onclick="window.print()" style="margin-left:auto;padding:4px 10px;background:#fff;color:#000;border:0;border-radius:3px;cursor:pointer;">Print</button>
+    <button onclick="window.close()" style="padding:4px 10px;background:transparent;color:#fff;border:1px solid #fff;border-radius:3px;cursor:pointer;">Close</button>
+  </div>
+  <div class="pp-screen-only" style="height:46px;"></div>
+
+  <div class="pp-cover-page pp-cover-page-front"></div>
+  <section class="bp-frontmatter bp-page-break-before bp-page-break-after"><div class="bp-half-title">After the Storm</div></section>
+<section class="bp-titlepage bp-page-break-before bp-page-break-after">
+         <h1 class="bp-book-title">After the Storm</h1>
+         
+         
+       </section>
+<section class="bp-toc bp-page-break-before bp-page-break-after">
+         <h2 class="bp-h2">Contents</h2>
+         <ol class="bp-toc-list"><li><span class="bp-toc-num">1.</span> The day before</li><li><span class="bp-toc-num">2.</span> The hour before</li><li><span class="bp-toc-num">3.</span> Eye of it</li><li><span class="bp-toc-num">4.</span> Counting</li><li><span class="bp-toc-num">5.</span> What I haven't written yet</li><li><span class="bp-toc-num">6.</span> Stray pages</li></ol>
+       </section>
+<section class="bp-chapter bp-chapter-opening bp-page-break-before  "
+                data-chapter-index="0"
+                data-chapter-title="The day before">
+         <div class="bp-chapter-spacer" style="height:32%"></div>
+         <div class="bp-chapter-heading">Chapter 1</div>
+       </section>
+<div class="bp-item bp-item-opening"><p>It would be easy, now, to say I knew. I did not. I knew only that the air was wrong.</p>
+</div>
+<section class="bp-chapter bp-chapter-opening bp-page-break-before  "
+                data-chapter-index="1"
+                data-chapter-title="The hour before">
+         <div class="bp-chapter-spacer" style="height:32%"></div>
+         <div class="bp-chapter-heading">Chapter 2</div>
+       </section>
+<div class="bp-item bp-item-opening"><p>We waited on the porch. The radio cut in and out. My father kept his hand on the doorframe.</p>
+</div>
+<section class="bp-chapter bp-chapter-opening bp-page-break-before  "
+                data-chapter-index="2"
+                data-chapter-title="Eye of it">
+         <div class="bp-chapter-spacer" style="height:32%"></div>
+         <div class="bp-chapter-heading">Chapter 3</div>
+       </section>
+<div class="bp-item bp-item-opening"><p>When it came it did not sound like wind. It sounded like a train, and then like nothing.</p>
+</div>
+<section class="bp-chapter bp-chapter-opening bp-page-break-before  "
+                data-chapter-index="3"
+                data-chapter-title="Counting">
+         <div class="bp-chapter-spacer" style="height:32%"></div>
+         <div class="bp-chapter-heading">Chapter 4</div>
+       </section>
+<div class="bp-item bp-item-opening"><p>Afterward we counted. The barn, the elm, the south fence — gone. The house, somehow, was still standing.</p>
+</div>
+<section class="bp-chapter bp-chapter-opening bp-page-break-before  "
+                data-chapter-index="4"
+                data-chapter-title="What I haven't written yet">
+         <div class="bp-chapter-spacer" style="height:32%"></div>
+         <div class="bp-chapter-heading">Chapter 5</div>
+       </section>
+<div class="bp-item bp-item-opening"><p class="bp-placeholder"><em>A passage about the year after, still to come.</em></p></div>
+<section class="bp-chapter bp-chapter-opening bp-page-break-before  "
+                data-chapter-index="5"
+                data-chapter-title="Stray pages">
+         <div class="bp-chapter-spacer" style="height:32%"></div>
+         <div class="bp-chapter-heading">Chapter 6</div>
+       </section>
+<div class="bp-item bp-item-opening"><p>These are pages I never knew where to file.</p>
+</div>
+  <div class="pp-cover-page"></div>
+
+  <script>
+    // Wait for cover artwork to fully decode before opening the print
+    // dialog — without this the browser can snapshot the page while the
+    // images are still loading and they end up missing on the printed PDF.
+    function waitForCoverImages() {
+      var imgs = Array.from(document.querySelectorAll('img.pp-cover-art'));
+      if (!imgs.length) return Promise.resolve();
+      return Promise.all(imgs.map(function (img) {
+        if (img.complete && img.naturalWidth > 0) return Promise.resolve();
+        if (typeof img.decode === 'function') return img.decode().catch(function () {});
+        return new Promise(function (res) { img.addEventListener('load', res, { once: true }); img.addEventListener('error', res, { once: true }); });
+      }));
+    }
+    window.addEventListener('load', function () {
+      waitForCoverImages().then(function () {
+        // Small extra tick for the layout engine to flush after image decode.
+        setTimeout(function () { try { window.focus(); window.print(); } catch (e) {} }, 100);
+      });
+    });
+  </script>
+</body>
+</html>"
+`;
+
+exports[`BookPreviewModal — depth-1 regression snapshots (Phase 1 baseline) > fixture: traditional-sectioned > P4-full-matter-symbol-breaks — chaptersFromItems=true, custom symbol scene breaks, full front+back matter > bookFlowHtml 1`] = `
+"<section class="bp-frontmatter bp-page-break-before bp-page-break-after"><div class="bp-half-title">After the Storm</div></section>
+<section class="bp-frontmatter bp-page-break-before bp-page-break-after"><h3 class="bp-fm-h">Also by the author</h3><p class="bp-fm-line">A Quieter Year</p><p class="bp-fm-line">The Long Hall</p></section>
+<section class="bp-titlepage bp-page-break-before bp-page-break-after">
+         <h1 class="bp-book-title">After the Storm</h1>
+         
+         <p class="bp-book-author">A. Reader</p>
+       </section>
+<section class="bp-frontmatter bp-page-break-before bp-page-break-after">
+         <p class="bp-fm-line">After the Storm</p>
+         <p class="bp-fm-line">© 2025 A. Reader.</p>
+         <p class="bp-fm-line">All rights reserved.</p>
+         <p class="bp-fm-line">ISBN 978-7-8688-2586-0</p>
+         <p class="bp-fm-line">First edition.</p>
+       </section>
+<section class="bp-frontmatter bp-page-break-before bp-page-break-after"><p class="bp-dedication">For E., who waited.</p></section>
+<section class="bp-frontmatter bp-page-break-before bp-page-break-after">
+         <blockquote class="bp-epigraph">We shape our dwellings,<br>and afterwards our dwellings shape us.</blockquote>
+         <p class="bp-epigraph-attribution">Winston Churchill</p>
+       </section>
+<section class="bp-toc bp-page-break-before bp-page-break-after">
+         <h2 class="bp-h2">Contents</h2>
+         <ol class="bp-toc-list"><li><span class="bp-toc-num">1.</span> The day before</li><li><span class="bp-toc-num">2.</span> The hour before</li><li><span class="bp-toc-num">3.</span> Eye of it</li><li><span class="bp-toc-num">4.</span> Counting</li><li><span class="bp-toc-num">5.</span> What I haven't written yet</li><li><span class="bp-toc-num">6.</span> Stray pages</li></ol>
+       </section>
+<section class="bp-chapter bp-chapter-opening bp-page-break-before  "
+                data-chapter-index="0"
+                data-chapter-title="The day before">
+         <div class="bp-chapter-spacer" style="height:32%"></div>
+         <div class="bp-chapter-heading">Chapter 1</div>
+       </section>
+<div class="bp-item bp-item-opening"><p>It would be easy, now, to say I knew. I did not. I knew only that the air was wrong.</p>
+</div>
+<section class="bp-chapter bp-chapter-opening bp-page-break-before  "
+                data-chapter-index="1"
+                data-chapter-title="The hour before">
+         <div class="bp-chapter-spacer" style="height:32%"></div>
+         <div class="bp-chapter-heading">Chapter 2</div>
+       </section>
+<div class="bp-item bp-item-opening"><p>We waited on the porch. The radio cut in and out. My father kept his hand on the doorframe.</p>
+</div>
+<section class="bp-chapter bp-chapter-opening bp-page-break-before  "
+                data-chapter-index="2"
+                data-chapter-title="Eye of it">
+         <div class="bp-chapter-spacer" style="height:32%"></div>
+         <div class="bp-chapter-heading">Chapter 3</div>
+       </section>
+<div class="bp-item bp-item-opening"><p>When it came it did not sound like wind. It sounded like a train, and then like nothing.</p>
+</div>
+<section class="bp-chapter bp-chapter-opening bp-page-break-before  "
+                data-chapter-index="3"
+                data-chapter-title="Counting">
+         <div class="bp-chapter-spacer" style="height:32%"></div>
+         <div class="bp-chapter-heading">Chapter 4</div>
+       </section>
+<div class="bp-item bp-item-opening"><p>Afterward we counted. The barn, the elm, the south fence — gone. The house, somehow, was still standing.</p>
+</div>
+<section class="bp-chapter bp-chapter-opening bp-page-break-before  "
+                data-chapter-index="4"
+                data-chapter-title="What I haven't written yet">
+         <div class="bp-chapter-spacer" style="height:32%"></div>
+         <div class="bp-chapter-heading">Chapter 5</div>
+       </section>
+<div class="bp-item bp-item-opening"><p class="bp-placeholder"><em>A passage about the year after, still to come.</em></p></div>
+<section class="bp-chapter bp-chapter-opening bp-page-break-before  "
+                data-chapter-index="5"
+                data-chapter-title="Stray pages">
+         <div class="bp-chapter-spacer" style="height:32%"></div>
+         <div class="bp-chapter-heading">Chapter 6</div>
+       </section>
+<div class="bp-item bp-item-opening"><p>These are pages I never knew where to file.</p>
+</div>
+<section class="bp-backmatter bp-page-break-before"><h2 class="bp-h2">Acknowledgements</h2><p>Thanks to everyone who read these in draft.</p><p>And to the early-morning cafés that let me linger.</p></section>
+<section class="bp-backmatter bp-page-break-before"><h2 class="bp-h2">Author's note</h2><p>A note on what these are.</p></section>
+<section class="bp-backmatter bp-page-break-before"><h2 class="bp-h2">Discussion questions</h2><ol><li>What does attention cost?</li><li>Where does it accrue?</li></ol></section>
+<section class="bp-backmatter bp-page-break-before"><h2 class="bp-h2">Also by the author</h2><p class="bp-fm-line">A Quieter Year</p><p class="bp-fm-line">The Long Hall</p></section>
+<section class="bp-backmatter bp-page-break-before"><h2 class="bp-h2">Coming next</h2><p>A teaser will go here.</p></section>
+<section class="bp-backmatter bp-page-break-before"><h2 class="bp-h2">About the author</h2><p>The author lives nowhere in particular and is grateful for that.</p></section>"
+`;
+
+exports[`BookPreviewModal — depth-1 regression snapshots (Phase 1 baseline) > fixture: traditional-sectioned > P4-full-matter-symbol-breaks — chaptersFromItems=true, custom symbol scene breaks, full front+back matter > printHtml 1`] = `
+"<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>After the Storm — A5</title>
+<style>
+  /* ===== Page rules ===== */
+  @page {
+    size: 148mm 210mm;
+    margin: 0.65in 0.65in 0.75in 0.8in;
+  }
+  @page :left {
+    margin: 0.65in 0.8in 0.75in 0.65in;
+    @top-center { content: "A. Reader"; font-family: "Garamond", "Iowan Old Style", Georgia, "Times New Roman", serif; font-size: 9pt; color: #5a4f3f; letter-spacing: 0.04em; }
+    @bottom-center { content: counter(page); font-family: "Garamond", "Iowan Old Style", Georgia, "Times New Roman", serif; font-size: 9pt; color: #5a4f3f; }
+  }
+  @page :right {
+    margin: 0.65in 0.65in 0.75in 0.8in;
+    @top-center { content: "After the Storm"; font-family: "Garamond", "Iowan Old Style", Georgia, "Times New Roman", serif; font-size: 9pt; color: #5a4f3f; letter-spacing: 0.04em; }
+    @bottom-center { content: counter(page); font-family: "Garamond", "Iowan Old Style", Georgia, "Times New Roman", serif; font-size: 9pt; color: #5a4f3f; }
+  }
+  @page :first {
+    @top-center { content: ""; }
+    @bottom-center { content: ""; }
+    @top-left-corner { content: ""; }
+    @top-right-corner { content: ""; }
+    @bottom-left-corner { content: ""; }
+    @bottom-right-corner { content: ""; }
+  }
+  @page chapter-opening {
+    margin: 0.65in 0.65in 0.75in 0.8in;
+    
+      @top-center { content: ""; }
+      @top-left-corner { content: ""; }
+      @top-right-corner { content: ""; }
+      @bottom-center { content: ""; }
+      @bottom-left-corner { content: ""; }
+      @bottom-right-corner { content: ""; }
+    
+  }
+  @page cover {
+    margin: 0;
+    @top-center { content: ""; } @bottom-center { content: ""; }
+    @top-left-corner { content: ""; } @top-right-corner { content: ""; }
+    @bottom-left-corner { content: ""; } @bottom-right-corner { content: ""; }
+  }
+
+  /* ===== Document chrome ===== */
+  html, body { margin: 0; padding: 0; background: #f4ecdd; }
+  body {
+    font-family: "Garamond", "Iowan Old Style", Georgia, "Times New Roman", serif;
+    font-size: 11pt;
+    line-height: 13pt;
+    text-align: justify;
+    hyphens: auto;
+    -webkit-hyphens: auto;
+    color: #1f1a14;
+  }
+
+  /* ===== Body type ===== */
+  p { margin: 0; text-indent: 0.25in; padding-bottom: 0pt; }
+  .bp-item > p:first-child,
+  .bp-item-opening > p:first-child { text-indent: 0; }
+  .bp-scene-break + .bp-item > p:first-child { text-indent: 0; }
+  .bp-scene-break {
+    text-indent: 0; text-align: center; margin: 1.2em 0;
+    font-style: italic; letter-spacing: 0.4em;
+  }
+  .bp-scene-break-blank { color: transparent; }
+  em { font-style: italic; }
+  strong { font-weight: 600; }
+  blockquote { margin: 0.6em 1.2em; font-style: italic; color: #3a3022; }
+
+  /* ===== Chapter openings =====
+     The screen-mode .bp-chapter-spacer uses a percentage height that only
+     works inside CSS columns. In print we hide it and apply mm padding to
+     the section directly so the heading lands at the right vertical
+     position on the A5 page. */
+  .bp-chapter-opening, .bp-chapter {
+    break-before: page;
+    break-inside: avoid-page;
+    page: chapter-opening;
+    text-align: center;
+    padding-top: 55mm;
+  }
+  .bp-chapter-opening > .bp-chapter-spacer { display: none; }
+  .bp-chapter-heading {
+    font-size: 1.6em; font-weight: 300; letter-spacing: 0.04em;
+    margin: 0 0 1em 0;
+    line-height: 1.2;
+  }
+  /* Front-matter sections that get their own page also need explicit
+     top spacing — the % values inside their inline styles collapse to 0
+     in print, leaving the heading flush against the top margin. */
+  .bp-half-title { margin-top: 70mm; padding-top: 0; }
+  .bp-titlepage { padding-top: 38mm; margin-top: 0; }
+  .bp-toc { padding-top: 18mm; }
+  .bp-fm-h { margin-top: 55mm; padding-top: 0; }
+  .bp-dedication { margin-top: 70mm; }
+  .bp-epigraph { margin-top: 55mm; }
+  .bp-h2 { margin: 18mm 0 6mm 0; padding-top: 0; }
+
+  /* ===== Front matter ===== */
+  .bp-frontmatter, .bp-titlepage, .bp-toc {
+    break-before: page;
+    page: chapter-opening;
+    text-align: center;
+  }
+  .bp-half-title { font-size: 1.2em; letter-spacing: 0.06em; }
+  .bp-book-title { font-size: 1.8em; font-weight: 300; margin: 0 0 0.4em 0; line-height: 1.2; }
+  .bp-book-subtitle { font-style: italic; margin: 0 0 1.5em 0; }
+  .bp-book-author { font-style: italic; margin: 1.5em 0 0 0; }
+  .bp-fm-line { font-size: 0.85em; margin: 0.4em 0; text-indent: 0; }
+  .bp-fm-h { font-size: 1.2em; }
+  .bp-dedication { text-indent: 0; font-style: italic; }
+  .bp-epigraph { margin-left: 12mm; margin-right: 12mm; font-style: italic; text-indent: 0; }
+  .bp-epigraph-attribution { text-align: center; margin: 4mm 12mm 0; font-size: 0.85em; text-indent: 0; }
+  .bp-h2 { font-size: 1.4em; }
+  .bp-toc-list { list-style: none; padding: 0; margin: 1em 0; font-size: 0.95em; }
+  .bp-toc-list li { margin: 0.35em 0; }
+  .bp-toc-num { display: inline-block; width: 1.6em; }
+  .bp-bridge {
+    margin: 0.6em 1.2em; padding: 0.6em 0;
+    border-top: 1px solid #c7bfae; border-bottom: 1px solid #c7bfae;
+    text-align: center; font-style: italic;
+  }
+  .bp-placeholder { font-style: italic; color: #6a5f4d; }
+
+  /* ===== Cover pages ===== */
+  .pp-cover-page {
+    break-before: page;
+    break-after: page;
+    page: cover;
+    width: 148mm;
+    height: 210mm;
+    position: relative;
+    box-sizing: border-box;
+    overflow: hidden;
+    background: #2a2620;
+    color: #f4ecdd;
+  }
+  .pp-cover-page-front { /* first sheet — already gets @page :first */ }
+
+  
+  
+
+  /* Trim guides (commented out — uncomment if you want crop marks)
+  @media print { body::after { content: ''; position: fixed; ... } }
+  */
+
+  @media print {
+    .pp-screen-only { display: none !important; }
+  }
+</style>
+</head>
+<body>
+  <div class="pp-screen-only" style="position:fixed;top:0;left:0;right:0;padding:8px 12px;background:#222;color:#fff;font-family:system-ui,sans-serif;font-size:13px;display:flex;gap:8px;align-items:center;z-index:9999;">
+    <strong>Print preview.</strong>
+    <span style="opacity:.85;">Use your browser's Print dialog (⌘P / Ctrl-P) to send to printer or save as PDF.</span>
+    <button onclick="window.print()" style="margin-left:auto;padding:4px 10px;background:#fff;color:#000;border:0;border-radius:3px;cursor:pointer;">Print</button>
+    <button onclick="window.close()" style="padding:4px 10px;background:transparent;color:#fff;border:1px solid #fff;border-radius:3px;cursor:pointer;">Close</button>
+  </div>
+  <div class="pp-screen-only" style="height:46px;"></div>
+
+  <div class="pp-cover-page pp-cover-page-front"></div>
+  <section class="bp-frontmatter bp-page-break-before bp-page-break-after"><div class="bp-half-title">After the Storm</div></section>
+<section class="bp-frontmatter bp-page-break-before bp-page-break-after"><h3 class="bp-fm-h">Also by the author</h3><p class="bp-fm-line">A Quieter Year</p><p class="bp-fm-line">The Long Hall</p></section>
+<section class="bp-titlepage bp-page-break-before bp-page-break-after">
+         <h1 class="bp-book-title">After the Storm</h1>
+         
+         <p class="bp-book-author">A. Reader</p>
+       </section>
+<section class="bp-frontmatter bp-page-break-before bp-page-break-after">
+         <p class="bp-fm-line">After the Storm</p>
+         <p class="bp-fm-line">© 2025 A. Reader.</p>
+         <p class="bp-fm-line">All rights reserved.</p>
+         <p class="bp-fm-line">ISBN 978-7-8688-2586-0</p>
+         <p class="bp-fm-line">First edition.</p>
+       </section>
+<section class="bp-frontmatter bp-page-break-before bp-page-break-after"><p class="bp-dedication">For E., who waited.</p></section>
+<section class="bp-frontmatter bp-page-break-before bp-page-break-after">
+         <blockquote class="bp-epigraph">We shape our dwellings,<br>and afterwards our dwellings shape us.</blockquote>
+         <p class="bp-epigraph-attribution">Winston Churchill</p>
+       </section>
+<section class="bp-toc bp-page-break-before bp-page-break-after">
+         <h2 class="bp-h2">Contents</h2>
+         <ol class="bp-toc-list"><li><span class="bp-toc-num">1.</span> The day before</li><li><span class="bp-toc-num">2.</span> The hour before</li><li><span class="bp-toc-num">3.</span> Eye of it</li><li><span class="bp-toc-num">4.</span> Counting</li><li><span class="bp-toc-num">5.</span> What I haven't written yet</li><li><span class="bp-toc-num">6.</span> Stray pages</li></ol>
+       </section>
+<section class="bp-chapter bp-chapter-opening bp-page-break-before  "
+                data-chapter-index="0"
+                data-chapter-title="The day before">
+         <div class="bp-chapter-spacer" style="height:32%"></div>
+         <div class="bp-chapter-heading">Chapter 1</div>
+       </section>
+<div class="bp-item bp-item-opening"><p>It would be easy, now, to say I knew. I did not. I knew only that the air was wrong.</p>
+</div>
+<section class="bp-chapter bp-chapter-opening bp-page-break-before  "
+                data-chapter-index="1"
+                data-chapter-title="The hour before">
+         <div class="bp-chapter-spacer" style="height:32%"></div>
+         <div class="bp-chapter-heading">Chapter 2</div>
+       </section>
+<div class="bp-item bp-item-opening"><p>We waited on the porch. The radio cut in and out. My father kept his hand on the doorframe.</p>
+</div>
+<section class="bp-chapter bp-chapter-opening bp-page-break-before  "
+                data-chapter-index="2"
+                data-chapter-title="Eye of it">
+         <div class="bp-chapter-spacer" style="height:32%"></div>
+         <div class="bp-chapter-heading">Chapter 3</div>
+       </section>
+<div class="bp-item bp-item-opening"><p>When it came it did not sound like wind. It sounded like a train, and then like nothing.</p>
+</div>
+<section class="bp-chapter bp-chapter-opening bp-page-break-before  "
+                data-chapter-index="3"
+                data-chapter-title="Counting">
+         <div class="bp-chapter-spacer" style="height:32%"></div>
+         <div class="bp-chapter-heading">Chapter 4</div>
+       </section>
+<div class="bp-item bp-item-opening"><p>Afterward we counted. The barn, the elm, the south fence — gone. The house, somehow, was still standing.</p>
+</div>
+<section class="bp-chapter bp-chapter-opening bp-page-break-before  "
+                data-chapter-index="4"
+                data-chapter-title="What I haven't written yet">
+         <div class="bp-chapter-spacer" style="height:32%"></div>
+         <div class="bp-chapter-heading">Chapter 5</div>
+       </section>
+<div class="bp-item bp-item-opening"><p class="bp-placeholder"><em>A passage about the year after, still to come.</em></p></div>
+<section class="bp-chapter bp-chapter-opening bp-page-break-before  "
+                data-chapter-index="5"
+                data-chapter-title="Stray pages">
+         <div class="bp-chapter-spacer" style="height:32%"></div>
+         <div class="bp-chapter-heading">Chapter 6</div>
+       </section>
+<div class="bp-item bp-item-opening"><p>These are pages I never knew where to file.</p>
+</div>
+<section class="bp-backmatter bp-page-break-before"><h2 class="bp-h2">Acknowledgements</h2><p>Thanks to everyone who read these in draft.</p><p>And to the early-morning cafés that let me linger.</p></section>
+<section class="bp-backmatter bp-page-break-before"><h2 class="bp-h2">Author's note</h2><p>A note on what these are.</p></section>
+<section class="bp-backmatter bp-page-break-before"><h2 class="bp-h2">Discussion questions</h2><ol><li>What does attention cost?</li><li>Where does it accrue?</li></ol></section>
+<section class="bp-backmatter bp-page-break-before"><h2 class="bp-h2">Also by the author</h2><p class="bp-fm-line">A Quieter Year</p><p class="bp-fm-line">The Long Hall</p></section>
+<section class="bp-backmatter bp-page-break-before"><h2 class="bp-h2">Coming next</h2><p>A teaser will go here.</p></section>
+<section class="bp-backmatter bp-page-break-before"><h2 class="bp-h2">About the author</h2><p>The author lives nowhere in particular and is grateful for that.</p></section>
+  <div class="pp-cover-page"></div>
+
+  <script>
+    // Wait for cover artwork to fully decode before opening the print
+    // dialog — without this the browser can snapshot the page while the
+    // images are still loading and they end up missing on the printed PDF.
+    function waitForCoverImages() {
+      var imgs = Array.from(document.querySelectorAll('img.pp-cover-art'));
+      if (!imgs.length) return Promise.resolve();
+      return Promise.all(imgs.map(function (img) {
+        if (img.complete && img.naturalWidth > 0) return Promise.resolve();
+        if (typeof img.decode === 'function') return img.decode().catch(function () {});
+        return new Promise(function (res) { img.addEventListener('load', res, { once: true }); img.addEventListener('error', res, { once: true }); });
+      }));
+    }
+    window.addEventListener('load', function () {
+      waitForCoverImages().then(function () {
+        // Small extra tick for the layout engine to flush after image decode.
+        setTimeout(function () { try { window.focus(); window.print(); } catch (e) {} }, 100);
+      });
+    });
+  </script>
+</body>
+</html>"
+`;

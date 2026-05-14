@@ -70,6 +70,49 @@ export const manuscriptsApi = {
 
   deleteSection: (sectionId: string) => api.delete(`/manuscripts/sections/${sectionId}`),
 
+  /**
+   * Cross-parent section reorder. Each move may change `orderIndex`
+   * within its parent and/or move to a new `parentSectionId`. The
+   * server rejects moves that change the section's level (which would
+   * be a promote/demote — use add/remove layer instead).
+   */
+  reorderSections: (
+    manuscriptId: string,
+    moves: { id: string; orderIndex: number; parentSectionId?: string | null }[]
+  ) =>
+    api
+      .put<ApiResponse<ManuscriptSection[]>>(`/manuscripts/${manuscriptId}/sections/reorder`, { moves })
+      .then(r => r.data),
+
+  /**
+   * Add a new container layer above the current top of the spine
+   * (wrap_above policy). Every existing top-level section becomes a
+   * child of a single new parent named `label`. Returns the manuscript
+   * + full updated spine so callers can refresh in one round-trip.
+   *
+   * No UI caller in Phase 3 — wired up here for Phase 4's
+   * LayerConfigModal.
+   */
+  addSpineLayer: (manuscriptId: string, label: string) =>
+    api
+      .post<ApiResponse<ManuscriptWithSpine>>(`/manuscripts/${manuscriptId}/spine/layers`, {
+        policy: 'wrap_above',
+        label,
+      })
+      .then(r => r.data),
+
+  /**
+   * Remove the named layer (flatten_to_grandparent policy). Children
+   * of removed nodes are promoted to the grandparent in reading order.
+   * Server returns 400 if removing the deepest layer would orphan
+   * items — UI should surface that and ask the user to move items
+   * first.
+   */
+  removeSpineLayer: (manuscriptId: string, level: number) =>
+    api
+      .delete<ApiResponse<ManuscriptWithSpine>>(`/manuscripts/${manuscriptId}/spine/layers/${level}`)
+      .then(r => r.data),
+
   // Items
   createItem: (manuscriptId: string, input: Partial<ManuscriptItem>) =>
     api.post<ApiResponse<ManuscriptItem>>(`/manuscripts/${manuscriptId}/items`, input).then(r => r.data),

@@ -55,10 +55,20 @@ router.delete('/:id', authMiddleware, asyncHandler(manuscriptController.delete))
 router.get('/:id/sections', optionalAuthMiddleware, asyncHandler(manuscriptController.listSections))
 router.post('/:id/sections', authMiddleware, validateBody(['title']), asyncHandler(manuscriptController.createSection))
 
+// Cross-parent section reorder. Must be declared BEFORE the
+// `/sections/:sectionId` mutations below so Express doesn't interpret
+// "reorder" as a sectionId UUID. (Same trick used elsewhere — see
+// `/chats/models` above the per-chat routes.)
+router.put('/:id/sections/reorder', authMiddleware, asyncHandler(manuscriptController.reorderSections))
+
 // Section mutations addressed by sectionId (no manuscriptId in path - the repo
 // resolves the parent manuscript from the section's own row).
 router.put('/sections/:sectionId', authMiddleware, asyncHandler(manuscriptController.updateSection))
 router.delete('/sections/:sectionId', authMiddleware, asyncHandler(manuscriptController.deleteSection))
+
+/* ----- Spine layer management (Phase 3 of the Configurable Spine Depth Refactor) ----- */
+router.post('/:id/spine/layers',        authMiddleware, asyncHandler(manuscriptController.addSpineLayer))
+router.delete('/:id/spine/layers/:level', authMiddleware, asyncHandler(manuscriptController.removeSpineLayer))
 
 /* ----- Item routes ----- */
 router.get('/:id/items', optionalAuthMiddleware, asyncHandler(manuscriptController.listItems))

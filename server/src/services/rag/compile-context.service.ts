@@ -126,26 +126,85 @@ async function compileManuscriptProject(manuscriptId: string): Promise<{ ownerId
 }
 
 async function compileSections(manuscriptId: string): Promise<CompiledSource[]> {
+  // Phase 6 of the Configurable Spine Depth Refactor: pull parent_section_id
+  // and level along with the existing fields so we can compute each
+  // section's ancestor title chain and surface it in source metadata.
+  // RAG consumers (retrieve + the chat prompt builder) can then quote
+  // a section as "Part One → Chapter 3 → Section" instead of just
+  // "Section" — gives the model the structural context that today is
+  // lost in the flat sections view.
   const r = await pool.query(
-    `SELECT id, title, order_index, purpose, notes
+    `SELECT id, title, order_index, purpose, notes, parent_section_id, level
        FROM manuscript_sections
       WHERE manuscript_id = $1
       ORDER BY order_index`,
     [manuscriptId]
   )
-  return r.rows.map(row => ({
-    sourceType: 'manuscript_section' as ContextSourceType,
-    sourceId: row.id,
-    title: `Section ${row.order_index}: ${row.title}`,
-    body: (
-      `Section: ${row.title}\n` +
-      bullet('Purpose', row.purpose) +
-      bullet('Notes', row.notes)
-    ).trim(),
-    metadata: { orderIndex: row.order_index, purpose: row.purpose },
-    contextRole: 'structure',
-    priority: 60,
-  }))
+
+  // Build a lookup so we can walk parent_section_id chains in memory
+  // rather than firing N recursive queries.
+  type Row = {
+    id: string
+    title: string
+    order_index: number
+    purpose: string
+    notes: string | null
+    parent_section_id: string | null
+    level: number | null
+  }
+  const rows = r.rows as Row[]
+  const byId = new Map<string, Row>(rows.map(row => [row.id, row]))
+
+  /**
+   * Walk up parent_section_id and return ancestor titles outermost-first
+   * (NOT including the section itself). Defensive bound at 16 iterations
+   * past MAX_SPINE_DEPTH=4 in case a cycle ever slips past the DB
+   * CHECK. Empty array means "top-level" (depth=1 manuscripts always
+   * land here, so depth-1 metadata stays a no-op).
+   */
+  const ancestorTitles = (id: string): string[] => {
+    const chain: string[] = []
+    let current = byId.get(id)
+    let hops = 0
+    while (current?.parent_section_id && hops < 16) {
+      const parent = byId.get(current.parent_section_id)
+      if (!parent) break
+      chain.push(parent.title)
+      current = parent
+      hops += 1
+    }
+    return chain.reverse()
+  }
+
+  return rows.map(row => {
+    const ancestors = ancestorTitles(row.id)
+    return {
+      sourceType: 'manuscript_section' as ContextSourceType,
+      sourceId: row.id,
+      title: `Section ${row.order_index}: ${row.title}`,
+      // Surface the container path in the body too so retrieval that
+      // matches on text-similarity finds depth-1 sources verbatim
+      // (ancestors empty → no extra prefix line) but gives the model
+      // the chain when depth>1.
+      body: (
+        (ancestors.length > 0 ? `Path: ${ancestors.join(' → ')}\n` : '') +
+        `Section: ${row.title}\n` +
+        bullet('Purpose', row.purpose) +
+        bullet('Notes', row.notes)
+      ).trim(),
+      metadata: {
+        orderIndex: row.order_index,
+        purpose: row.purpose,
+        // New: surface the section's level + ancestor titles so the
+        // RAG retrieval results carry enough context to render the
+        // hierarchy without re-walking the section table.
+        level: row.level ?? 1,
+        ancestorTitles: ancestors,
+      },
+      contextRole: 'structure',
+      priority: 60,
+    }
+  })
 }
 
 async function compileItemsAndWritingBlocks(manuscriptId: string): Promise<CompiledSource[]> {
