@@ -360,6 +360,7 @@ const printEssay = () => {
     documentTitle: w.title,
     layout: 'a5_single',
     includeCovers: false,
+    editorMarginOverlay: true,
   })
   if (!openPrintWindow(html)) {
     alert('Could not open the print window. Please allow pop-ups for this site.')
