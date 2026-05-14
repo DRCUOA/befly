@@ -54,10 +54,11 @@ export interface PrintBuildArgs {
    */
   includeCovers?: boolean
   /**
-   * When true, overlay light-grey dashed horizontal rules every 2cm across
-   * the page — proof-reader's ruling so an editor can scribble notes against
-   * the printed essay. Used by the single-essay print path; book print never
-   * sets this. Defaults to false.
+   * When true, drop small grey labels in the left margin of each printed
+   * page giving the title prefix and the 2cm-band line-number range —
+   * proof-reader's reference marks the editor can scribble against. Used by
+   * the single-essay print path; book print never sets this. Defaults to
+   * false.
    */
   editorMarginOverlay?: boolean
 }
@@ -153,34 +154,23 @@ export function buildNaturalPrintHtml(args: PrintBuildArgs): string {
     ? 'Open Print → Layout / Booklet (or "Pages per sheet → 2") in the system print dialog to fold and saddle-stitch.'
     : 'Use your browser\'s Print dialog (⌘P / Ctrl-P) to send to printer or save as PDF.'
 
-  // Editor-margin overlay: horizontal dashed rules every 2cm. Implemented as
-  // a body background-image (a tiny inline SVG sized to 100% × 2cm with a
-  // hairline dashed stroke along the bottom edge) so that as body content
-  // flows across pages the rules naturally repeat on each page. We pin
-  // `print-color-adjust: exact` so browsers actually emit the background to
-  // the printer/PDF instead of stripping it as a "background graphic".
+  // Editor-margin overlay: drops small grey labels in the left margin of
+  // each printed page giving the title prefix and the 2cm-band line-number
+  // range — proof-reader's reference marks the editor can scribble against.
   //
-  // We also constrain body to the print content-area width and give it
-  // `position: relative` so the JS-injected band labels (see the
+  // We constrain body to the print content-area width and give it
+  // `position: relative` so the JS-injected labels (see the
   // `injectMarginLabels` script block below) sit at consistent X positions
   // and so line wrapping in the screen-preview window matches the wrapping
   // the print engine will produce — without that match, the line positions
-  // we measure before print don't align with the dashed rules on the printed
-  // page.
+  // we measure before print don't align with where text falls on paper.
   const contentWidthMm = (sheetW - (m.insideGutter + m.outside) * 25.4).toFixed(2)
   // First 4 characters of the title, JSON-escaped for safe embedding in the
   // inline script; `</` is escaped further to prevent a stray title from
   // closing the <script> tag early. Empty prefix suppresses the labels.
   const labelPrefixJs = JSON.stringify(bookTitle.trim().slice(0, 4)).replace(/<\//g, '<\\/')
-  const overlaySvg = "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 148 20' preserveAspectRatio='none'><line x1='0' y1='19.7' x2='148' y2='19.7' stroke='%23b8b8b8' stroke-width='0.3' stroke-dasharray='2 2'/></svg>"
   const overlayCss = editorMarginOverlay
     ? `body {
-        background-image: url("data:image/svg+xml;utf8,${overlaySvg}");
-        background-repeat: repeat;
-        background-size: 100% 2cm;
-        background-color: ${paperColor};
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
         width: ${contentWidthMm}mm;
         margin-left: auto;
         margin-right: auto;
@@ -200,10 +190,10 @@ export function buildNaturalPrintHtml(args: PrintBuildArgs): string {
 
   // JS injected only when the overlay is on. After layout settles it walks
   // each rendered display line in the essay body, groups them into 2cm
-  // bands matching the dashed-rule body background, then drops a small
-  // label in the left margin of each band giving "<title-prefix> nFirst-nLast".
-  // The screen-only spacer is hidden first so on-screen line positions
-  // match the @media-print layout (where pp-screen-only is display:none).
+  // bands, then drops a small label in the left margin of each band giving
+  // "<title-prefix> nFirst-nLast". The screen-only spacer is hidden first
+  // so on-screen line positions match the @media-print layout (where
+  // pp-screen-only is display:none).
   const labelFnDef = editorMarginOverlay ? `
 
     function injectMarginLabels() {
