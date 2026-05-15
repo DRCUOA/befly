@@ -170,7 +170,10 @@ export function buildNaturalPrintHtml(args: PrintBuildArgs): string {
   // closing the <script> tag early. Empty prefix suppresses the labels.
   const labelPrefixJs = JSON.stringify(bookTitle.trim().slice(0, 4)).replace(/<\//g, '<\\/')
   const overlayCss = editorMarginOverlay
-    ? `body {
+    ? `html, body {
+        background: transparent;
+      }
+      body {
         width: ${contentWidthMm}mm;
         margin-left: auto;
         margin-right: auto;
