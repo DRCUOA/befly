@@ -1,8 +1,19 @@
 // Print helpers for the story-craft views (Character Studio, Polyphonic Map,
-// Plot Causality). All paths reuse the book-wizard typography via
-// `buildNaturalPrintHtml({ includeCovers: false })` so the printed output
-// looks the same as the essay print — no covers, no front/back matter,
-// just the artifact rendered as chapter-style sections.
+// Plot Causality).
+//
+// These artifacts are STRUCTURED REFERENCE material — character bibles,
+// beat detail, knowledge ledgers — not flowing prose. The book-wizard
+// typography path used by the essay print is the wrong tool here: novel
+// chapter openings, justified body type and first-line indents look awful
+// applied to labelled fields and lists.
+//
+// Instead this module emits a self-contained A4-portrait reference
+// document with deliberate page composition: clean section blocks,
+// `break-inside: avoid-page` on small atomic items so they never split
+// across a page break, `break-before: page` between artifacts so each
+// character / beat starts at the top of a fresh sheet, a quiet running
+// header and a centred page number. Screen-only chrome is stripped from
+// the printed output.
 
 import type {
   Beat,
@@ -13,8 +24,7 @@ import type {
   KnowledgeKind,
 } from '@shared/StoryCraft'
 import { KNOWLEDGE_KINDS } from '@shared/StoryCraft'
-import { buildNaturalPrintHtml, openPrintWindow } from '../components/manuscripts/bookPreview/print'
-import { defaultPaperbackProfile } from '../components/manuscripts/bookPreview/defaults'
+import { openPrintWindow } from '../components/manuscripts/bookPreview/print'
 
 function escHtml(s: string): string {
   return s
@@ -22,6 +32,10 @@ function escHtml(s: string): string {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
+}
+
+function escCss(s: string): string {
+  return s.replace(/\\/g, '\\\\').replace(/"/g, '\\"')
 }
 
 function paragraphs(text: string | null | undefined): string {
@@ -35,176 +49,32 @@ function paragraphs(text: string | null | undefined): string {
     .join('')
 }
 
-// One labelled paragraph. Labels read as "Field: value." — text-indent: 0 so
-// the inline label sits flush left rather than indenting like prose.
-function field(label: string, value: string | null | undefined): string {
+// Single-line "Label: value" row inside a definition list. Kept short — the
+// CSS turns each `.row` into a two-column grid (label left, value right).
+function row(label: string, value: string | null | undefined): string {
   const v = (value || '').trim()
   if (!v) return ''
-  return `<p style="text-indent: 0;"><strong>${escHtml(label)}:</strong> ${escHtml(v)}</p>`
+  return `<div class="row"><dt>${escHtml(label)}</dt><dd>${escHtml(v)}</dd></div>`
 }
 
-function fieldList(label: string, items: string[] | undefined | null): string {
+// Multi-paragraph block with a small uppercase label above the body text.
+// Use this for fields that can be long (outer event, voice constraint…).
+function fieldBlock(label: string, value: string | null | undefined): string {
+  const v = (value || '').trim()
+  if (!v) return ''
+  return `<div class="field-block"><p class="field-label">${escHtml(label)}</p>${paragraphs(v)}</div>`
+}
+
+function listBlock(label: string, items: string[] | undefined | null): string {
   const cleaned = (items || []).map(i => (i || '').trim()).filter(Boolean)
   if (!cleaned.length) return ''
   const lis = cleaned.map(i => `<li>${escHtml(i)}</li>`).join('')
-  return `<p style="text-indent: 0;"><strong>${escHtml(label)}:</strong></p><ul>${lis}</ul>`
+  return `<div class="field-block"><p class="field-label">${escHtml(label)}</p><ul>${lis}</ul></div>`
 }
 
-function chapterOpening(heading: string, label?: string): string {
-  const eyebrow = label ? `<div class="bp-chapter-eyebrow">${escHtml(label)}</div>` : ''
-  return `<section class="bp-chapter bp-chapter-opening bp-page-break-before">
-    ${eyebrow}
-    <div class="bp-chapter-heading">${escHtml(heading)}</div>
-  </section>`
-}
-
-function itemOpen(opening = true): string {
-  return `<div class="bp-item${opening ? ' bp-item-opening' : ''}" style="text-align: left;">`
-}
-
-function buildCharacterFlow(character: Character, misreadings: CharacterMisreading[]): string {
-  const c = character
-  const v = c.voice || {}
-  const cMisreadings = misreadings
-    .filter(m => m.characterId === c.id)
-    .sort((a, b) => a.orderIndex - b.orderIndex)
-
-  const identity = [
-    field('Full name', c.fullName),
-    field('Role', c.role),
-    field('Social position', c.socialPosition),
-    field('Contradiction', c.contradiction),
-    field('Public want', c.publicWant),
-    field('Private want', c.privateWant),
-    field('Hidden need', c.hiddenNeed),
-    field('Greatest fear', c.greatestFear),
-    field('False belief', c.falseBelief),
-    field('Wound', c.wound),
-  ].filter(Boolean).join('')
-
-  const voice = [
-    field('Sentence length', v.sentenceLength),
-    field('Rhythm', v.rhythm),
-    field('Punctuation habits', v.punctuationHabits),
-    fieldList('Preferred words', v.preferredWords),
-    fieldList('Forbidden words', v.forbiddenWords),
-    fieldList('Metaphor sources', v.metaphorSources),
-    fieldList('What they notice', v.whatTheyNotice),
-    fieldList('What they miss', v.whatTheyMiss),
-    field('What they lie about', v.whatTheyLieAbout),
-    field('What they selectively tell', v.whatTheySelectivelyTell),
-    field('What they never say directly', v.whatTheyNeverSayDirectly),
-    field('How emotion leaks', v.howEmotionLeaks),
-    field('How pressure changes the voice', v.howPressureChangesTheVoice),
-    field('Attention pattern', v.attentionPattern),
-    field('Avoidance pattern', v.avoidancePattern),
-    field('Sample sentence (neutral)', v.sampleSentenceNeutral),
-    field('Sample sentence (under pressure)', v.sampleSentenceUnderPressure),
-  ].filter(Boolean).join('')
-
-  const arc = fieldList('Arc phases', c.arcPhases)
-  const plot = fieldList('Plot functions', c.plotFunctions)
-  const misreadingsBlock = cMisreadings.length
-    ? `<p style="text-indent: 0;"><strong>Misreadings:</strong></p><ul>${cMisreadings.map(m => `<li>${escHtml(m.label)}${m.why ? ` — <em>${escHtml(m.why)}</em>` : ''}</li>`).join('')}</ul>`
-    : ''
-  const notes = c.notes ? `<p style="text-indent: 0;"><strong>Notes</strong></p>${paragraphs(c.notes)}` : ''
-
-  const sections: string[] = []
-  if (identity) sections.push(`<h3 class="bp-h3">Identity</h3>${identity}`)
-  if (voice) sections.push(`<h3 class="bp-h3">Voice bible</h3>${voice}`)
-  if (arc) sections.push(`<h3 class="bp-h3">Arc</h3>${arc}`)
-  if (plot) sections.push(`<h3 class="bp-h3">Plot functions</h3>${plot}`)
-  if (misreadingsBlock) sections.push(`<h3 class="bp-h3">Misreadings</h3>${misreadingsBlock}`)
-  if (notes) sections.push(`<h3 class="bp-h3">Notes</h3>${notes}`)
-
-  const body = sections.length
-    ? sections.join('')
-    : '<p><em>(No details captured yet.)</em></p>'
-
-  return chapterOpening(c.name, c.role || undefined)
-    + `${itemOpen()}${body}</div>`
-}
-
-function buildBeatFlow(
-  beat: Beat,
-  characters: Character[],
-  knowledge: BeatKnowledge[],
-  link?: CausalLink | null,
-  prevBeat?: Beat | null,
-): string {
-  const b = beat
-  const pov = characters.find(c => c.id === (b.povCharacterId || ''))
-  const eyebrow = [b.label, pov?.name, b.timelinePoint].filter(Boolean).join(' · ')
-
-  const linkRow = link && prevBeat
-    ? `<p style="text-indent: 0; font-style: italic; color: #6a5f4d;">${escHtml(formatSnake(link.linkType))} (from "${escHtml(prevBeat.title || prevBeat.label || 'previous beat')}")${link.note ? ` — ${escHtml(link.note)}` : ''}</p>`
-    : ''
-
-  const meta = [
-    field('Movement', b.movement),
-    field('Scene function', b.sceneFunctionType ? formatSnake(b.sceneFunctionType) : null),
-    field('Withholding level', b.withholdingLevel),
-  ].filter(Boolean).join('')
-
-  const events = [
-    b.outerEvent ? `<p style="text-indent: 0;"><strong>Outer event:</strong></p>${paragraphs(b.outerEvent)}` : '',
-    b.innerTurn ? `<p style="text-indent: 0;"><strong>Inner turn:</strong></p>${paragraphs(b.innerTurn)}` : '',
-    b.voiceConstraint ? `<p style="text-indent: 0;"><strong>Voice constraint:</strong></p>${paragraphs(b.voiceConstraint)}` : '',
-    b.finalImage ? `<p style="text-indent: 0;"><strong>Final image:</strong></p>${paragraphs(b.finalImage)}` : '',
-  ].filter(Boolean).join('')
-
-  const irony = [
-    b.uniquePerception ? `<p style="text-indent: 0;"><strong>Unique perception:</strong></p>${paragraphs(b.uniquePerception)}` : '',
-    b.blindSpot ? `<p style="text-indent: 0;"><strong>Blind spot:</strong></p>${paragraphs(b.blindSpot)}` : '',
-    b.misreading ? `<p style="text-indent: 0;"><strong>Misreading:</strong></p>${paragraphs(b.misreading)}` : '',
-    b.readerInference ? `<p style="text-indent: 0;"><strong>Reader inference:</strong></p>${paragraphs(b.readerInference)}` : '',
-    b.reasonForNextPovSwitch ? `<p style="text-indent: 0;"><strong>Reason for next POV switch:</strong></p>${paragraphs(b.reasonForNextPovSwitch)}` : '',
-  ].filter(Boolean).join('')
-
-  const ledger = buildKnowledgeLedger(beat, characters, knowledge)
-
-  const sections: string[] = []
-  if (meta) sections.push(meta)
-  if (events) sections.push(`<h3 class="bp-h3">Scene</h3>${events}`)
-  if (irony) sections.push(`<h3 class="bp-h3">Voice & irony</h3>${irony}`)
-  if (ledger) sections.push(`<h3 class="bp-h3">Knowledge ledger</h3>${ledger}`)
-
-  const body = sections.length
-    ? sections.join('')
-    : '<p><em>(No details captured yet.)</em></p>'
-
-  const heading = b.title || b.label || '(untitled beat)'
-  return chapterOpening(heading, eyebrow || undefined)
-    + `${itemOpen()}${linkRow}${body}</div>`
-}
-
-function buildKnowledgeLedger(
-  beat: Beat,
-  characters: Character[],
-  knowledge: BeatKnowledge[],
-): string {
-  const beatKnow = knowledge.filter(k => k.beatId === beat.id)
-  if (!beatKnow.length) return ''
-
-  const rows: { label: string; characterId: string | null }[] = [
-    { label: 'Reader', characterId: null },
-    ...characters.map(c => ({ label: c.name, characterId: c.id })),
-  ]
-  const parts: string[] = []
-  for (const row of rows) {
-    const cells: string[] = []
-    for (const kind of KNOWLEDGE_KINDS) {
-      const entry = beatKnow.find(
-        k => (k.characterId ?? null) === row.characterId && k.knowledgeKind === kind,
-      )
-      const text = entry?.text?.trim()
-      if (text) cells.push(`<li><strong>${escHtml(formatKind(kind))}:</strong> ${escHtml(text)}</li>`)
-    }
-    if (cells.length) {
-      parts.push(`<p style="text-indent: 0;"><strong>${escHtml(row.label)}</strong></p><ul>${cells.join('')}</ul>`)
-    }
-  }
-  return parts.join('')
+function section(heading: string, body: string): string {
+  if (!body.trim()) return ''
+  return `<section><h2>${escHtml(heading)}</h2>${body}</section>`
 }
 
 function formatSnake(s: string): string {
@@ -215,21 +85,510 @@ function formatKind(kind: KnowledgeKind): string {
   return kind.charAt(0).toUpperCase() + kind.slice(1)
 }
 
-function launch(
-  bookFlowHtml: string,
-  bookTitle: string,
-  documentTitle: string,
-): void {
-  const cfg = defaultPaperbackProfile('')
-  const html = buildNaturalPrintHtml({
-    cfg,
-    bookFlowHtml,
-    bookTitle,
-    authorName: '',
-    documentTitle,
-    layout: 'a5_single',
-    includeCovers: false,
-  })
+function characterArticle(c: Character, misreadings: CharacterMisreading[]): string {
+  const v = c.voice || {}
+  const cMisreadings = misreadings
+    .filter(m => m.characterId === c.id)
+    .sort((a, b) => a.orderIndex - b.orderIndex)
+
+  const identityRows = [
+    row('Full name', c.fullName),
+    row('Role', c.role),
+    row('Social position', c.socialPosition),
+  ].filter(Boolean).join('')
+
+  const wantsRows = [
+    row('Contradiction', c.contradiction),
+    row('Public want', c.publicWant),
+    row('Private want', c.privateWant),
+    row('Hidden need', c.hiddenNeed),
+    row('Greatest fear', c.greatestFear),
+    row('False belief', c.falseBelief),
+    row('Wound', c.wound),
+  ].filter(Boolean).join('')
+
+  const voiceRows = [
+    row('Sentence length', v.sentenceLength),
+    row('Rhythm', v.rhythm),
+    row('Punctuation habits', v.punctuationHabits),
+    row('Attention pattern', v.attentionPattern),
+    row('Avoidance pattern', v.avoidancePattern),
+  ].filter(Boolean).join('')
+
+  const voiceLongFields = [
+    listBlock('Preferred words', v.preferredWords),
+    listBlock('Forbidden words', v.forbiddenWords),
+    listBlock('Metaphor sources', v.metaphorSources),
+    listBlock('What they notice', v.whatTheyNotice),
+    listBlock('What they miss', v.whatTheyMiss),
+    fieldBlock('What they lie about', v.whatTheyLieAbout),
+    fieldBlock('What they selectively tell', v.whatTheySelectivelyTell),
+    fieldBlock('What they never say directly', v.whatTheyNeverSayDirectly),
+    fieldBlock('How emotion leaks', v.howEmotionLeaks),
+    fieldBlock('How pressure changes the voice', v.howPressureChangesTheVoice),
+  ].filter(Boolean).join('')
+
+  const voiceSamples = [
+    fieldBlock('Sample sentence (neutral)', v.sampleSentenceNeutral),
+    fieldBlock('Sample sentence (under pressure)', v.sampleSentenceUnderPressure),
+  ].filter(Boolean).join('')
+
+  const arc = listBlock('Arc phases', c.arcPhases)
+  const plot = listBlock('Plot functions', c.plotFunctions)
+
+  const misreadingsBlock = cMisreadings.length
+    ? `<ul class="misreadings">${cMisreadings.map(m => {
+        return `<li><strong>${escHtml(m.label)}</strong>${m.why ? ` — <em>${escHtml(m.why)}</em>` : ''}</li>`
+      }).join('')}</ul>`
+    : ''
+
+  const notes = c.notes ? paragraphs(c.notes) : ''
+
+  const subtitleParts: string[] = []
+  if (c.role) subtitleParts.push(c.role)
+  if (c.socialPosition) subtitleParts.push(c.socialPosition)
+
+  const sections: string[] = []
+  if (identityRows) sections.push(section('Identity', `<dl>${identityRows}</dl>`))
+  if (wantsRows) sections.push(section('Wants, needs & wounds', `<dl>${wantsRows}</dl>`))
+  if (voiceRows || voiceLongFields) {
+    let voiceBody = ''
+    if (voiceRows) voiceBody += `<dl>${voiceRows}</dl>`
+    if (voiceLongFields) voiceBody += voiceLongFields
+    sections.push(section('Voice bible', voiceBody))
+  }
+  if (voiceSamples) sections.push(section('Voice samples', voiceSamples))
+  if (arc) sections.push(section('Arc', arc))
+  if (plot) sections.push(section('Plot functions', plot))
+  if (misreadingsBlock) sections.push(section('Misreadings', misreadingsBlock))
+  if (notes) sections.push(section('Notes', notes))
+
+  const body = sections.length
+    ? sections.join('')
+    : '<p class="empty">No details captured yet.</p>'
+
+  return `<article class="artifact">
+    <header class="artifact-header">
+      <p class="eyebrow">Character</p>
+      <h1>${escHtml(c.name)}</h1>
+      ${subtitleParts.length ? `<p class="subtitle">${escHtml(subtitleParts.join(' · '))}</p>` : ''}
+      ${c.contradiction ? `<p class="lede">${escHtml(c.contradiction)}</p>` : ''}
+    </header>
+    ${body}
+  </article>`
+}
+
+function buildKnowledgeLedger(
+  beat: Beat,
+  characters: Character[],
+  knowledge: BeatKnowledge[],
+): string {
+  const beatKnow = knowledge.filter(k => k.beatId === beat.id)
+  if (!beatKnow.length) return ''
+
+  const rows: { label: string; characterId: string | null; color?: string | null }[] = [
+    { label: 'Reader', characterId: null, color: null },
+    ...characters.map(c => ({ label: c.name, characterId: c.id, color: c.color || null })),
+  ]
+  const parts: string[] = []
+  for (const r of rows) {
+    const entries: string[] = []
+    for (const kind of KNOWLEDGE_KINDS) {
+      const entry = beatKnow.find(
+        k => (k.characterId ?? null) === r.characterId && k.knowledgeKind === kind,
+      )
+      const text = entry?.text?.trim()
+      if (text) {
+        entries.push(`<div class="row"><dt>${escHtml(formatKind(kind))}</dt><dd>${escHtml(text)}</dd></div>`)
+      }
+    }
+    if (entries.length) {
+      const dot = r.color
+        ? `<span class="dot" style="background:${escHtml(r.color)};"></span>`
+        : `<span class="dot reader-dot"></span>`
+      parts.push(`<div class="knowledge-row">
+        <h3>${dot}${escHtml(r.label)}</h3>
+        <dl>${entries.join('')}</dl>
+      </div>`)
+    }
+  }
+  return parts.join('')
+}
+
+function beatArticle(
+  beat: Beat,
+  characters: Character[],
+  knowledge: BeatKnowledge[],
+  link?: CausalLink | null,
+  prevBeat?: Beat | null,
+): string {
+  const b = beat
+  const pov = characters.find(c => c.id === (b.povCharacterId || '')) || null
+  const eyebrowParts: string[] = ['Beat']
+  if (b.label) eyebrowParts.push(b.label)
+  if (pov) eyebrowParts.push(`POV: ${pov.name}`)
+  if (b.timelinePoint) eyebrowParts.push(b.timelinePoint)
+
+  const metaRows = [
+    row('Movement', b.movement),
+    row('Scene function', b.sceneFunctionType ? formatSnake(b.sceneFunctionType) : null),
+    row('Withholding level', b.withholdingLevel),
+  ].filter(Boolean).join('')
+
+  const sceneBody = [
+    fieldBlock('Outer event', b.outerEvent),
+    fieldBlock('Inner turn', b.innerTurn),
+    fieldBlock('Voice constraint', b.voiceConstraint),
+    fieldBlock('Final image', b.finalImage),
+  ].filter(Boolean).join('')
+
+  const ironyBody = [
+    fieldBlock('Unique perception', b.uniquePerception),
+    fieldBlock('Blind spot', b.blindSpot),
+    fieldBlock('Misreading', b.misreading),
+    fieldBlock('Reader inference', b.readerInference),
+    fieldBlock('Reason for next POV switch', b.reasonForNextPovSwitch),
+  ].filter(Boolean).join('')
+
+  const ledger = buildKnowledgeLedger(beat, characters, knowledge)
+
+  const sections: string[] = []
+  if (metaRows) sections.push(section('Meta', `<dl>${metaRows}</dl>`))
+  if (sceneBody) sections.push(section('Scene', sceneBody))
+  if (ironyBody) sections.push(section('Voice & irony', ironyBody))
+  if (ledger) sections.push(section('Knowledge ledger', ledger))
+
+  const body = sections.length
+    ? sections.join('')
+    : '<p class="empty">No details captured yet.</p>'
+
+  const linkRow = link && prevBeat
+    ? `<p class="causal-link">${escHtml(formatSnake(link.linkType))} — from <em>"${escHtml(prevBeat.title || prevBeat.label || 'previous beat')}"</em>${link.note ? ` (${escHtml(link.note)})` : ''}</p>`
+    : ''
+
+  const heading = b.title || b.label || '(untitled beat)'
+
+  return `<article class="artifact">
+    <header class="artifact-header">
+      <p class="eyebrow">${escHtml(eyebrowParts.join(' · '))}</p>
+      <h1>${escHtml(heading)}</h1>
+      ${linkRow}
+    </header>
+    ${body}
+  </article>`
+}
+
+interface BuildArgs {
+  manuscriptTitle: string
+  sectionType: string
+  documentTitle: string
+  bodyHtml: string
+}
+
+function buildHtml(args: BuildArgs): string {
+  const { manuscriptTitle, sectionType, documentTitle, bodyHtml } = args
+  const runHeaderLeft = escCss(manuscriptTitle)
+  const runHeaderRight = escCss(sectionType)
+  return `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>${escHtml(documentTitle)}</title>
+<style>
+  /* ===== Page geometry =====
+     A4 portrait with quiet margins. Running header is the manuscript
+     title (left) and section type (right); page number sits centre-bottom.
+     The first page suppresses the running header so the document opens
+     cleanly with the first artifact. */
+  @page {
+    size: A4 portrait;
+    margin: 22mm 18mm 22mm 18mm;
+    @top-left {
+      content: "${runHeaderLeft}";
+      font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, sans-serif;
+      font-size: 8pt;
+      color: #888;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    @top-right {
+      content: "${runHeaderRight}";
+      font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, sans-serif;
+      font-size: 8pt;
+      color: #888;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    @bottom-center {
+      content: counter(page);
+      font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, sans-serif;
+      font-size: 8pt;
+      color: #888;
+    }
+  }
+  @page :first {
+    @top-left { content: ""; }
+    @top-right { content: ""; }
+  }
+
+  /* ===== Base ===== */
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: #fff;
+    color: #111;
+  }
+  body {
+    font-family: "Iowan Old Style", Georgia, "Times New Roman", serif;
+    font-size: 10.5pt;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  p { margin: 0 0 6pt; }
+  p:last-child { margin-bottom: 0; }
+  em { font-style: italic; }
+  strong { font-weight: 600; }
+
+  /* ===== Article (one character or one beat) =====
+     break-before: page on every artifact except the first, so each
+     character / beat starts on a fresh sheet. */
+  .artifact {
+    break-before: page;
+  }
+  .artifact:first-of-type {
+    break-before: auto;
+  }
+
+  .artifact-header {
+    margin: 0 0 18pt;
+    padding-bottom: 12pt;
+    border-bottom: 0.5pt solid #cfcfcf;
+    break-after: avoid-page;
+  }
+  .artifact-header .eyebrow {
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, sans-serif;
+    font-size: 8.5pt;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: #888;
+    margin: 0 0 4pt;
+  }
+  .artifact-header h1 {
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, sans-serif;
+    font-size: 22pt;
+    font-weight: 500;
+    letter-spacing: -0.005em;
+    line-height: 1.15;
+    margin: 0;
+  }
+  .artifact-header .subtitle {
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, sans-serif;
+    font-size: 9.5pt;
+    color: #666;
+    margin: 4pt 0 0;
+    letter-spacing: 0.02em;
+  }
+  .artifact-header .lede {
+    font-style: italic;
+    color: #555;
+    margin: 8pt 0 0;
+    font-size: 11pt;
+    line-height: 1.4;
+  }
+  .artifact-header .causal-link {
+    font-style: italic;
+    color: #666;
+    margin: 8pt 0 0;
+    font-size: 10pt;
+    padding: 4pt 0 4pt 10pt;
+    border-left: 2pt solid #d8d8d8;
+  }
+
+  /* ===== Sections =====
+     We don't put break-inside: avoid-page on a whole section (it could be
+     longer than a page). Atomic blocks inside — rows, field-blocks,
+     knowledge-rows — get it instead so they never split. */
+  section {
+    margin-top: 14pt;
+  }
+  section + section { margin-top: 18pt; }
+  section h2 {
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, sans-serif;
+    font-size: 10.5pt;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #555;
+    margin: 0 0 10pt;
+    padding-bottom: 5pt;
+    border-bottom: 0.5pt solid #e2e2e2;
+    break-after: avoid-page;
+  }
+
+  /* ===== Definition rows ===== */
+  dl { margin: 0; padding: 0; }
+  .row {
+    display: flex;
+    gap: 14pt;
+    padding: 4pt 0;
+    border-bottom: 0.5pt dotted #ececec;
+    break-inside: avoid-page;
+  }
+  .row:last-child { border-bottom: none; }
+  .row dt {
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, sans-serif;
+    font-size: 8.5pt;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #777;
+    flex: 0 0 42mm;
+    padding-top: 1pt;
+  }
+  .row dd {
+    margin: 0;
+    flex: 1;
+    font-size: 10pt;
+    line-height: 1.5;
+  }
+
+  /* ===== Long-form field blocks ===== */
+  .field-block {
+    margin-top: 10pt;
+    break-inside: avoid-page;
+  }
+  .field-block:first-child { margin-top: 0; }
+  .field-block .field-label {
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, sans-serif;
+    font-size: 8.5pt;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #777;
+    margin: 0 0 4pt;
+  }
+
+  /* ===== Lists ===== */
+  ul, ol {
+    margin: 4pt 0 0;
+    padding-left: 18pt;
+    list-style-position: outside;
+  }
+  ul li, ol li {
+    margin-bottom: 3pt;
+    line-height: 1.45;
+  }
+  ul.misreadings li { margin-bottom: 6pt; }
+
+  /* ===== Knowledge ledger ===== */
+  .knowledge-row {
+    margin-top: 10pt;
+    padding: 8pt 12pt;
+    background: #f7f7f5;
+    border-left: 2pt solid #d8d8d8;
+    break-inside: avoid-page;
+  }
+  .knowledge-row:first-child { margin-top: 0; }
+  .knowledge-row h3 {
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, sans-serif;
+    font-size: 9.5pt;
+    font-weight: 600;
+    margin: 0 0 6pt;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 6pt;
+  }
+  .knowledge-row .dot {
+    display: inline-block;
+    width: 7pt;
+    height: 7pt;
+    border-radius: 50%;
+    border: 0.5pt solid rgba(0,0,0,0.18);
+    background: #999;
+  }
+  .knowledge-row .reader-dot { background: #111; }
+  .knowledge-row .row { padding: 3pt 0; border-bottom-color: #e6e6e2; }
+  .knowledge-row .row dt { flex: 0 0 24mm; }
+
+  .empty {
+    color: #999;
+    font-style: italic;
+    text-align: center;
+    padding: 18pt 0;
+  }
+
+  /* ===== Honest backgrounds in print =====
+     The knowledge-row background is signal, not chrome, so force the
+     browser to actually emit it instead of stripping it as a background
+     graphic. */
+  @media print {
+    .knowledge-row {
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .pp-screen-only { display: none !important; }
+  }
+
+  /* ===== Print-preview toolbar (screen only) ===== */
+  .toolbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    padding: 8px 14px;
+    background: #222;
+    color: #fff;
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", system-ui, sans-serif;
+    font-size: 13px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    z-index: 9999;
+  }
+  .toolbar strong { font-weight: 600; }
+  .toolbar .hint { opacity: 0.78; }
+  .toolbar button {
+    margin-left: auto;
+    padding: 5px 12px;
+    background: #fff;
+    color: #000;
+    border: 0;
+    border-radius: 3px;
+    cursor: pointer;
+    font: inherit;
+  }
+  .toolbar button.ghost {
+    margin-left: 0;
+    background: transparent;
+    color: #fff;
+    border: 1px solid #fff;
+  }
+  .toolbar + .doc-pad { height: 50px; }
+  @media print {
+    .toolbar, .doc-pad { display: none !important; }
+  }
+</style>
+</head>
+<body>
+  <div class="toolbar pp-screen-only">
+    <strong>Print preview.</strong>
+    <span class="hint">Use your browser's Print dialog (⌘P / Ctrl-P) to send to printer or save as PDF.</span>
+    <button onclick="window.print()">Print</button>
+    <button class="ghost" onclick="window.close()">Close</button>
+  </div>
+  <div class="doc-pad pp-screen-only"></div>
+  ${bodyHtml}
+  <script>
+    window.addEventListener('load', function () {
+      setTimeout(function () { try { window.focus(); window.print(); } catch (e) {} }, 80);
+    });
+  </script>
+</body>
+</html>`
+}
+
+function launch(html: string): void {
   if (!openPrintWindow(html)) {
     alert('Could not open the print window. Please allow pop-ups for this site.')
   }
@@ -240,8 +599,13 @@ export function printCharacter(
   misreadings: CharacterMisreading[],
   manuscriptTitle: string,
 ): void {
-  const flow = buildCharacterFlow(character, misreadings)
-  launch(flow, manuscriptTitle, `${manuscriptTitle} — ${character.name}`)
+  const body = characterArticle(character, misreadings)
+  launch(buildHtml({
+    manuscriptTitle,
+    sectionType: 'Character',
+    documentTitle: `${manuscriptTitle} — ${character.name}`,
+    bodyHtml: body,
+  }))
 }
 
 export function printAllCharacters(
@@ -250,8 +614,13 @@ export function printAllCharacters(
   manuscriptTitle: string,
 ): void {
   const sorted = [...characters].sort((a, b) => a.orderIndex - b.orderIndex)
-  const flow = sorted.map(c => buildCharacterFlow(c, misreadings)).join('')
-  launch(flow, manuscriptTitle, `${manuscriptTitle} — Characters`)
+  const body = sorted.map(c => characterArticle(c, misreadings)).join('')
+  launch(buildHtml({
+    manuscriptTitle,
+    sectionType: 'Characters',
+    documentTitle: `${manuscriptTitle} — Characters`,
+    bodyHtml: body,
+  }))
 }
 
 export function printBeat(
@@ -260,9 +629,14 @@ export function printBeat(
   knowledge: BeatKnowledge[],
   manuscriptTitle: string,
 ): void {
-  const flow = buildBeatFlow(beat, characters, knowledge)
+  const body = beatArticle(beat, characters, knowledge)
   const heading = beat.title || beat.label || 'Beat'
-  launch(flow, manuscriptTitle, `${manuscriptTitle} — ${heading}`)
+  launch(buildHtml({
+    manuscriptTitle,
+    sectionType: 'Beat',
+    documentTitle: `${manuscriptTitle} — ${heading}`,
+    bodyHtml: body,
+  }))
 }
 
 export function printPolyphonicMap(
@@ -272,8 +646,13 @@ export function printPolyphonicMap(
   manuscriptTitle: string,
 ): void {
   const sortedBeats = [...beats].sort((a, b) => a.orderIndex - b.orderIndex)
-  const flow = sortedBeats.map(b => buildBeatFlow(b, characters, knowledge)).join('')
-  launch(flow, manuscriptTitle, `${manuscriptTitle} — Polyphonic Map`)
+  const body = sortedBeats.map(b => beatArticle(b, characters, knowledge)).join('')
+  launch(buildHtml({
+    manuscriptTitle,
+    sectionType: 'Polyphonic Map',
+    documentTitle: `${manuscriptTitle} — Polyphonic Map`,
+    bodyHtml: body,
+  }))
 }
 
 export function printPlotCausality(
@@ -286,12 +665,17 @@ export function printPlotCausality(
   const sortedBeats = [...beats].sort((a, b) => a.orderIndex - b.orderIndex)
   const linkByTarget = new Map<string, CausalLink>()
   for (const l of causalLinks) linkByTarget.set(l.toBeatId, l)
-  const flow = sortedBeats
+  const body = sortedBeats
     .map((b, i) => {
       const link = linkByTarget.get(b.id) || null
       const prev = i > 0 ? sortedBeats[i - 1] : null
-      return buildBeatFlow(b, characters, knowledge, link, prev)
+      return beatArticle(b, characters, knowledge, link, prev)
     })
     .join('')
-  launch(flow, manuscriptTitle, `${manuscriptTitle} — Plot Causality`)
+  launch(buildHtml({
+    manuscriptTitle,
+    sectionType: 'Plot Causality',
+    documentTitle: `${manuscriptTitle} — Plot Causality`,
+    bodyHtml: body,
+  }))
 }
