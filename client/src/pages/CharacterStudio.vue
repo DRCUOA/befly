@@ -9,6 +9,15 @@
     >
       <template #actions>
         <button
+          v-if="characters.length > 0"
+          type="button"
+          @click="onPrintAllCharacters"
+          class="px-4 py-2 text-sm tracking-wide font-sans border border-line text-ink-light hover:text-ink hover:border-ink-lighter transition-colors"
+          title="Print all characters as one document"
+        >
+          Print all
+        </button>
+        <button
           v-if="canModify"
           type="button"
           @click="addCharacter"
@@ -392,6 +401,17 @@
                   Stitch every beat in this character's voice into one document. Pass-1 voice-coherence check.
                 </span>
               </button>
+
+              <button
+                type="button"
+                @click="onPrintCharacter"
+                class="w-full text-left px-4 py-3 border border-line text-sm text-ink-light hover:text-ink hover:border-ink-lighter transition-colors"
+              >
+                <span class="block font-medium">Print character →</span>
+                <span class="block text-xs italic text-ink-lighter mt-0.5">
+                  Print this character's identity, voice bible, arc and misreadings as a single document.
+                </span>
+              </button>
             </div>
           </aside>
         </div>
@@ -450,6 +470,7 @@ import { useAuth } from '../stores/auth'
 import ManuscriptHeader from '../components/storycraft/ManuscriptHeader.vue'
 import ManuscriptSubNav from '../components/storycraft/ManuscriptSubNav.vue'
 import FieldRow from '../components/storycraft/FieldRow.vue'
+import { printCharacter, printAllCharacters } from '../utils/storyCraftPrint'
 import type { ManuscriptProject } from '@shared/Manuscript'
 import type {
   Character,
@@ -666,6 +687,16 @@ async function deleteCharacter() {
 
 function openIsolationRead() {
   showIsolation.value = true
+}
+
+function onPrintCharacter() {
+  if (!selected.value || !manuscript.value) return
+  printCharacter(selected.value, misreadings.value, manuscript.value.title)
+}
+
+function onPrintAllCharacters() {
+  if (!manuscript.value || characters.value.length === 0) return
+  printAllCharacters(characters.value, misreadings.value, manuscript.value.title)
 }
 
 onMounted(loadAll)
