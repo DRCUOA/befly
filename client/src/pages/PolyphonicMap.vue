@@ -9,6 +9,15 @@
     >
       <template #actions>
         <button
+          v-if="beats.length > 0"
+          type="button"
+          @click="onPrintPolyphonic"
+          class="px-4 py-2 text-sm tracking-wide font-sans border border-line text-ink-light hover:text-ink hover:border-ink-lighter transition-colors"
+          title="Print every beat's knowledge ledger as one document"
+        >
+          Print
+        </button>
+        <button
           v-if="canModify"
           type="button"
           @click="addBeat"
@@ -178,6 +187,7 @@
       @close="detailBeat = null"
       @save="onSaveBeat"
       @delete="onDeleteBeat"
+      @print="onPrintBeat"
       @save-knowledge="onSaveKnowledge"
     />
   </div>
@@ -192,6 +202,7 @@ import { useAuth } from '../stores/auth'
 import ManuscriptHeader from '../components/storycraft/ManuscriptHeader.vue'
 import ManuscriptSubNav from '../components/storycraft/ManuscriptSubNav.vue'
 import BeatDetailPanel from '../components/storycraft/BeatDetailPanel.vue'
+import { printBeat, printPolyphonicMap } from '../utils/storyCraftPrint'
 import type { ManuscriptProject } from '@shared/Manuscript'
 import type {
   Character,
@@ -358,6 +369,18 @@ async function addBeat() {
   } catch (err) {
     alert(err instanceof Error ? err.message : 'Failed to add beat')
   }
+}
+
+function onPrintPolyphonic() {
+  if (!manuscript.value || beats.value.length === 0) return
+  printPolyphonicMap(characters.value, beats.value, beatKnowledge.value, manuscript.value.title)
+}
+
+function onPrintBeat(beatId: string) {
+  if (!manuscript.value) return
+  const beat = beats.value.find(b => b.id === beatId)
+  if (!beat) return
+  printBeat(beat, characters.value, beatKnowledge.value, manuscript.value.title)
 }
 
 async function onSaveBeat(updates: Partial<Beat>) {
