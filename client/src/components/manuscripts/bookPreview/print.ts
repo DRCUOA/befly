@@ -181,13 +181,18 @@ export function buildNaturalPrintHtml(args: PrintBuildArgs): string {
       }
       .editor-margin-label {
         position: absolute;
-        left: -13mm;
+        left: -15mm;
+        width: 14mm;
+        box-sizing: border-box;
+        padding-right: 1mm;
+        text-align: right;
         transform: translateY(-50%);
-        font: 6pt -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, sans-serif;
+        font: 7pt -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, sans-serif;
         color: #888;
         white-space: nowrap;
         letter-spacing: 0.02em;
         pointer-events: none;
+        overflow: hidden;
       }`
     : ''
 
