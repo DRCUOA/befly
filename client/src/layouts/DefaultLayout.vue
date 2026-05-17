@@ -36,6 +36,13 @@
               >
                 Manuscripts
               </router-link>
+              <router-link
+                to="/library"
+                class="pb-0.5 hover:text-ink transition-colors duration-300"
+                :class="route.name === 'MyLibrary' ? 'text-ink border-b border-ink' : 'text-ink-lighter'"
+              >
+                Library
+              </router-link>
             </template>
             <template v-else>
               <router-link
@@ -262,6 +269,15 @@
           </router-link>
           <router-link
             v-if="isAuthenticated"
+            to="/library"
+            @click="menuOpen = false"
+            class="block text-sm tracking-wide font-sans hover:text-ink transition-colors duration-300"
+            :class="route.name === 'MyLibrary' ? 'text-ink' : 'text-ink-lighter'"
+          >
+            Library
+          </router-link>
+          <router-link
+            v-if="isAuthenticated"
             to="/write"
             @click="menuOpen = false"
             class="block text-sm tracking-wide font-sans text-ink-lighter hover:text-ink transition-colors duration-300"
@@ -423,6 +439,7 @@ const mainClasses = computed(() => {
   const fullBleedRoutes = new Set([
     'Home', 'Themes', 'ThemeDetail',
     'Manuscripts', 'ManuscriptDetail',
+    'MyLibrary',
   ])
   return fullBleedRoutes.has(String(route.name)) ? '' : 'max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-6 md:py-8'
 })

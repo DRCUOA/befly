@@ -28,6 +28,7 @@ import AdminAiExchanges from '../pages/AdminAiExchanges.vue'
 import AdminEssays from '../pages/AdminEssays.vue'
 import AdminRag from '../pages/AdminRag.vue'
 import BaselineTest from '../pages/BaselineTest.vue'
+import MyLibrary from '../pages/MyLibrary.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -123,6 +124,12 @@ const router = createRouter({
       path: '/manuscripts/:id/plot',
       name: 'PlotCausality',
       component: PlotCausality
+    },
+    {
+      path: '/library',
+      name: 'MyLibrary',
+      component: MyLibrary,
+      meta: { requiresAuth: true }
     },
     {
       path: '/profile',
