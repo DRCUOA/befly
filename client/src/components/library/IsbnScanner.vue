@@ -87,10 +87,19 @@ import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { BrowserMultiFormatReader, IScannerControls } from '@zxing/browser'
 import { BarcodeFormat, DecodeHintType } from '@zxing/library'
 
+export interface ScanDetectedPayload {
+  isbn: string
+  durationMs: number
+  scanner: 'zxing' | 'manual'
+  format?: string
+}
+
 const emit = defineEmits<{
-  detected: [isbn: string]
+  detected: [payload: ScanDetectedPayload]
   close: []
 }>()
+
+const startedAt = Date.now()
 
 const videoEl = ref<HTMLVideoElement | null>(null)
 const devices = ref<MediaDeviceInfo[]>([])
@@ -158,7 +167,12 @@ async function start() {
           if (text.length === 13 || text.length === 10) {
             if (text !== lastCode.value) {
               lastCode.value = text
-              emit('detected', text)
+              emit('detected', {
+                isbn: text,
+                durationMs: Date.now() - startedAt,
+                scanner: 'zxing',
+                format: result.getBarcodeFormat ? String(result.getBarcodeFormat()) : undefined,
+              })
             }
           }
         }
@@ -208,7 +222,11 @@ function submitManual() {
     cameraError.value = 'ISBN must be 10 or 13 digits.'
     return
   }
-  emit('detected', digits)
+  emit('detected', {
+    isbn: digits,
+    durationMs: Date.now() - startedAt,
+    scanner: 'manual',
+  })
 }
 
 onMounted(async () => {

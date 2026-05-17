@@ -10,7 +10,8 @@ router.use(authMiddleware)
 router.get('/', asyncHandler(libraryController.list))
 router.get('/lookup/:isbn', asyncHandler(libraryController.lookup))
 router.post('/', asyncHandler(libraryController.create))
-router.patch('/:id/notes', asyncHandler(libraryController.updateNotes))
+router.post('/telemetry', asyncHandler(libraryController.logTelemetry))
+router.patch('/:id', asyncHandler(libraryController.update))
 router.delete('/:id', asyncHandler(libraryController.delete))
 
 export default router
