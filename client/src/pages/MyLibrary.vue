@@ -29,7 +29,7 @@
         <input
           v-model="search"
           type="search"
-          placeholder="Search title, author, ISBN"
+          placeholder="Search title, author, ISBN, owner"
           class="flex-1 min-w-[12rem] px-3 py-2 border border-line bg-paper text-ink text-sm placeholder:text-ink-lighter"
         />
 
@@ -68,82 +68,57 @@
       aria-modal="true"
       @click.self="closeScanner"
     >
-      <div class="w-full max-w-xl mt-8 sm:mt-0">
+      <div class="w-full max-w-2xl mt-8 sm:mt-0">
         <IsbnScanner
-          v-if="!lookupBusy && !pendingBook"
+          v-if="!lookupBusy && !pendingLookup"
           @detected="handleDetected"
           @close="closeScanner"
         />
 
-        <!-- Lookup spinner -->
-        <div
-          v-else-if="lookupBusy"
-          class="bg-paper border border-line p-6 text-center"
-        >
+        <div v-else-if="lookupBusy" class="bg-paper border border-line p-6 text-center">
           <p class="text-sm text-ink-light">Looking up ISBN {{ pendingIsbn }}&hellip;</p>
         </div>
 
-        <!-- Confirm-before-save sheet -->
-        <div
-          v-else-if="pendingBook"
-          class="bg-paper border border-line p-4 sm:p-6"
-        >
-          <div class="flex items-start justify-between mb-4 gap-3">
-            <h3 class="text-lg font-light tracking-tight">Add this book?</h3>
-            <button @click="closeScanner" class="text-ink-lighter hover:text-ink p-1" aria-label="Cancel">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
-
-          <div class="flex gap-4 mb-4">
-            <img
-              v-if="pendingBook.thumbnail"
-              :src="pendingBook.thumbnail"
-              :alt="pendingBook.title"
-              class="w-20 h-28 object-cover border border-line shrink-0"
-            />
-            <div class="flex-1 min-w-0">
-              <p class="text-base font-medium text-ink">{{ pendingBook.title || '(no title)' }}</p>
-              <p v-if="pendingBook.authors.length" class="text-sm text-ink-light">
-                {{ pendingBook.authors.join(', ') }}
-              </p>
-              <p class="text-xs text-ink-lighter mt-1 truncate">
-                ISBN {{ pendingBook.isbn }}<span v-if="pendingBook.publisher"> &middot; {{ pendingBook.publisher }}</span>
-              </p>
-            </div>
-          </div>
-
-          <label class="block text-xs uppercase tracking-widest text-ink-lighter mb-1">Notes (optional)</label>
-          <textarea
-            v-model="pendingNotes"
-            rows="3"
-            class="w-full px-3 py-2 border border-line bg-paper text-ink text-sm placeholder:text-ink-lighter"
-            placeholder="Why this book matters to your project…"
-          ></textarea>
-
-          <div v-if="saveError" class="text-sm text-red-700 mt-3">{{ saveError }}</div>
-
-          <div class="flex gap-2 mt-4 justify-end">
-            <button
-              @click="closeScanner"
-              class="px-4 py-2 text-sm tracking-wide font-sans border border-line text-ink-light hover:text-ink"
-              :disabled="saving"
-            >
-              Cancel
-            </button>
-            <button
-              @click="saveBook"
-              :disabled="saving"
-              class="px-4 py-2 bg-ink text-paper text-sm tracking-wide font-sans hover:bg-ink-light transition-colors disabled:opacity-50"
-            >
-              {{ saving ? 'Adding…' : 'Add to library' }}
-            </button>
-          </div>
-        </div>
+        <BookEditor
+          v-else-if="pendingLookup"
+          :initial="pendingLookup"
+          :title="'Add this book?'"
+          :save-label="'Add to library'"
+          :busy="saving"
+          :error-message="saveError"
+          @save="onCreateSave"
+          @cancel="closeScanner"
+        />
       </div>
     </div>
+
+    <!-- Edit modal -->
+    <div
+      v-if="editing"
+      class="fixed inset-0 z-50 bg-black/60 flex items-start sm:items-center justify-center p-4 overflow-y-auto"
+      role="dialog"
+      aria-modal="true"
+      @click.self="cancelEdit"
+    >
+      <BookEditor
+        :initial="editing"
+        :title="'Edit book'"
+        :save-label="'Save changes'"
+        :busy="saving"
+        :error-message="saveError"
+        @save="onUpdateSave"
+        @cancel="cancelEdit"
+      />
+    </div>
+
+    <!-- JSON modal -->
+    <BookJsonModal
+      v-if="jsonViewing"
+      :data="jsonViewing.raw ?? jsonFallback(jsonViewing)"
+      :heading="jsonViewing.title || jsonViewing.isbn"
+      :subhead="jsonViewing.provider ? `ISBN ${jsonViewing.isbn} · via ${jsonViewing.provider}` : `ISBN ${jsonViewing.isbn}`"
+      @close="jsonViewing = null"
+    />
 
     <!-- Body -->
     <div class="w-full px-4 sm:px-6 md:px-8 py-10 sm:py-14 bg-paper">
@@ -192,19 +167,57 @@
                 No cover
               </span>
             </div>
+
             <h3 class="text-sm font-medium text-ink line-clamp-2 mb-1">{{ b.title || '(no title)' }}</h3>
-            <p v-if="b.authors.length" class="text-xs text-ink-light line-clamp-1 mb-2">
+            <p v-if="b.authors.length" class="text-xs text-ink-light line-clamp-1">
               {{ b.authors.join(', ') }}
             </p>
-            <p class="text-[10px] tracking-widest uppercase text-ink-lighter mt-auto">
+            <p class="text-[11px] text-ink-lighter mt-0.5">
+              <span v-if="b.publishedDate">{{ b.publishedDate }}</span>
+              <span v-if="b.publisher && b.publishedDate"> &middot; </span>
+              <span v-if="b.publisher">{{ b.publisher }}</span>
+            </p>
+            <p v-if="b.owner" class="text-[11px] text-ink-light mt-0.5">
+              Owner: {{ b.owner }}
+            </p>
+
+            <!-- Status chips -->
+            <div class="flex flex-wrap gap-1.5 mt-2">
+              <span
+                class="text-[10px] uppercase tracking-widest px-1.5 py-0.5 border"
+                :class="b.read ? 'border-ink text-ink' : 'border-line text-ink-lighter'"
+              >
+                {{ b.read ? 'Read' : 'Unread' }}
+              </span>
+              <span class="text-[10px] uppercase tracking-widest px-1.5 py-0.5 border border-line text-ink-light" :title="'Want-to-read score (0–100)'">
+                Want {{ b.readMotivation }}
+              </span>
+              <span class="text-[10px] uppercase tracking-widest px-1.5 py-0.5 border border-line text-ink-light" :title="'Physical condition (0–100)'">
+                Cond {{ b.physicalCondition }}
+              </span>
+            </div>
+
+            <p class="text-[10px] tracking-widest uppercase text-ink-lighter mt-2">
               ISBN {{ b.isbn }}
             </p>
-            <div class="flex justify-end mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
+
+            <!-- Action bar -->
+            <div class="flex items-center justify-end gap-1 mt-2 -mb-1">
+              <button @click="jsonViewing = b" class="icon-btn" :title="'View raw metadata'" aria-label="View raw metadata">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </button>
+              <button @click="startEdit(b)" class="icon-btn" :title="'Edit book'" aria-label="Edit book">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+              </button>
               <button
                 @click="handleDelete(b)"
                 :disabled="deleting === b.id"
-                class="p-1 text-ink-lighter hover:text-red-600"
-                title="Remove from library"
+                class="icon-btn hover:!text-red-600"
+                :title="'Remove from library'"
                 aria-label="Remove from library"
               >
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -220,7 +233,7 @@
           <li
             v-for="b in filteredBooks"
             :key="b.id"
-            class="flex items-center gap-4 p-3 sm:p-4 hover:bg-surface transition-colors"
+            class="flex items-start sm:items-center gap-4 p-3 sm:p-4 hover:bg-surface transition-colors"
           >
             <img
               v-if="b.thumbnail"
@@ -237,21 +250,47 @@
               <p v-if="b.authors.length" class="text-xs text-ink-light truncate">
                 {{ b.authors.join(', ') }}
               </p>
-              <p class="text-[10px] tracking-widest uppercase text-ink-lighter truncate">
-                ISBN {{ b.isbn }}<span v-if="b.publisher"> &middot; {{ b.publisher }}</span><span v-if="b.publishedDate"> &middot; {{ b.publishedDate }}</span>
+              <p class="text-[11px] text-ink-lighter truncate">
+                <span v-if="b.publishedDate">{{ b.publishedDate }}</span>
+                <span v-if="b.publisher"> &middot; {{ b.publisher }}</span>
+                <span v-if="b.pageCount"> &middot; {{ b.pageCount }} pp</span>
+                <span v-if="b.language"> &middot; {{ b.language }}</span>
               </p>
+              <p class="text-[10px] tracking-widest uppercase text-ink-lighter truncate">
+                ISBN {{ b.isbn }}<span v-if="b.owner"> &middot; Owner: {{ b.owner }}</span>
+              </p>
+              <div class="flex flex-wrap gap-1.5 mt-1">
+                <span
+                  class="text-[10px] uppercase tracking-widest px-1.5 py-0.5 border"
+                  :class="b.read ? 'border-ink text-ink' : 'border-line text-ink-lighter'"
+                >{{ b.read ? 'Read' : 'Unread' }}</span>
+                <span class="text-[10px] uppercase tracking-widest px-1.5 py-0.5 border border-line text-ink-light">Want {{ b.readMotivation }}</span>
+                <span class="text-[10px] uppercase tracking-widest px-1.5 py-0.5 border border-line text-ink-light">Cond {{ b.physicalCondition }}</span>
+              </div>
             </div>
-            <button
-              @click="handleDelete(b)"
-              :disabled="deleting === b.id"
-              class="p-2 text-ink-lighter hover:text-red-600"
-              title="Remove from library"
-              aria-label="Remove from library"
-            >
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            <div class="flex items-center gap-1 shrink-0">
+              <button @click="jsonViewing = b" class="icon-btn" :title="'View raw metadata'" aria-label="View raw metadata">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-            </button>
+              </button>
+              <button @click="startEdit(b)" class="icon-btn" :title="'Edit book'" aria-label="Edit book">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+              </button>
+              <button
+                @click="handleDelete(b)"
+                :disabled="deleting === b.id"
+                class="icon-btn hover:!text-red-600"
+                :title="'Remove from library'"
+                aria-label="Remove from library"
+              >
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </button>
+            </div>
           </li>
         </ul>
       </div>
@@ -260,11 +299,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { libraryApi } from '../api/library'
 import { ApiError } from '../api/client'
-import type { LibraryBook, LibraryBookLookup } from '@shared/LibraryBook'
-import IsbnScanner from '../components/library/IsbnScanner.vue'
+import type { LibraryBook, LibraryBookLookup, LibraryBookUpdate } from '@shared/LibraryBook'
+import IsbnScanner, { type ScanDetectedPayload } from '../components/library/IsbnScanner.vue'
+import BookEditor, { type EditorForm } from '../components/library/BookEditor.vue'
+import BookJsonModal from '../components/library/BookJsonModal.vue'
 
 type ViewMode = 'cards' | 'list'
 
@@ -279,14 +320,18 @@ const viewMode = ref<ViewMode>(((): ViewMode => {
   return stored === 'list' ? 'list' : 'cards'
 })())
 
+// Scan / lookup state
 const scannerOpen = ref(false)
 const lookupBusy = ref(false)
 const pendingIsbn = ref<string | null>(null)
-const pendingBook = ref<LibraryBookLookup | null>(null)
-const pendingNotes = ref('')
+const pendingLookup = ref<LibraryBookLookup | null>(null)
 const saving = ref(false)
 const saveError = ref<string | null>(null)
 const deleting = ref<string | null>(null)
+
+// Edit / view state
+const editing = ref<LibraryBook | null>(null)
+const jsonViewing = ref<LibraryBook | LibraryBookLookup | null>(null)
 
 const filteredBooks = computed(() => {
   const q = search.value.trim().toLowerCase()
@@ -295,16 +340,13 @@ const filteredBooks = computed(() => {
     b.title.toLowerCase().includes(q)
     || b.authors.some(a => a.toLowerCase().includes(q))
     || b.isbn.includes(q)
+    || b.owner.toLowerCase().includes(q)
   )
 })
 
-// Persist view choice so a writer keeps their preferred display.
-function setView(v: ViewMode) {
-  viewMode.value = v
+watch(viewMode, v => {
   try { localStorage.setItem(STORAGE_KEY_VIEW, v) } catch { /* ignore */ }
-}
-import { watch } from 'vue'
-watch(viewMode, v => setView(v))
+})
 
 async function load() {
   try {
@@ -322,8 +364,7 @@ function openScanner() {
   scannerOpen.value = true
   lookupBusy.value = false
   pendingIsbn.value = null
-  pendingBook.value = null
-  pendingNotes.value = ''
+  pendingLookup.value = null
   saveError.value = null
 }
 
@@ -331,24 +372,33 @@ function closeScanner() {
   scannerOpen.value = false
   lookupBusy.value = false
   pendingIsbn.value = null
-  pendingBook.value = null
-  pendingNotes.value = ''
+  pendingLookup.value = null
   saveError.value = null
 }
 
-async function handleDetected(isbn: string) {
-  if (lookupBusy.value || pendingBook.value) return
-  pendingIsbn.value = isbn
+async function handleDetected(payload: ScanDetectedPayload) {
+  if (lookupBusy.value || pendingLookup.value) return
+  pendingIsbn.value = payload.isbn
+
+  // Log the scan-phase event (camera/manual reach).
+  libraryApi.logScanEvent({
+    phase: 'scan',
+    isbn: payload.isbn,
+    succeeded: true,
+    durationMs: payload.durationMs,
+    scanner: payload.scanner,
+    provider: payload.format,
+  })
+
   lookupBusy.value = true
   saveError.value = null
   try {
-    pendingBook.value = await libraryApi.lookup(isbn)
+    pendingLookup.value = await libraryApi.lookup(payload.isbn)
   } catch (err) {
     saveError.value = err instanceof Error ? err.message : 'Lookup failed'
-    // Keep dialog open so user can read the error; provide a minimal stub
-    // so they can still save with just the ISBN if they want to.
-    pendingBook.value = {
-      isbn,
+    // Keep the editor open with a stub so the user can fill in by hand.
+    pendingLookup.value = {
+      isbn: payload.isbn,
       title: '',
       authors: [],
       publisher: '',
@@ -358,18 +408,37 @@ async function handleDetected(isbn: string) {
       thumbnail: '',
       categories: [],
       language: '',
+      provider: '',
+      raw: null,
     }
   } finally {
     lookupBusy.value = false
   }
 }
 
-async function saveBook() {
-  if (!pendingBook.value) return
+async function onCreateSave(form: EditorForm) {
   saving.value = true
   saveError.value = null
   try {
-    const created = await libraryApi.create({ ...pendingBook.value, notes: pendingNotes.value })
+    const created = await libraryApi.create({
+      isbn: form.isbn,
+      title: form.title,
+      authors: form.authors,
+      publisher: form.publisher,
+      publishedDate: form.publishedDate,
+      description: form.description,
+      pageCount: form.pageCount,
+      thumbnail: form.thumbnail,
+      categories: form.categories,
+      language: form.language,
+      provider: form.provider,
+      raw: form.raw,
+      read: form.read,
+      readMotivation: form.readMotivation,
+      physicalCondition: form.physicalCondition,
+      owner: form.owner,
+      notes: form.notes,
+    })
     books.value = [created, ...books.value]
     closeScanner()
   } catch (err) {
@@ -378,6 +447,47 @@ async function saveBook() {
     } else {
       saveError.value = err instanceof Error ? err.message : 'Could not save book'
     }
+  } finally {
+    saving.value = false
+  }
+}
+
+function startEdit(b: LibraryBook) {
+  editing.value = b
+  saveError.value = null
+}
+
+function cancelEdit() {
+  editing.value = null
+  saveError.value = null
+}
+
+async function onUpdateSave(form: EditorForm) {
+  if (!editing.value) return
+  saving.value = true
+  saveError.value = null
+  try {
+    const updates: LibraryBookUpdate = {
+      title: form.title,
+      authors: form.authors,
+      publisher: form.publisher,
+      publishedDate: form.publishedDate,
+      description: form.description,
+      pageCount: form.pageCount,
+      thumbnail: form.thumbnail,
+      categories: form.categories,
+      language: form.language,
+      read: form.read,
+      readMotivation: form.readMotivation,
+      physicalCondition: form.physicalCondition,
+      owner: form.owner,
+      notes: form.notes,
+    }
+    const updated = await libraryApi.update(editing.value.id, updates)
+    books.value = books.value.map(x => x.id === updated.id ? updated : x)
+    editing.value = null
+  } catch (err) {
+    saveError.value = err instanceof Error ? err.message : 'Could not save changes'
   } finally {
     saving.value = false
   }
@@ -396,6 +506,25 @@ async function handleDelete(b: LibraryBook) {
   }
 }
 
+/** Fallback for the JSON modal when raw_metadata is absent — synthesize a
+ *  representative object from the saved columns so the inspector is never
+ *  empty (older rows predate raw_metadata). */
+function jsonFallback(b: LibraryBook | LibraryBookLookup): Record<string, unknown> {
+  return {
+    isbn: b.isbn,
+    title: b.title,
+    authors: b.authors,
+    publisher: b.publisher,
+    publishedDate: b.publishedDate,
+    description: b.description,
+    pageCount: b.pageCount,
+    thumbnail: b.thumbnail,
+    categories: b.categories,
+    language: b.language,
+    provider: b.provider,
+  }
+}
+
 onMounted(load)
 </script>
 
@@ -408,6 +537,18 @@ onMounted(load)
 }
 .library-card:hover {
   transform: translateY(-2px);
+}
+.icon-btn {
+  padding: 0.25rem;
+  color: var(--color-ink-lighter, #a8a29e);
+  transition: color 0.2s;
+}
+.icon-btn:hover {
+  color: var(--color-ink, #1c1917);
+}
+.icon-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 .line-clamp-1 {
   display: -webkit-box;
