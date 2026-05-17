@@ -18,6 +18,7 @@ import activityRoutes from './routes/activity.routes.js'
 import adminRoutes from './routes/admin.routes.js'
 import typographyRulesRoutes from './routes/typography-rules.routes.js'
 import userRoutes from './routes/user.routes.js'
+import libraryRoutes from './routes/library.routes.js'
 import { uploadsController } from './controllers/uploads.controller.js'
 import { asyncHandler } from './utils/asyncHandler.js'
 import { config } from './config/env.js'
@@ -133,6 +134,7 @@ app.use('/api/activity', activityRoutes)
 app.use('/api/admin', adminRoutes)
 app.use('/api/typography-rules', typographyRulesRoutes)
 app.use('/api/users', userRoutes)
+app.use('/api/library', libraryRoutes)
 
 // Health check
 app.get('/api/health', async (req, res) => {
