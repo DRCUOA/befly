@@ -22,8 +22,10 @@ import { config } from '../config/env.js'
 
 const PROVIDER_GOOGLE = 'google'
 const PROVIDER_OPENLIBRARY = 'openlibrary'
+const PROVIDER_OPENLIBRARY_GAPFILL = 'openlibrary-gapfill'
 
 const GOOGLE_BOOKS_URL = 'https://www.googleapis.com/books/v1/volumes'
+const OPENLIBRARY_DATA_URL = 'https://openlibrary.org/api/books'
 
 const fallbackClient = new Isbn()
 fallbackClient.provider([PROVIDER_OPENLIBRARY])
@@ -149,6 +151,89 @@ function pickThumbnail(info: Record<string, unknown>): string {
   return ''
 }
 
+/**
+ * Direct Open Library `?jscmd=data` lookup. Exposes richer subjects /
+ * number_of_pages / cover URLs than @library-pals/isbn's parser pulls
+ * out today, which is why we keep both paths.
+ *
+ * Used in two places: (a) as a fallback inside `tryChain` would be
+ * overkill — we already have @library-pals for that; (b) as the
+ * **gap-fill** source after a successful Google hit that came back
+ * missing fields. The shape returned matches `LibraryBookLookup`, with
+ * the categories/page fields populated when available so `mergeGaps`
+ * can lift them onto the primary record.
+ */
+async function fetchOpenLibraryDirect(isbn: string): Promise<LibraryBookLookup> {
+  const url = new URL(OPENLIBRARY_DATA_URL)
+  url.searchParams.set('bibkeys', `ISBN:${isbn}`)
+  url.searchParams.set('jscmd', 'data')
+  url.searchParams.set('format', 'json')
+
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), 6000)
+  let res: Response
+  try {
+    res = await fetch(url, { signal: controller.signal })
+  } finally {
+    clearTimeout(timer)
+  }
+
+  if (!res.ok) {
+    const err = new Error(`Open Library responded ${res.status}`) as Error & { status: number }
+    err.status = res.status
+    throw err
+  }
+
+  const json = (await res.json()) as Record<string, unknown>
+  const key = `ISBN:${isbn}`
+  const record = json[key] as Record<string, unknown> | undefined
+  if (!record) {
+    const err = new Error('Open Library has no record for this ISBN') as Error & { status: number }
+    err.status = 404
+    throw err
+  }
+
+  const authors = Array.isArray(record.authors)
+    ? (record.authors as Array<Record<string, unknown>>)
+        .map(a => (typeof a.name === 'string' ? a.name : ''))
+        .filter(Boolean)
+    : []
+  const publishers = Array.isArray(record.publishers)
+    ? (record.publishers as Array<Record<string, unknown>>)
+        .map(p => (typeof p.name === 'string' ? p.name : ''))
+        .filter(Boolean)
+    : []
+  const subjects = Array.isArray(record.subjects)
+    ? (record.subjects as Array<Record<string, unknown>>)
+        .map(s => (typeof s.name === 'string' ? s.name : ''))
+        // Filter out LCSH subdivisions ("X -- Y -- Z") that aren't useful
+        // as user-facing genre labels.
+        .filter(s => s && !s.includes(' -- '))
+        .slice(0, 10)
+    : []
+  const cover = (record.cover as Record<string, unknown> | undefined) ?? {}
+  const thumbnail = [cover.medium, cover.large, cover.small]
+    .find((v): v is string => typeof v === 'string' && v.length > 0) ?? ''
+  const description = typeof record.description === 'string'
+    ? record.description
+    : (record.description as Record<string, unknown> | undefined)?.value as string ?? ''
+
+  return {
+    isbn,
+    title: typeof record.title === 'string' ? record.title : '',
+    authors,
+    publisher: publishers[0] ?? '',
+    publishedDate: typeof record.publish_date === 'string' ? record.publish_date : '',
+    description,
+    pageCount: typeof record.number_of_pages === 'number' ? record.number_of_pages : null,
+    thumbnail,
+    categories: subjects,
+    language: '',
+    provider: PROVIDER_OPENLIBRARY_GAPFILL,
+    raw: record,
+  }
+}
+
 async function tryOpenLibrary(isbn: string): Promise<LibraryBookLookup> {
   const book = await fallbackClient.resolve(isbn, { timeout: 8000 }) as PalsBook
   return {
@@ -199,6 +284,58 @@ async function runAttempt(
   }
 }
 
+/** True when the record is missing at least one field that gap-fill can plug. */
+function hasGaps(b: LibraryBookLookup): boolean {
+  return (
+    b.categories.length === 0
+    || b.pageCount === null
+    || b.description.trim() === ''
+    || b.thumbnail.trim() === ''
+  )
+}
+
+/**
+ * Fill the empty fields of `primary` with values from `supplement`.
+ * Non-empty primary fields always win. The provider attribution stays
+ * on `primary` (it's the canonical source); the `raw` payload picks up
+ * a `_gapFilled` annotation so the JSON inspector shows what was added
+ * and where it came from.
+ */
+function mergeGaps(primary: LibraryBookLookup, supplement: LibraryBookLookup): LibraryBookLookup {
+  const filledFields: string[] = []
+  const pickString = (a: string, b: string, name: string) => {
+    if (!a && b) { filledFields.push(name); return b }
+    return a
+  }
+  const pickArray = (a: string[], b: string[], name: string) => {
+    if (a.length === 0 && b.length > 0) { filledFields.push(name); return b }
+    return a
+  }
+
+  const merged: LibraryBookLookup = {
+    isbn: primary.isbn,
+    title: pickString(primary.title, supplement.title, 'title'),
+    authors: pickArray(primary.authors, supplement.authors, 'authors'),
+    publisher: pickString(primary.publisher, supplement.publisher, 'publisher'),
+    publishedDate: pickString(primary.publishedDate, supplement.publishedDate, 'publishedDate'),
+    description: pickString(primary.description, supplement.description, 'description'),
+    pageCount: primary.pageCount !== null
+      ? primary.pageCount
+      : (supplement.pageCount !== null ? (filledFields.push('pageCount'), supplement.pageCount) : null),
+    thumbnail: pickString(primary.thumbnail, supplement.thumbnail, 'thumbnail'),
+    categories: pickArray(primary.categories, supplement.categories, 'categories'),
+    language: pickString(primary.language, supplement.language, 'language'),
+    provider: primary.provider,
+    raw: {
+      ...((primary.raw as Record<string, unknown>) ?? {}),
+      _gapFilled: filledFields.length
+        ? { from: supplement.provider, fields: filledFields, raw: supplement.raw }
+        : undefined,
+    },
+  }
+  return merged
+}
+
 /** Run Google → Open Library against one ISBN form. */
 async function tryChain(isbn: string): Promise<{ data?: LibraryBookLookup; attempts: ProviderAttempt[] }> {
   const attempts: ProviderAttempt[] = []
@@ -215,6 +352,35 @@ async function tryChain(isbn: string): Promise<{ data?: LibraryBookLookup; attem
 }
 
 /**
+ * If the winning record is missing fields that Open Library typically
+ * carries (categories, page count, description, cover), call the OL
+ * data API for the same ISBN and merge in only the empty slots.
+ *
+ * Skipped when the primary record is itself already Open Library —
+ * re-querying the same source rarely helps. The OL provider id from
+ * @library-pals/isbn is "Open Library" (with space), so we detect both
+ * forms.
+ */
+async function gapFillIfNeeded(
+  primary: LibraryBookLookup,
+  isbnForLookup: string,
+  attempts: ProviderAttempt[]
+): Promise<LibraryBookLookup> {
+  if (!hasGaps(primary)) return primary
+  const p = primary.provider.toLowerCase()
+  if (p.includes('openlibrary') || p.includes('open library')) return primary
+
+  const fill = await runAttempt(
+    PROVIDER_OPENLIBRARY_GAPFILL,
+    isbnForLookup,
+    () => fetchOpenLibraryDirect(isbnForLookup)
+  )
+  attempts.push(fill.attempt)
+  if (!fill.ok) return primary
+  return mergeGaps(primary, fill.data)
+}
+
+/**
  * Main entry. Throws an Error with `.attempts` attached if nothing matches.
  * `userIsbn` is what the user originally scanned — that form is preserved on
  * the returned data even when a conversion was needed.
@@ -224,14 +390,20 @@ export async function lookupIsbn(userIsbn: string): Promise<IsbnLookupResult> {
 
   const first = await tryChain(userIsbn)
   allAttempts.push(...first.attempts)
-  if (first.data) return { data: { ...first.data, isbn: userIsbn }, attempts: allAttempts }
+  if (first.data) {
+    const filled = await gapFillIfNeeded(first.data, userIsbn, allAttempts)
+    return { data: { ...filled, isbn: userIsbn }, attempts: allAttempts }
+  }
 
   // Convert and try again with the alternate form.
   const alt = userIsbn.length === 13 ? isbn13to10(userIsbn) : userIsbn.length === 10 ? isbn10to13(userIsbn) : null
   if (alt && alt !== userIsbn) {
     const second = await tryChain(alt)
     allAttempts.push(...second.attempts)
-    if (second.data) return { data: { ...second.data, isbn: userIsbn }, attempts: allAttempts }
+    if (second.data) {
+      const filled = await gapFillIfNeeded(second.data, alt, allAttempts)
+      return { data: { ...filled, isbn: userIsbn }, attempts: allAttempts }
+    }
   }
 
   const error = new Error('No provider returned a record for this ISBN') as Error & { attempts: ProviderAttempt[] }
