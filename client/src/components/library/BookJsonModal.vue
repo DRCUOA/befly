@@ -34,17 +34,53 @@
       <div class="overflow-y-auto p-4 sm:p-6 space-y-6 grow">
         <!-- Cover + bibliographic grid -->
         <div class="flex gap-3 sm:gap-4 items-start">
-          <img
-            v-if="book.thumbnail"
-            :src="book.thumbnail"
-            :alt="book.title || book.isbn"
-            class="w-20 h-28 sm:w-28 sm:h-36 object-cover border border-line shrink-0"
-          />
-          <div
-            v-else
-            class="w-20 h-28 sm:w-28 sm:h-36 bg-surface border border-line shrink-0 flex items-center justify-center text-[10px] tracking-widest uppercase text-ink-lighter text-center px-2"
-          >
-            No cover
+          <div class="shrink-0">
+            <div class="w-20 h-28 sm:w-28 sm:h-36 border border-line bg-surface overflow-hidden flex items-center justify-center relative">
+              <img
+                v-if="book.thumbnail"
+                :src="book.thumbnail"
+                :alt="book.title || book.isbn"
+                class="w-full h-full object-cover"
+              />
+              <span
+                v-else
+                class="text-[10px] tracking-widest uppercase text-ink-lighter text-center px-2"
+              >No cover</span>
+              <!-- Inline spinner overlay during upload -->
+              <div
+                v-if="coverUploading"
+                class="absolute inset-0 bg-paper/70 flex items-center justify-center text-[10px] uppercase tracking-widest text-ink"
+              >Uploading…</div>
+            </div>
+
+            <!-- Custom-cover affordance (saved books only — needs an id to PATCH) -->
+            <div v-if="isSavedBook" class="flex flex-wrap gap-1 mt-1.5 justify-center">
+              <button
+                type="button"
+                @click="triggerCoverPicker"
+                :disabled="coverUploading"
+                class="cover-btn"
+                :title="book.thumbnail ? 'Replace cover image' : 'Upload a custom cover'"
+              >{{ book.thumbnail ? 'Replace' : 'Upload' }}</button>
+              <button
+                v-if="book.thumbnail"
+                type="button"
+                @click="clearCover"
+                :disabled="coverUploading"
+                class="cover-btn hover:!text-red-600"
+                title="Remove the cover"
+              >Clear</button>
+            </div>
+            <input
+              ref="coverFileInput"
+              type="file"
+              accept="image/jpeg,image/png,image/gif,image/webp"
+              class="hidden"
+              @change="onCoverFilePicked"
+            />
+            <p v-if="coverError" class="text-[10px] text-red-700 mt-1 max-w-[7rem] sm:max-w-[8rem] break-words">
+              {{ coverError }}
+            </p>
           </div>
 
           <dl class="flex-1 min-w-0 w-full grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3 text-sm">
@@ -125,6 +161,9 @@ import { computed, ref } from 'vue'
 import type { LibraryBook, LibraryBookLookup } from '@shared/LibraryBook'
 import DetailRow from './DetailRow.vue'
 import CategoryChips from './CategoryChips.vue'
+import { libraryApi } from '../../api/library'
+
+const MAX_COVER_BYTES = 10 * 1024 * 1024 // mirrors server's multer limit
 
 const props = defineProps<{
   /** Saved book or fresh lookup result. */
@@ -133,7 +172,74 @@ const props = defineProps<{
   subhead?: string
 }>()
 
-const emit = defineEmits<{ close: [] }>()
+const emit = defineEmits<{
+  close: []
+  /** Fires when the user changes the cover from inside the modal. The
+   *  parent should swap the matching book in its list and update its
+   *  copy of `book` so the modal re-renders with the new cover. */
+  updated: [book: LibraryBook]
+}>()
+
+/** True when the modal is showing an already-saved book (has an id) —
+ *  only then can we PATCH server-side. Fresh lookups (LibraryBookLookup)
+ *  don't expose the cover-upload UI; their cover gets set via BookEditor
+ *  before save. */
+const isSavedBook = computed(() => {
+  const b = props.book as Partial<LibraryBook>
+  return typeof b.id === 'string' && b.id.length > 0
+})
+
+const coverFileInput = ref<HTMLInputElement | null>(null)
+const coverUploading = ref(false)
+const coverError = ref<string | null>(null)
+
+function triggerCoverPicker() {
+  coverError.value = null
+  coverFileInput.value?.click()
+}
+
+async function clearCover() {
+  if (!isSavedBook.value) return
+  coverUploading.value = true
+  coverError.value = null
+  try {
+    const updated = await libraryApi.update((props.book as LibraryBook).id, { thumbnail: '' })
+    emit('updated', updated)
+  } catch (err) {
+    coverError.value = err instanceof Error ? err.message : 'Failed to clear cover'
+  } finally {
+    coverUploading.value = false
+  }
+}
+
+async function onCoverFilePicked(event: Event) {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+  // Reset the input so re-selecting the same filename later fires the event again.
+  input.value = ''
+  if (!file || !isSavedBook.value) return
+
+  if (!/^image\/(jpeg|png|gif|webp)$/.test(file.type)) {
+    coverError.value = 'Use JPEG, PNG, GIF, or WebP.'
+    return
+  }
+  if (file.size > MAX_COVER_BYTES) {
+    coverError.value = `Image is ${Math.round(file.size / 1024 / 1024)}MB. Max is 10MB.`
+    return
+  }
+
+  coverUploading.value = true
+  coverError.value = null
+  try {
+    const path = await libraryApi.uploadCover(file)
+    const updated = await libraryApi.update((props.book as LibraryBook).id, { thumbnail: path })
+    emit('updated', updated)
+  } catch (err) {
+    coverError.value = err instanceof Error ? err.message : 'Upload failed'
+  } finally {
+    coverUploading.value = false
+  }
+}
 
 const bookAsSaved = computed(() => props.book as LibraryBook)
 const hasPersonal = computed(() => {
@@ -206,6 +312,24 @@ async function copyRaw() {
 </script>
 
 <style scoped>
+.cover-btn {
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.2rem 0.5rem;
+  border: 1px solid var(--color-line, #d6d3d1);
+  color: var(--color-ink-light, #57534e);
+  background: transparent;
+  transition: color 0.2s, background-color 0.2s;
+}
+.cover-btn:hover:not(:disabled) {
+  color: var(--color-ink, #1c1917);
+  background: var(--color-surface, #f5f5f4);
+}
+.cover-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
 .json-pre {
   margin: 0;
   max-height: 40vh;

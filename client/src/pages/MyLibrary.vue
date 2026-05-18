@@ -254,6 +254,7 @@
       :heading="jsonViewing.title || jsonViewing.isbn"
       :subhead="jsonViewing.provider ? `ISBN ${jsonViewing.isbn} · via ${jsonViewing.provider}` : `ISBN ${jsonViewing.isbn}`"
       @close="jsonViewing = null"
+      @updated="onBookUpdatedFromModal"
     />
 
     <!-- Body -->
@@ -808,6 +809,14 @@ async function onUpdateSave(form: EditorForm) {
   } finally {
     saving.value = false
   }
+}
+
+/** Called by BookJsonModal after an in-modal change (currently a custom
+ *  cover upload or cover-clear). We update the matching row in the list
+ *  AND the modal's bound book so the new cover paints immediately. */
+function onBookUpdatedFromModal(updated: LibraryBook) {
+  books.value = books.value.map(b => b.id === updated.id ? updated : b)
+  jsonViewing.value = updated
 }
 
 async function handleDelete(b: LibraryBook) {
