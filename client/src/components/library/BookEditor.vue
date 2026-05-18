@@ -11,16 +11,50 @@
 
     <!-- Identity row -->
     <div class="flex gap-4 mb-4">
-      <img
-        v-if="form.thumbnail"
-        :src="form.thumbnail"
-        :alt="form.title"
-        class="w-20 h-28 object-cover border border-line shrink-0"
-      />
+      <div class="shrink-0">
+        <div class="w-20 h-28 sm:w-24 sm:h-32 border border-line bg-surface overflow-hidden flex items-center justify-center">
+          <img
+            v-if="form.thumbnail"
+            :src="form.thumbnail"
+            :alt="form.title"
+            class="w-full h-full object-cover"
+          />
+          <span v-else class="text-[9px] tracking-widest uppercase text-ink-lighter text-center px-2">
+            No cover
+          </span>
+        </div>
+        <div class="flex gap-1 mt-1.5">
+          <button
+            type="button"
+            @click="triggerCoverPicker"
+            :disabled="busy || coverUploading"
+            class="text-[10px] uppercase tracking-widest px-1.5 py-0.5 border border-line text-ink-light hover:text-ink hover:bg-surface transition-colors disabled:opacity-50"
+            :title="form.thumbnail ? 'Replace cover image' : 'Upload a custom cover'"
+          >
+            {{ coverUploading ? 'Up…' : (form.thumbnail ? 'Replace' : 'Upload') }}
+          </button>
+          <button
+            v-if="form.thumbnail"
+            type="button"
+            @click="clearCover"
+            :disabled="busy || coverUploading"
+            class="text-[10px] uppercase tracking-widest px-1.5 py-0.5 border border-line text-ink-light hover:text-red-600 transition-colors disabled:opacity-50"
+            title="Remove the cover"
+          >Clear</button>
+        </div>
+        <input
+          ref="coverFileInput"
+          type="file"
+          accept="image/jpeg,image/png,image/gif,image/webp"
+          class="hidden"
+          @change="onCoverFilePicked"
+        />
+      </div>
       <div class="flex-1 min-w-0 text-sm">
         <p class="text-[10px] uppercase tracking-widest text-ink-lighter mb-0.5">ISBN</p>
         <p class="font-mono text-ink">{{ form.isbn || '—' }}</p>
         <p v-if="form.provider" class="text-xs text-ink-lighter mt-1">via {{ form.provider }}</p>
+        <p v-if="coverError" class="text-xs text-red-700 mt-2">{{ coverError }}</p>
       </div>
     </div>
 
@@ -57,8 +91,10 @@
       </label>
 
       <label class="block sm:col-span-2">
-        <span class="block text-xs uppercase tracking-widest text-ink-lighter mb-1">Cover URL</span>
-        <input v-model="form.thumbnail" type="url" class="input" />
+        <span class="block text-xs uppercase tracking-widest text-ink-lighter mb-1">
+          Cover URL <span class="text-ink-lighter normal-case tracking-normal">(uploaded covers fill this automatically)</span>
+        </span>
+        <input v-model="form.thumbnail" type="url" class="input" placeholder="https://… or /uploads/cover/…" />
       </label>
 
       <label class="block sm:col-span-2">
@@ -146,9 +182,12 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, computed, watch } from 'vue'
+import { reactive, computed, watch, ref } from 'vue'
 import type { LibraryBook, LibraryBookLookup } from '@shared/LibraryBook'
 import RangeSlider from './RangeSlider.vue'
+import { libraryApi } from '../../api/library'
+
+const MAX_COVER_BYTES = 10 * 1024 * 1024 // matches server's multer limit
 
 export interface EditorForm {
   isbn: string
@@ -259,6 +298,56 @@ watch(() => props.initial, (next) => {
 
 function onSave() {
   emit('save', { ...form, authors: [...form.authors], categories: [...form.categories] })
+}
+
+// --- Custom cover upload --------------------------------------------------
+//
+// User picks an image, we POST it as multipart to /api/library/upload, the
+// server persists the bytes in the uploaded_files PostgreSQL table (so it
+// survives Heroku dyno restarts), and returns the served path which we drop
+// into form.thumbnail. The "Cover URL" text input is still there as the
+// canonical store for the URL — it just gets filled in for the user.
+
+const coverFileInput = ref<HTMLInputElement | null>(null)
+const coverUploading = ref(false)
+const coverError = ref<string | null>(null)
+
+function triggerCoverPicker() {
+  coverError.value = null
+  coverFileInput.value?.click()
+}
+
+function clearCover() {
+  form.thumbnail = ''
+  coverError.value = null
+  if (coverFileInput.value) coverFileInput.value.value = ''
+}
+
+async function onCoverFilePicked(event: Event) {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+  if (!file) return
+  // Reset the input so the same filename can be re-selected after a clear.
+  input.value = ''
+
+  if (!/^image\/(jpeg|png|gif|webp)$/.test(file.type)) {
+    coverError.value = 'Use JPEG, PNG, GIF, or WebP.'
+    return
+  }
+  if (file.size > MAX_COVER_BYTES) {
+    coverError.value = `Image is too large (${Math.round(file.size / 1024 / 1024)}MB). Max is 10MB.`
+    return
+  }
+
+  coverUploading.value = true
+  coverError.value = null
+  try {
+    form.thumbnail = await libraryApi.uploadCover(file)
+  } catch (err) {
+    coverError.value = err instanceof Error ? err.message : 'Upload failed'
+  } finally {
+    coverUploading.value = false
+  }
 }
 </script>
 
