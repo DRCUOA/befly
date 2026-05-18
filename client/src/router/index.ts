@@ -129,7 +129,7 @@ const router = createRouter({
       path: '/library',
       name: 'MyLibrary',
       component: MyLibrary,
-      meta: { requiresAuth: true }
+      meta: { requiresAuth: true, requiresAdmin: true }
     },
     {
       path: '/profile',
