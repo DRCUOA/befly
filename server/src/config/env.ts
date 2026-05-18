@@ -18,5 +18,14 @@ export const config = {
   },
   get appName() {
     return getEnv('APP_NAME', 'Rambulations')
+  },
+  /**
+   * Google Books API key. Optional — when set, ISBN lookups authenticate
+   * with the key, lifting the strict unauthenticated quota that otherwise
+   * 429s most production traffic. Empty string means "unauthenticated,
+   * accept the lower quota".
+   */
+  get googleBooksApiKey() {
+    return getEnv('GOOGLE_BOOKS_API_KEY', '')
   }
 }

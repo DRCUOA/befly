@@ -1,12 +1,9 @@
 import { Request, Response } from 'express'
-import Isbn from '@library-pals/isbn'
 import { libraryRepo, validateScore } from '../repositories/library.repo.js'
 import { libraryTelemetryRepo } from '../repositories/library-telemetry.repo.js'
+import { lookupIsbn, type ProviderAttempt } from '../services/isbn-lookup.service.js'
 import { UnauthorizedError, ValidationError, NotFoundError } from '../utils/errors.js'
-import type { LibraryBookLookup, LibraryBookUpdate, LibraryScanEventInput } from '@shared/LibraryBook'
-
-const isbnClient = new Isbn()
-isbnClient.provider(['google', 'openlibrary'])
+import type { LibraryBookUpdate, LibraryScanEventInput } from '@shared/LibraryBook'
 
 function normalizeIsbn(raw: string): string {
   return raw.replace(/[^0-9Xx]/g, '').toUpperCase()
@@ -27,6 +24,22 @@ function logScanEvent(
   libraryTelemetryRepo.record(userId, event, userAgent).catch(err => {
     console.error('library telemetry write failed', err)
   })
+}
+
+/** Record one telemetry row per provider attempt — gives us the breakdown
+ *  needed to see which provider is actually carrying the load. */
+function logAttempts(userId: string, attempts: ProviderAttempt[], userAgent: string): void {
+  for (const a of attempts) {
+    logScanEvent(userId, {
+      phase: 'lookup',
+      isbn: a.isbn,
+      succeeded: a.succeeded,
+      provider: a.provider,
+      errorCode: a.errorCode,
+      errorMessage: a.errorMessage,
+      durationMs: a.durationMs,
+    }, userAgent)
+  }
 }
 
 export const libraryController = {
@@ -54,46 +67,17 @@ export const libraryController = {
       throw new ValidationError('ISBN must be 10 or 13 digits')
     }
 
-    const startedAt = Date.now()
     try {
-      const book = await isbnClient.resolve(isbn, { timeout: 8000 })
-      const provider = book.bookProvider ?? ''
-      const raw: Record<string, unknown> = { ...(book as unknown as Record<string, unknown>) }
-      const lookup: LibraryBookLookup = {
-        isbn,
-        title: book.title ?? '',
-        authors: book.authors ?? [],
-        publisher: book.publisher ?? '',
-        publishedDate: book.publishedDate ?? '',
-        description: book.description ?? '',
-        pageCount: typeof book.pageCount === 'number' ? book.pageCount : null,
-        thumbnail: book.thumbnail ?? '',
-        categories: book.categories ?? [],
-        language: book.language ?? '',
-        provider,
-        raw,
-      }
-
-      logScanEvent(userId, {
-        phase: 'lookup',
-        isbn,
-        succeeded: true,
-        provider,
-        durationMs: Date.now() - startedAt,
-      }, userAgent)
-
-      res.json({ data: lookup })
+      const { data, attempts } = await lookupIsbn(isbn)
+      logAttempts(userId, attempts, userAgent)
+      res.json({ data })
     } catch (err: any) {
-      const message = err?.message ?? 'unknown'
-      logScanEvent(userId, {
-        phase: 'lookup',
-        isbn,
-        succeeded: false,
-        errorCode: err?.code ?? 'PROVIDER_NO_HIT',
-        errorMessage: String(message).slice(0, 1000),
-        durationMs: Date.now() - startedAt,
-      }, userAgent)
-      throw new NotFoundError(`No book found for ISBN ${isbn} (${message})`)
+      const attempts: ProviderAttempt[] = Array.isArray(err?.attempts) ? err.attempts : []
+      logAttempts(userId, attempts, userAgent)
+      const summary = attempts.length
+        ? attempts.map(a => `${a.provider}:${a.errorCode ?? 'ok'}`).join(', ')
+        : (err?.message ?? 'unknown')
+      throw new NotFoundError(`No book found for ISBN ${isbn} (${summary})`)
     }
   },
 
