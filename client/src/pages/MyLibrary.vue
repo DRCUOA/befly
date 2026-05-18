@@ -44,6 +44,20 @@
           >{{ activeFilterCount }}</span>
         </button>
 
+        <button
+          @click="statsOpen = !statsOpen"
+          :aria-expanded="statsOpen"
+          class="inline-flex items-center gap-2 px-3 py-2 border text-sm tracking-wide font-sans transition-colors"
+          :class="statsOpen
+            ? 'border-ink bg-ink text-paper hover:bg-ink-light'
+            : 'border-line bg-paper text-ink-light hover:text-ink'"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3v18h18M7 17V11M12 17V7M17 17v-4" />
+          </svg>
+          <span>Stats</span>
+        </button>
+
         <div class="relative flex-1 min-w-[12rem]">
           <input
             v-model="search"
@@ -88,6 +102,11 @@
             <span class="hidden sm:inline">List</span>
           </button>
         </div>
+      </div>
+
+      <!-- Stats panel -->
+      <div v-if="statsOpen" class="max-w-7xl mx-auto mt-3">
+        <LibraryStats :books="filteredBooks" :total-all="books.length" />
       </div>
 
       <!-- Filters panel -->
@@ -457,6 +476,7 @@ import IsbnScanner, { type ScanDetectedPayload } from '../components/library/Isb
 import BookEditor, { type EditorForm } from '../components/library/BookEditor.vue'
 import BookJsonModal from '../components/library/BookJsonModal.vue'
 import CategoryChips from '../components/library/CategoryChips.vue'
+import LibraryStats from '../components/library/LibraryStats.vue'
 import RangeSlider from '../components/library/RangeSlider.vue'
 import { playSuccess, playFailure } from '../utils/notificationSound'
 import { parseQuery, matchBook } from '../utils/librarySearch'
@@ -485,6 +505,7 @@ const error = ref<string | null>(null)
 const search = ref('')
 const searchHelpOpen = ref(false)
 const filtersOpen = ref(false)
+const statsOpen = ref(false)
 const filters = ref<LibraryFilters>(defaultFilters())
 const viewMode = ref<ViewMode>(((): ViewMode => {
   const stored = typeof localStorage !== 'undefined' ? localStorage.getItem(STORAGE_KEY_VIEW) : null
