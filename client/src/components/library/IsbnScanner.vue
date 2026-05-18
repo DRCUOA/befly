@@ -1,7 +1,7 @@
 <template>
   <div class="isbn-scanner">
     <div class="bg-paper border border-line p-4 sm:p-6">
-      <div class="flex items-center justify-between mb-4">
+      <div class="flex items-center justify-between mb-3">
         <h3 class="text-lg font-light tracking-tight">Scan an ISBN</h3>
         <button
           @click="emit('close')"
@@ -14,10 +14,30 @@
         </button>
       </div>
 
-      <p class="text-sm text-ink-light mb-4">
-        Point the back cover&rsquo;s barcode at the camera. We&rsquo;ll catch
-        the ISBN and pull in the rest from Google Books / Open Library.
-      </p>
+      <!-- Mode line -->
+      <div class="flex items-center justify-between gap-3 mb-3">
+        <p class="text-sm text-ink-light leading-snug">
+          <template v-if="rapidMode">
+            Point the camera at a barcode &mdash; we&rsquo;ll add each book straight to your library.
+          </template>
+          <template v-else>
+            Point the back cover&rsquo;s barcode at the camera. We&rsquo;ll catch the ISBN and pull in the rest.
+          </template>
+        </p>
+        <label class="flex items-center gap-2 cursor-pointer shrink-0 select-none">
+          <span class="text-[10px] uppercase tracking-widest text-ink-lighter">Rapid</span>
+          <button
+            type="button"
+            role="switch"
+            :aria-checked="rapidMode"
+            @click="rapidMode = !rapidMode"
+            class="toggle"
+            :class="rapidMode ? 'toggle-on' : ''"
+          >
+            <span class="toggle-knob" />
+          </button>
+        </label>
+      </div>
 
       <!-- Live camera viewport -->
       <div
@@ -33,11 +53,39 @@
         ></video>
         <!-- Reticle to help the user line up the barcode -->
         <div class="scanner-reticle" aria-hidden="true"></div>
+
+        <!-- Per-scan result overlay (rapid mode) -->
+        <transition name="fade">
+          <div
+            v-if="lastResult"
+            class="absolute top-2 left-2 right-2 mx-auto max-w-md px-3 py-2 text-sm font-sans tracking-wide flex items-center gap-2"
+            :class="lastResult.ok
+              ? 'bg-emerald-600/90 text-white'
+              : 'bg-red-600/90 text-white'"
+          >
+            <svg v-if="lastResult.ok" class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+            </svg>
+            <svg v-else class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 9v3m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span class="truncate">{{ lastResult.label }}</span>
+          </div>
+        </transition>
+
         <div
-          v-if="scanning && !lastCode"
+          v-if="scanning && !lastCode && !lastResult"
           class="absolute bottom-2 left-2 right-2 text-center text-xs text-white/80 font-sans tracking-wide"
         >
           Looking for a barcode&hellip;
+        </div>
+
+        <!-- Mini tally for rapid runs -->
+        <div
+          v-if="rapidMode && (tally.added > 0 || tally.failed > 0)"
+          class="absolute bottom-2 left-2 text-[10px] uppercase tracking-widest text-white/90 bg-black/40 px-2 py-1"
+        >
+          Added {{ tally.added }} &middot; Skipped {{ tally.failed }}
         </div>
       </div>
 
@@ -83,20 +131,38 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
+import { ref, reactive, computed, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { BrowserMultiFormatReader, IScannerControls } from '@zxing/browser'
 import { BarcodeFormat, DecodeHintType } from '@zxing/library'
+import { primeAudio } from '../../utils/notificationSound'
 
 export interface ScanDetectedPayload {
   isbn: string
   durationMs: number
   scanner: 'zxing' | 'manual'
   format?: string
+  /** True when the user opted into auto-save-and-continue. */
+  rapid: boolean
 }
+
+export interface ScanResult {
+  ok: boolean
+  /** Short message shown in the in-camera overlay. */
+  label: string
+}
+
+const props = withDefaults(defineProps<{
+  /** v-model. When true, parent auto-saves and calls `acceptNextScan(result)`
+   *  after each scan so we keep the camera running. */
+  rapidMode?: boolean
+}>(), {
+  rapidMode: false,
+})
 
 const emit = defineEmits<{
   detected: [payload: ScanDetectedPayload]
   close: []
+  'update:rapidMode': [value: boolean]
 }>()
 
 const startedAt = Date.now()
@@ -109,8 +175,39 @@ const scanning = ref(false)
 const lastCode = ref<string | null>(null)
 const manualIsbn = ref('')
 
+const lastResult = ref<ScanResult | null>(null)
+const tally = reactive({ added: 0, failed: 0 })
+
+const rapidMode = computed<boolean>({
+  get: () => props.rapidMode,
+  set: (v: boolean) => emit('update:rapidMode', v),
+})
+
 let reader: BrowserMultiFormatReader | null = null
 let controls: IScannerControls | null = null
+let resultClearTimer: ReturnType<typeof setTimeout> | null = null
+
+/**
+ * Parent calls this via `defineExpose` after each rapid-scan attempt
+ * resolves, so the next different barcode can fire. We deliberately do
+ * NOT clear if the same code is still in view — the user must move the
+ * book away to scan it again.
+ */
+function acceptNextScan(result: ScanResult): void {
+  lastResult.value = result
+  if (result.ok) tally.added++
+  else tally.failed++
+
+  // Free the "same-code debounce" so a different book can fire next.
+  lastCode.value = null
+
+  if (resultClearTimer) clearTimeout(resultClearTimer)
+  resultClearTimer = setTimeout(() => {
+    lastResult.value = null
+  }, 2200)
+}
+
+defineExpose({ acceptNextScan })
 
 function buildReader(): BrowserMultiFormatReader {
   // Constrain decoding to the 1D book/product formats. Cuts CPU
@@ -148,10 +245,10 @@ async function start() {
   lastCode.value = null
   reader = buildReader()
 
+  // Prime the audio context off the user gesture that opened the scanner.
+  primeAudio()
+
   try {
-    // Prefer the chosen device. If we don't have one (permission not yet
-    // granted), fall back to a constraint that asks the browser for the
-    // back-facing camera — works on iOS Safari and Android Chrome.
     const constraints: MediaStreamConstraints = selectedDeviceId.value
       ? { video: { deviceId: { exact: selectedDeviceId.value } } }
       : { video: { facingMode: { ideal: 'environment' } } }
@@ -162,8 +259,6 @@ async function start() {
       (result, err) => {
         if (result) {
           const text = result.getText().replace(/[^0-9Xx]/g, '')
-          // ISBN-13 barcodes are EAN-13 starting with 978 or 979. ISBN-10
-          // is uncommon on modern back covers but we accept anyway.
           if (text.length === 13 || text.length === 10) {
             if (text !== lastCode.value) {
               lastCode.value = text
@@ -172,6 +267,7 @@ async function start() {
                 durationMs: Date.now() - startedAt,
                 scanner: 'zxing',
                 format: result.getBarcodeFormat ? String(result.getBarcodeFormat()) : undefined,
+                rapid: rapidMode.value,
               })
             }
           }
@@ -208,6 +304,10 @@ function stop() {
   }
   controls = null
   reader = null
+  if (resultClearTimer) {
+    clearTimeout(resultClearTimer)
+    resultClearTimer = null
+  }
 }
 
 async function restart() {
@@ -226,7 +326,9 @@ function submitManual() {
     isbn: digits,
     durationMs: Date.now() - startedAt,
     scanner: 'manual',
+    rapid: rapidMode.value,
   })
+  manualIsbn.value = ''
 }
 
 onMounted(async () => {
@@ -251,5 +353,38 @@ onBeforeUnmount(() => {
   border-radius: 4px;
   box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.25);
   pointer-events: none;
+}
+.toggle {
+  position: relative;
+  display: inline-block;
+  width: 36px;
+  height: 20px;
+  border-radius: 999px;
+  background: #d6d3d1;
+  transition: background-color 0.2s;
+}
+.toggle-on {
+  background: var(--color-ink, #1c1917);
+}
+.toggle-knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.2s;
+}
+.toggle-on .toggle-knob {
+  transform: translateX(16px);
+}
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.18s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 </style>

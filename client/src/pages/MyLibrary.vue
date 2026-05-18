@@ -69,8 +69,13 @@
       @click.self="closeScanner"
     >
       <div class="w-full max-w-2xl mt-8 sm:mt-0">
+        <!-- Scanner is always mounted while open in rapid mode (so the camera
+             keeps running between scans). In confirm mode it yields to the
+             lookup spinner / BookEditor. -->
         <IsbnScanner
-          v-if="!lookupBusy && !pendingLookup"
+          v-if="rapidMode || (!lookupBusy && !pendingLookup)"
+          ref="scannerRef"
+          v-model:rapid-mode="rapidMode"
           @detected="handleDetected"
           @close="closeScanner"
         />
@@ -111,10 +116,10 @@
       />
     </div>
 
-    <!-- JSON modal -->
+    <!-- Book details modal -->
     <BookJsonModal
       v-if="jsonViewing"
-      :data="jsonViewing.raw ?? jsonFallback(jsonViewing)"
+      :book="jsonViewing"
       :heading="jsonViewing.title || jsonViewing.isbn"
       :subhead="jsonViewing.provider ? `ISBN ${jsonViewing.isbn} · via ${jsonViewing.provider}` : `ISBN ${jsonViewing.isbn}`"
       @close="jsonViewing = null"
@@ -197,6 +202,12 @@
               </span>
             </div>
 
+            <CategoryChips
+              v-if="b.categories.length"
+              :categories="b.categories"
+              class="mt-2"
+            />
+
             <p class="text-[10px] tracking-widest uppercase text-ink-lighter mt-2">
               ISBN {{ b.isbn }}
             </p>
@@ -267,6 +278,11 @@
                 <span class="text-[10px] uppercase tracking-widest px-1.5 py-0.5 border border-line text-ink-light">Want {{ b.readMotivation }}</span>
                 <span class="text-[10px] uppercase tracking-widest px-1.5 py-0.5 border border-line text-ink-light">Cond {{ b.physicalCondition }}</span>
               </div>
+              <CategoryChips
+                v-if="b.categories.length"
+                :categories="b.categories"
+                class="mt-1.5"
+              />
             </div>
             <div class="flex items-center gap-1 shrink-0">
               <button @click="jsonViewing = b" class="icon-btn" :title="'View raw metadata'" aria-label="View raw metadata">
@@ -306,6 +322,8 @@ import type { LibraryBook, LibraryBookLookup, LibraryBookUpdate } from '@shared/
 import IsbnScanner, { type ScanDetectedPayload } from '../components/library/IsbnScanner.vue'
 import BookEditor, { type EditorForm } from '../components/library/BookEditor.vue'
 import BookJsonModal from '../components/library/BookJsonModal.vue'
+import CategoryChips from '../components/library/CategoryChips.vue'
+import { playSuccess, playFailure } from '../utils/notificationSound'
 
 type ViewMode = 'cards' | 'list'
 
@@ -328,6 +346,9 @@ const pendingLookup = ref<LibraryBookLookup | null>(null)
 const saving = ref(false)
 const saveError = ref<string | null>(null)
 const deleting = ref<string | null>(null)
+const rapidMode = ref(false)
+const scannerRef = ref<InstanceType<typeof IsbnScanner> | null>(null)
+const rapidBusy = ref(false)
 
 // Edit / view state
 const editing = ref<LibraryBook | null>(null)
@@ -374,13 +395,13 @@ function closeScanner() {
   pendingIsbn.value = null
   pendingLookup.value = null
   saveError.value = null
+  rapidBusy.value = false
 }
 
 async function handleDetected(payload: ScanDetectedPayload) {
-  if (lookupBusy.value || pendingLookup.value) return
-  pendingIsbn.value = payload.isbn
+  if (lookupBusy.value || pendingLookup.value || rapidBusy.value) return
 
-  // Log the scan-phase event (camera/manual reach).
+  // Log the scan-phase event regardless of mode.
   libraryApi.logScanEvent({
     phase: 'scan',
     isbn: payload.isbn,
@@ -390,6 +411,13 @@ async function handleDetected(payload: ScanDetectedPayload) {
     provider: payload.format,
   })
 
+  if (payload.rapid) {
+    await handleRapidScan(payload.isbn)
+    return
+  }
+
+  // Confirm flow: open the BookEditor with the lookup data.
+  pendingIsbn.value = payload.isbn
   lookupBusy.value = true
   saveError.value = null
   try {
@@ -413,6 +441,69 @@ async function handleDetected(payload: ScanDetectedPayload) {
     }
   } finally {
     lookupBusy.value = false
+  }
+}
+
+/**
+ * Rapid-mode scan: look up, auto-save with personal-field defaults, then
+ * tell the scanner to listen for the next book. Audio cues distinguish
+ * the outcome so a user scanning a stack of books can keep working
+ * without looking at the screen.
+ */
+async function handleRapidScan(isbn: string) {
+  rapidBusy.value = true
+  try {
+    let lookup: LibraryBookLookup
+    try {
+      lookup = await libraryApi.lookup(isbn)
+    } catch (err) {
+      playFailure()
+      scannerRef.value?.acceptNextScan({
+        ok: false,
+        label: `Not found: ${isbn}`,
+      })
+      return
+    }
+
+    try {
+      const created = await libraryApi.create({
+        isbn: lookup.isbn,
+        title: lookup.title,
+        authors: lookup.authors,
+        publisher: lookup.publisher,
+        publishedDate: lookup.publishedDate,
+        description: lookup.description,
+        pageCount: lookup.pageCount,
+        thumbnail: lookup.thumbnail,
+        categories: lookup.categories,
+        language: lookup.language,
+        provider: lookup.provider,
+        raw: lookup.raw,
+        // Personal-field defaults; user can refine via the pencil icon later.
+        read: false,
+        readMotivation: 50,
+        physicalCondition: 100,
+        owner: '',
+        notes: '',
+      })
+      books.value = [created, ...books.value]
+      playSuccess()
+      scannerRef.value?.acceptNextScan({
+        ok: true,
+        label: created.title ? `Added: ${created.title}` : `Added: ${created.isbn}`,
+      })
+    } catch (err) {
+      const duplicate = err instanceof ApiError && err.status === 409
+      playFailure()
+      scannerRef.value?.acceptNextScan({
+        ok: false,
+        label: duplicate
+          ? `Already in library: ${lookup.title || isbn}`
+          : `Save failed: ${lookup.title || isbn}`,
+      })
+    }
+  } finally {
+    rapidBusy.value = false
   }
 }
 
@@ -503,25 +594,6 @@ async function handleDelete(b: LibraryBook) {
     alert(err instanceof Error ? err.message : 'Failed to remove book')
   } finally {
     deleting.value = null
-  }
-}
-
-/** Fallback for the JSON modal when raw_metadata is absent — synthesize a
- *  representative object from the saved columns so the inspector is never
- *  empty (older rows predate raw_metadata). */
-function jsonFallback(b: LibraryBook | LibraryBookLookup): Record<string, unknown> {
-  return {
-    isbn: b.isbn,
-    title: b.title,
-    authors: b.authors,
-    publisher: b.publisher,
-    publishedDate: b.publishedDate,
-    description: b.description,
-    pageCount: b.pageCount,
-    thumbnail: b.thumbnail,
-    categories: b.categories,
-    language: b.language,
-    provider: b.provider,
   }
 }
 

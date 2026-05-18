@@ -5,6 +5,32 @@ All notable changes to the Rambulations writing platform are documented in this 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.15] - 2026-05-18
+
+### Added
+- **MyLibrary** — new `/library` view backed by a per-user `library_books` table. Books are added by scanning a back-cover barcode (ZXing via `@zxing/browser`, works on iPad iOS Safari, Android Chrome, and MacBook) and enriched server-side via Google Books → Open Library fallback.
+- **Personal fields per book** — `read` toggle, two 0–100 sliders for `read_motivation` (covers re-reads too) and `physical_condition`, and free-text `owner`. New `RangeSlider` component is touch-friendly with mouse scroll-wheel for 1-point nudges.
+- **Card / list toggle** — view-mode choice persists in `localStorage`; search across title, authors, ISBN, owner.
+- **Manual edit** of any book via a pencil-icon modal (`PATCH /api/library/:id`).
+- **Book details modal** — UI-consistent structured view with cover, bibliographic grid, categories, description, personal appraisal, preview link (when the provider returns one), and a collapsible raw JSON pane with Copy button.
+- **Rapid scan mode** — toggle in the scanner; auto-saves each scan with personal-field defaults, plays a positive Web Audio chime on hit and a negative bonk on miss/duplicate, keeps the camera live for the next book.
+- **Categories chips** — cards and list show first 2 categories with a `+N` touch-tap expand.
+- **Scan-funnel telemetry** — new `library_scan_events` table records one row per provider attempt (phase, provider, error code, duration, scanner, user-agent) so we can measure where scans drop off.
+
+### Changed
+- **ISBN lookup chain** — bypassed `@library-pals/isbn`'s unauthenticated Google call (was 429-throttled on Heroku egress IPs, contributing 0% in production). New `isbn-lookup.service.ts` calls Google Books directly with `GOOGLE_BOOKS_API_KEY`, falls back to Open Library, then retries the whole chain with the alternate ISBN form (ISBN-10 ↔ ISBN-13). Each provider call is wrapped — a JS parser crash in one source no longer kills the chain.
+- Version bump 0.5.14 → 0.5.15.
+
+### Database
+- Migration 031: `library_books`.
+- Migration 032: per-book personal fields + `provider` + `raw_metadata` JSONB.
+- Migration 033: `library_scan_events`.
+
+### Deploy notes
+- Set `GOOGLE_BOOKS_API_KEY` on Heroku before deploying — without it, lookups fall back to unauthenticated Google quota and 429 quickly.
+
+---
+
 ## [0.5.10] - 2026-05-06
 
 ### Changed
