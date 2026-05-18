@@ -1,28 +1,29 @@
 <template>
   <div
-    class="fixed inset-0 z-50 bg-black/60 flex items-start sm:items-center justify-center p-4 overflow-y-auto"
+    class="fixed inset-0 z-50 bg-black/60 flex items-stretch sm:items-center justify-center sm:p-4 overflow-y-auto"
     role="dialog"
     aria-modal="true"
     @click.self="emit('close')"
+    @keydown.esc="emit('close')"
   >
-    <div class="bg-paper border border-line w-full max-w-2xl mt-8 sm:mt-0 max-h-[90vh] flex flex-col">
+    <div class="bg-paper sm:border sm:border-line w-full sm:max-w-2xl h-[100dvh] sm:h-auto sm:max-h-[90vh] flex flex-col">
       <!-- Header -->
-      <div class="flex items-start justify-between gap-3 p-4 sm:p-6 border-b border-line">
+      <div class="flex items-start justify-between gap-3 p-4 sm:p-6 border-b border-line shrink-0">
         <div class="min-w-0">
           <p class="text-[10px] uppercase tracking-widest text-ink-lighter mb-1">Book details</p>
-          <h3 class="text-lg font-light tracking-tight text-ink truncate">{{ heading || 'Untitled' }}</h3>
+          <h3 class="text-base sm:text-lg font-light tracking-tight text-ink truncate">{{ heading || 'Untitled' }}</h3>
           <p v-if="subhead" class="text-xs text-ink-light truncate mt-0.5">{{ subhead }}</p>
         </div>
         <div class="flex items-center gap-1 shrink-0">
           <button
             @click="copyRaw"
-            class="text-xs px-2 py-1 border border-line text-ink-light hover:text-ink transition-colors"
+            class="hidden sm:inline-block text-xs px-2 py-1 border border-line text-ink-light hover:text-ink transition-colors"
             :title="copied ? 'Copied' : 'Copy raw JSON to clipboard'"
           >
             {{ copied ? 'Copied' : 'Copy JSON' }}
           </button>
           <button @click="emit('close')" class="text-ink-lighter hover:text-ink p-1" aria-label="Close">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-6 h-6 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
@@ -30,23 +31,23 @@
       </div>
 
       <!-- Body -->
-      <div class="overflow-y-auto p-4 sm:p-6 space-y-6">
+      <div class="overflow-y-auto p-4 sm:p-6 space-y-6 grow">
         <!-- Cover + bibliographic grid -->
-        <div class="flex gap-4 items-start">
+        <div class="flex gap-3 sm:gap-4 items-start">
           <img
             v-if="book.thumbnail"
             :src="book.thumbnail"
             :alt="book.title || book.isbn"
-            class="w-24 h-32 sm:w-28 sm:h-36 object-cover border border-line shrink-0"
+            class="w-20 h-28 sm:w-28 sm:h-36 object-cover border border-line shrink-0"
           />
           <div
             v-else
-            class="w-24 h-32 sm:w-28 sm:h-36 bg-surface border border-line shrink-0 flex items-center justify-center text-[10px] tracking-widest uppercase text-ink-lighter text-center px-2"
+            class="w-20 h-28 sm:w-28 sm:h-36 bg-surface border border-line shrink-0 flex items-center justify-center text-[10px] tracking-widest uppercase text-ink-lighter text-center px-2"
           >
             No cover
           </div>
 
-          <dl class="flex-1 min-w-0 grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3 text-sm">
+          <dl class="flex-1 min-w-0 w-full grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3 text-sm">
             <DetailRow label="ISBN" :value="book.isbn" mono />
             <DetailRow label="Provider" :value="book.provider || '—'" />
             <DetailRow label="Title" :value="book.title || '—'" class="sm:col-span-2" />

@@ -26,12 +26,25 @@
           Scan ISBN
         </button>
 
-        <input
-          v-model="search"
-          type="search"
-          placeholder="Search title, author, ISBN, owner"
-          class="flex-1 min-w-[12rem] px-3 py-2 border border-line bg-paper text-ink text-sm placeholder:text-ink-lighter"
-        />
+        <div class="relative flex-1 min-w-[12rem]">
+          <input
+            v-model="search"
+            type="search"
+            placeholder='Search title, author, description… (try author:tolkien or "central question")'
+            class="w-full px-3 py-2 pr-9 border border-line bg-paper text-ink text-sm placeholder:text-ink-lighter"
+          />
+          <button
+            type="button"
+            class="absolute inset-y-0 right-0 px-2 text-ink-lighter hover:text-ink"
+            :title="searchHelpOpen ? 'Hide search tips' : 'Show search tips'"
+            :aria-expanded="searchHelpOpen"
+            @click="searchHelpOpen = !searchHelpOpen"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093M12 17h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </button>
+        </div>
 
         <div class="ml-auto inline-flex border border-line" role="group" aria-label="View toggle">
           <button
@@ -57,6 +70,21 @@
             <span class="hidden sm:inline">List</span>
           </button>
         </div>
+      </div>
+
+      <!-- Search syntax help -->
+      <div
+        v-if="searchHelpOpen"
+        class="max-w-7xl mx-auto mt-3 border border-line bg-surface px-4 py-3 text-xs text-ink-light"
+      >
+        <p class="mb-2 text-ink">Search across every text field — title, authors, ISBN, owner, publisher, description, categories, notes, language, provider, year.</p>
+        <ul class="list-disc list-inside space-y-0.5 marker:text-ink-lighter">
+          <li><code class="bg-paper px-1">tolkien hobbit</code> — both words must appear somewhere</li>
+          <li><code class="bg-paper px-1">"central question"</code> — exact phrase</li>
+          <li><code class="bg-paper px-1">author:le-guin</code> — scope to one field (also <code class="bg-paper px-1">cat:</code>, <code class="bg-paper px-1">desc:</code>, <code class="bg-paper px-1">owner:</code>, <code class="bg-paper px-1">year:</code>, <code class="bg-paper px-1">publisher:</code>)</li>
+          <li><code class="bg-paper px-1">-author:rowling</code> — exclude matches</li>
+          <li><code class="bg-paper px-1">desc:"alchemy"</code> — quoted phrase scoped to one field</li>
+        </ul>
       </div>
     </div>
 
@@ -158,7 +186,13 @@
           <article
             v-for="b in filteredBooks"
             :key="b.id"
-            class="library-card bg-paper border border-line p-4 flex flex-col group"
+            class="library-card bg-paper border border-line p-4 flex flex-col group cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-ink"
+            role="button"
+            tabindex="0"
+            :aria-label="`View details for ${b.title || b.isbn}`"
+            @click="jsonViewing = b"
+            @keydown.enter.prevent="jsonViewing = b"
+            @keydown.space.prevent="jsonViewing = b"
           >
             <div class="aspect-[2/3] mb-3 bg-surface flex items-center justify-center overflow-hidden">
               <img
@@ -212,20 +246,15 @@
               ISBN {{ b.isbn }}
             </p>
 
-            <!-- Action bar -->
+            <!-- Action bar (icons are inside a clickable card, so each stops propagation) -->
             <div class="flex items-center justify-end gap-1 mt-2 -mb-1">
-              <button @click="jsonViewing = b" class="icon-btn" :title="'View raw metadata'" aria-label="View raw metadata">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </button>
-              <button @click="startEdit(b)" class="icon-btn" :title="'Edit book'" aria-label="Edit book">
+              <button @click.stop="startEdit(b)" class="icon-btn" :title="'Edit book'" aria-label="Edit book">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                 </svg>
               </button>
               <button
-                @click="handleDelete(b)"
+                @click.stop="handleDelete(b)"
                 :disabled="deleting === b.id"
                 class="icon-btn hover:!text-red-600"
                 :title="'Remove from library'"
@@ -244,7 +273,13 @@
           <li
             v-for="b in filteredBooks"
             :key="b.id"
-            class="flex items-start sm:items-center gap-4 p-3 sm:p-4 hover:bg-surface transition-colors"
+            class="flex items-start sm:items-center gap-4 p-3 sm:p-4 hover:bg-surface transition-colors cursor-pointer focus:outline-none focus-visible:bg-surface"
+            role="button"
+            tabindex="0"
+            :aria-label="`View details for ${b.title || b.isbn}`"
+            @click="jsonViewing = b"
+            @keydown.enter.prevent="jsonViewing = b"
+            @keydown.space.prevent="jsonViewing = b"
           >
             <img
               v-if="b.thumbnail"
@@ -285,18 +320,13 @@
               />
             </div>
             <div class="flex items-center gap-1 shrink-0">
-              <button @click="jsonViewing = b" class="icon-btn" :title="'View raw metadata'" aria-label="View raw metadata">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </button>
-              <button @click="startEdit(b)" class="icon-btn" :title="'Edit book'" aria-label="Edit book">
+              <button @click.stop="startEdit(b)" class="icon-btn" :title="'Edit book'" aria-label="Edit book">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                 </svg>
               </button>
               <button
-                @click="handleDelete(b)"
+                @click.stop="handleDelete(b)"
                 :disabled="deleting === b.id"
                 class="icon-btn hover:!text-red-600"
                 :title="'Remove from library'"
@@ -324,6 +354,7 @@ import BookEditor, { type EditorForm } from '../components/library/BookEditor.vu
 import BookJsonModal from '../components/library/BookJsonModal.vue'
 import CategoryChips from '../components/library/CategoryChips.vue'
 import { playSuccess, playFailure } from '../utils/notificationSound'
+import { parseQuery, matchBook } from '../utils/librarySearch'
 
 type ViewMode = 'cards' | 'list'
 
@@ -333,6 +364,7 @@ const books = ref<LibraryBook[]>([])
 const loading = ref(true)
 const error = ref<string | null>(null)
 const search = ref('')
+const searchHelpOpen = ref(false)
 const viewMode = ref<ViewMode>(((): ViewMode => {
   const stored = typeof localStorage !== 'undefined' ? localStorage.getItem(STORAGE_KEY_VIEW) : null
   return stored === 'list' ? 'list' : 'cards'
@@ -354,15 +386,11 @@ const rapidBusy = ref(false)
 const editing = ref<LibraryBook | null>(null)
 const jsonViewing = ref<LibraryBook | LibraryBookLookup | null>(null)
 
+const searchTerms = computed(() => parseQuery(search.value.trim()))
+
 const filteredBooks = computed(() => {
-  const q = search.value.trim().toLowerCase()
-  if (!q) return books.value
-  return books.value.filter(b =>
-    b.title.toLowerCase().includes(q)
-    || b.authors.some(a => a.toLowerCase().includes(q))
-    || b.isbn.includes(q)
-    || b.owner.toLowerCase().includes(q)
-  )
+  if (searchTerms.value.length === 0) return books.value
+  return books.value.filter(b => matchBook(b, searchTerms.value))
 })
 
 watch(viewMode, v => {
