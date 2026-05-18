@@ -26,6 +26,24 @@
           Scan ISBN
         </button>
 
+        <button
+          @click="filtersOpen = !filtersOpen"
+          :aria-expanded="filtersOpen"
+          class="inline-flex items-center gap-2 px-3 py-2 border text-sm tracking-wide font-sans transition-colors"
+          :class="activeFilterCount > 0
+            ? 'border-ink bg-ink text-paper hover:bg-ink-light'
+            : 'border-line bg-paper text-ink-light hover:text-ink'"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h18M6 10h12M10 16h4" />
+          </svg>
+          <span>Filters</span>
+          <span
+            v-if="activeFilterCount > 0"
+            class="text-[10px] tracking-widest px-1.5 py-0.5 bg-paper text-ink"
+          >{{ activeFilterCount }}</span>
+        </button>
+
         <div class="relative flex-1 min-w-[12rem]">
           <input
             v-model="search"
@@ -69,6 +87,91 @@
             </svg>
             <span class="hidden sm:inline">List</span>
           </button>
+        </div>
+      </div>
+
+      <!-- Filters panel -->
+      <div
+        v-if="filtersOpen"
+        class="max-w-7xl mx-auto mt-3 border border-line bg-surface px-4 py-4 text-sm"
+      >
+        <div class="flex items-center justify-between mb-3">
+          <p class="text-[10px] uppercase tracking-widest text-ink-lighter">Filters</p>
+          <button
+            v-if="activeFilterCount > 0"
+            @click="clearFilters"
+            class="text-xs text-ink-light hover:text-ink underline-offset-2 hover:underline"
+          >Clear all</button>
+        </div>
+
+        <!-- Read state -->
+        <div class="mb-4">
+          <p class="text-[10px] uppercase tracking-widest text-ink-lighter mb-1.5">Read state</p>
+          <div class="inline-flex border border-line" role="group" aria-label="Read filter">
+            <button
+              v-for="opt in [
+                { val: 'all',    label: 'All'    },
+                { val: 'read',   label: 'Read'   },
+                { val: 'unread', label: 'Unread' },
+              ]"
+              :key="opt.val"
+              @click="filters.readState = opt.val as ReadFilter"
+              :aria-pressed="filters.readState === opt.val"
+              class="px-3 py-1.5 text-xs tracking-wide font-sans transition-colors"
+              :class="[
+                filters.readState === opt.val ? 'bg-ink text-paper' : 'bg-paper text-ink-light hover:text-ink',
+                opt.val !== 'all' ? 'border-l border-line' : ''
+              ]"
+            >{{ opt.label }}</button>
+          </div>
+        </div>
+
+        <!-- Owners -->
+        <div v-if="availableOwners.length" class="mb-4">
+          <p class="text-[10px] uppercase tracking-widest text-ink-lighter mb-1.5">Owner</p>
+          <div class="flex flex-wrap gap-1.5">
+            <button
+              v-for="o in availableOwners"
+              :key="o"
+              @click="toggleOwnerFilter(o)"
+              :aria-pressed="filters.owners.includes(o)"
+              class="text-xs px-2 py-0.5 border transition-colors"
+              :class="filters.owners.includes(o)
+                ? 'border-ink bg-ink text-paper'
+                : 'border-line text-ink-light hover:text-ink hover:bg-paper'"
+            >{{ o }}</button>
+          </div>
+        </div>
+
+        <!-- Categories -->
+        <div v-if="availableCategories.length" class="mb-4">
+          <p class="text-[10px] uppercase tracking-widest text-ink-lighter mb-1.5">
+            Categories <span class="text-ink-lighter normal-case tracking-normal">(top {{ availableCategories.length }})</span>
+          </p>
+          <div class="flex flex-wrap gap-1.5">
+            <button
+              v-for="c in availableCategories"
+              :key="c"
+              @click="toggleCategoryFilter(c)"
+              :aria-pressed="filters.categories.includes(c)"
+              class="text-xs px-2 py-0.5 border transition-colors"
+              :class="filters.categories.includes(c)
+                ? 'border-ink bg-ink text-paper'
+                : 'border-line text-ink-light hover:text-ink hover:bg-paper'"
+            >{{ c }}</button>
+          </div>
+        </div>
+
+        <!-- Want-to-read range -->
+        <div>
+          <p class="text-[10px] uppercase tracking-widest text-ink-lighter mb-1.5">Want-to-read score</p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-xl">
+            <RangeSlider v-model="filters.minMotivation" label="From" low-label="0" high-label="100" />
+            <RangeSlider v-model="filters.maxMotivation" label="To"   low-label="0" high-label="100" />
+          </div>
+          <p v-if="filters.minMotivation > filters.maxMotivation" class="text-xs text-red-700 mt-2">
+            From is higher than To — no books will match.
+          </p>
         </div>
       </div>
 
@@ -167,7 +270,7 @@
         <div v-else-if="filteredBooks.length === 0" class="text-center py-16">
           <p class="text-lg font-light text-ink-light mb-4">
             <span v-if="books.length === 0">Your library is empty. Scan an ISBN to start.</span>
-            <span v-else>Nothing matches your search.</span>
+            <span v-else>Nothing matches the current {{ activeFilterCount > 0 && searchTerms.length > 0 ? 'search and filters' : activeFilterCount > 0 ? 'filters' : 'search' }}.</span>
           </p>
           <button
             v-if="books.length === 0"
@@ -353,8 +456,23 @@ import IsbnScanner, { type ScanDetectedPayload } from '../components/library/Isb
 import BookEditor, { type EditorForm } from '../components/library/BookEditor.vue'
 import BookJsonModal from '../components/library/BookJsonModal.vue'
 import CategoryChips from '../components/library/CategoryChips.vue'
+import RangeSlider from '../components/library/RangeSlider.vue'
 import { playSuccess, playFailure } from '../utils/notificationSound'
 import { parseQuery, matchBook } from '../utils/librarySearch'
+
+type ReadFilter = 'all' | 'read' | 'unread'
+
+interface LibraryFilters {
+  readState: ReadFilter
+  owners: string[]
+  categories: string[]
+  minMotivation: number
+  maxMotivation: number
+}
+
+function defaultFilters(): LibraryFilters {
+  return { readState: 'all', owners: [], categories: [], minMotivation: 0, maxMotivation: 100 }
+}
 
 type ViewMode = 'cards' | 'list'
 
@@ -365,6 +483,8 @@ const loading = ref(true)
 const error = ref<string | null>(null)
 const search = ref('')
 const searchHelpOpen = ref(false)
+const filtersOpen = ref(false)
+const filters = ref<LibraryFilters>(defaultFilters())
 const viewMode = ref<ViewMode>(((): ViewMode => {
   const stored = typeof localStorage !== 'undefined' ? localStorage.getItem(STORAGE_KEY_VIEW) : null
   return stored === 'list' ? 'list' : 'cards'
@@ -388,10 +508,88 @@ const jsonViewing = ref<LibraryBook | LibraryBookLookup | null>(null)
 
 const searchTerms = computed(() => parseQuery(search.value.trim()))
 
-const filteredBooks = computed(() => {
-  if (searchTerms.value.length === 0) return books.value
-  return books.value.filter(b => matchBook(b, searchTerms.value))
+/**
+ * Owners present in the library, sorted alphabetically. Empty owners
+ * are excluded since they wouldn't make a useful filter chip.
+ */
+const availableOwners = computed<string[]>(() => {
+  const set = new Set<string>()
+  for (const b of books.value) {
+    if (b.owner.trim()) set.add(b.owner.trim())
+  }
+  return [...set].sort((a, b) => a.localeCompare(b))
 })
+
+/**
+ * Categories present in the library, sorted by frequency descending.
+ * The 20 most common are surfaced as chips — anything beyond that is
+ * better reached via the `cat:` search prefix.
+ */
+const availableCategories = computed<string[]>(() => {
+  const counts = new Map<string, number>()
+  for (const b of books.value) {
+    for (const c of b.categories) {
+      const key = c.trim()
+      if (!key) continue
+      counts.set(key, (counts.get(key) ?? 0) + 1)
+    }
+  }
+  return [...counts.entries()]
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+    .slice(0, 20)
+    .map(([c]) => c)
+})
+
+const activeFilterCount = computed(() => {
+  const f = filters.value
+  let n = 0
+  if (f.readState !== 'all') n++
+  if (f.owners.length) n++
+  if (f.categories.length) n++
+  if (f.minMotivation > 0 || f.maxMotivation < 100) n++
+  return n
+})
+
+/** True when `book` satisfies every active filter. */
+function bookPassesFilters(b: LibraryBook): boolean {
+  const f = filters.value
+  if (f.readState === 'read' && !b.read) return false
+  if (f.readState === 'unread' && b.read) return false
+  if (f.owners.length && !f.owners.includes(b.owner.trim())) return false
+  if (f.categories.length && !b.categories.some(c => f.categories.includes(c))) return false
+  if (b.readMotivation < f.minMotivation || b.readMotivation > f.maxMotivation) return false
+  return true
+}
+
+const filteredBooks = computed(() => {
+  const terms = searchTerms.value
+  const hasSearch = terms.length > 0
+  const hasFilters = activeFilterCount.value > 0
+  if (!hasSearch && !hasFilters) return books.value
+  return books.value.filter(b => {
+    if (hasFilters && !bookPassesFilters(b)) return false
+    if (hasSearch && !matchBook(b, terms)) return false
+    return true
+  })
+})
+
+function clearFilters() {
+  filters.value = defaultFilters()
+}
+
+function toggleOwnerFilter(o: string) {
+  const list = filters.value.owners
+  const i = list.indexOf(o)
+  if (i >= 0) list.splice(i, 1)
+  else list.push(o)
+}
+
+function toggleCategoryFilter(c: string) {
+  const list = filters.value.categories
+  const i = list.indexOf(c)
+  if (i >= 0) list.splice(i, 1)
+  else list.push(c)
+}
 
 watch(viewMode, v => {
   try { localStorage.setItem(STORAGE_KEY_VIEW, v) } catch { /* ignore */ }
