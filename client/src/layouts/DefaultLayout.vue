@@ -37,6 +37,7 @@
                 Manuscripts
               </router-link>
               <router-link
+                v-if="isAdmin"
                 to="/library"
                 class="pb-0.5 hover:text-ink transition-colors duration-300"
                 :class="route.name === 'MyLibrary' ? 'text-ink border-b border-ink' : 'text-ink-lighter'"
@@ -268,7 +269,7 @@
             Manuscripts
           </router-link>
           <router-link
-            v-if="isAuthenticated"
+            v-if="isAuthenticated && isAdmin"
             to="/library"
             @click="menuOpen = false"
             class="block text-sm tracking-wide font-sans hover:text-ink transition-colors duration-300"
