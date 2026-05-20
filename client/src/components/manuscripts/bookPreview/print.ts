@@ -324,6 +324,16 @@ export function buildNaturalPrintHtml(args: PrintBuildArgs): string {
     color: #1f1a14;
   }
 
+  /* ===== Author-inserted page breaks =====
+     [[pb]] markers in a frag body are rendered as a div with class
+     bp-page-break-after (see renderMarkdownForPrint). The screen preview
+     handles these as column breaks; the print stylesheet needs the
+     equivalent paged-media rule so the marker pushes the next paragraph
+     onto a new physical page. The div carries no content, so it must not
+     introduce vertical space. */
+  .bp-page-break-after  { break-after: page; height: 0; margin: 0; padding: 0; }
+  .bp-page-break-before { break-before: page; height: 0; margin: 0; padding: 0; }
+
   /* ===== Body type ===== */
   p { margin: 0; text-indent: ${indent}; padding-bottom: ${paraSpacing}; }
   .bp-item > p:first-child,

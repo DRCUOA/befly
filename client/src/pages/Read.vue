@@ -253,7 +253,8 @@ import {
   bodyMarkdownAfterExcerptPrefix,
   excerptPlainCutLength,
   isStandaloneHtmlDoc,
-  renderMarkdown
+  renderMarkdownForPrint,
+  stripPageBreakMarkers
 } from '../utils/markdown'
 import { buildNaturalPrintHtml, openPrintWindow } from '../components/manuscripts/bookPreview/print'
 import { defaultPaperbackProfile } from '../components/manuscripts/bookPreview/defaults'
@@ -278,7 +279,7 @@ const isSpa = computed(() => isStandaloneHtmlDoc(writing.value?.body))
 const paragraphs = computed(() => {
   if (!writing.value) return []
   if (isSpa.value) return []
-  const afterExcerpt = bodyMarkdownAfterExcerptPrefix(writing.value.body)
+  const afterExcerpt = stripPageBreakMarkers(bodyMarkdownAfterExcerptPrefix(writing.value.body))
   return afterExcerpt.split(/\n\n+/).filter(p => p.trim().length > 0)
 })
 
@@ -346,7 +347,7 @@ const printEssay = () => {
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
-  const bodyHtml = renderMarkdown(w.body || '')
+  const bodyHtml = renderMarkdownForPrint(w.body || '')
   const flow =
     `<section class="bp-chapter bp-chapter-opening bp-page-break-before">
        <div class="bp-chapter-heading">${titleEscaped}</div>

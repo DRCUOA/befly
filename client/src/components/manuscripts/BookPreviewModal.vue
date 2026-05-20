@@ -1333,7 +1333,7 @@
 import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount, h, defineComponent, type PropType } from 'vue'
 import { api } from '../../api/client'
 import { bookPrintingApi } from '../../api/bookPrinting'
-import { renderMarkdown } from '../../utils/markdown'
+import { renderMarkdownForPrint } from '../../utils/markdown'
 import type { ApiResponse } from '@shared/ApiResponses'
 import type {
   ManuscriptProject,
@@ -1873,15 +1873,20 @@ const loadingBodies = ref(false)
 const loadError = ref<string | null>(null)
 const bodyById = ref<Map<string, string>>(new Map())
 
-// Cache rendered markdown by writingBlockId. renderMarkdown can be slow for
-// long essays, and bookFlowHtml depends on enough fields that even unrelated
-// settings (chapter title style, scene break symbol, author name keystrokes)
-// would otherwise re-run renderMarkdown for every essay each time. Caching
-// here means renderMarkdown only runs when the underlying body changes.
+// Cache rendered markdown by writingBlockId. renderMarkdownForPrint can be
+// slow for long essays, and bookFlowHtml depends on enough fields that even
+// unrelated settings (chapter title style, scene break symbol, author name
+// keystrokes) would otherwise re-render every essay each time. Caching here
+// means we only re-render when the underlying body changes.
+//
+// We use the *ForPrint variant so author-inserted `[[pb]]` page-break markers
+// produce real page breaks in the printed PDF (and on-screen column breaks in
+// the preview); the screen-only paths use plain renderMarkdown, which strips
+// the marker so it never leaks as literal text.
 const renderedHtmlById = computed<Map<string, string>>(() => {
   const map = new Map<string, string>()
   for (const [id, body] of bodyById.value) {
-    map.set(id, body ? renderMarkdown(body) : '<p><em>(Body not loaded.)</em></p>')
+    map.set(id, body ? renderMarkdownForPrint(body) : '<p><em>(Body not loaded.)</em></p>')
   }
   return map
 })
