@@ -10,7 +10,10 @@ import {
   excerptPlainCutLength,
   readingExcerptPlainCutLength,
   READING_EXCERPT_PLAIN_LENGTH,
-  isStandaloneHtmlDoc
+  isStandaloneHtmlDoc,
+  stripPageBreakMarkers,
+  renderMarkdown,
+  renderMarkdownForPrint
 } from './markdown'
 
 describe('isStandaloneHtmlDoc', () => {
@@ -143,5 +146,57 @@ describe('bodyMarkdownAfterExcerptPrefix', () => {
     const cut = excerptPlainCutLength(full)
     const after = bodyMarkdownAfterExcerptPrefix(md)
     expect(full.substring(cut).trimStart()).toBe(markdownToText(after).trimStart())
+  })
+})
+
+describe('[[pb]] page-break markers', () => {
+  it('stripPageBreakMarkers removes marker-only lines', () => {
+    const md = 'one\n\n[[pb]]\n\ntwo'
+    expect(stripPageBreakMarkers(md)).toBe('one\n\ntwo')
+  })
+
+  it('stripPageBreakMarkers tolerates surrounding whitespace on the marker line', () => {
+    expect(stripPageBreakMarkers('a\n  [[pb]]  \nb')).toBe('a\n\nb')
+  })
+
+  it('stripPageBreakMarkers leaves inline [[pb]] alone', () => {
+    expect(stripPageBreakMarkers('he typed [[pb]] in the middle')).toBe('he typed [[pb]] in the middle')
+  })
+
+  it('renderMarkdown strips the marker (does not appear in HTML)', () => {
+    const html = renderMarkdown('para one\n\n[[pb]]\n\npara two')
+    expect(html).not.toContain('[[pb]]')
+    expect(html).not.toContain('bp-page-break-after')
+    expect(html).toContain('para one')
+    expect(html).toContain('para two')
+  })
+
+  it('renderMarkdownForPrint emits a page-break div between chunks', () => {
+    const html = renderMarkdownForPrint('para one\n\n[[pb]]\n\npara two')
+    expect(html).not.toContain('[[pb]]')
+    expect(html).toContain('class="bp-page-break-after"')
+    expect(html.indexOf('para one')).toBeLessThan(html.indexOf('bp-page-break-after'))
+    expect(html.indexOf('bp-page-break-after')).toBeLessThan(html.indexOf('para two'))
+  })
+
+  it('renderMarkdownForPrint handles multiple markers', () => {
+    const html = renderMarkdownForPrint('a\n\n[[pb]]\n\nb\n\n[[pb]]\n\nc')
+    const breaks = html.match(/bp-page-break-after/g) ?? []
+    expect(breaks.length).toBe(2)
+  })
+
+  it('renderMarkdownForPrint is a no-op when no markers are present', () => {
+    const html = renderMarkdownForPrint('just a paragraph')
+    expect(html).not.toContain('bp-page-break-after')
+    expect(html).toContain('just a paragraph')
+  })
+
+  it('markdownToText omits the marker', () => {
+    expect(markdownToText('hi\n\n[[pb]]\n\nbye')).not.toContain('[[pb]]')
+    expect(markdownToText('hi\n\n[[pb]]\n\nbye')).not.toContain('pb')
+  })
+
+  it('countWordsInMarkdown does not count the marker', () => {
+    expect(countWordsInMarkdown('one two three\n\n[[pb]]\n\nfour five')).toBe(5)
   })
 })

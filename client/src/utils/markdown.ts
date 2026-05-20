@@ -17,21 +17,58 @@ export function isStandaloneHtmlDoc(s: string | undefined | null): boolean {
 }
 
 /**
- * Render markdown to HTML
+ * Page-break marker. A line containing only `[[pb]]` (whitespace allowed
+ * around it) means "start a new page here in print/PDF output". The marker
+ * is honoured by {@link renderMarkdownForPrint}; everywhere else it is
+ * stripped so it never appears as literal text in the reader view or AI
+ * assist panel.
+ */
+const PAGE_BREAK_LINE_RE = /^[ \t]*\[\[pb\]\][ \t]*$/gm
+
+/** Remove `[[pb]]` marker lines from text. The marker only counts when it
+ *  is the sole content of a line — `[[pb]]` typed mid-sentence is left
+ *  alone, so it can still appear as prose if the author quotes it. Adjacent
+ *  blank lines collapse to a single paragraph break. */
+export function stripPageBreakMarkers(s: string): string {
+  if (!s) return s
+  return s.replace(PAGE_BREAK_LINE_RE, '').replace(/\n{3,}/g, '\n\n')
+}
+
+function marked_(s: string): string {
+  const result = marked(s, { breaks: true, gfm: true })
+  return typeof result === 'string' ? result : String(result)
+}
+
+/**
+ * Render markdown to HTML. `[[pb]]` page-break markers are stripped — use
+ * {@link renderMarkdownForPrint} when you want them to produce actual page
+ * breaks.
  */
 export function renderMarkdown(markdown: string): string {
-  const result = marked(markdown, {
-    breaks: true,
-    gfm: true
-  })
-  return typeof result === 'string' ? result : String(result)
+  return marked_(stripPageBreakMarkers(markdown))
+}
+
+/**
+ * Render markdown to HTML, honouring `[[pb]]` page-break markers by emitting
+ * a `<div class="bp-page-break-after">` between the surrounding chunks. Used
+ * by the book-preview print path and the single-frag print path; both feed
+ * the result into a print stylesheet that maps the class onto
+ * `break-after: page`.
+ */
+export function renderMarkdownForPrint(markdown: string): string {
+  if (!markdown) return ''
+  const chunks = markdown.split(PAGE_BREAK_LINE_RE)
+  if (chunks.length === 1) return marked_(markdown)
+  return chunks
+    .map(c => marked_(c))
+    .join('<div class="bp-page-break-after" aria-hidden="true"></div>')
 }
 
 /**
  * Extract plain text from markdown
  */
 export function markdownToText(markdown: string): string {
-  return markdown
+  return stripPageBreakMarkers(markdown)
     .replace(/#{1,6}\s+/g, '') // Remove headers
     .replace(/\*\*(.*?)\*\*/g, '$1') // Remove bold
     .replace(/\*(.*?)\*/g, '$1') // Remove italic
@@ -151,7 +188,7 @@ export function bodyMarkdownAfterExcerptPrefix(markdown: string, excerptPlainLen
  * (P3-uix-07 / cni-07)
  */
 export function stripMarkdownForWordCount(markdown: string): string {
-  return markdown
+  return stripPageBreakMarkers(markdown)
     .replace(/```[\s\S]*?```/g, '') // Fenced code blocks (before inline code)
     .replace(/#{1,6}\s+/g, '') // Headers
     .replace(/\*\*(.*?)\*\*/g, '$1') // Bold
