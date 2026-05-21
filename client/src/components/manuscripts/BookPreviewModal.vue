@@ -2565,7 +2565,24 @@ const spineEligibility = computed(() => {
   if (n < 250) return 'Standard spine — title + author.'
   return 'Wide spine — title, author, publisher mark.'
 })
-const validation = computed(() => validateConfig(config.value, { estimatedPageCount: estimatedPageCount.value }))
+// True when the back-cover blurb still overflowed at BACK_TEXT_MIN_FONT_PX in
+// at least one of the two preview renderings (wizard spread or book stage).
+// Set by fitBackCoverText() further down; drives a "blurb too long" warning
+// in the validation pill so the author can trim it rather than have print
+// silently clip the bottom.
+const backTextOverflows = ref(false)
+
+const validation = computed(() => {
+  const base = validateConfig(config.value, { estimatedPageCount: estimatedPageCount.value })
+  const warnings = base.warnings.slice()
+  if (backTextOverflows.value && config.value.cover.backText) {
+    warnings.push({
+      field: 'cover.backText',
+      message: 'Back-cover blurb is too long to fit even at the smallest size — trim it or it will be clipped in print.',
+    })
+  }
+  return { errors: base.errors, warnings }
+})
 
 // ---- Quality checks ----
 const qualityChecks = computed<QualityCheckResult[]>(() => {
@@ -2755,29 +2772,31 @@ const backTextWrap = ref<HTMLDivElement | null>(null)
 const backTextElBook = ref<HTMLParagraphElement | null>(null)
 const backTextWrapBook = ref<HTMLDivElement | null>(null)
 const BACK_TEXT_MAX_FONT_PX = 18
-const BACK_TEXT_MIN_FONT_PX = 7
+const BACK_TEXT_MIN_FONT_PX = 6
 
-function fitBackCoverText(textEl: HTMLElement | null, wrap: HTMLElement | null) {
-  if (!textEl || !wrap) return
+function fitBackCoverText(textEl: HTMLElement | null, wrap: HTMLElement | null): boolean {
+  if (!textEl || !wrap) return false
   let size = BACK_TEXT_MAX_FONT_PX
   textEl.style.fontSize = size + 'px'
   void wrap.offsetHeight
   const availW = wrap.clientWidth
   const availH = wrap.clientHeight
-  if (availW <= 0 || availH <= 0) return
+  if (availW <= 0 || availH <= 0) return false
   while (size > BACK_TEXT_MIN_FONT_PX && (textEl.scrollHeight > availH || textEl.scrollWidth > availW)) {
     size -= 0.5
     textEl.style.fontSize = size + 'px'
     void textEl.offsetHeight
   }
+  return textEl.scrollHeight > availH || textEl.scrollWidth > availW
 }
 
 watch(
   [() => config.value.cover.backText, () => config.value.cover.authorName, () => bookState.value, () => previewMode.value, pageWidth, pageHeight],
   async () => {
     await nextTick()
-    fitBackCoverText(backTextEl.value, backTextWrap.value)
-    fitBackCoverText(backTextElBook.value, backTextWrapBook.value)
+    const overflowA = fitBackCoverText(backTextEl.value, backTextWrap.value)
+    const overflowB = fitBackCoverText(backTextElBook.value, backTextWrapBook.value)
+    backTextOverflows.value = overflowA || overflowB
   },
   { flush: 'post' },
 )
@@ -2869,26 +2888,32 @@ function buildPrintCoverHtml(
   const bgFill = `<div style="position:absolute;inset:0;background:${fallbackBg};"></div>`
 
   if (side === 'front') {
+    const scrim = 'background:radial-gradient(ellipse at center,rgba(0,0,0,0.7) 0%,rgba(0,0,0,0.45) 55%,rgba(0,0,0,0) 95%);padding:2mm 6mm;border-radius:1mm;'
     return `
       ${bgFill}
       ${imgEl}
-      <div style="position:absolute;inset:0;text-align:center;padding:8mm;color:#f4ecdd;text-shadow:0 1px 4px rgba(0,0,0,0.55);">
-        <div style="position:absolute;left:50%;top:${cover.titleY}%;transform:translate(-50%,-50%);width:calc(100% - 16mm);text-align:${cover.titleAlign};color:${cover.titleColor};">
+      <div style="position:absolute;inset:0;text-align:center;padding:8mm;color:#f4ecdd;text-shadow:0 1px 5px rgba(0,0,0,0.85),0 0 14px rgba(0,0,0,0.55);">
+        <div style="position:absolute;left:50%;top:${cover.titleY}%;transform:translate(-50%,-50%);width:calc(100% - 16mm);text-align:${cover.titleAlign};color:${cover.titleColor};${scrim}">
           <h2 style="font-family:'${cfg.typography.bodyFont}',Georgia,serif;font-size:${cover.titleSize}pt;font-weight:300;margin:0;letter-spacing:0.04em;line-height:1.15;">${escapeHtml(title)}</h2>
           ${subtitle ? `<p style="font-style:italic;margin:2mm 0 0 0;">${escapeHtml(subtitle)}</p>` : ''}
         </div>
-        ${author ? `<div style="position:absolute;left:50%;top:${cover.authorY}%;transform:translate(-50%,-50%);width:calc(100% - 16mm);font-family:'${cfg.typography.bodyFont}',Georgia,serif;font-style:italic;font-size:${cover.authorSize}pt;color:${cover.authorColor};text-align:${cover.authorAlign};letter-spacing:0.08em;">${escapeHtml(author)}</div>` : ''}
+        ${author ? `<div style="position:absolute;left:50%;top:${cover.authorY}%;transform:translate(-50%,-50%);width:calc(100% - 16mm);font-family:'${cfg.typography.bodyFont}',Georgia,serif;font-style:italic;font-size:${cover.authorSize}pt;color:${cover.authorColor};text-align:${cover.authorAlign};letter-spacing:0.08em;${scrim}">${escapeHtml(author)}</div>` : ''}
       </div>
     `
   }
-  // back
+  // back. The blurb sits in a flex middle slot with min-height:0; overflow:hidden
+  // so a long blurb can't push the title up or the author/barcode off the page.
+  // A fit-to-page script in the print window (see buildNaturalPrintHtml) then
+  // shrinks .pp-cover-back-text from 14pt down to a 6pt floor until it fits.
   return `
     ${bgFill}
     ${imgEl}
-    <div style="position:absolute;inset:0;padding:10mm;color:#f4ecdd;display:flex;flex-direction:column;align-items:center;justify-content:space-between;text-align:center;">
-      <p style="font-family:'${cfg.typography.bodyFont}',Georgia,serif;font-style:italic;font-size:14pt;letter-spacing:0.04em;margin:0;line-height:1.2;">${escapeHtml(title)}</p>
-      <p style="font-family:'${cfg.typography.bodyFont}',Georgia,serif;font-size:11pt;line-height:1.5;color:${cover.backTextColor};max-width:90mm;white-space:pre-wrap;margin:0;">${escapeHtml(cover.backText || '')}</p>
-      <div style="display:flex;flex-direction:column;align-items:center;gap:3mm;">
+    <div style="position:absolute;inset:0;padding:10mm;color:#f4ecdd;display:flex;flex-direction:column;align-items:center;justify-content:space-between;text-align:center;text-shadow:0 1px 4px rgba(0,0,0,0.7);">
+      <p style="font-family:'${cfg.typography.bodyFont}',Georgia,serif;font-style:italic;font-size:14pt;letter-spacing:0.04em;margin:0;line-height:1.2;flex:0 0 auto;">${escapeHtml(title)}</p>
+      <div class="pp-cover-back-text-wrap" style="flex:1 1 auto;min-height:0;width:100%;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:4mm 0;">
+        <p class="pp-cover-back-text" style="font-family:'${cfg.typography.bodyFont}',Georgia,serif;font-size:14pt;line-height:1.45;color:${cover.backTextColor};max-width:110mm;white-space:pre-wrap;margin:0;">${escapeHtml(cover.backText || '')}</p>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:3mm;flex:0 0 auto;">
         ${author ? `<p style="font-family:'${cfg.typography.bodyFont}',Georgia,serif;font-size:9pt;letter-spacing:0.12em;text-transform:uppercase;margin:0;">${escapeHtml(author)}</p>` : ''}
         ${cover.showBarcode && cover.isbn && barcode ? `
           <div style="background:#fff;color:#000;padding:2mm;display:inline-block;">
@@ -3342,11 +3367,14 @@ const NumberField = defineComponent({
 .bp-cover:hover { transform: translateY(-2px); }
 .bp-cover-back { border-radius: 8px 4px 4px 8px; }
 .bp-cover-bg { position: absolute; inset: 0; background: #3a2f24; }
-.bp-cover-content { position: absolute; inset: 0; text-align: center; padding: 2rem; color: #f4ecdd; text-shadow: 0 1px 4px rgba(0,0,0,0.55); }
+.bp-cover-content { position: absolute; inset: 0; text-align: center; padding: 2rem; color: #f4ecdd; text-shadow: 0 1px 6px rgba(0,0,0,0.85), 0 0 18px rgba(0,0,0,0.55); }
 .bp-cover-title-block, .bp-cover-author-block {
   position: absolute; left: 50%;
   transform: translate(-50%, -50%);
   width: calc(100% - 4rem);
+  padding: 0.6em 1.2em;
+  border-radius: 4px;
+  background: radial-gradient(ellipse at center, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.45) 55%, rgba(0,0,0,0) 95%);
 }
 .bp-cover-title { font-family: ui-serif, Georgia, serif; font-size: 1.6rem; font-weight: 300; letter-spacing: 0.04em; line-height: 1.25; margin: 0; }
 .bp-cover-subtitle { font-style: italic; margin-top: 0.5rem; opacity: 0.9; }

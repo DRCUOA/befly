@@ -457,11 +457,31 @@ export function buildNaturalPrintHtml(args: PrintBuildArgs): string {
         if (typeof img.decode === 'function') return img.decode().catch(function () {});
         return new Promise(function (res) { img.addEventListener('load', res, { once: true }); img.addEventListener('error', res, { once: true }); });
       }));
+    }
+    // Shrink the back-cover blurb until it fits its flex slot. The screen
+    // preview does the same in BookPreviewModal.vue; the print pipeline can't
+    // reuse that because the blurb lives in a fresh window with no Vue.
+    function fitBackBlurb() {
+      var wraps = document.querySelectorAll('.pp-cover-back-text-wrap');
+      for (var i = 0; i < wraps.length; i++) {
+        var wrap = wraps[i];
+        var el = wrap.querySelector('.pp-cover-back-text');
+        if (!el) continue;
+        var availH = wrap.clientHeight;
+        var availW = wrap.clientWidth;
+        if (availH <= 0 || availW <= 0) continue;
+        var sz = 14;
+        el.style.fontSize = sz + 'pt';
+        while (sz > 6 && (el.scrollHeight > availH || el.scrollWidth > availW)) {
+          sz -= 0.25;
+          el.style.fontSize = sz + 'pt';
+        }
+      }
     }${labelFnDef}
     window.addEventListener('load', function () {
       waitForCoverImages().then(function () {
         // Small extra tick for the layout engine to flush after image decode.
-        setTimeout(function () { try { ${labelCall}window.focus(); window.print(); } catch (e) {} }, 100);
+        setTimeout(function () { try { fitBackBlurb(); ${labelCall}window.focus(); window.print(); } catch (e) {} }, 100);
       });
     });
   </script>
