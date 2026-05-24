@@ -13,6 +13,29 @@ import {
 /** Minutes since the latest revision after which an autosave will checkpoint. */
 const CHECKPOINT_MINUTES = 30
 
+/**
+ * Cached result of "does writing_blocks have a `visibility` column?".
+ * The check exists for backward compatibility with pre-migration-004
+ * environments, but the column is part of the schema everywhere we run
+ * today — caching it turns a per-request probe into a one-time check.
+ * Reset to null only on schema-change error paths if we ever need to.
+ */
+let hasVisibilityColumnCache: boolean | null = null
+async function hasVisibilityColumn(): Promise<boolean> {
+  if (hasVisibilityColumnCache !== null) return hasVisibilityColumnCache
+  try {
+    await pool.query('SELECT visibility FROM writing_blocks LIMIT 1')
+    hasVisibilityColumnCache = true
+  } catch (error: any) {
+    if (error.code === '42703') {
+      hasVisibilityColumnCache = false
+    } else {
+      throw error
+    }
+  }
+  return hasVisibilityColumnCache!
+}
+
 interface HeadRow {
   id: string
   userId: string
@@ -78,20 +101,7 @@ export const writingRepo = {
     let query: string
     let params: unknown[]
 
-    // Check if visibility column exists by trying a simple query first
-    // If it doesn't exist, use a fallback query without visibility filtering
-    let hasVisibilityColumn = true
-    try {
-      await pool.query('SELECT visibility FROM writing_blocks LIMIT 1')
-    } catch (error: any) {
-      if (error.code === '42703') { // column does not exist
-        hasVisibilityColumn = false
-      } else {
-        throw error
-      }
-    }
-
-    if (hasVisibilityColumn) {
+    if (await hasVisibilityColumn()) {
       if (isAdmin) {
         // Admin: see ALL writing blocks regardless of visibility
         query = `
@@ -231,22 +241,10 @@ export const writingRepo = {
     isAdmin: boolean = false,
     userSharedAccess: boolean = false
   ): Promise<WritingBlock> {
-    // Check if visibility column exists
-    let hasVisibilityColumn = true
-    try {
-      await pool.query('SELECT visibility FROM writing_blocks LIMIT 1')
-    } catch (error: any) {
-      if (error.code === '42703') {
-        hasVisibilityColumn = false
-      } else {
-        throw error
-      }
-    }
-
     let query: string
     let params: unknown[]
 
-    if (hasVisibilityColumn) {
+    if (await hasVisibilityColumn()) {
       if (isAdmin) {
         // Admin: access any writing regardless of visibility
         query = `

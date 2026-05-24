@@ -4,6 +4,7 @@ import { fileURLToPath } from 'url'
 import fs from 'fs'
 import cors from 'cors'
 import cookieParser from 'cookie-parser'
+import compression from 'compression'
 import rateLimit from 'express-rate-limit'
 import { errorMiddleware } from './middleware/error.middleware.js'
 import { csrfTokenMiddleware, csrfMiddleware } from './middleware/csrf.middleware.js'
@@ -61,6 +62,10 @@ app.use(cors({
   origin: config.corsOrigin,
   credentials: true
 }))
+// Gzip JSON responses. The frag-list endpoint in particular ships markdown
+// bodies that compress 5-10x. Default threshold (1KB) means tiny payloads
+// stay uncompressed and we don't burn CPU on them.
+app.use(compression())
 app.use(cookieParser())
 // Global JSON body limit. Default is body-parser's 100kb which is too small
 // for a single long-form essay. 2mb comfortably fits any realistic single

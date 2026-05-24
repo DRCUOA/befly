@@ -44,9 +44,10 @@ export const writingController = {
     const limit = parseInt(req.query.limit as string) || 50
     const offset = parseInt(req.query.offset as string) || 0
     const writings = await writingService.getAll(userId, limit, offset, admin, sharedAccess)
-    
-    // Log view activity
-    await activityService.logView(
+
+    // Fire-and-forget the view log so a slow activity-table INSERT doesn't
+    // hold up the response. logActivity already swallows its own errors.
+    void activityService.logView(
       'writing_block',
       null,
       userId,
@@ -54,7 +55,7 @@ export const writingController = {
       getUserAgent(req),
       { action: 'list', limit, offset }
     )
-    
+
     res.json({ data: writings })
   },
 
