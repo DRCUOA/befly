@@ -36,11 +36,12 @@
                 <span class="text-xs font-sans text-ink-lighter">{{ formattedDate }}</span>
               </div>
               <img
-                v-if="writing.coverImageUrl"
+                v-if="writing.coverImageUrl && !coverImageError"
                 :src="writing.coverImageUrl"
                 :alt="`Cover for ${writing.title}`"
                 class="w-32 h-32 rounded overflow-hidden object-cover flex-shrink-0 border border-line ml-auto"
                 :style="{ objectPosition: writing.coverImagePosition || '50% 50%' }"
+                @error="coverImageError = true"
               />
             </div>
           </div>
@@ -266,6 +267,9 @@ const readingStore = useReadingStore()
 const { origin: navOrigin, originLabel } = useNavigationOrigin('/home')
 
 const writing = ref<WritingBlock | null>(null)
+// Cover images are admin-only (security hotfix); non-admin/anon loads 403 —
+// hide the broken image gracefully instead of showing a broken-image icon.
+const coverImageError = ref(false)
 const themes = ref<Theme[]>([])
 const appreciations = ref<Appreciation[]>([])
 const loading = ref(true)
