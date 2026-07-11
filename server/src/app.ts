@@ -8,6 +8,8 @@ import compression from 'compression'
 import rateLimit from 'express-rate-limit'
 import { errorMiddleware } from './middleware/error.middleware.js'
 import { csrfTokenMiddleware, csrfMiddleware } from './middleware/csrf.middleware.js'
+import { authMiddleware } from './middleware/auth.middleware.js'
+import { requireAdmin } from './middleware/authorize.middleware.js'
 import authRoutes from './routes/auth.routes.js'
 import writingRoutes from './routes/writing.routes.js'
 import themeRoutes from './routes/theme.routes.js'
@@ -112,8 +114,14 @@ app.use('/api', (_req, res, next) => {
   next()
 })
 
-// Serve uploaded images from PostgreSQL (filesystem is ephemeral on Heroku)
-app.get('/uploads/cover/:filename', asyncHandler(uploadsController.serve))
+// Serve uploaded images from PostgreSQL (filesystem is ephemeral on Heroku).
+// SECURITY HOTFIX: cover images are restricted to signed-in admin users only.
+// authMiddleware reads the httpOnly `token` cookie (same-origin <img> tags send
+// it automatically), so admin browsers still load covers; everyone else (anon or
+// non-admin) gets 401/403 and the frontend degrades gracefully. Responses are
+// marked private/no-store in the controller so Cloudflare never caches and
+// re-serves a protected image to an unauthenticated visitor.
+app.get('/uploads/cover/:filename', authMiddleware, requireAdmin, asyncHandler(uploadsController.serve))
 
 // CSRF token generation (must be before CSRF protection)
 // Skip CSRF for auth endpoints - they use their own protection

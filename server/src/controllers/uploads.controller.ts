@@ -114,7 +114,10 @@ export const uploadsController = {
 
   /**
    * GET /uploads/cover/:filename - serve an image from PostgreSQL.
-   * Aggressive caching (immutable filenames with UUID) avoids repeated DB reads.
+   * SECURITY: route is gated by authMiddleware + requireAdmin (see app.ts), so
+   * only signed-in admins reach here. Responses are marked private/no-store so
+   * no shared cache (Cloudflare) or browser retains a copy that could be served
+   * to an unauthenticated visitor.
    */
   async serve(req: Request, res: Response) {
     const { filename } = req.params
@@ -133,8 +136,11 @@ export const uploadsController = {
     res.set({
       'Content-Type': contentType,
       'Content-Length': String(file.size_bytes),
-      'Cache-Control': 'public, max-age=31536000, immutable',
-      'ETag': `"${file.id}"`,
+      // Private/no-store: admin-only content must never be cached by a shared
+      // proxy (Cloudflare) or persisted by the browser for later anonymous use.
+      'Cache-Control': 'private, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0',
     })
     res.send(file.data)
   }
