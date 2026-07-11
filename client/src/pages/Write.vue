@@ -92,21 +92,25 @@
         </div>
       </div>
 
-      <!-- Body — typewriter scrolling: 100vh padding-bottom so any line
-           can be scrolled to the typewriter position. Width matches the
+      <!-- Body — the typewriter "paper". This wrapper is the clip viewport
+           (sized in JS to end at the platen line); the textarea inside is
+           translateY-pinned so the caret's line always sits at the platen.
+           Above the caret = the display zone; the caret line = the single
+           input strip; below it is clipped to blank paper. Width matches the
            title (100ch) so the page reads as one wide sheet. -->
-      <div class="zen-body-area relative w-full max-w-[100ch] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16">
+      <div ref="bodyAreaRef" class="zen-body-area relative w-full max-w-[100ch] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16">
         <textarea
           id="body"
           ref="bodyTextareaRef"
           v-show="!isSpaBody || !spaPreviewOpen"
           v-model="form.body"
           required
-          class="zen-body block w-full min-h-[40vh] border-0 bg-transparent font-typewriter text-base sm:text-lg text-ink placeholder:text-ink-whisper focus:ring-0 focus:outline-none resize-none overflow-hidden py-2"
-          :style="bodyFontStyle"
+          class="zen-body zen-body-roll block w-full min-h-[40vh] border-0 bg-transparent font-typewriter text-base sm:text-lg text-ink placeholder:text-ink-whisper focus:ring-0 focus:outline-none resize-none overflow-hidden py-2"
+          :style="[bodyFontStyle, paperTransformStyle]"
           placeholder="Place your text here"
           aria-label="Body"
           @input="onBodyInput"
+          @focus="scheduleTypewriterScroll"
           @click="scheduleTypewriterScroll"
           @keyup="scheduleTypewriterScroll"
           @blur="onBodyBlur"
@@ -393,6 +397,7 @@ const SCAN_DEBOUNCE_MS = 1500
 // Word count on pause (P3-uix-07 / cni-07): visible only after typing pause, 2 lines below text
 const showWordCount = ref(false)
 const bodyMirrorRef = ref<HTMLDivElement | null>(null)
+const bodyAreaRef = ref<HTMLDivElement | null>(null)
 const wordCountStyle = ref<{ top: string }>({ top: '0.5rem' })
 
 const bodyMirrorClasses = 'w-full'
@@ -854,6 +859,10 @@ function bumpFontSize(direction: number) {
   // style binding has flushed before we measure.
   nextTick(() => {
     autoResizeBody()
+    // Line height scales with font size, so the clip viewport and pin offset
+    // both need recomputing.
+    updatePaperClip()
+    scheduleTypewriterScroll()
     refreshCursorViewportY()
   })
 }
@@ -1079,7 +1088,12 @@ function autoResizeBody() {
 // AI insert/replace — and snap the textarea height to fit. Runs on the
 // next tick so the textarea has had a chance to flush the new value
 // through the DOM before we read scrollHeight.
-watch(() => form.value.body, () => nextTick(autoResizeBody))
+watch(() => form.value.body, () => nextTick(() => {
+  autoResizeBody()
+  // Reposition the paper after programmatic changes (AI insert/replace,
+  // draft restore). No-ops visually when the textarea isn't focused.
+  scheduleTypewriterScroll()
+}))
 
 /* ============================================================
  * Typewriter scrolling — keep the active line at a fixed lower-middle
@@ -1107,15 +1121,21 @@ const TYPEWRITER_BOTTOM_PCT = 0.20
  */
 const cursorViewportY = ref<number | null>(null)
 
-let typewriterRaf: number | null = null
-let typewriterEnabled: boolean | null = null
+/**
+ * Vertical offset (px) applied to the body textarea so the caret's line is
+ * pinned at the platen position. This is the typewriter mechanic: instead of
+ * scrolling the window, we translate the paper. Negative pushes the paper up
+ * (older lines roll out the top into the clipped display zone); positive
+ * pushes it down (short docs / earlier lines sit at the platen). The body-area
+ * is overflow-hidden and clipped at the active line's bottom, so anything
+ * below the caret line reads as blank paper.
+ */
+const paperOffset = ref(0)
+const paperTransformStyle = computed(() => ({
+  transform: `translateY(${paperOffset.value}px)`,
+}))
 
-function prefersReducedMotion(): boolean {
-  if (typewriterEnabled === null) {
-    typewriterEnabled = !window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  }
-  return !typewriterEnabled
-}
+let typewriterRaf: number | null = null
 
 function scheduleTypewriterScroll() {
   if (typewriterRaf !== null) return
@@ -1158,31 +1178,76 @@ function runTypewriterScroll() {
   const cursorY = measureCursorViewportY()
   if (cursorY === null) return
 
-  // Update the floating-cluster's tracking position whenever we measure.
-  cursorViewportY.value = cursorY
-
-  // Compute the marker's absolute Y in the document, then scroll so it
-  // sits with TYPEWRITER_BOTTOM_PCT of the viewport remaining below it.
-  // This keeps the cursor away from the bottom edge (no "writing at the
-  // floor" feel) while still showing plenty of context above the active
-  // line. We only scroll DOWN: cursors above the target line are left
-  // where they are, so short essays don't get yanked around.
+  // Pin the caret's line at the platen by translating the paper, not the
+  // window. measureCursorViewportY reads the marker from the UNtranslated
+  // mirror, so cursorY is the caret's natural viewport Y; the offset needed
+  // to move it onto the platen line is simply (targetY - cursorY). Unlike
+  // the old window-scroll this runs in BOTH directions: typing forward rolls
+  // the paper up, clicking back into an earlier line rolls it down so that
+  // line returns to the platen.
   const targetY = window.innerHeight * (1 - TYPEWRITER_BOTTOM_PCT)
-  const delta = cursorY - targetY
-  if (delta < 4) return // cursor is at or above the line — leave it alone
+  paperOffset.value = targetY - cursorY
 
-  window.scrollBy({
-    top: delta,
-    behavior: prefersReducedMotion() ? 'auto' : 'smooth',
-  })
-
-  // After a smooth scroll the cursor's viewport Y will be ~targetY.
-  // Update the tracker in the next frame so the floating cluster
-  // settles to the right position post-scroll. (No need to wait for
-  // the actual smooth-scroll animation — the cluster's own CSS
-  // transition smooths the visual.)
+  // The caret now visually sits at the platen; tell the floating cluster.
   cursorViewportY.value = targetY
 }
+
+/**
+ * Resolve the body's line height in px (unitless 1.85 × font-size). Falls
+ * back to a sane multiple of the font size if the textarea isn't measurable
+ * yet. Used to size the clip viewport so its bottom edge lands at the bottom
+ * of the active (platen) line.
+ */
+function currentBodyLineHeight(): number {
+  const ta = bodyTextareaRef.value
+  if (!ta) return 30
+  const cs = getComputedStyle(ta)
+  const lh = parseFloat(cs.lineHeight)
+  if (!Number.isNaN(lh) && lh > 0) return lh
+  const fs = parseFloat(cs.fontSize) || 16
+  return fs * 1.85
+}
+
+/**
+ * Size the body-area so it becomes the "paper viewport": its top stays where
+ * the body begins (just under the title), and its bottom is clipped at the
+ * bottom of the active line — the platen position (80vh) plus one line. With
+ * overflow:hidden, this clips everything below the caret line to blank paper
+ * and everything that rolls above the title, leaving only the display zone
+ * (above) and the single active line (the input strip) visible.
+ */
+function updatePaperClip() {
+  const area = bodyAreaRef.value
+  if (!area) return
+  // SPA preview replaces the textarea with a full-height iframe — the
+  // typewriter clip would crop it. Let the area size to its content instead.
+  if (isSpaBody.value && spaPreviewOpen.value) {
+    area.style.height = ''
+    return
+  }
+  const top = area.getBoundingClientRect().top
+  const activeLineBottom =
+    window.innerHeight * (1 - TYPEWRITER_BOTTOM_PCT) + currentBodyLineHeight()
+  area.style.height = `${Math.max(0, activeLineBottom - top)}px`
+}
+
+// Layout-affecting state: opening a side panel re-pads the editor (changing
+// the body's top and wrap width) and the SPA banner shifts the body down.
+// Recompute the clip and re-pin both immediately and after the 240ms panel
+// transition settles.
+watch(
+  [() => assistOpen.value, () => metadataPanelOpen.value, () => isSpaBody.value, () => spaPreviewOpen.value],
+  () => {
+    nextTick(() => {
+      updatePaperClip()
+      scheduleTypewriterScroll()
+    })
+    window.setTimeout(() => {
+      updatePaperClip()
+      scheduleTypewriterScroll()
+    }, 260)
+  },
+)
 
 /**
  * Lightweight cursor-Y updater that does NOT scroll the page. Called on
@@ -1379,6 +1444,11 @@ function onWindowScrollOrResize() {
   if (cursorYRaf !== null) return
   cursorYRaf = requestAnimationFrame(() => {
     cursorYRaf = null
+    // Viewport size feeds both the clip height and the platen target, so
+    // recompute the clip and re-pin the active line before refreshing the
+    // cluster's tracked cursor Y.
+    updatePaperClip()
+    runTypewriterScroll()
     refreshCursorViewportY()
   })
 }
@@ -1431,6 +1501,8 @@ onMounted(async () => {
   // was set before the textarea was in the DOM).
   await nextTick()
   autoResizeBody()
+  // Establish the paper viewport's clip height now that the body is laid out.
+  updatePaperClip()
 
   // Initialize brightness from the current document state. If the writer
   // arrived in dark mode (.dark class set by useTheme), the slider starts
@@ -1495,15 +1567,14 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-/* Zen editor canvas — only the BOTTOM gets generous padding. We use a
-   full viewport-height of breathing room so the writer always has open
-   space below the active line: it's where the typewriter-centering pulls
-   the cursor up *into*, and it's also a deliberate visual exhale —
-   nothing crowds the bottom of the cursor. The top stays flush so the
-   title and the start of the body sit naturally near the top of the
-   page on load. */
+/* Paper viewport — the body-area is the clipping window for the typewriter.
+   Its height is set in JS (updatePaperClip) so the bottom edge lands at the
+   active line (the platen, 80vh). overflow:hidden then clips everything below
+   the caret line to blank "paper" and everything that rolls above the title,
+   leaving the display zone (above) and the single active input line visible.
+   The body itself is translateY-pinned (zen-body-roll) rather than scrolled. */
 .zen-body-area {
-  padding-bottom: 100vh;
+  overflow: hidden;
 }
 
 /* Side-by-side panel layout — when AssistPanel or MetadataPanel is open,
@@ -1630,6 +1701,20 @@ onBeforeUnmount(() => {
 .zen-body {
   line-height: 1.85;
   letter-spacing: 0.005em;
+}
+
+/* Typewriter roll — the body is translateY-pinned so the active line stays at
+   the platen. Within a line the offset is constant (caret moves horizontally,
+   no vertical jump); on Enter or a margin wrap the offset steps by one line,
+   and this transition animates the paper rolling up by exactly that line. */
+.zen-body-roll {
+  transition: transform 130ms cubic-bezier(0.22, 0.61, 0.36, 1);
+  will-change: transform;
+}
+@media (prefers-reduced-motion: reduce) {
+  .zen-body-roll {
+    transition: none;
+  }
 }
 
 /* ============================================================
