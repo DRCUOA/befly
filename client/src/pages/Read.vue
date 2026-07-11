@@ -103,6 +103,29 @@
                 v-if="!isSpa"
                 type="button"
                 class="inline-flex items-center justify-center w-10 h-10 rounded text-ink-lighter hover:text-ink hover:bg-line transition-colors"
+                :aria-label="`Read ${writing.title} in immersive mode`"
+                title="Immersive reading"
+                @click="immersiveOpen = true"
+              >
+                <svg
+                  class="w-5 h-5"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.6"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <!-- Heroicons "book-open" -->
+                  <path d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25" />
+                </svg>
+              </button>
+              <button
+                v-if="!isSpa"
+                type="button"
+                class="inline-flex items-center justify-center w-10 h-10 rounded text-ink-lighter hover:text-ink hover:bg-line transition-colors"
                 :aria-label="`Print ${writing.title}`"
                 title="Print essay"
                 @click="printEssay"
@@ -228,6 +251,14 @@
           <CommentSection :writing-id="writing.id" />
         </div>
       </div>
+
+      <!-- Distraction-free reading overlay -->
+      <ImmersiveReader
+        :open="immersiveOpen"
+        :title="writing.title"
+        :chapters="immersiveChapters"
+        @close="immersiveOpen = false"
+      />
     </div>
   </ReadingLayout>
 </template>
@@ -245,6 +276,8 @@ import MarkdownRenderer from '../components/writing/MarkdownRenderer.vue'
 import ThemeTag from '../components/writing/ThemeTag.vue'
 import AppreciationButton from '../components/writing/AppreciationButton.vue'
 import CommentSection from '../components/writing/CommentSection.vue'
+import ImmersiveReader from '../components/reading/ImmersiveReader.vue'
+import type { ReaderChapter } from '../utils/immersiveChapters'
 import type { WritingBlock } from '../domain/WritingBlock'
 import type { Theme } from '../domain/Theme'
 import type { Appreciation } from '../domain/Appreciation'
@@ -278,6 +311,19 @@ const error = ref<string | null>(null)
 // True when the author pasted a complete HTML document (`<!DOCTYPE …` / `<html …`).
 // Drives a separate render path: sandboxed iframe instead of markdown paragraphs.
 const isSpa = computed(() => isStandaloneHtmlDoc(writing.value?.body))
+
+// Immersive (distraction-free) reading overlay. A single frag reads as one
+// chapter; the reader shows the title itself, so no chapter heading repeats it.
+const immersiveOpen = ref(false)
+const immersiveChapters = computed<ReaderChapter[]>(() => {
+  if (!writing.value || isSpa.value) return []
+  return [{
+    id: writing.value.id,
+    kind: 'chapter',
+    title: writing.value.title,
+    markdown: writing.value.body,
+  }]
+})
 
 // Split content into paragraphs for progressive reveal (body only — excerpt covers the opening)
 const paragraphs = computed(() => {

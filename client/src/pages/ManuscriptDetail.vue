@@ -57,6 +57,14 @@
               </span>
               <button
                 type="button"
+                @click="openImmersiveReader"
+                class="px-4 py-2 text-sm tracking-wide font-sans border border-line text-ink-light hover:text-ink hover:border-ink-lighter transition-colors duration-300"
+                title="Read the whole manuscript in a distraction-free, full-screen view"
+              >
+                Read
+              </button>
+              <button
+                type="button"
                 @click="showPreview = true"
                 class="px-4 py-2 text-sm tracking-wide font-sans border border-line text-ink-light hover:text-ink hover:border-ink-lighter transition-colors duration-300"
               >
@@ -670,6 +678,17 @@
       </div>
     </div>
 
+    <!-- Immersive reading overlay: the whole spine as one continuous text -->
+    <ImmersiveReader
+      v-if="manuscript"
+      :open="immersiveOpen"
+      :title="manuscript.title"
+      :subtitle="manuscript.workingSubtitle ?? undefined"
+      :chapters="immersiveChapters"
+      :loading="immersiveLoading"
+      @close="immersiveOpen = false"
+    />
+
     <!-- Book preview -->
     <BookPreviewModal
       v-if="manuscript"
@@ -730,6 +749,8 @@ import ManuscriptSubNav from '../components/storycraft/ManuscriptSubNav.vue'
 import ChatDrawer from '../components/manuscripts/ChatDrawer.vue'
 import SpineSection from '../components/manuscripts/SpineSection.vue'
 import LayerConfigModal from '../components/manuscripts/LayerConfigModal.vue'
+import ImmersiveReader from '../components/reading/ImmersiveReader.vue'
+import { buildManuscriptChapters, type ReaderChapter } from '../utils/immersiveChapters'
 import { useSpineDepthFlag } from '../composables/useSpineDepthFlag'
 import type { ApiResponse } from '@shared/ApiResponses'
 import type { Theme } from '../domain/Theme'
@@ -783,6 +804,49 @@ const dragOverItemId = ref<string | null>(null)
 
 // ---- preview ----
 const showPreview = ref(false)
+
+// ---- immersive reading ----
+// Frag bodies aren't part of the spine payload, so opening the reader lazily
+// fetches each linked WritingBlock once and caches it for re-opens.
+const immersiveOpen = ref(false)
+const immersiveLoading = ref(false)
+const immersiveBodyById = ref<Map<string, string>>(new Map())
+
+const immersiveChapters = computed<ReaderChapter[]>(() =>
+  buildManuscriptChapters(
+    sortedSections.value,
+    itemsBySection.value,
+    unassignedItems.value,
+    immersiveBodyById.value,
+  )
+)
+
+async function openImmersiveReader() {
+  immersiveOpen.value = true
+  const missing = [...new Set(
+    items.value
+      .filter(it => it.itemType === 'essay' && it.writingBlockId)
+      .map(it => it.writingBlockId!)
+      .filter(id => !immersiveBodyById.value.has(id))
+  )]
+  if (missing.length === 0) return
+  immersiveLoading.value = true
+  try {
+    const fetched = await Promise.all(
+      missing.map(id =>
+        api
+          .get<ApiResponse<WritingBlock>>(`/writing/${id}`)
+          .then(r => ({ id, body: r.data?.body || '' }))
+          .catch(() => ({ id, body: '' })),
+      ),
+    )
+    const next = new Map(immersiveBodyById.value)
+    for (const { id, body } of fetched) next.set(id, body)
+    immersiveBodyById.value = next
+  } finally {
+    immersiveLoading.value = false
+  }
+}
 
 // ---- briefing (structured AI handoff) ----
 const showBriefing = ref(false)
