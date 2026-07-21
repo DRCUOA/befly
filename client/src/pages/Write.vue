@@ -1,61 +1,11 @@
 <template>
-  <div class="zen-editor w-full" :class="{ 'panel-open': assistOpen || metadataPanelOpen }">
-    <!-- Typewriter chrome — purely decorative, evokes the machine without
-         crowding the surface. Top: cylindrical platen bar with end-knobs.
-         Bottom: ribbon strip with a thin accent stripe and ruler ticks.
-         Both sticky to the viewport edges so they always frame the page. -->
-    <div class="zen-platen" aria-hidden="true">
-      <div class="platen-knob platen-knob-left">
-        <div class="platen-knob-grooves"></div>
-      </div>
-      <div class="platen-cylinder"></div>
-      <div class="platen-knob platen-knob-right">
-        <div class="platen-knob-grooves"></div>
-      </div>
-    </div>
-    <div class="zen-ribbon" aria-hidden="true">
-      <div class="zen-ribbon-stripe"></div>
-      <div class="zen-ribbon-ruler"></div>
-    </div>
-
-    <!-- Zen editor surface: just the writing block. No header, no footer, no
-         banners. All controls live in the floating WritingToolsCluster. -->
+  <div class="write-page w-full" :class="{ 'panel-open': assistOpen || metadataPanelOpen }">
+    <!-- Simple authoring surface: title + body, nothing else. The page
+         scrolls naturally; all controls live in the bottom toolbar. -->
     <form @submit.prevent="handleSubmit" class="flex flex-col w-full">
-      <!-- Brightness slider — a near-invisible track in the top line of
-           the writing block. Sun icon thumb. Slides from full dark theme
-           (left) to full light theme (right). Drives JS interpolation of
-           every --color-* variable on documentElement. -->
-      <div class="zen-brightness w-full max-w-[100ch] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 pt-3">
-        <div class="zen-brightness-track">
-          <input
-            ref="brightnessInputRef"
-            type="range"
-            min="0"
-            max="100"
-            step="1"
-            v-model.number="brightnessValue"
-            aria-label="Page brightness — dark theme to light theme"
-            :title="`Brightness: ${brightnessValue}%`"
-            class="zen-brightness-slider"
-          />
-          <!-- Sun icon shown adjacent to the thumb. Stays at the right end as
-               a "destination = light" cue regardless of thumb position. -->
-          <span class="zen-brightness-icon" aria-hidden="true">
-            <svg width="14" height="14" viewBox="0 0 20 20" fill="none"
-                 stroke="currentColor" stroke-width="1.4"
-                 stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="10" cy="10" r="3.2" />
-              <path d="M10 2v2M10 16v2M2 10h2M16 10h2M4.6 4.6l1.4 1.4M14 14l1.4 1.4M4.6 15.4l1.4-1.4M14 6l1.4-1.4" />
-            </svg>
-          </span>
-        </div>
-      </div>
-
-      <!-- Title — typed onto the page, not a UI label. Same typewriter
-           font as the body, slightly larger, with a faint bottom rule
-           that suggests an underline-stamp from the typewriter itself.
-           Width matches the body so they read as one continuous sheet. -->
-      <div class="zen-title-area w-full max-w-[100ch] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 pt-6 sm:pt-8">
+      <!-- Title — same face as the body, slightly larger, faint rule
+           underneath so it reads as part of the sheet, not a UI label. -->
+      <div class="write-title-area w-full max-w-[72ch] mx-auto px-4 sm:px-6 md:px-8 pt-6 sm:pt-10">
         <input
           id="title"
           ref="titleInputRef"
@@ -63,7 +13,7 @@
           type="text"
           required
           class="block w-full border-0 bg-transparent font-typewriter text-2xl sm:text-3xl font-bold text-ink placeholder:text-ink-whisper focus:ring-0 focus:outline-none py-1"
-          placeholder="Place your title here"
+          placeholder="Title"
           aria-label="Title"
         />
       </div>
@@ -75,16 +25,16 @@
            textarea is hidden but the underlying value is unchanged. -->
       <div
         v-if="isSpaBody"
-        class="zen-spa-banner w-full max-w-[100ch] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 pt-3"
+        class="w-full max-w-[72ch] mx-auto px-4 sm:px-6 md:px-8 pt-3"
       >
-        <div class="zen-spa-banner-pill">
-          <span class="zen-spa-banner-dot" aria-hidden="true"></span>
-          <span class="zen-spa-banner-text">
+        <div class="spa-banner-pill">
+          <span class="spa-banner-dot" aria-hidden="true"></span>
+          <span class="spa-banner-text">
             Interactive HTML detected — this frag will render as a sandboxed SPA when published.
           </span>
           <button
             type="button"
-            class="zen-spa-banner-toggle"
+            class="spa-banner-toggle"
             @click="spaPreviewOpen = !spaPreviewOpen"
           >
             {{ spaPreviewOpen ? 'Edit source' : 'Preview' }}
@@ -92,28 +42,20 @@
         </div>
       </div>
 
-      <!-- Body — the typewriter "paper". This wrapper is the clip viewport
-           (sized in JS to end at the platen line); the textarea inside is
-           translateY-pinned so the caret's line always sits at the platen.
-           Above the caret = the display zone; the caret line = the single
-           input strip; below it is clipped to blank paper. Width matches the
-           title (100ch) so the page reads as one wide sheet. -->
-      <div ref="bodyAreaRef" class="zen-body-area relative w-full max-w-[100ch] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16">
+      <!-- Body — an auto-growing textarea; the page itself is the scroll
+           surface. Bottom padding keeps the last lines clear of the fixed
+           toolbar. Width matches the title so both read as one sheet. -->
+      <div class="relative w-full max-w-[72ch] mx-auto px-4 sm:px-6 md:px-8 pb-36 sm:pb-32">
         <textarea
           id="body"
           ref="bodyTextareaRef"
           v-show="!isSpaBody || !spaPreviewOpen"
           v-model="form.body"
           required
-          class="zen-body zen-body-roll block w-full min-h-[40vh] border-0 bg-transparent font-typewriter text-base sm:text-lg text-ink placeholder:text-ink-whisper focus:ring-0 focus:outline-none resize-none overflow-hidden py-2"
-          :style="[bodyFontStyle, paperTransformStyle]"
-          placeholder="Place your text here"
+          class="write-body block w-full min-h-[50vh] border-0 bg-transparent font-typewriter text-base sm:text-lg text-ink placeholder:text-ink-whisper focus:ring-0 focus:outline-none resize-none overflow-hidden py-2"
+          :style="bodyFontStyle"
+          placeholder="Start writing…"
           aria-label="Body"
-          @input="onBodyInput"
-          @focus="scheduleTypewriterScroll"
-          @click="scheduleTypewriterScroll"
-          @keyup="scheduleTypewriterScroll"
-          @blur="onBodyBlur"
         />
 
         <!-- Live SPA preview — sandboxed iframe of the current body value.
@@ -125,22 +67,20 @@
           :key="spaPreviewKey"
           :srcdoc="form.body"
           title="SPA preview"
-          class="zen-spa-preview"
+          class="spa-preview"
           sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox"
           referrerpolicy="no-referrer"
           loading="eager"
         />
         <!-- Mirror div: an invisible copy of the textarea content used to
-             measure caret pixel position for typewriter scrolling.
-             CRITICAL: must wrap text at the SAME column as the textarea or
-             the marker's Y won't match the cursor's actual Y. Width is set
-             via matching horizontal padding (parent has px-*; mirror copies
-             it). Font, size, vertical padding and line-height must also
-             match the textarea exactly. -->
+             measure content height for flash-free auto-resize.
+             CRITICAL: must wrap text at the SAME column as the textarea.
+             Width is set via matching horizontal padding (parent has px-*;
+             mirror copies it). Font, size, vertical padding and line-height
+             must also match the textarea exactly. -->
         <div
           ref="bodyMirrorRef"
-          class="zen-body absolute top-0 left-0 right-0 invisible font-typewriter text-base sm:text-lg px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 py-2 whitespace-pre-wrap break-words pointer-events-none"
-          :class="bodyMirrorClasses"
+          class="write-body absolute top-0 left-0 right-0 w-full invisible font-typewriter text-base sm:text-lg px-4 sm:px-6 md:px-8 py-2 whitespace-pre-wrap break-words pointer-events-none"
           :style="bodyFontStyle"
           aria-hidden="true"
         ></div>
@@ -149,7 +89,7 @@
 
     <!-- Metadata panel (cover, themes, visibility) — sits alongside the
          editor when open (no modal backdrop), thanks to the panel-open
-         class on .zen-editor that adds right-padding to the writing area. -->
+         class on .write-page that adds right-padding to the writing area. -->
     <MetadataPanel
       v-model="metadataPanelOpen"
       :form="form"
@@ -200,8 +140,8 @@
       >History</button>
     </div>
 
-    <!-- Floating zen cluster — page actions on top, AI tools below. This is
-         the ONLY persistent UI on the editor surface. Nothing else.  -->
+    <!-- Bottom toolbar — page actions plus a consolidated AI menu. This is
+         the ONLY persistent UI on the editor surface. -->
     <WritingToolsCluster
       :has-selection="hasLiveSelection"
       :active-mode="assistOpen ? assistMode : null"
@@ -209,7 +149,6 @@
       :save-busy="submitting"
       :save-disabled="loadingWriting || !canSave"
       :metadata-open="metadataPanelOpen"
-      :cursor-y="cursorViewportY"
       :model="selectedModel"
       :find-open="findOpen"
       @select="openAssist"
@@ -232,18 +171,17 @@
       @status="onFindStatus"
     />
 
-    <!-- Tiny bottom-left status pill — only visible briefly after save success
-         or while showing an error. Replaces the bulky footer's draft indicator
-         and error banner with something that doesn't permanently take screen real estate. -->
-    <Transition name="zen-status">
+    <!-- Tiny status pill — only visible briefly after save success or while
+         showing an error. Sits above the toolbar so neither covers the other. -->
+    <Transition name="status-pill">
       <div
-        v-if="zenStatus"
-        class="zen-status-pill"
-        :class="zenStatus.kind"
+        v-if="statusPill"
+        class="status-pill"
+        :class="statusPill.kind"
         role="status"
         aria-live="polite"
       >
-        {{ zenStatus.message }}
+        {{ statusPill.message }}
       </div>
     </Transition>
     <WritingAssistPanel
@@ -325,7 +263,6 @@ import FindReplacePanel from '../components/writing/FindReplacePanel.vue'
 import EditorsPanel from '../components/writing/EditorsPanel.vue'
 import RevisionHistoryPanel from '../components/writing/RevisionHistoryPanel.vue'
 import { ApiError } from '../api/client'
-import { useBreathingCaret } from '../composables/useBreathingCaret'
 import { useWritingAssist } from '../composables/useWritingAssist'
 import type { WritingAssistMode } from '@shared/WritingAssist'
 import { isStandaloneHtmlDoc } from '../utils/markdown'
@@ -384,45 +321,12 @@ const findOpen = ref(false)
 const { rules: typographyRules } = useTypographyRules()
 const titleInputRef = ref<HTMLInputElement | null>(null)
 const bodyTextareaRef = ref<HTMLTextAreaElement | null>(null)
+const bodyMirrorRef = ref<HTMLDivElement | null>(null)
 const typographySuggestions = ref<TypographySuggestion[]>([])
 const dismissedSuggestionKeys = ref(new Set<string>())
-// Breathing caret — P2-uix-06 / cni-06
-const { refresh: refreshCaret } = useBreathingCaret(titleInputRef, bodyTextareaRef)
-watch(() => form.value.body, () => nextTick(refreshCaret))
-watch(() => form.value.title, () => nextTick(refreshCaret))
 
 let scanTimer: ReturnType<typeof setTimeout> | null = null
 const SCAN_DEBOUNCE_MS = 1500
-
-// Word count on pause (P3-uix-07 / cni-07): visible only after typing pause, 2 lines below text
-const showWordCount = ref(false)
-const bodyMirrorRef = ref<HTMLDivElement | null>(null)
-const bodyAreaRef = ref<HTMLDivElement | null>(null)
-const wordCountStyle = ref<{ top: string }>({ top: '0.5rem' })
-
-const bodyMirrorClasses = 'w-full'
-
-function updateWordCountPosition() {
-  const mirror = bodyMirrorRef.value
-  if (!mirror) return
-  const computed = getComputedStyle(mirror)
-  const lineHeight = parseFloat(computed.lineHeight) || parseFloat(computed.fontSize) * 1.6
-  const textHeight = mirror.offsetHeight
-  const twoLines = 2 * lineHeight
-  wordCountStyle.value = { top: `${textHeight + twoLines}px` }
-}
-
-watch(showWordCount, (visible) => {
-  if (visible) {
-    nextTick(() => updateWordCountPosition())
-  }
-})
-
-watch(() => form.value.body, () => {
-  if (showWordCount.value) {
-    nextTick(() => updateWordCountPosition())
-  }
-})
 
 function suggestionKey(s: TypographySuggestion): string {
   return `${s.ruleId}:${s.original}`
@@ -469,19 +373,9 @@ function refreshSuggestions() {
 }
 
 watch(() => form.value.body, () => {
-  showWordCount.value = false
   if (scanTimer) clearTimeout(scanTimer)
-  scanTimer = setTimeout(() => {
-    refreshSuggestions()
-    showWordCount.value = true
-  }, SCAN_DEBOUNCE_MS)
+  scanTimer = setTimeout(refreshSuggestions, SCAN_DEBOUNCE_MS)
 })
-
-function onBodyBlur() {
-  if (scanTimer) clearTimeout(scanTimer)
-  refreshSuggestions()
-  showWordCount.value = true
-}
 
 // Draft management
 const draft = useWriteDraft(writingId.value, form)
@@ -497,19 +391,19 @@ const hasUnsavedChanges = computed(() => {
       form.value.coverImagePosition !== initialFormState.value.coverImagePosition) {
     return true
   }
-  
+
   // Check themeIds array efficiently
   const currentThemes = form.value.themeIds
   const initialThemes = initialFormState.value.themeIds
-  
+
   if (currentThemes.length !== initialThemes.length) {
     return true
   }
-  
+
   // Sort and compare element-by-element
   const sortedCurrent = [...currentThemes].sort()
   const sortedInitial = [...initialThemes].sort()
-  
+
   return sortedCurrent.some((id, index) => id !== sortedInitial[index])
 })
 
@@ -570,7 +464,7 @@ const setFormState = (writing: Partial<WritingBlock>) => {
     coverImageUrl: writing.coverImageUrl || '',
     coverImagePosition: writing.coverImagePosition || '50% 50%'
   }
-  
+
   form.value = { ...formState }
   initialFormState.value = { ...formState, themeIds: [...formState.themeIds] }
 }
@@ -684,7 +578,7 @@ const doSubmit = async () => {
 
     draft.clearDraft()
     setFormState(form.value)
-    flashZenStatus('success', isEditing.value ? 'Updated' : 'Published', 1200)
+    flashStatus('success', isEditing.value ? 'Updated' : 'Published', 1200)
     navigateBack()
   } catch (err) {
     if (err instanceof ApiError && err.status === 409) {
@@ -694,12 +588,12 @@ const doSubmit = async () => {
         'cancel to keep them and copy them out manually.)'
       )
       if (reload) await loadWriting()
-      flashZenStatus('error', 'Save blocked: frag was updated by another editor', 4000)
+      flashStatus('error', 'Save blocked: frag was updated by another editor', 4000)
       return
     }
     const msg = err instanceof Error ? err.message : (isEditing.value ? 'Failed to update writing' : 'Failed to publish writing')
     error.value = msg
-    flashZenStatus('error', msg, 4000)
+    flashStatus('error', msg, 4000)
   } finally {
     submitting.value = false
   }
@@ -709,7 +603,7 @@ const handleSubmit = async () => {
   if (!form.value.title.trim() || !form.value.body.trim()) {
     const msg = 'Title and body are required'
     error.value = msg
-    flashZenStatus('error', msg, 2400)
+    flashStatus('error', msg, 2400)
     return
   }
 
@@ -728,11 +622,10 @@ const handleSubmit = async () => {
 /* ============================================================
  * Writing assist — coherence Q&A, define, focus, expand, proofread.
  *
- * Floating bottom-right cluster opens a slide-out right panel. The cluster
- * picks the mode; the panel runs the AI request and emits insert/replace
- * back into the textarea. Selection tracking is the only intrusive bit —
- * it's read-only and runs on the same events the breathing-caret already
- * listens to, so it adds no new event surface.
+ * The toolbar's AI menu picks the mode; the slide-out panel runs the AI
+ * request and emits insert/replace back into the textarea. Selection
+ * tracking is the only intrusive bit — it's read-only and listens to
+ * document selectionchange, so it adds no new event surface.
  * ============================================================ */
 
 const assistOpen = ref(false)
@@ -744,7 +637,7 @@ const assistSelection = ref('')
 // Where the snapshotted selection lives in the textarea, so Replace can
 // substitute exactly the right range (Insert falls back to caret).
 const assistSelectionRange = ref<{ start: number; end: number } | null>(null)
-// Live "is there currently a selection" flag for the cluster's disabled
+// Live "is there currently a selection" flag for the toolbar's disabled
 // state. Updated on selectionchange — cheap, no debounce needed.
 const hasLiveSelection = ref(false)
 
@@ -754,10 +647,10 @@ const hasLiveSelection = ref(false)
 // causes "Expected Boolean, got Object" prop warnings on the panel. So we
 // destructure into top-level locals.
 /* ============================================================
- * Selected OpenAI model — the writer picks from a popover in the cluster.
- * Default 'gpt-4o-mini' (cheapest, matches the server's prior default).
- * Persisted to localStorage so the choice survives page reloads. The
- * server validates against an allow-list before honouring it.
+ * Selected OpenAI model — the writer picks from the AI menu's model
+ * section. Default 'gpt-4o-mini' (cheapest, matches the server's prior
+ * default). Persisted to localStorage so the choice survives page
+ * reloads. The server validates against an allow-list before honouring it.
  * ============================================================ */
 const SELECTED_MODEL_STORAGE_KEY = 'rambulations-selected-model'
 const DEFAULT_MODEL = 'gpt-4o-mini'
@@ -786,8 +679,8 @@ const {
   expand:               runExpand,
   proofread:            runProofread,
   factCheck:            runFactCheck,
-  // Develop quadrant — four sister wrappers, dispatched from the
-  // cluster's Develop sub-menu. Same arg shape as runExpand.
+  // Develop quadrant — four sister wrappers, dispatched from the AI
+  // menu's Develop section. Same arg shape as runExpand.
   fictionBreadth:       runFictionBreadth,
   fictionDepth:         runFictionDepth,
   nonfictionBreadth:    runNonfictionBreadth,
@@ -808,7 +701,7 @@ function captureCurrentSelection(): { text: string; start: number; end: number }
 }
 
 /* ============================================================
- * Zen page actions — Save / Metadata / Exit live in the cluster.
+ * Page actions — Save / Metadata / Exit live in the toolbar.
  * ============================================================ */
 
 /** Disable Save when there's no title or body — prevents empty submissions
@@ -818,17 +711,17 @@ const canSave = computed(() =>
   form.value.title.trim().length > 0 && form.value.body.trim().length > 0
 )
 
-/** Lightweight status pill replacing the old footer's draft / error banners.
- *  Stays minimal, fades after a short timeout, keeps the canvas zen. */
-const zenStatus = ref<{ kind: 'success' | 'error' | 'info'; message: string } | null>(null)
-let zenStatusTimer: ReturnType<typeof setTimeout> | null = null
+/** Lightweight status pill — save receipts, autosave notes, errors.
+ *  Stays minimal, fades after a short timeout. */
+const statusPill = ref<{ kind: 'success' | 'error' | 'info'; message: string } | null>(null)
+let statusPillTimer: ReturnType<typeof setTimeout> | null = null
 
 /* ============================================================
- * Body font size — controlled by the A+ / A- icons in the cluster.
+ * Body font size — controlled by the text-size control in the toolbar.
  * Default is null, meaning "use the CSS default" (text-base sm:text-lg).
  * Once the writer adjusts, we apply a pixel-explicit font-size on both
  * the textarea AND the mirror via :style binding. They MUST stay in
- * sync or line wrapping will diverge and typewriter scroll breaks.
+ * sync or line wrapping will diverge and auto-resize breaks.
  * ============================================================ */
 
 const FONT_SIZE_MIN = 12
@@ -857,14 +750,7 @@ function bumpFontSize(direction: number) {
   // Re-snap textarea height since line-height (unitless 1.85) scales with
   // font-size — the new content height is different. Wait one tick so the
   // style binding has flushed before we measure.
-  nextTick(() => {
-    autoResizeBody()
-    // Line height scales with font size, so the clip viewport and pin offset
-    // both need recomputing.
-    updatePaperClip()
-    scheduleTypewriterScroll()
-    refreshCursorViewportY()
-  })
+  nextTick(autoResizeBody)
 }
 
 /* ============================================================
@@ -916,13 +802,13 @@ async function runAutosaveIfNeeded() {
     // subsequent watcher won't trigger another autosave because each
     // watched getter returns the same primitive value as before.
     setFormState(form.value)
-    flashZenStatus('info', 'Autosaved', 1200)
+    flashStatus('info', 'Autosaved', 1200)
   } catch (err) {
     // Stay quiet on autosave failures — the writer didn't ask for this
     // to happen, so a brief notice is enough; they can manually Save
-    // (cluster Save icon) if they want a guaranteed write.
+    // (toolbar Save button) if they want a guaranteed write.
     const msg = err instanceof Error ? err.message : 'Autosave failed'
-    flashZenStatus('error', `Autosave failed: ${msg}`, 3000)
+    flashStatus('error', `Autosave failed: ${msg}`, 3000)
   } finally {
     submitting.value = false
   }
@@ -945,73 +831,10 @@ watch(
   { deep: true }
 )
 
-/* ============================================================
- * Brightness slider — interpolates between the dark and light theme
- * colors defined in index.css. The slider value (0–100) drives a JS
- * lerp of every --color-* variable, applied as inline styles on
- * document.documentElement (which override :root and .dark definitions).
- *
- * The .dark structural class is also stripped while the slider is in
- * use, so treatments that depend on it (the body gradient, the hidden
- * paper-grain overlay) don't fight the interpolation. They re-engage
- * if the writer drags the slider all the way to 0.
- * ============================================================ */
-
-const brightnessInputRef = ref<HTMLInputElement | null>(null)
-const brightnessValue = ref<number>(100) // 100 = light by default
-
-/** Snapshot of `.dark`-on-`<html>` taken at mount, BEFORE applyBrightness
- *  strips the class. The unmount cleanup uses this to restore the writer
- *  to the same theme state they arrived in. Module-scoped (not a ref)
- *  because no template needs it — it's plumbing for cleanup. */
-let wasDarkOnEntry = false
-
-/** Pairs of (light-mode RGB) and (dark-mode RGB) for every theme token.
- *  Keep these in sync with the values in index.css :root / .dark blocks.
- *  When you change a token's color in index.css, also update its entry
- *  here or the brightness slider will lerp to a stale value. */
-type Rgb = readonly [number, number, number]
-const THEME_PAIRS: { name: string; light: Rgb; dark: Rgb }[] = [
-  { name: '--color-paper',         light: [226, 204, 172], dark: [54,  52,  46] },
-  { name: '--color-surface',       light: [234, 215, 188], dark: [64,  70,  58] },
-  { name: '--color-ink',           light: [37,  37,  32 ], dark: [226, 204, 172] },
-  { name: '--color-ink-light',     light: [30,  46,  28 ], dark: [168, 180, 196] },
-  { name: '--color-ink-lighter',   light: [122, 142, 158], dark: [122, 142, 158] },
-  { name: '--color-ink-whisper',   light: [168, 180, 196], dark: [98,  95,  85 ] },
-  { name: '--color-line',          light: [207, 188, 156], dark: [78,  76,  68 ] },
-  { name: '--color-accent',        light: [255, 128, 24 ], dark: [255, 128, 24 ] },
-  { name: '--color-accent-hover',  light: [230, 100, 10 ], dark: [255, 208, 85 ] },
-  { name: '--color-accent-muted',  light: [248, 230, 200], dark: [70,  52,  36 ] },
-  { name: '--cluster-icon-color',  light: [30,  46,  28 ], dark: [255, 255, 255] },
-]
-
-function applyBrightness(value: number) {
-  const t = Math.max(0, Math.min(100, value)) / 100
-  const root = document.documentElement
-  for (const pair of THEME_PAIRS) {
-    const r = Math.round(pair.dark[0] + (pair.light[0] - pair.dark[0]) * t)
-    const g = Math.round(pair.dark[1] + (pair.light[1] - pair.dark[1]) * t)
-    const b = Math.round(pair.dark[2] + (pair.light[2] - pair.dark[2]) * t)
-    root.style.setProperty(pair.name, `${r} ${g} ${b}`)
-  }
-  // ALWAYS strip .dark — the slider drives all colors via inline vars,
-  // and the structural .dark CSS (body gradient, page-canvas gradient,
-  // hidden paper grain) was fighting those overrides. At slider=0 the
-  // shorthand `background: linear-gradient(...)` in .dark .page-canvas
-  // resets background-color to transparent and depends on the gradient
-  // vars, producing a blank surface. Solid colours via inline vars are
-  // predictable across the entire 0–100 range. The animated dusk-drift
-  // remains available outside slider mode — if the writer hasn't touched
-  // the slider, system-pref / .dark behaviour is unchanged.
-  root.classList.remove('dark')
-}
-
-watch(brightnessValue, (v) => applyBrightness(v))
-
-function flashZenStatus(kind: 'success' | 'error' | 'info', message: string, ms: number = 2400) {
-  zenStatus.value = { kind, message }
-  if (zenStatusTimer) clearTimeout(zenStatusTimer)
-  zenStatusTimer = setTimeout(() => { zenStatus.value = null }, ms)
+function flashStatus(kind: 'success' | 'error' | 'info', message: string, ms: number = 2400) {
+  statusPill.value = { kind, message }
+  if (statusPillTimer) clearTimeout(statusPillTimer)
+  statusPillTimer = setTimeout(() => { statusPill.value = null }, ms)
 }
 
 /** Exit icon — go back to wherever the writer came from, persisting any
@@ -1022,37 +845,26 @@ function handleExit() {
 }
 
 /** The Find & Replace panel emits `update:body` after an in-essay replace.
- *  We treat it like any other body edit so the autosave/draft and word-count
- *  pipelines pick it up. */
+ *  The body watcher picks it up like any other edit — autosave, draft and
+ *  auto-resize all run from there. */
 function onBodyReplaced(next: string) {
   form.value.body = next
-  // Re-run the same plumbing the textarea's @input handler triggers — body
- // mirror, draft autosave, typography scan, etc.
-  onBodyInput()
 }
 
 /** The Find & Replace panel emits status messages (match counts, errors,
- *  replace receipts). Surface them through the same zen status pill that
+ *  replace receipts). Surface them through the same status pill that
  *  save/error states use, so we don't introduce a second toast system. */
 function onFindStatus(status: { kind: 'info' | 'success' | 'error'; message: string }) {
-  flashZenStatus(status.kind, status.message, status.kind === 'error' ? 4000 : 2600)
+  flashStatus(status.kind, status.message, status.kind === 'error' ? 4000 : 2600)
 }
 
 /* ============================================================
  * Auto-resize the body textarea so its height always matches its content.
  *
  * Without this, the textarea's min-h-[Xvh] caps it at a fixed height and
- * any content past that scrolls INSIDE the textarea. That breaks two
- * things at once:
- *   1. The breathing-caret composable hides itself when the cursor's Y
- *      exceeds the textarea's clientHeight (it thinks the cursor has
- *      scrolled out of view).
- *   2. The typewriter window-scroll has nothing to scroll, because the
- *      textarea-internal scroll is what actually moved.
- *
- * Snapping height to scrollHeight every time the value changes makes the
- * textarea grow with content. The page itself becomes the scrollable
- * surface, and both effects work as intended.
+ * any content past that scrolls INSIDE the textarea — a miserable mobile
+ * experience. Snapping height to content height makes the textarea grow
+ * with the text so the page itself is the scrollable surface.
  * ============================================================ */
 
 function autoResizeBody() {
@@ -1068,11 +880,6 @@ function autoResizeBody() {
   // (matching font, padding, width). Reading its offsetHeight gives us the
   // target height in one pass without ever touching the live textarea's
   // dimensions during measurement.
-  //
-  // We sync the mirror's text to the current value here. The typewriter-
-  // scroll function will later overwrite it with a marker injected at the
-  // caret position; both writes are safe because the mirror is invisible
-  // and only used for measurement.
   const trailingNewline = ta.value.endsWith('\n')
   mirror.textContent = (ta.value || ' ') + (trailingNewline ? ' ' : '')
   const target = mirror.offsetHeight
@@ -1087,193 +894,14 @@ function autoResizeBody() {
 // Watch the body for ANY change — typing, load-from-server, draft-restore,
 // AI insert/replace — and snap the textarea height to fit. Runs on the
 // next tick so the textarea has had a chance to flush the new value
-// through the DOM before we read scrollHeight.
-watch(() => form.value.body, () => nextTick(() => {
-  autoResizeBody()
-  // Reposition the paper after programmatic changes (AI insert/replace,
-  // draft restore). No-ops visually when the textarea isn't focused.
-  scheduleTypewriterScroll()
-}))
-
-/* ============================================================
- * Typewriter scrolling — keep the active line at a fixed lower-middle
- * position in the viewport as the writer types or moves the caret. We use
- * the existing bodyMirrorRef to compute caret pixel position by inserting
- * a marker span at selectionStart. Throttled to one call per animation
- * frame. Honors prefers-reduced-motion.
- * ============================================================ */
-
-/**
- * Fraction of the viewport that should remain *below* the active typing
- * line once typewriter-centering has kicked in. 0.20 means the cursor
- * sits at 80% from the top with 20vh of breathing room beneath. Tweak
- * this single constant to move the typewriter line up or down.
- */
-const TYPEWRITER_BOTTOM_PCT = 0.20
-
-/**
- * Cursor's Y position in the viewport, in pixels. Updated whenever we
- * compute the marker's position (typewriter scroll, selection change,
- * window scroll/resize). Null when the textarea is not focused.
- *
- * The floating WritingToolsCluster reads this via :cursor-y prop and
- * tracks it 10px above when the writer toggles to float mode.
- */
-const cursorViewportY = ref<number | null>(null)
-
-/**
- * Vertical offset (px) applied to the body textarea so the caret's line is
- * pinned at the platen position. This is the typewriter mechanic: instead of
- * scrolling the window, we translate the paper. Negative pushes the paper up
- * (older lines roll out the top into the clipped display zone); positive
- * pushes it down (short docs / earlier lines sit at the platen). The body-area
- * is overflow-hidden and clipped at the active line's bottom, so anything
- * below the caret line reads as blank paper.
- */
-const paperOffset = ref(0)
-const paperTransformStyle = computed(() => ({
-  transform: `translateY(${paperOffset.value}px)`,
-}))
-
-let typewriterRaf: number | null = null
-
-function scheduleTypewriterScroll() {
-  if (typewriterRaf !== null) return
-  typewriterRaf = requestAnimationFrame(() => {
-    typewriterRaf = null
-    runTypewriterScroll()
-  })
-}
-
-/**
- * Measure the cursor's viewport Y by injecting a zero-width marker into
- * the mirror at the caret position and reading getBoundingClientRect().top.
- *
- * Returns null if the textarea isn't focused (cursor isn't really
- * "anywhere" in that case) or the refs aren't ready. Side-effect: the
- * mirror's content is replaced with [head, marker, tail]. autoResizeBody
- * also writes to the mirror, but the marker is zero-width so it doesn't
- * meaningfully change mirror.offsetHeight; auto-resize remains accurate.
- */
-function measureCursorViewportY(): number | null {
-  const ta = bodyTextareaRef.value
-  const mirror = bodyMirrorRef.value
-  if (!ta || !mirror) return null
-  if (document.activeElement !== ta) return null
-
-  const value = ta.value
-  const caret = ta.selectionStart ?? value.length
-
-  mirror.textContent = ''
-  mirror.appendChild(document.createTextNode(value.slice(0, caret)))
-  const marker = document.createElement('span')
-  marker.textContent = '​' // zero-width space — keeps line height correct
-  mirror.appendChild(marker)
-  mirror.appendChild(document.createTextNode(value.slice(caret) || ' '))
-
-  return marker.getBoundingClientRect().top
-}
-
-function runTypewriterScroll() {
-  const cursorY = measureCursorViewportY()
-  if (cursorY === null) return
-
-  // Pin the caret's line at the platen by translating the paper, not the
-  // window. measureCursorViewportY reads the marker from the UNtranslated
-  // mirror, so cursorY is the caret's natural viewport Y; the offset needed
-  // to move it onto the platen line is simply (targetY - cursorY). Unlike
-  // the old window-scroll this runs in BOTH directions: typing forward rolls
-  // the paper up, clicking back into an earlier line rolls it down so that
-  // line returns to the platen.
-  const targetY = window.innerHeight * (1 - TYPEWRITER_BOTTOM_PCT)
-  paperOffset.value = targetY - cursorY
-
-  // The caret now visually sits at the platen; tell the floating cluster.
-  cursorViewportY.value = targetY
-}
-
-/**
- * Resolve the body's line height in px (unitless 1.85 × font-size). Falls
- * back to a sane multiple of the font size if the textarea isn't measurable
- * yet. Used to size the clip viewport so its bottom edge lands at the bottom
- * of the active (platen) line.
- */
-function currentBodyLineHeight(): number {
-  const ta = bodyTextareaRef.value
-  if (!ta) return 30
-  const cs = getComputedStyle(ta)
-  const lh = parseFloat(cs.lineHeight)
-  if (!Number.isNaN(lh) && lh > 0) return lh
-  const fs = parseFloat(cs.fontSize) || 16
-  return fs * 1.85
-}
-
-/**
- * Size the body-area so it becomes the "paper viewport": its top stays where
- * the body begins (just under the title), and its bottom is clipped at the
- * bottom of the active line — the platen position (80vh) plus one line. With
- * overflow:hidden, this clips everything below the caret line to blank paper
- * and everything that rolls above the title, leaving only the display zone
- * (above) and the single active line (the input strip) visible.
- */
-function updatePaperClip() {
-  const area = bodyAreaRef.value
-  if (!area) return
-  // SPA preview replaces the textarea with a full-height iframe — the
-  // typewriter clip would crop it. Let the area size to its content instead.
-  if (isSpaBody.value && spaPreviewOpen.value) {
-    area.style.height = ''
-    return
-  }
-  const top = area.getBoundingClientRect().top
-  const activeLineBottom =
-    window.innerHeight * (1 - TYPEWRITER_BOTTOM_PCT) + currentBodyLineHeight()
-  area.style.height = `${Math.max(0, activeLineBottom - top)}px`
-}
-
-// Layout-affecting state: opening a side panel re-pads the editor (changing
-// the body's top and wrap width) and the SPA banner shifts the body down.
-// Recompute the clip and re-pin both immediately and after the 240ms panel
-// transition settles.
-watch(
-  [() => assistOpen.value, () => metadataPanelOpen.value, () => isSpaBody.value, () => spaPreviewOpen.value],
-  () => {
-    nextTick(() => {
-      updatePaperClip()
-      scheduleTypewriterScroll()
-    })
-    window.setTimeout(() => {
-      updatePaperClip()
-      scheduleTypewriterScroll()
-    }, 260)
-  },
-)
-
-/**
- * Lightweight cursor-Y updater that does NOT scroll the page. Called on
- * selection change, window scroll, and window resize so the floating
- * cluster keeps tracking even when the writer isn't typing.
- */
-function refreshCursorViewportY() {
-  const y = measureCursorViewportY()
-  // null is meaningful — it means the cursor isn't in the textarea.
-  // Pass it through so the cluster falls back to its fixed corner.
-  cursorViewportY.value = y
-}
-
-/** Combined input handler — schedule the typewriter window-scroll. The
- *  watcher on form.value.body handles auto-resize; the typography-scan
- *  watch handles typography suggestions. So this only needs to drive the
- *  per-keystroke window-scroll. */
-function onBodyInput() {
-  scheduleTypewriterScroll()
-}
+// through the DOM before we measure.
+watch(() => form.value.body, () => nextTick(autoResizeBody))
 
 function onSelectionMaybeChanged() {
   const ta = bodyTextareaRef.value
   if (!ta || document.activeElement !== ta) {
     // Don't flip on/off when the user moves focus to the panel — keep the
-    // last known selection state instead, so the cluster doesn't disable
+    // last known selection state instead, so the toolbar doesn't disable
     // mid-flow.
     return
   }
@@ -1429,28 +1057,8 @@ function handleReplaceSelection(text: string) {
 
 // selectionchange is the cleanest signal for "the selection in any input
 // has changed". Fires for both keyboard (shift+arrow) and mouse drag.
-// Also refreshes the cursor's viewport Y so the floating cluster tracks
-// arrow-key navigation, not just typing.
 function onDocumentSelectionChange() {
   onSelectionMaybeChanged()
-  refreshCursorViewportY()
-}
-
-/** Window scroll / resize — the cursor's viewport Y changes even when the
- *  writer isn't doing anything (page scrolling, window resize). The
- *  floating cluster needs to follow. Throttled to one rAF to avoid spam. */
-let cursorYRaf: number | null = null
-function onWindowScrollOrResize() {
-  if (cursorYRaf !== null) return
-  cursorYRaf = requestAnimationFrame(() => {
-    cursorYRaf = null
-    // Viewport size feeds both the clip height and the platen target, so
-    // recompute the clip and re-pin the active line before refreshing the
-    // cluster's tracked cursor Y.
-    updatePaperClip()
-    runTypewriterScroll()
-    refreshCursorViewportY()
-  })
 }
 
 // Persist draft to localStorage before leaving (no confirmation dialog)
@@ -1501,472 +1109,65 @@ onMounted(async () => {
   // was set before the textarea was in the DOM).
   await nextTick()
   autoResizeBody()
-  // Establish the paper viewport's clip height now that the body is laid out.
-  updatePaperClip()
-
-  // Initialize brightness from the current document state. If the writer
-  // arrived in dark mode (.dark class set by useTheme), the slider starts
-  // at 0 (full dark). Otherwise 100 (full light). This is purely visual
-  // initialization — the slider takes over from here.
-  //
-  // We snapshot the original .dark state BEFORE applyBrightness strips
-  // it, so onBeforeUnmount can restore it. Without this, navigating
-  // away leaves the inline CSS vars on <html> and the .dark class
-  // stripped, which breaks the rest of the app: any later toggle of
-  // dark mode pairs the structural .dark gradient with light-valued
-  // inline CSS vars, producing dark text on a dark gradient → blank
-  // pages site-wide. See also: cleanup block in onBeforeUnmount.
-  wasDarkOnEntry = document.documentElement.classList.contains('dark')
-  brightnessValue.value = wasDarkOnEntry ? 0 : 100
 
   // Add beforeunload event listener
   window.addEventListener('beforeunload', handleBeforeUnload)
-  // selectionchange tells the writing-tools cluster whether to enable
-  // selection-only tools like Focus. It fires from both keyboard and mouse.
+  // selectionchange tells the toolbar whether to enable selection-only
+  // tools like Focus. It fires from both keyboard and mouse.
   document.addEventListener('selectionchange', onDocumentSelectionChange)
-  // Page scroll + viewport resize change the cursor's viewport Y even
-  // without typing — the floating cluster must follow.
-  window.addEventListener('scroll', onWindowScrollOrResize, { passive: true })
-  window.addEventListener('resize', onWindowScrollOrResize)
 })
 
 onBeforeUnmount(() => {
   if (scanTimer) clearTimeout(scanTimer)
-  if (zenStatusTimer) clearTimeout(zenStatusTimer)
+  if (statusPillTimer) clearTimeout(statusPillTimer)
   if (autosaveTimer) clearTimeout(autosaveTimer)
-  if (typewriterRaf !== null) cancelAnimationFrame(typewriterRaf)
-  if (cursorYRaf !== null) cancelAnimationFrame(cursorYRaf)
   draft.disableAutosave()
   window.removeEventListener('beforeunload', handleBeforeUnload)
   document.removeEventListener('selectionchange', onDocumentSelectionChange)
-  window.removeEventListener('scroll', onWindowScrollOrResize)
-  window.removeEventListener('resize', onWindowScrollOrResize)
-
-  /* ---- Brightness cleanup ----
-   *
-   * The slider sets inline CSS vars on document.documentElement and
-   * strips the .dark class. Both effects must be undone when the
-   * writer leaves /write — otherwise the rest of the app inherits the
-   * inline overrides. The classic symptom: user visits /write, hits
-   * dark mode somewhere else later, and content becomes invisible
-   * because dark-mode structural CSS (the .page-canvas gradient)
-   * pairs with light-valued inline vars (--color-ink stuck at 37 37
-   * 32) producing dark text on a dark gradient.
-   *
-   * Strategy: remove every theme-pair var we set, then restore the
-   * .dark class to whatever it was on entry so useTheme stays in
-   * sync.
-   */
-  const rootStyle = document.documentElement.style
-  for (const pair of THEME_PAIRS) {
-    rootStyle.removeProperty(pair.name)
-  }
-  document.documentElement.classList.toggle('dark', wasDarkOnEntry)
 })
 
 </script>
 
 <style scoped>
-/* Paper viewport — the body-area is the clipping window for the typewriter.
-   Its height is set in JS (updatePaperClip) so the bottom edge lands at the
-   active line (the platen, 80vh). overflow:hidden then clips everything below
-   the caret line to blank "paper" and everything that rolls above the title,
-   leaving the display zone (above) and the single active input line visible.
-   The body itself is translateY-pinned (zen-body-roll) rather than scrolled. */
-.zen-body-area {
-  overflow: hidden;
-}
-
 /* Side-by-side panel layout — when AssistPanel or MetadataPanel is open,
    the editor reserves a right-side gutter the width of the panel. The
    title + body have max-width + mx-auto, so this gutter shifts the
-   centered content leftward without breaking line-length. The platen
-   and ribbon stay viewport-wide; the panel sits opaque on top of them
-   on the right. */
-.zen-editor.panel-open {
+   centered content leftward without breaking line-length. */
+.write-page.panel-open {
   padding-right: 420px;
   transition: padding-right 240ms cubic-bezier(0.25, 0.1, 0.25, 1);
 }
-.zen-editor {
+.write-page {
   transition: padding-right 240ms cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 @media (prefers-reduced-motion: reduce) {
-  .zen-editor,
-  .zen-editor.panel-open {
+  .write-page,
+  .write-page.panel-open {
     transition: none;
   }
 }
 @media (max-width: 768px) {
   /* On narrow viewports, panel takes full width; no point shifting the
      editor — it'd just be hidden anyway. */
-  .zen-editor.panel-open {
+  .write-page.panel-open {
     padding-right: 0;
   }
 }
 
-/* ============================================================
- * Brightness slider — sits in the top line of the writing block.
- * Track is a near-invisible 1px line in the line color; thumb is a
- * 20px sun icon in the accent color. The native range input is
- * styled to be effectively invisible aside from the thumb area.
- * ============================================================ */
-.zen-brightness {
-  pointer-events: none; /* container — events only on the track */
-}
-.zen-brightness-track {
-  position: relative;
-  height: 22px;
-  display: flex;
-  align-items: center;
-  pointer-events: auto;
-}
-.zen-brightness-slider {
-  appearance: none;
-  -webkit-appearance: none;
-  width: 100%;
-  height: 22px;
-  background: transparent;
-  cursor: pointer;
-  outline: none;
-  /* Track styled via ::-webkit-slider-runnable-track and ::-moz-range-track
-     below. The wrapper element is just for layout. */
-}
-.zen-brightness-slider::-webkit-slider-runnable-track {
-  height: 1px;
-  background: rgb(var(--color-line) / 0.5);
-  border-radius: 1px;
-}
-.zen-brightness-slider::-moz-range-track {
-  height: 1px;
-  background: rgb(var(--color-line) / 0.5);
-  border-radius: 1px;
-}
-.zen-brightness-slider::-webkit-slider-thumb {
-  appearance: none;
-  -webkit-appearance: none;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: rgb(var(--color-paper));
-  border: 1.5px solid rgb(var(--color-accent));
-  margin-top: -9px; /* center on 1px track */
-  cursor: grab;
-  transition: transform 120ms ease-out, background-color 120ms ease-out;
-}
-.zen-brightness-slider::-webkit-slider-thumb:hover,
-.zen-brightness-slider:focus::-webkit-slider-thumb {
-  transform: scale(1.12);
-  background: rgb(var(--color-accent-muted));
-}
-.zen-brightness-slider:active::-webkit-slider-thumb {
-  cursor: grabbing;
-}
-.zen-brightness-slider::-moz-range-thumb {
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: rgb(var(--color-paper));
-  border: 1.5px solid rgb(var(--color-accent));
-  cursor: grab;
-}
-.zen-brightness-slider:focus-visible {
-  outline: none;
-}
-.zen-brightness-icon {
-  position: absolute;
-  right: -2px; /* float just past the right edge of the track */
-  top: 50%;
-  transform: translateY(-50%);
-  color: rgb(var(--color-accent));
-  pointer-events: none;
-  display: inline-flex;
-}
-
-/* Title — typed onto the page. Subtle underline-rule directly beneath the
-   text mimics the underscore-stamp many typewriter pages have under their
-   heading. Letter-spacing nudged up slightly to read as machine-typed. */
-.zen-title-area input {
+/* Title — faint rule beneath so it reads as a heading on the sheet,
+   not a form field. */
+.write-title-area input {
   letter-spacing: 0.01em;
   border-bottom: 1px solid rgb(var(--color-line));
   padding-bottom: 6px;
   margin-bottom: 8px;
 }
 
-/* Body — typewriter cadence. Slightly looser line-height than default
-   monospace gives the lines air to breathe (real typewriter copy lives at
-   ~1.8). Letter-spacing kept neutral — Courier Prime's metrics already
-   read as machine-spaced; pushing further makes it look stretched. The
-   class is applied to BOTH the textarea and the mirror so wrap behavior
-   stays identical. */
-.zen-body {
+/* Body — comfortable long-form line-height. The class is applied to BOTH
+   the textarea and the mirror so wrap behavior stays identical. */
+.write-body {
   line-height: 1.85;
   letter-spacing: 0.005em;
-}
-
-/* Typewriter roll — the body is translateY-pinned so the active line stays at
-   the platen. Within a line the offset is constant (caret moves horizontally,
-   no vertical jump); on Enter or a margin wrap the offset steps by one line,
-   and this transition animates the paper rolling up by exactly that line. */
-.zen-body-roll {
-  transition: transform 130ms cubic-bezier(0.22, 0.61, 0.36, 1);
-  will-change: transform;
-}
-@media (prefers-reduced-motion: reduce) {
-  .zen-body-roll {
-    transition: none;
-  }
-}
-
-/* ============================================================
- * Paper feel — bumped up.
- *
- * Two layered effects on .zen-editor::before give the writing surface
- * tactile depth without touching the writing area itself:
- *
- *   1. A fine SVG noise layer simulating paper fiber. Inline data-uri
- *      so no asset request, ~1.5KB. At ~6% opacity it's barely
- *      perceptible up close but reads instantly as "paper, not screen".
- *
- *   2. A stronger radial vignette than before — corners darkened to
- *      ~9% ink so the page feels like an actual sheet with edges,
- *      not an infinite plain.
- *
- * Both skipped in dark mode where .page-canvas's moving charcoal
- * gradient handles atmosphere.
- * ============================================================ */
-.zen-editor::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
-  background-color: transparent;
-  background-image:
-    /* Vignette */
-    radial-gradient(
-      ellipse at center,
-      transparent 0%,
-      transparent 45%,
-      rgb(var(--color-ink) / 0.09) 100%
-    ),
-    /* Paper grain */
-    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.06 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
-  background-size: cover, 240px 240px;
-  background-repeat: no-repeat, repeat;
-}
-:global(.dark) .zen-editor::before {
-  display: none;
-}
-
-/* ============================================================
- * Typewriter chrome — platen at top, ribbon at bottom.
- *
- * Pure CSS, no images. Subtle dark fixtures that read as a real
- * machine framing the page without dominating the writing area.
- * Both sit BEHIND the floating cluster (z-index 40) but above the
- * paper background.
- * ============================================================ */
-
-/* ----- PLATEN — sits just above the strike line ------
- *
- * The platen and the ribbon together form a compact mechanism around the
- * line being typed. The platen's BOTTOM edge sits ~4px above the cursor
- * position (80vh from top), and the ribbon's TOP edge sits ~36px below
- * the cursor — the gap is one line of body text, so only the active
- * line is framed inside the mechanism. Above the platen: previously-
- * typed paper. Below the ribbon: breathing-room paper.
- *
- * Both pieces are keyed to TYPEWRITER_BOTTOM_PCT = 0.20 in the script.
- * If you change that constant, update the `top` values in both .zen-platen
- * and .zen-ribbon to keep the chrome aligned with the cursor.
- * ---------------------------------------------------------- */
-.zen-platen {
-  position: fixed;
-  /* 80vh − (platen height) − 4px gap above the cursor */
-  top: calc(80vh - 48px);
-  left: 0;
-  right: 0;
-  height: 44px;
-  z-index: 5;
-  pointer-events: none;
-  display: flex;
-  align-items: stretch;
-}
-
-.platen-cylinder {
-  flex: 1;
-  position: relative;
-  background:
-    /* Highlight strip near the top — a wet sheen along the platen. */
-    linear-gradient(
-      to bottom,
-      rgba(255, 255, 255, 0.05) 0%,
-      transparent 30%
-    ),
-    /* Body of the cylinder — dark with a subtle highlight at upper third
-       to fake the cylindrical curve. */
-    linear-gradient(
-      to bottom,
-      rgb(38, 36, 32) 0%,
-      rgb(28, 26, 22) 35%,
-      rgb(20, 18, 16) 65%,
-      rgb(40, 38, 33) 100%
-    );
-  border-bottom-left-radius: 28px;
-  border-bottom-right-radius: 28px;
-  box-shadow:
-    inset 0 -2px 4px rgba(255, 255, 255, 0.05),
-    inset 0 2px 6px rgba(0, 0, 0, 0.4),
-    0 6px 14px rgba(0, 0, 0, 0.18);
-}
-
-/* The paper edge peeking out from under the cylinder — a thin cream
-   line right at the bottom curve, suggesting the sheet emerges here. */
-.platen-cylinder::after {
-  content: '';
-  position: absolute;
-  left: 18%;
-  right: 18%;
-  bottom: -3px;
-  height: 6px;
-  background-color: rgb(var(--color-paper));
-  border-bottom-left-radius: 6px;
-  border-bottom-right-radius: 6px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
-  z-index: -1;
-}
-
-/* End knobs on either side of the cylinder — circular, slightly larger
-   than the cylinder's height, with grooves suggesting a turning grip.
-   Sized to match the compacted 44px platen. */
-.platen-knob {
-  position: relative;
-  width: 52px;
-  flex-shrink: 0;
-  background:
-    radial-gradient(
-      circle at 35% 30%,
-      rgb(80, 76, 68) 0%,
-      rgb(45, 42, 36) 45%,
-      rgb(20, 18, 16) 100%
-    );
-  border-radius: 50%;
-  align-self: center;
-  height: 52px;
-  /* Stick up slightly above the cylinder so the knob crowns are visible. */
-  margin-top: -4px;
-  box-shadow:
-    inset -2px -2px 4px rgba(0, 0, 0, 0.5),
-    inset 2px 2px 4px rgba(255, 255, 255, 0.05),
-    0 4px 10px rgba(0, 0, 0, 0.25);
-}
-.platen-knob-left  { margin-left: -12px; }
-.platen-knob-right { margin-right: -12px; }
-
-/* Grooves — concentric ring suggesting the textured grip on a real
-   typewriter platen knob. */
-.platen-knob-grooves {
-  position: absolute;
-  inset: 12px;
-  border-radius: 50%;
-  border: 1px solid rgba(0, 0, 0, 0.4);
-  box-shadow:
-    inset 0 0 0 1px rgba(255, 255, 255, 0.04),
-    inset 0 0 0 8px rgba(0, 0, 0, 0.0),
-    inset 0 0 0 9px rgba(0, 0, 0, 0.25);
-}
-
-/* ----- RIBBON / RULER — sits just below the strike line ------
- * Pairs with .zen-platen above. The gap between platen-bottom and
- * ribbon-top equals one line of body text, so only the active line
- * being typed is visible inside the mechanism. Below the ribbon: paper
- * extends to viewport bottom as breathing room and as "the page being
- * fed into the machine".
- * ---------------------------------------------------------- */
-.zen-ribbon {
-  position: fixed;
-  left: 0;
-  right: 0;
-  /* 80vh + line-height gap. ~36px clears one line of text-base/text-lg
-     at line-height 1.85 plus a touch of margin on either side. */
-  top: calc(80vh + 36px);
-  height: 26px;
-  z-index: 5;
-  pointer-events: none;
-  display: flex;
-  flex-direction: column;
-}
-
-/* The ribbon stripe — a thin band in the accent color along the top
-   edge, like an inked typewriter ribbon. Subtle so it doesn't shout. */
-.zen-ribbon-stripe {
-  height: 4px;
-  background:
-    linear-gradient(
-      to bottom,
-      rgb(var(--color-accent) / 0.55) 0%,
-      rgb(var(--color-accent) / 0.85) 50%,
-      rgb(var(--color-accent) / 0.4) 100%
-    );
-  box-shadow: 0 0 6px rgb(var(--color-accent) / 0.25);
-}
-
-/* The ruler bar — dark strip with evenly-spaced tick marks rendered as a
-   repeating linear gradient. The ticks are at every ~20px to suggest the
-   measurement scale visible in the reference image. */
-.zen-ribbon-ruler {
-  flex: 1;
-  background:
-    /* Tick marks — repeating darker stripe every 20px */
-    repeating-linear-gradient(
-      to right,
-      rgba(0, 0, 0, 0.0) 0px,
-      rgba(0, 0, 0, 0.0) 18px,
-      rgba(255, 255, 255, 0.12) 18px,
-      rgba(255, 255, 255, 0.12) 19px,
-      rgba(0, 0, 0, 0.0) 19px,
-      rgba(0, 0, 0, 0.0) 20px
-    ),
-    /* Body */
-    linear-gradient(
-      to bottom,
-      rgb(28, 26, 22) 0%,
-      rgb(20, 18, 16) 100%
-    );
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.4);
-}
-
-/* ----- Smooth height transitions to mask the auto-resize ----- */
-/* The textarea snaps to its new height on auto-resize. A short transition
-   reads it as smooth growth instead of a hard step. Honors reduced-motion. */
-.zen-body {
-  transition: height 80ms ease-out;
-}
-@media (prefers-reduced-motion: reduce) {
-  .zen-body {
-    transition: none;
-  }
-}
-
-/* ----- Responsive: shrink mechanism on narrow viewports ----- */
-@media (max-width: 640px) {
-  .zen-platen {
-    /* Same strike-line offset, just shorter platen. */
-    height: 36px;
-    top: calc(80vh - 40px);
-  }
-  .platen-knob {
-    width: 42px;
-    height: 42px;
-    margin-top: -3px;
-  }
-  .platen-knob-left  { margin-left: -10px; }
-  .platen-knob-right { margin-right: -10px; }
-  .zen-ribbon {
-    height: 20px;
-    /* Slightly tighter line-height at smaller text size. */
-    top: calc(80vh + 30px);
-  }
 }
 
 /* ============================================================
@@ -1977,11 +1178,7 @@ onBeforeUnmount(() => {
  * iframe replaces the textarea visually but the textarea remains in the
  * DOM (just v-show'd off) so all the keyboard / draft state is intact.
  * ============================================================ */
-.zen-spa-banner {
-  pointer-events: none;
-}
-.zen-spa-banner-pill {
-  pointer-events: auto;
+.spa-banner-pill {
   display: inline-flex;
   align-items: center;
   gap: 10px;
@@ -1995,19 +1192,19 @@ onBeforeUnmount(() => {
   color: rgb(var(--color-ink-light));
   max-width: 100%;
 }
-.zen-spa-banner-dot {
+.spa-banner-dot {
   width: 7px;
   height: 7px;
   border-radius: 50%;
   background: rgb(var(--color-accent));
   flex-shrink: 0;
 }
-.zen-spa-banner-text {
+.spa-banner-text {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.zen-spa-banner-toggle {
+.spa-banner-toggle {
   flex-shrink: 0;
   margin-left: 4px;
   padding: 2px 8px;
@@ -2021,18 +1218,18 @@ onBeforeUnmount(() => {
   cursor: pointer;
   transition: background-color 120ms ease-out, color 120ms ease-out;
 }
-.zen-spa-banner-toggle:hover {
+.spa-banner-toggle:hover {
   background: rgb(var(--color-accent));
   color: rgb(var(--color-paper));
   border-color: rgb(var(--color-accent));
 }
 @media (max-width: 640px) {
-  .zen-spa-banner-text {
+  .spa-banner-text {
     white-space: normal;
   }
 }
 
-.zen-spa-preview {
+.spa-preview {
   display: block;
   width: 100%;
   height: 80vh;
@@ -2044,12 +1241,13 @@ onBeforeUnmount(() => {
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 6px 18px rgba(0, 0, 0, 0.06);
 }
 
-/* Tiny status pill — bottom-left, fades in/out, stays out of the way. */
-.zen-status-pill {
+/* Tiny status pill — bottom-left, above the toolbar, fades in/out. */
+.status-pill {
   position: fixed;
-  left: 18px;
-  bottom: 28px;
-  z-index: 30;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: calc(76px + env(safe-area-inset-bottom, 0px));
+  z-index: 45;
   font-family: 'Inter', sans-serif;
   font-size: 12px;
   letter-spacing: 0.02em;
@@ -2059,41 +1257,35 @@ onBeforeUnmount(() => {
   border: 1px solid rgb(var(--color-line));
   color: rgb(var(--color-ink-light));
   pointer-events: none;
+  box-shadow: 0 2px 8px rgb(var(--color-ink) / 0.08);
 }
-.zen-status-pill.success {
+.status-pill.success {
   border-color: rgb(var(--color-accent));
   color: rgb(var(--color-accent));
 }
-.zen-status-pill.error {
+.status-pill.error {
   border-color: rgb(var(--color-highlight));
   color: rgb(var(--color-highlight));
 }
 
-.zen-status-enter-active,
-.zen-status-leave-active {
+.status-pill-enter-active,
+.status-pill-leave-active {
   transition: opacity 220ms ease-out, transform 220ms ease-out;
 }
-.zen-status-enter-from,
-.zen-status-leave-to {
+.status-pill-enter-from,
+.status-pill-leave-to {
   opacity: 0;
-  transform: translateY(6px);
+  transform: translateX(-50%) translateY(6px);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .zen-status-enter-active,
-  .zen-status-leave-active {
+  .status-pill-enter-active,
+  .status-pill-leave-active {
     transition: none;
   }
-  .zen-status-enter-from,
-  .zen-status-leave-to {
-    transform: none;
-  }
-}
-
-@media (max-width: 640px) {
-  .zen-status-pill {
-    left: 10px;
-    bottom: 16px;
+  .status-pill-enter-from,
+  .status-pill-leave-to {
+    transform: translateX(-50%);
   }
 }
 </style>
