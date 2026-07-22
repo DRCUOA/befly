@@ -148,9 +148,9 @@
             </div>
           </div>
 
-          <!-- For SPA essays we deliberately hide word count, read time and the
-               italic excerpt — none of them apply to an interactive piece.
-               A small pill announces the format instead. -->
+          <!-- For SPA essays we deliberately hide word count and read time —
+               neither applies to an interactive piece. A small pill announces
+               the format instead. -->
           <div class="flex flex-wrap items-center gap-4 sm:gap-6 md:gap-8 text-xs sm:text-sm font-sans text-ink-lighter mb-8 sm:mb-12 md:mb-16">
             <template v-if="isSpa">
               <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full border border-line bg-line/30 uppercase tracking-widest text-[10px] sm:text-xs">
@@ -169,11 +169,6 @@
             </template>
           </div>
 
-          <div v-if="!isSpa" class="border-t border-line pt-6 sm:pt-8">
-            <p class="text-base sm:text-lg md:text-xl font-light text-ink-light leading-relaxed italic">
-              {{ excerpt }}
-            </p>
-          </div>
         </div>
       </div>
 
@@ -207,7 +202,8 @@
         </div>
       </div>
 
-      <!-- Essay Content (continues after the excerpt; no duplicate of the opening lines) -->
+      <!-- Essay Content — the full body, opening paragraph included,
+           rendered exactly as the author wrote it. -->
       <div
         v-else-if="paragraphs.length > 0"
         class="w-full px-4 sm:px-6 md:px-8 py-8 sm:py-12 md:py-16 bg-paper"
@@ -284,8 +280,6 @@ import type { Appreciation } from '../domain/Appreciation'
 import type { ApiResponse } from '@shared/ApiResponses'
 import {
   markdownToText,
-  bodyMarkdownAfterExcerptPrefix,
-  excerptPlainCutLength,
   isStandaloneHtmlDoc,
   renderMarkdownForPrint,
   stripPageBreakMarkers
@@ -325,12 +319,13 @@ const immersiveChapters = computed<ReaderChapter[]>(() => {
   }]
 })
 
-// Split content into paragraphs for progressive reveal (body only — excerpt covers the opening)
+// Split the full body into paragraphs — the opening paragraph renders like
+// every other one, exactly as the author wrote it.
 const paragraphs = computed(() => {
   if (!writing.value) return []
   if (isSpa.value) return []
-  const afterExcerpt = stripPageBreakMarkers(bodyMarkdownAfterExcerptPrefix(writing.value.body))
-  return afterExcerpt.split(/\n\n+/).filter(p => p.trim().length > 0)
+  const body = stripPageBreakMarkers(writing.value.body)
+  return body.split(/\n\n+/).filter(p => p.trim().length > 0)
 })
 
 const wordCount = computed(() => {
@@ -343,15 +338,6 @@ const wordCount = computed(() => {
 const readTime = computed(() => {
   // Estimate at 280 words per minute
   return Math.max(1, Math.round(wordCount.value / 280))
-})
-
-const excerpt = computed(() => {
-  if (!writing.value) return ''
-  if (isSpa.value) return ''
-  const text = markdownToText(writing.value.body)
-  const cut = excerptPlainCutLength(text)
-  if (cut >= text.length) return text
-  return text.substring(0, cut) + '...'
 })
 
 // Show the edit affordance to the author, admins, or anyone the author
