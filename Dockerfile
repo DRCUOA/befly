@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 # Build client and server artifacts
-FROM node:20-alpine AS builder
+FROM node:24-alpine AS builder
 WORKDIR /app
 
 COPY package.json package-lock.json ./
@@ -14,7 +14,7 @@ RUN npm run build --workspace=client
 RUN npm run build --workspace=server
 
 # Production runtime image
-FROM node:20-alpine AS runtime
+FROM node:24-alpine AS runtime
 WORKDIR /app
 
 ENV NODE_ENV=production
